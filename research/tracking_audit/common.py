@@ -9,12 +9,19 @@ sweeping the GlobalBuffer capacity. Three search variants are compared:
   push   as var, and generation also eliminates fixed resources
          (AF_GENERATION_VARIABLE_RESOURCES)
 
-Picks are trusted only after `strict_evaluate`: the mapping is re-evaluated on the
-architecture with the exact target capacity and must reproduce the reported cost.
+Picks are trusted only after `check_pick`: the mapping is re-evaluated on the
+architecture with the exact target capacity and must reproduce the reported cost, and
+costs must be finite. Spatial min_usage constraints are checked separately and reported
+as shortfalls, because the mapper may legally accept the best available usage when no
+candidate reaches the minimum.
 """
+import collections
 import copy
+import math
+import numbers
 import os
 import resource
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -23,17 +30,10 @@ ROOT = Path(__file__).resolve().parents[2]
 GB = 'reservation<SEP>GlobalBuffer<SEP>0<SEP>right'
 VARIANTS = ('indep', 'var', 'push')
 
-# Every research switch read by the library. All are cleared before each search so a
-# variable inherited from the shell cannot silently change a run.
-SWITCHES = (
-    'AF_VARIABLE_RESOURCES',
-    'AF_GENERATION_VARIABLE_RESOURCES',
-    'AF_ABL_SKIP_BIG_ENOUGH',
-    'AF_ABL_SKIP_PMAPPING_ONLY',
-    'AF_ABL_ALLOW_UNREPRESENTABLE',
-    'AF_ABL_BIG_ENOUGH_UNTRACK_ONLY',
-    'AF_STREAMING_JOIN_PAIRS',
-)
+# Every research switch read by the library starts with this prefix. All such variables
+# are cleared before each search so one inherited from the shell cannot silently change
+# a run (e.g. AF_NUMERIC_JOIN selects a different join backend).
+SWITCH_PREFIX = 'AF_'
 # Ablations a caller may request for every search in a run, e.g. from the command line.
 ABLATIONS = ('AF_ABL_SKIP_BIG_ENOUGH', 'AF_ABL_SKIP_PMAPPING_ONLY', 'AF_ABL_ALLOW_UNREPRESENTABLE',
              'AF_ABL_BIG_ENOUGH_UNTRACK_ONLY')
@@ -42,6 +42,10 @@ ABLATIONS = ('AF_ABL_SKIP_BIG_ENOUGH', 'AF_ABL_SKIP_PMAPPING_ONLY', 'AF_ABL_ALLO
 import accelforge as af  # noqa: E402
 from accelforge.mapper.FFM.main import make_pmappings, join_pmappings  # noqa: E402
 from accelforge.model.main import evaluate_mapping  # noqa: E402
+from accelforge.frontend.mapping import Compute, Loop, Nested, Spatial, Split  # noqa: E402
+from accelforge.mapper.FFM._make_pmappings.make_pmappings import (  # noqa: E402
+    get_rank_variable_bounds_for_all_einsums,
+)
 
 EL = af.Metrics.ENERGY | af.Metrics.LATENCY
 RU = EL | af.Metrics.RESOURCE_USAGE
@@ -83,8 +87,23 @@ def peak_rss_gb():
 
 
 def clear_switches():
-    for k in SWITCHES:
-        os.environ.pop(k, None)
+    for k in [k for k in os.environ if k.startswith(SWITCH_PREFIX)]:
+        del os.environ[k]
+
+
+def effective_config(**extra):
+    """Code version and settings of a run. Call before set_jobs(1), which forbids subprocesses."""
+    def git(*args):
+        try:
+            return subprocess.run(['git', '-C', str(ROOT), *args], capture_output=True,
+                                  text=True, check=True).stdout.strip()
+        except Exception as e:
+            return f'unavailable: {type(e).__name__}'
+    spec = build((1, 1, 1), 1, EL)
+    return {'commit': git('rev-parse', 'HEAD'), 'dirty': bool(git('status', '--porcelain', '--', 'accelforge')),
+            'max_pmapping_templates_per_einsum': str(spec.mapper.ffm.max_pmapping_templates_per_einsum),
+            'inherited_switches': sorted(k for k in os.environ if k.startswith(SWITCH_PREFIX)),
+            **extra}
 
 
 def build(shape, cap_mib, metrics):
@@ -105,13 +124,13 @@ def search(spec, gen_env=None, join_env=None, ablations=None):
         clear_switches()
         os.environ.update(ablations or {})
         os.environ.update(env or {})
-    set_env(gen_env)
-    t0 = time.perf_counter()
-    pm = make_pmappings(spec, print_number_of_pmappings=False)
-    t1 = time.perf_counter()
-    rows_generated = sum(len(g.mappings.data) for gs in pm.einsum2pmappings.values() for g in gs)
-    set_env(join_env)
     try:
+        set_env(gen_env)
+        t0 = time.perf_counter()
+        pm = make_pmappings(spec, print_number_of_pmappings=False)
+        t1 = time.perf_counter()
+        rows_generated = sum(len(g.mappings.data) for gs in pm.einsum2pmappings.values() for g in gs)
+        set_env(join_env)
         res = join_pmappings(pm)
     finally:
         clear_switches()
@@ -148,33 +167,142 @@ def best_row(data):
 def strict_evaluate(shape, cap_mib, mapping):
     """Re-evaluate `mapping` on the architecture with exactly `cap_mib` of GlobalBuffer.
 
-    Returns {'energy', 'latency', 'edp'} or raises if the mapping does not fit.
+    Returns energy, latency, edp and every reservation column, or raises if the mapping
+    does not fit or the evaluation does not produce exactly one row.
     """
-    spec = build(shape, cap_mib, EL)
-    spec.model.metrics = EL
+    spec = build(shape, cap_mib, RU)
+    spec.model.metrics = RU
     spec.mapping = copy.deepcopy(mapping)
     clear_switches()
     ev = evaluate_mapping(spec).data
+    if len(ev) != 1:
+        raise ValueError(f're-evaluation returned {len(ev)} rows')
     e, l = float(ev['Total<SEP>energy'].iloc[0]), float(ev['Total<SEP>latency'].iloc[0])
-    return {'energy': e, 'latency': l, 'edp': e * l}
+    reservations = {c: float(ev[c].iloc[0]) for c in ev.columns if c.startswith('reservation<SEP>')}
+    return {'energy': e, 'latency': l, 'edp': e * l, 'reservations': reservations}
+
+
+def spatial_usage_shortfalls(shape, mapping):
+    """Spatial fanout dimensions whose usage in `mapping` is below their min_usage.
+
+    Independent of the mapper: along each path to a Compute node, a spatial loop uses
+    (enclosing tile of its rank variable) / (its tile shape) instances of its fanout
+    dimension; usage = product over that dimension's loops / fanout.
+    """
+    spec = build(shape, 1, EL)
+    bounds = get_rank_variable_bounds_for_all_einsums(spec)
+    found = []
+
+    def check(einsum, loops):
+        size = dict(bounds[einsum])
+        used = collections.defaultdict(lambda: 1.0)
+        for loop in loops:
+            rv, tile = loop.rank_variable, loop.tile_shape
+            if rv not in size or not isinstance(tile, numbers.Number) or tile <= 0:
+                continue
+            count = size[rv] / tile
+            size[rv] = tile
+            if isinstance(loop, Spatial):
+                used[(loop.component, loop.name)] *= count
+        for (component, name), n in used.items():
+            dims = {d.name: d for d in spec.arch.find(component).spatial}
+            dim = dims[name]
+            usage = n / float(dim.fanout)
+            if dim.min_usage and usage < float(dim.min_usage) - 1e-9:
+                found.append({'einsum': einsum, 'component': component, 'dimension': name,
+                              'usage': usage, 'min_usage': float(dim.min_usage)})
+
+    def walk(nodes, loops):
+        loops = list(loops)
+        for i, n in enumerate(nodes):
+            if isinstance(n, Split):
+                for child in n.nodes:
+                    walk(child.nodes if isinstance(child, Nested) else [child], loops)
+                return
+            if isinstance(n, Nested):
+                walk(list(n.nodes) + list(nodes[i + 1:]), loops)
+                return
+            if isinstance(n, Loop):
+                loops.append(n)
+            elif isinstance(n, Compute):
+                check(n.einsum, loops)
+
+    walk(list(mapping.nodes), [])
+    return found
+
+
+def _finite_nonnegative(*xs):
+    return all(isinstance(x, numbers.Number) and math.isfinite(x) and x >= 0 for x in xs)
 
 
 def check_pick(shape, cap_mib, row, rel_tol=1e-6):
-    """Strictly validate a picked row. Returns a record with 'ok' set."""
+    """Strictly validate a picked row. Returns a record with 'ok' set.
+
+    ok requires finite nonnegative reported and re-evaluated costs, a successful
+    re-evaluation at exactly cap_mib, and energy and latency matching within rel_tol.
+    Spatial min_usage shortfalls are reported in 'min_usage_shortfall' but do not
+    affect ok (see module docstring).
+    """
     rec = {'cap_mib': cap_mib, 'edp': float(row['Total<SEP>energy'] * row['Total<SEP>latency']),
            'energy': float(row['Total<SEP>energy']), 'latency': float(row['Total<SEP>latency'])}
     if GB in row.index:
         rec['reported_gb_mib_fraction'] = float(row[GB])
+    if not _finite_nonnegative(rec['energy'], rec['latency'], rec['edp']):
+        rec.update(ok=False, error='reported cost is not finite and nonnegative')
+        return rec
     try:
-        ev = strict_evaluate(shape, cap_mib, row['Total<SEP>mapping']())
+        mapping = row['Total<SEP>mapping']()
+        ev = strict_evaluate(shape, cap_mib, mapping)
     except Exception as e:
         rec.update(ok=False, error=f'{type(e).__name__}: {str(e)[:200]}')
         return rec
     rec['reevaluated'] = ev
-    rec['ok'] = all(abs(ev[k] - rec[k]) <= rel_tol * abs(rec[k]) for k in ('energy', 'latency'))
+    if not _finite_nonnegative(ev['energy'], ev['latency'], ev['edp']):
+        rec.update(ok=False, error='re-evaluated cost is not finite and nonnegative')
+        return rec
+    rec['ok'] = all(abs(ev[k] - rec[k]) <= rel_tol * rec[k] for k in ('energy', 'latency'))
     if not rec['ok']:
         rec['error'] = 'reported cost differs from re-evaluation'
+    try:
+        rec['min_usage_shortfall'] = spatial_usage_shortfalls(shape, mapping)
+    except Exception as e:
+        rec['min_usage_shortfall_error'] = f'{type(e).__name__}: {str(e)[:200]}'
     return rec
+
+
+def summarize_quality(history, variants, caps):
+    """Per-capacity quality over every repeat; see capacity_audit.py for the fields.
+
+    history[variant][cap] is the list of check_pick records of all repeats. A variant is
+    invalid at a capacity if any repeat's pick was invalid, so a later success never
+    hides an earlier failure. Returns (quality, any_invalid, all_consistent).
+    """
+    def same(xs):
+        xs = [x for x in xs if x is not None]
+        return all(abs(x - xs[0]) <= 1e-9 * abs(xs[0]) for x in xs)
+
+    quality = {}
+    for cap in caps:
+        valid_edps = [rec['edp'] for v in variants for c in caps if c <= cap
+                      for rec in history[v][c] if rec['ok']]
+        best = min(valid_edps) if valid_edps else None
+        q = {'edp': {}, 'consistent_across_repeats': {}, 'invalid': [], 'suboptimal': [],
+             'min_usage_shortfall': [], 'best_valid_edp': best}
+        for v in variants:
+            recs = history[v][cap]
+            edps = [rec.get('edp') for rec in recs]
+            q['edp'][v] = edps[-1]
+            q['consistent_across_repeats'][v] = same(edps)
+            if not all(rec['ok'] for rec in recs):
+                q['invalid'].append(v)
+            elif best is not None and max(edps) > best * (1 + 1e-6):
+                q['suboptimal'].append(v)
+            if any(rec.get('min_usage_shortfall') or rec.get('min_usage_shortfall_error') for rec in recs):
+                q['min_usage_shortfall'].append(v)
+        quality[str(cap)] = q
+    any_invalid = any(q['invalid'] for q in quality.values())
+    all_consistent = all(all(q['consistent_across_repeats'].values()) for q in quality.values())
+    return quality, any_invalid, all_consistent
 
 
 def skeleton(obj):
