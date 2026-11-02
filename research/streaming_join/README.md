@@ -199,3 +199,14 @@ EDPs at 2, 4 and 8 MiB; neither shared frontier had a candidate at 0.5 or
 selection Join time was 3.90 s and process peak RSS 369,580 KiB. The earlier
 full reference used a different code revision; a same-revision run is required
 before a performance comparison, and independent searches are still needed.
+
+A same-revision follow-up (`d8d741d0`) used the same full tensor dimensions,
+8 MiB maximum GlobalBuffer and two templates per Einsum. The full-resource
+Join took 126.41 s, retained 1,650 rows and peaked at 2,950,648 KiB RSS; the
+selective Join took 3.90 s, retained 95 rows and peaked at 369,580 KiB. After
+filtering, 2/4/8 MiB EDPs matched both full-resource and independent searches.
+At 0.5/1 MiB, neither shared result had a candidate and the corresponding
+independent run had no FFH pmappings under the two-template limit; these sizes
+remain unverified. This is a single fixed-bandwidth, single-process run and is
+not a 15-configuration or full-Mapspace performance result. See
+`tag1_fullshape_capacity_comparison.json` and the saved numeric frontiers.
