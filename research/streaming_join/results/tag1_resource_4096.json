@@ -1,0 +1,54 @@
+{
+  "experiment_commit": "10242068",
+  "records": [
+    {
+      "stage": "GENERATED",
+      "data": {
+        "shape": [
+          32,
+          64,
+          128
+        ],
+        "max_templates_per_einsum": 1,
+        "make_s": 7.886304763145745,
+        "peak_rss_kib": 331856
+      }
+    },
+    {
+      "stage": "BASELINE",
+      "data": {
+        "join_s": 3.433383349329233,
+        "n": 1076,
+        "peak_rss_kib": 383776
+      }
+    },
+    {
+      "stage": "COMPARISON",
+      "data": {
+        "resource_usage": true,
+        "shape": [
+          32,
+          64,
+          128
+        ],
+        "pair_limit": 4096,
+        "make_s": 7.886304763145745,
+        "baseline_join_s": 3.433383349329233,
+        "streaming_join_s": 22.752054990269244,
+        "rows": 1076,
+        "objective_columns": [
+          "Total<SEP>energy",
+          "Total<SEP>latency",
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right",
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right",
+          "reservation<SEP>MainMemory<SEP>0<SEP>right",
+          "reservation<SEP>Register<SEP>0<SEP>right"
+        ],
+        "objectives_equal": true,
+        "peak_rss_kib_process_so_far": 383776,
+        "chunks": 1218,
+        "max_chunk_product": 4096
+      }
+    }
+  ]
+}
