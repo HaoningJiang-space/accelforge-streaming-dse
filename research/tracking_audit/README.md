@@ -57,8 +57,9 @@ Remaining limits:
   This does not certify byte-exact boundaries at every capacity scale.
 - Streaming bounds temporary Pair blocks, not the live Frontier or total process
   memory. `run_capped.sh` samples RSS every two seconds; it is not a hard cgroup
-  limit. It also has no signal-forwarding trap: terminating only the wrapper can
-  leave its detached command alive. Use its timeout for unattended experiments.
+  limit. The watchdog now cleans up its process group on SIGTERM/SIGINT/SIGHUP,
+  timeout, RSS exhaustion and monitoring errors. SIGKILL cannot be handled, and
+  descendants that explicitly leave the group are outside this guarantee.
 - Capacity-only reuse is supported experimentally. Cross-bandwidth reuse, full
   candidate coverage, and a global memory budget are still separate tasks.
 
@@ -73,7 +74,7 @@ Remaining limits:
 | `test_min_usage.py` | Real tile-enumerator regression for unreachable min_usage and reachable/hard minima. |
 | `trace_pick.py` | Investigate one row, per-Einsum reconstruction and final mapping; diagnostic output, not an acceptance gate. |
 | `check_shared_resources.py` | Investigate reservation mismatches across joined groups. |
-| `run_capped.sh` | Linux process-group RSS/time watchdog. |
+| `run_capped.sh`, `run_capped.py` | POSIX process-group watchdog; shell entry point delegates to a standard-library Python supervisor. |
 | `legacy_p0/` | Older upstream GPU/profiling experiments; not the tag1 backend. |
 | `HISTORY.md` | Chronological evidence and superseded hypotheses. |
 
@@ -126,6 +127,35 @@ Exit codes, most severe first: 2 for invalid picks (including an incomplete usag
 or arguments; 5 if any variant is suboptimal; 3 for inconsistent repeats; otherwise 0.
 A min_usage shortfall alone is reported but does not fail the run. Unexpected search errors propagate as failures,
 and the capacity-audit worker pool is cleaned up on both success and exceptions.
+
+The watchdog preserves the child exit code. It returns 137 for an RSS/time limit,
+4 for live group members left after the main command exits, 128+signal when the
+supervisor is cancelled, and 125 on launch/monitoring failure. `NO_VLIMIT=1` disables
+only the per-process virtual-address limit; sampled RSS and time limits still apply.
+
+## Bug-fix review after a686597f
+
+- After Reservation insertion, fused-loop labels now use the actual first/backing
+  Reservation of every shared tensor, matching Compatibility. Inferring the boundary
+  from a Storage's `_lower` flag mislabels both reservations stopped above a loop and
+  reservations lowered through multiple relevant loops. Four of five focused cases
+  failed before the fix; all pass afterwards. Template-stage labeling is unchanged.
+- Utilization checking includes `usage_scale`, as the model does. CONFIG builds the
+  selected Case rather than always inspecting the default GLU configuration.
+- The watchdog eliminates the startup race between `setsid` and the first `ps`,
+  selects PGID explicitly, cleans up on cancellation, and fails on monitoring errors.
+  Real child/grandchild tests cover exit status, all three cancellation signals,
+  timeout, orphan cleanup and RSS control with `NO_VLIMIT=1`.
+- Log summarization tolerates truncated JSON and missing historical flags, showing
+  them as incomplete/unknown. A new CONFIG resets state, so an appended failed run
+  cannot inherit an earlier successful SUMMARY.
+
+Validation: 101 focused audit/Streaming tests passed locally. The single-process
+`matmuls(2,4,8)@nvdla` smoke test at 0.03125/0.125 MiB completed under the watchdog:
+indep/push had identical EDP 9.449881321091679e-17, all four picks re-evaluated, and
+all usage checks completed. Expected shortfalls on this small shape are reported.
+This was one run without warmup, not a speedup benchmark. Structured log lines:
+[results/bugfix_matmuls_smoke.txt](results/bugfix_matmuls_smoke.txt).
 
 ## Regression tests
 

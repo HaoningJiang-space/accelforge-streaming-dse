@@ -121,7 +121,7 @@ def run(a):
 
 def main(argv=None):
     a = parse_args(argv)
-    print('CONFIG', json.dumps(common.effective_config(args=vars(a)), default=str), flush=True)
+    print('CONFIG', json.dumps(common.effective_config(a.case, args=vars(a)), default=str), flush=True)
     common.set_jobs(a.jobs)
     try:
         summary, status = run(a)

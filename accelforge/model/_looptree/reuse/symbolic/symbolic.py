@@ -747,6 +747,24 @@ def label_fused_loops(mapping: List[MappingNode], fusable_tensors: set[TensorNam
         fusable_tensors, set
     ), f"Fusable tensors must be a set, got {type(fusable_tensors)}"
 
+    if any(isinstance(node, Reservation) for node in mapping):
+        # Once reservations exist, their actual positions are authoritative.
+        # Lowering can stop before a loop/holder or pass several relevant loops.
+        # Match Compatibility.from_mapping: only the first reservation of each
+        # shared tensor is its backing reservation; later copies do not extend
+        # the fused prefix.
+        remaining = set(fusable_tensors)
+        for i, node in enumerate(mapping):
+            if isinstance(node, Reservation) and set(node.purposes) & remaining:
+                remaining -= set(node.purposes)
+                last_backer = i
+        if remaining:
+            raise ValueError(f"No backing Reservation found for {sorted(remaining)}")
+        for i, node in enumerate(mapping):
+            if isinstance(node, Loop):
+                node._fused = i < last_backer
+        return mapping
+
     for i, node in enumerate(mapping):
         if not isinstance(node, TensorHolder) or isinstance(node, Reservation):
             continue

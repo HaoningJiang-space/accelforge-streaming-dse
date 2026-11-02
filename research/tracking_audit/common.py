@@ -137,7 +137,7 @@ def clear_switches():
         del os.environ[k]
 
 
-def effective_config(**extra):
+def effective_config(case=DEFAULT_CASE, **extra):
     """Code version and settings of a run. Call before set_jobs(1), which forbids subprocesses."""
     def git(*args):
         try:
@@ -145,7 +145,7 @@ def effective_config(**extra):
                                   text=True, check=True).stdout.strip()
         except Exception as e:
             return f'unavailable: {type(e).__name__}'
-    spec = build(DEFAULT_CASE, 1, EL)
+    spec = build(case, 1, EL)
     return {'commit': git('rev-parse', 'HEAD'),
             'dirty': bool(git('status', '--porcelain', '--', 'accelforge', 'research')),
             'max_pmapping_templates_per_einsum': str(spec.mapper.ffm.max_pmapping_templates_per_einsum),
@@ -270,7 +270,8 @@ def spatial_usage_shortfalls(case, mapping):
         # loop beautification. Other compute branches must not be checked here.
         for (component, name), dim in dimensions.items():
             n = used[(component, name)]
-            usage = n / float(dim.fanout)
+            # Match run_model's objective, which includes the architecture's scale.
+            usage = n / float(dim.fanout) * float(dim.usage_scale)
             if dim.min_usage and usage < float(dim.min_usage) - 1e-9:
                 found.append({'einsum': einsum, 'component': component, 'dimension': name,
                               'usage': usage, 'min_usage': float(dim.min_usage)})

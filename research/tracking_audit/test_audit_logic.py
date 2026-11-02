@@ -107,6 +107,15 @@ class CheckPickTest(unittest.TestCase):
 
 
 class SpatialUsageTest(unittest.TestCase):
+    def test_usage_scale_matches_model_objective(self):
+        spec = common.build(common.DEFAULT_CASE, 1, common.EL)
+        # One of four instances with scale four satisfies min_usage=1.
+        spec.arch.find('LocalBuffer').spatial[0].usage_scale = 4
+        mapping = common.af.Mapping(nodes=[common.Compute(einsum='FFG', component='MAC')])
+        with patch.object(common, 'build', return_value=spec):
+            shortfalls = common.spatial_usage_shortfalls(common.DEFAULT_CASE, mapping)
+        self.assertFalse(any(r['component'] == 'LocalBuffer' for r in shortfalls))
+
     def test_absent_spatial_loop_uses_one_instance(self):
         mapping = common.af.Mapping(nodes=[common.Compute(einsum='FFG', component='MAC')])
         shortfalls = common.spatial_usage_shortfalls(common.DEFAULT_CASE, mapping)
@@ -136,6 +145,17 @@ class ClearSwitchesTest(unittest.TestCase):
         common.clear_switches()
         self.assertFalse([k for k in os.environ if k.startswith('AF_')])
         self.assertEqual(os.environ.pop('UNRELATED'), '1')
+
+
+class EffectiveConfigTest(unittest.TestCase):
+    def test_configuration_uses_selected_case(self):
+        case = common.Case('matmuls', 'nvdla', (2, 16, 32))
+        spec = common.build(case, 1, common.EL)
+        spec.mapper.ffm.max_pmapping_templates_per_einsum = 7
+        with patch.object(common, 'build', return_value=spec) as build:
+            config = common.effective_config(case)
+        build.assert_called_once_with(case, 1, common.EL)
+        self.assertEqual(config['max_pmapping_templates_per_einsum'], '7')
 
 
 if __name__ == '__main__':
