@@ -4,6 +4,7 @@ import json
 import os
 import pickle
 import resource
+import statistics
 import sys
 import time
 
@@ -41,17 +42,37 @@ def run(pair_limit):
     result = left.merge_next(right, *local_args, **local_kwargs)
     return result.data, time.perf_counter()-start
 
-base, base_s = run(0)
-stream, stream_s = run(limit)
+# Warm both paths before timing; then alternate execution order.
+base, warm_base_s = run(0)
+stream, warm_stream_s = run(limit)
 columns = sorted(c for c in base.columns if col_used_in_joining(c))
-assert columns == sorted(c for c in stream.columns if col_used_in_joining(c))
-base = base[columns].sort_values(columns).reset_index(drop=True)
-stream = stream[columns].sort_values(columns).reset_index(drop=True)
-pd.testing.assert_frame_equal(base, stream, check_dtype=False, check_exact=False,
-                              rtol=1e-12, atol=1e-20)
+
+def verify(base, stream):
+    assert columns == sorted(c for c in stream.columns if col_used_in_joining(c))
+    left = base[columns].sort_values(columns).reset_index(drop=True)
+    right = stream[columns].sort_values(columns).reset_index(drop=True)
+    pd.testing.assert_frame_equal(left, right, check_dtype=False, check_exact=False,
+                                  rtol=1e-12, atol=1e-20)
+    return len(left)
+
+rows = verify(base, stream)
+base_times, stream_times = [], []
+for iteration in range(3):
+    if iteration % 2 == 0:
+        base, elapsed_base = run(0)
+        stream, elapsed_stream = run(limit)
+    else:
+        stream, elapsed_stream = run(limit)
+        base, elapsed_base = run(0)
+    assert verify(base, stream) == rows
+    base_times.append(elapsed_base)
+    stream_times.append(elapsed_stream)
 assert counts['chunks'] and counts['max_chunk_product'] <= limit, counts
 print('REPLAY', json.dumps({'left_rows':len(original_left.data), 'right_rows':len(original_right.data),
     'pair_upper_bound':len(original_left.data)*len(original_right.data), 'pair_limit':limit,
-    'baseline_join_s':base_s, 'streaming_join_s':stream_s, 'frontier_rows':len(base),
-    'checked_columns':columns, 'equal':True, 'process_peak_rss_kib':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+    'warmup_baseline_s':warm_base_s, 'warmup_streaming_s':warm_stream_s,
+    'baseline_seconds':base_times, 'streaming_seconds':stream_times,
+    'baseline_median_s':statistics.median(base_times), 'streaming_median_s':statistics.median(stream_times),
+    'frontier_rows':rows, 'checked_columns':columns, 'equal':True,
+    'process_peak_rss_kib':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
     **counts}), flush=True)
