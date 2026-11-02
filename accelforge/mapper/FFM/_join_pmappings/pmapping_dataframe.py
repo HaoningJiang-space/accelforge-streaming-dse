@@ -421,8 +421,11 @@ class PmappingDataframe:
             and pair_limit > 0
             and len(self.data) * len(right.data) > pair_limit
         ):
-            matched_pairs = self._matching_pair_count(
-                right, compatibility_left, compatibility_right, pair_limit
+            key_plan = self._matching_pair_plan(
+                right, compatibility_left, compatibility_right
+            )
+            matched_pairs = None if key_plan is None else sum(
+                len(left_rows) * len(right_rows) for left_rows, right_rows in key_plan
             )
             if matched_pairs is not None and matched_pairs <= pair_limit:
                 # An inner join materializes matched pairs, not the Cartesian
@@ -438,7 +441,7 @@ class PmappingDataframe:
                 right, shared_loop_index, next_shared_loop_index, live_tensors,
                 still_live_reservations, duplicated_aliased_tensors,
                 compatibility_left, compatibility_right, compatibility_joined,
-                ignored_resources, drop_valid_reservations, pair_limit,
+                ignored_resources, drop_valid_reservations, pair_limit, key_plan,
             )
 
         self._check_reservations()
@@ -634,10 +637,16 @@ class PmappingDataframe:
         return result
 
     def _matching_pair_count(self, right, compatibility_left, compatibility_right, limit):
-        """Count equijoin pairs from key frequencies, or return None if uncertain.
+        plan = self._matching_pair_plan(right, compatibility_left, compatibility_right)
+        if plan is None:
+            return None
+        return sum(len(left_rows) * len(right_rows) for left_rows, right_rows in plan)
 
-        This deliberately accepts only identical dtypes and non-null, unique
-        key columns. Other pandas join cases fall back to the generic path.
+    def _matching_pair_plan(self, right, compatibility_left, compatibility_right):
+        """Return matched input positions by key, or None for unsupported cases.
+
+        Only identical dtypes and non-null, unique key columns are accepted.
+        This stores input indices and never materializes matching pairs.
         """
         left_keys, right_keys = [], []
 
@@ -671,26 +680,41 @@ class PmappingDataframe:
                 return None
         if {"__ffm_left_count", "__ffm_right_count"} & set(left_keys + right_keys):
             return None
-        try:
-            left_counts = self.data.groupby(left_keys, sort=False, observed=True).size().reset_index(name="__ffm_left_count")
-            right_counts = right.data.groupby(right_keys, sort=False, observed=True).size().reset_index(name="__ffm_right_count")
-            matched = pd.merge(left_counts, right_counts, how="inner", left_on=left_keys, right_on=right_keys)
-        except (TypeError, ValueError):
+        if {"__ffm_left_id", "__ffm_right_id"} & set(left_keys + right_keys):
             return None
-        count = 0
-        for l, r in zip(matched["__ffm_left_count"], matched["__ffm_right_count"]):
-            count += int(l) * int(r)
-            if count > limit:
-                break
-        return count
+        try:
+            left_groups = self.data.groupby(left_keys, sort=False, observed=True)
+            right_groups = right.data.groupby(right_keys, sort=False, observed=True)
+            left_sizes, right_sizes = left_groups.size(), right_groups.size()
+            left_counts = left_sizes.reset_index(name="__ffm_left_count")
+            right_counts = right_sizes.reset_index(name="__ffm_right_count")
+            left_counts["__ffm_left_id"] = range(len(left_counts))
+            right_counts["__ffm_right_id"] = range(len(right_counts))
+            matched = pd.merge(left_counts, right_counts, how="inner", left_on=left_keys, right_on=right_keys)
+
+            def positions(groups, key):
+                try:
+                    return groups.indices[key]
+                except KeyError:
+                    # Some pandas releases represent single-column group keys
+                    # as a tuple; retain the generic fallback if neither works.
+                    return groups.indices[(key,)]
+
+            return [
+                (positions(left_groups, left_sizes.index[int(li)]),
+                 positions(right_groups, right_sizes.index[int(ri)]))
+                for li, ri in zip(matched["__ffm_left_id"], matched["__ffm_right_id"])
+            ]
+        except (TypeError, ValueError, KeyError):
+            return None
 
     def _merge_next_streaming(
         self, right, shared_loop_index, next_shared_loop_index, live_tensors,
         still_live_reservations, duplicated_aliased_tensors, compatibility_left,
         compatibility_right, compatibility_joined, ignored_resources,
-        drop_valid_reservations, pair_limit,
+        drop_valid_reservations, pair_limit, key_plan=None,
     ):
-        """Bound each pair product. The accumulated frontier remains unbounded."""
+        """Bound matched pairs per task; the accumulated frontier can grow."""
         self._check_reservations()
         right._check_reservations()
         self.free_to_loop_index(shared_loop_index, live_tensors=live_tensors)
@@ -710,9 +734,9 @@ class PmappingDataframe:
                 pending = []
                 pending_rows = 0
 
-        def partition(source, start, stop, size):
+        def partition(source, rows, size):
             part = copy.copy(source)
-            part._data = source.data.iloc[start:stop].copy()
+            part._data = source.data.iloc[rows].copy()
             part.left_reservations = copy.deepcopy(source.left_reservations)
             part.right_reservations = copy.deepcopy(source.right_reservations)
             fraction = len(part.data) / size
@@ -720,24 +744,57 @@ class PmappingDataframe:
             part.n_valid_pmappings = source.n_valid_pmappings * fraction
             return part
 
-        for left_start in range(0, left_n, left_step):
-            for right_start in range(0, right_n, right_step):
-                left_part = partition(self, left_start, left_start + left_step, left_n)
-                right_part = partition(right, right_start, right_start + right_step, right_n)
-                joined = left_part.merge_next(
-                    right_part, shared_loop_index, next_shared_loop_index,
-                    live_tensors, still_live_reservations, duplicated_aliased_tensors,
-                    compatibility_left, compatibility_right, compatibility_joined,
-                    ignored_resources, drop_valid_reservations=drop_valid_reservations,
-                    _streaming_disabled=True,
-                )
-                # Bound buffered local frontiers by the pair limit and at most
-                # eight blocks. The accumulated global frontier remains unbounded.
-                if pending and (len(pending) >= 8 or
-                                pending_rows + len(joined.data) > pair_limit):
-                    flush_pending()
-                pending.append(joined)
-                pending_rows += len(joined.data)
+        def tasks():
+            if key_plan is None:
+                for left_start in range(0, left_n, left_step):
+                    for right_start in range(0, right_n, right_step):
+                        yield (slice(left_start, left_start + left_step),
+                               slice(right_start, right_start + right_step), None)
+                return
+
+            # Accumulate complete, disjoint keys until their matching pairs hit
+            # the budget. Large single-key products are tiled separately.
+            left_batch, right_batch, batch_pairs = [], [], 0
+            for left_rows, right_rows in key_plan:
+                size = len(left_rows) * len(right_rows)
+                if size > pair_limit:
+                    if left_batch:
+                        yield left_batch, right_batch, batch_pairs
+                        left_batch, right_batch, batch_pairs = [], [], 0
+                    ls = min(len(left_rows), max(1, math.isqrt(pair_limit)))
+                    rs = max(1, pair_limit // ls)
+                    for i in range(0, len(left_rows), ls):
+                        for j in range(0, len(right_rows), rs):
+                            l = left_rows[i:i + ls]
+                            r = right_rows[j:j + rs]
+                            yield l, r, len(l) * len(r)
+                else:
+                    if left_batch and batch_pairs + size > pair_limit:
+                        yield left_batch, right_batch, batch_pairs
+                        left_batch, right_batch, batch_pairs = [], [], 0
+                    left_batch.extend(left_rows)
+                    right_batch.extend(right_rows)
+                    batch_pairs += size
+            if left_batch:
+                yield left_batch, right_batch, batch_pairs
+
+        for left_rows, right_rows, matched_pairs in tasks():
+            left_part = partition(self, left_rows, left_n)
+            right_part = partition(right, right_rows, right_n)
+            joined = left_part.merge_next(
+                right_part, shared_loop_index, next_shared_loop_index,
+                live_tensors, still_live_reservations, duplicated_aliased_tensors,
+                compatibility_left, compatibility_right, compatibility_joined,
+                ignored_resources, drop_valid_reservations=drop_valid_reservations,
+                _streaming_disabled=True, _streaming_matched_pairs=matched_pairs,
+            )
+            # Bound buffered local frontiers by the pair limit and at most
+            # eight blocks. The accumulated global frontier remains unbounded.
+            if pending and (len(pending) >= 8 or
+                            pending_rows + len(joined.data) > pair_limit):
+                flush_pending()
+            pending.append(joined)
+            pending_rows += len(joined.data)
         flush_pending()
         return frontier
 
