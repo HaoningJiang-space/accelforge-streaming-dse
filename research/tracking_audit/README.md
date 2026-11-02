@@ -128,3 +128,19 @@ Fix options:
    compatibility, so the two sides must agree on them. Every accepted combination is then representable.
 2. Reconstruction side: keep per-Einsum holders below a split instead of elevating them. This represents
    what FFM scored, but needs a check that the model evaluates such trees as intended.
+
+## After the fix (commit 6dfce0ac, half scale, 8 workers, 1 repeat)
+
+Skipped templates per search: FFG 8, FFU 8, FFH 12. `research/streaming_join` tests: 39 passed.
+
+| GLB | indep (default) | var | push | indep, `AF_ABL_SKIP_BIG_ENOUGH=LocalBuffer` |
+|---|---|---|---|---|
+| 0.25 MiB | 1.8361e-8 | **1.8202e-8** | 1.8361e-8 | **1.8202e-8** |
+| 0.375 MiB | 1.8361e-8 | **1.8202e-8** | 1.8260e-8 | **1.8202e-8** |
+| 1, 4 MiB | 1.5488e-8 | 1.5488e-8 | 1.5488e-8 | not run |
+
+Every pick of every variant is now valid under strict re-evaluation (exit 0). Times: indep 167 s,
+var 51 s (3.2x), push 37 s (4.5x); group peak 3.7 GB.
+
+Open: eliminating LocalBuffer as "big enough" (default indep, push) still loses the valid 1.8202e-8,
+although a memory that never overflows should only add candidates when untracked.
