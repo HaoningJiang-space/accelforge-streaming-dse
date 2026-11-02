@@ -37,15 +37,44 @@ make_s = time.perf_counter() - start
 print('GENERATED', json.dumps({'shape': shape, 'max_templates_per_einsum': spec.mapper.ffm.max_pmapping_templates_per_einsum, 'make_s': make_s, 'peak_rss_kib': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}), flush=True)
 
 original = PmappingDataframe.merge_next
-counts = {'chunks': 0, 'max_chunk_product': 0}
+counts = {'chunks': 0, 'max_chunk_product': 0, 'empty_chunks': 0,
+          'chunk_join_s': 0.0, 'frontier_merge_s': 0.0, 'frontier_merges': 0}
+inside_stream = False
 
 def measured(self, right, *args, **kwargs):
-    if kwargs.get('_streaming_disabled'):
-        counts['chunks'] += 1
-        counts['max_chunk_product'] = max(counts['max_chunk_product'], len(self.data) * len(right.data))
-    return original(self, right, *args, **kwargs)
+    if not kwargs.get('_streaming_disabled'):
+        return original(self, right, *args, **kwargs)
+    counts['chunks'] += 1
+    counts['max_chunk_product'] = max(counts['max_chunk_product'], len(self.data) * len(right.data))
+    start = time.perf_counter()
+    result = original(self, right, *args, **kwargs)
+    counts['chunk_join_s'] += time.perf_counter() - start
+    counts['empty_chunks'] += len(result.data) == 0
+    return result
+
+original_stream = PmappingDataframe._merge_next_streaming
+original_concat = PmappingDataframe.concat
+
+def measured_stream(self, *args, **kwargs):
+    global inside_stream
+    inside_stream = True
+    try:
+        return original_stream(self, *args, **kwargs)
+    finally:
+        inside_stream = False
+
+def measured_concat(*args, **kwargs):
+    if not inside_stream:
+        return original_concat(*args, **kwargs)
+    start = time.perf_counter()
+    result = original_concat(*args, **kwargs)
+    counts['frontier_merge_s'] += time.perf_counter() - start
+    counts['frontier_merges'] += 1
+    return result
 
 PmappingDataframe.merge_next = measured
+PmappingDataframe._merge_next_streaming = measured_stream
+PmappingDataframe.concat = staticmethod(measured_concat)
 
 def run(limit):
     os.environ['AF_STREAMING_JOIN_PAIRS'] = str(limit)
