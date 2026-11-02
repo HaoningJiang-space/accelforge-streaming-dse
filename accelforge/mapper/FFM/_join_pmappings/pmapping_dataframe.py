@@ -752,7 +752,22 @@ class PmappingDataframe:
             nonlocal frontier, pending, pending_rows
             if pending:
                 inputs = ([frontier] if frontier is not None else []) + pending
-                frontier = PmappingDataframe.concat(inputs)
+                if os.environ.get("AF_INCREMENTAL_PARETO") == "1":
+                    from accelforge.mapper.FFM._join_pmappings.incremental_pareto import cross_frontier_frame
+
+                    frontier = inputs[0]
+                    for part in inputs[1:]:
+                        data = cross_frontier_frame(frontier.data, part.data)
+                        if data is None:
+                            frontier = PmappingDataframe.concat([frontier, part])
+                        else:
+                            frontier = PmappingDataframe(
+                                data, skip_pareto=True,
+                                n_total_pmappings=frontier.n_total_pmappings + part.n_total_pmappings,
+                                n_valid_pmappings=frontier.n_valid_pmappings + part.n_valid_pmappings,
+                            )
+                else:
+                    frontier = PmappingDataframe.concat(inputs)
                 pending = []
                 pending_rows = 0
 

@@ -272,3 +272,59 @@ Pareto and 0.397 s frontier merges. Timing hooks and scheduling add overhead;
 these measurements are one run of one group and must not be generalized to all
 joins. The actual matching count was 19,730, not the 947,040 Cartesian upper
 bound. See `results/tag1_join_phases.json` for the complete measurements.
+
+## Capacity boundary audit and incremental frontiers
+
+For the full-size GLU with two templates per Einsum and fixed bandwidth,
+`audit_capacity_templates.py` recorded SHA-256 fingerprints of each ordered
+list of compact node descriptions. The two selected template descriptions for
+each Einsum matched as multisets at 2, 4 and 8 MiB. Compact descriptions do not
+capture every template field, constraint lambda, or tile enumeration: this is
+not proof that all smaller-capacity candidates are contained in the maximum
+capacity search. The identifiers are in `results/tag1_template_audit.json`.
+
+`audit_capacity_boundaries.py` tested 2 MiB and 3 MiB, each minus one byte,
+exactly at the boundary, and plus one byte. All six shared and independent
+best EDPs matched (rtol 1e-12, atol 1e-20). Both selected mappings for every
+case were reconstructed and re-evaluated at the corresponding capacity; the
+model's energy and latency matched the FFM values within 1e-6 relative, and
+its reported reservations were at most 1 + 1e-12. Results and tolerances are
+recorded in `results/tag1_capacity_boundary_audit.json`. This verifies these
+selected mappings, not the completeness of the candidate space.
+
+The real 19,730-row captured frontier has 48 output boundary groups and a
+maximum group size of 1,215. All groups have more than 10 rows, using the exact
+fused-loop classification of this FFM version; see
+`results/tag1_output_boundary_groups.json`.
+
+`AF_INCREMENTAL_PARETO=1` opts into an experimental streaming merge. For two
+already-reduced frontiers with the same supported schema it uses FFM's output
+boundary columns, compares only old versus new points within a common boundary,
+and selects the earlier provenance for equal points. It uses 128-by-128 pair
+tiles, and falls back to the ordinary full Pareto merge for unsupported input.
+Each pending local frontier is merged separately, so pending frontiers are not
+assumed mutually non-dominating. The implementation still scans and copies the
+old DataFrame during each merge; it is not a persistent keyed store or a global
+memory budget, and remains disabled by default.
+
+In one captured Join with 4,096-pair blocks, three warmed alternating trials
+had median 0.647 s for the ordinary streaming merge and 0.339 s for the
+incremental merge, with all 19,730 rows and 21 relevant fields equal. Across
+warmup and trials, none of the 20 merges had overlapping output boundary groups,
+so no cross-frontier point comparisons were needed. The unblocked original Join
+was around 0.13 s in a separate prior replay and remains faster in this case.
+
+At 1,024 pairs, some boundaries span blocks. The ordinary and incremental
+medians were 3.456 s and 3.607 s, respectively; the frontiers still matched.
+Across warmup and three trials, the incremental implementation recorded 280
+overlapping-group merges, 5,092,352 cross-pair comparisons and 5,617,980 old
+rows scanned. Thus the new path is not uniformly faster; maintaining a keyed
+frontier without repeated scans and improving large-group comparisons remain
+open. Raw results are in `results/tag1_incremental_join*.json`.
+
+A complete M=64/G=128/C=256 RESOURCE_USAGE run using 4,096-pair blocks and
+incremental merge matched the 222-row original numeric frontier and best EDP;
+its best mapping was reconstructable. Seven incremental-specific tests include
+randomized comparisons with the original Pareto, overlapping boundary groups,
+identical points, symbolic integer keys, and guarded fallbacks. They supplement,
+but cannot replace, broader workload and mapping re-evaluation tests.
