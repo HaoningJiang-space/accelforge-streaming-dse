@@ -344,9 +344,17 @@ def summarize_quality(history, variants, caps):
     history[variant][cap] is the list of check_pick records of all repeats. A variant is
     invalid at a capacity if any repeat's pick was invalid, so a later success never
     hides an earlier failure. Returns (quality, any_invalid, all_consistent).
+
+    EDPs are compared as re-evaluated at the target capacity when available. FFM's own
+    reported cost may differ from the model by up to check_pick's rel_tol and from run
+    to run (observed: 7e-8 relative for the same mapping cost on matmuls@tpu_v4i), so
+    it is kept in 'reported_edp' but does not decide consistency or optimality.
     """
     def verified(rec):
         return rec['ok'] and not rec.get('min_usage_shortfall_error')
+
+    def true_edp(rec):
+        return rec['reevaluated']['edp'] if 'reevaluated' in rec else rec.get('edp')
 
     def same(xs):
         xs = [x for x in xs if x is not None]
@@ -354,15 +362,16 @@ def summarize_quality(history, variants, caps):
 
     quality = {}
     for cap in caps:
-        valid_edps = [rec['edp'] for v in variants for c in caps if c <= cap
+        valid_edps = [true_edp(rec) for v in variants for c in caps if c <= cap
                       for rec in history[v][c] if verified(rec)]
         best = min(valid_edps) if valid_edps else None
-        q = {'edp': {}, 'consistent_across_repeats': {}, 'invalid': [], 'suboptimal': [],
+        q = {'edp': {}, 'reported_edp': {}, 'consistent_across_repeats': {}, 'invalid': [], 'suboptimal': [],
              'min_usage_shortfall': [], 'min_usage_check_error': [], 'best_valid_edp': best}
         for v in variants:
             recs = history[v][cap]
-            edps = [rec.get('edp') for rec in recs]
+            edps = [true_edp(rec) for rec in recs]
             q['edp'][v] = edps[-1]
+            q['reported_edp'][v] = recs[-1].get('edp')
             q['consistent_across_repeats'][v] = same(edps)
             if not all(verified(rec) for rec in recs):
                 q['invalid'].append(v)

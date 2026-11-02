@@ -49,6 +49,27 @@ class SummarizeQualityTest(unittest.TestCase):
         self.assertEqual(quality['0.5']['best_valid_edp'], 1.0)
 
 
+class TrueEdpTest(unittest.TestCase):
+    caps = [0.25]
+
+    def test_reported_drift_with_equal_reevaluated_cost_is_consistent(self):
+        a = dict(rec(1.0), reevaluated={'edp': 1.0})
+        b = dict(rec(1.0 - 7e-8), reevaluated={'edp': 1.0})
+        quality, invalid, consistent = common.summarize_quality({'v': {0.25: [a, b]}}, ['v'], self.caps)
+        self.assertFalse(invalid)
+        self.assertTrue(consistent)
+        self.assertEqual(quality['0.25']['edp']['v'], 1.0)
+        self.assertEqual(quality['0.25']['reported_edp']['v'], 1.0 - 7e-8)
+
+    def test_reevaluated_cost_decides_suboptimality(self):
+        good = dict(rec(2.0), reevaluated={'edp': 1.0})
+        bad = dict(rec(1.0), reevaluated={'edp': 2.0})
+        quality, _, _ = common.summarize_quality({'a': {0.25: [good]}, 'b': {0.25: [bad]}},
+                                                 ['a', 'b'], self.caps)
+        self.assertEqual(quality['0.25']['best_valid_edp'], 1.0)
+        self.assertEqual(quality['0.25']['suboptimal'], ['b'])
+
+
 class BestRowTest(unittest.TestCase):
     def test_float32_product_does_not_overflow(self):
         data = pd.DataFrame({'Total<SEP>energy': np.array([1e20, 2e20], dtype=np.float32),
