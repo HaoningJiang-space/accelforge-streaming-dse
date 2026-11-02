@@ -70,3 +70,25 @@ run; it still took more than four times the original Join's 3.73 s. The full
 same tolerances. Instrumentation measured 669 chunks and 87 frontier merges,
 with 13.11 s in chunk joins and 1.62 s in frontier merges. Streaming peak RSS
 was 384,568 KiB. These are exploratory measurements, not a statistical claim.
+
+## Captured join
+
+`fixtures/real_join_tag1.pkl` contains one real tag 1.0 FFM compatibility-group
+input (capture commit `3dfe1472`, M=64/G=128/C=256, one template per Einsum,
+RESOURCE_USAGE). Its SHA-256 is
+`d4f2d5196d622c254682f0408cfbed2ef2e6c832802718c3e10d919e5366908a`.
+Pickle can execute code on loading: replay only trusted, verified captures.
+The fixture holds 37 left and 534 right rows, with 19,758 logical possible
+pairs. Replay at a 4,096 pair limit retained 19,730 states, with numeric
+objectives, reservation, fused-loop and live-tensor columns matching the
+original (rtol=1e-12, atol=1e-20). The original was run first in the replay;
+its 3.49 s versus 0.41 s streaming is confounded by first-use JIT compilation
+and must not be treated as a speedup. This one group cannot explain the earlier
+full-workload OOM. Output IDs and the final mapping still require end-to-end
+validation beyond this group.
+
+A full-size M=512/G=1024/C=2048 trial at 8 MiB GlobalBuffer and two templates
+per Einsum reached the second Join under a 4 GiB single-process address-space
+limit but hit its 120-second timeout. A one-template trial at 0.5 MiB produced
+no valid FFH candidates. Neither run proves the full mapping space or previous
+OOM is handled; both used tag 1.0 rather than the newer historical baseline.
