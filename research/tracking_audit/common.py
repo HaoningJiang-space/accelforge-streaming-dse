@@ -190,11 +190,11 @@ def spatial_usage_shortfalls(shape, mapping):
     dimension; usage = product over that dimension's loops / fanout.
     """
     spec = build(shape, 1, EL)
-    bounds = get_rank_variable_bounds_for_all_einsums(spec)
+    bounds = get_rank_variable_bounds_for_all_einsums(spec)  # rank variable -> bound, shared
     found = []
 
     def check(einsum, loops):
-        size = dict(bounds[einsum])
+        size = dict(bounds)
         used = collections.defaultdict(lambda: 1.0)
         for loop in loops:
             rv, tile = loop.rank_variable, loop.tile_shape
@@ -287,7 +287,7 @@ def summarize_quality(history, variants, caps):
                       for rec in history[v][c] if rec['ok']]
         best = min(valid_edps) if valid_edps else None
         q = {'edp': {}, 'consistent_across_repeats': {}, 'invalid': [], 'suboptimal': [],
-             'min_usage_shortfall': [], 'best_valid_edp': best}
+             'min_usage_shortfall': [], 'min_usage_check_error': [], 'best_valid_edp': best}
         for v in variants:
             recs = history[v][cap]
             edps = [rec.get('edp') for rec in recs]
@@ -297,8 +297,10 @@ def summarize_quality(history, variants, caps):
                 q['invalid'].append(v)
             elif best is not None and max(edps) > best * (1 + 1e-6):
                 q['suboptimal'].append(v)
-            if any(rec.get('min_usage_shortfall') or rec.get('min_usage_shortfall_error') for rec in recs):
+            if any(rec.get('min_usage_shortfall') for rec in recs):
                 q['min_usage_shortfall'].append(v)
+            if any(rec.get('min_usage_shortfall_error') for rec in recs):
+                q['min_usage_check_error'].append(v)
         quality[str(cap)] = q
     any_invalid = any(q['invalid'] for q in quality.values())
     all_consistent = all(all(q['consistent_across_repeats'].values()) for q in quality.values())
