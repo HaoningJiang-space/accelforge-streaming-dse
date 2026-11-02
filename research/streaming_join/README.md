@@ -371,8 +371,8 @@ streaming and is a distinct result.
 reservation and retain positions that strictly improve energy times latency.
 It retains original row positions for mapping reconstruction and does not
 replace energy, latency, or reservation during intermediate joins. On the saved
-95-row full-size selective frontier, 14 breakpoints answered 45 exact capacity
-queries, including representable one-byte boundary neighbors, identically to a
+95-row full-size selective frontier, 14 breakpoints answered 45 capacity
+queries exactly relative to the saved floating-point frontier, including representable one-byte boundary neighbors, identically to a
 full scan. These queries are exact relative to this saved frontier and fixed
 cost model; they do not prove candidate coverage, optimality outside the
 restricted Mapspace, or re-evaluate every returned mapping. See
@@ -382,3 +382,97 @@ Neither feature provides a global search-memory cap, external spill, arbitrary
 bandwidth sharing, or a guarantee that all target capacities are covered by
 maximum-capacity candidates. Outputs remain subject to the existing Mapspace
 and resource-policy assumptions.
+
+## Shape-aware tiles, validation, and capacity comparison modes
+
+Oversized matching groups now use a shape-aware tile chooser that fills the
+pair budget when one side is short. For example, a 1,215-by-1 group at a
+1,024-pair budget uses 1,024-by-1 tiles instead of 32-by-1 tiles. The same
+bounded chooser is used for the generic Cartesian path. The persistent frontier
+now prepares the schema once, checks incoming values without running a dummy
+merge, and merges an already identified boundary with a numeric comparison
+routine that does not group again. When it falls back, the old partitioned
+store reference is released after the saved frontier is constructed. The final
+concatenation can still increase peak memory; no global byte cap is claimed.
+
+On the same captured Join, at 1,024 pairs, the old recorded implementation
+performed 70 overlapping-group updates, scanned 40,448 old rows and made
+1,273,088 cross-frontier comparisons per Join. The new implementation performed
+2 updates, scanned 2,048 old rows and made 241,664 comparisons per Join, exactly
+matching the predicted work. Its warmed partitioned median was 0.630 s versus
+2.670 s in the earlier separate experiment; the changes above are combined,
+and the measurements were not simultaneous. In the new same-process run, the
+unblocked original median was 0.135 s. All 19,730 rows and 21 relevant fields
+matched across original, generic streaming, incremental and partitioned paths.
+The 4,096-pair run also matched, with variable timing on the shared server. Raw
+counts and repeated timings are in `results/tag1_shape_aware_*.json`.
+
+At M=64/G=128/C=256, one template and RESOURCE_USAGE, a complete GLU run with
+1,024-pair blocks matched the original 222-row numeric frontier and best EDP;
+the partitioned Join took 18.20 s in that one run versus the earlier unblocked
+3.73 s. It reconstructed a best mapping; this check did not re-evaluate it.
+
+Capacity breakpoint queries now expose two explicitly different modes:
+
+* `ffm_compatible` preserves the existing normalized FFM/Pandas floating
+  comparison, including low-precision threshold rounding. It is not a proof of
+  byte-precise feasibility for arbitrary capacity scales.
+* `exact_integer` requires a separately preserved integer requirement column,
+  with query and generation capacity in the same units. It never reconstructs
+  integers from rounded normalized reservations. The current FFM generator
+  does **not** yet export that independent exact column; tests use synthetic
+  integer inputs.
+
+Both modes reject queries above the supplied maximum generation capacity.
+Results are optimal only among the supplied snapshot candidates, not necessarily
+the full Mapspace. Model ID, Mapspace ID and coverage status can be recorded;
+coverage defaults to `unverified`. Positional row references remain tied to the
+input order. Supplying unique stable source IDs enables ID lookup and checking
+of the ordered query fields and IDs, but does not authenticate opaque Mapping
+objects or replace an external provenance store.
+
+A larger restricted-Mapspace smoke experiment at M=64/G=128/C=256 used four
+rather than two templates per Einsum and capacities 0.125/0.25/0.5 MiB at one
+fixed bandwidth. One post-warmup trial took 23.02 s for three independent
+searches and 9.94 s for shared capacity search; the three EDP values matched.
+All three capacities selected the same EDP, so this is not evidence under
+capacity pressure. It is a single trial and does not establish full candidate
+coverage or stable speedup. See `results/tag1_capacity_four_templates.json`.
+
+A capacity-pressure follow-up with four templates used 32 KiB, 48 KiB and
+512 KiB, keeping bandwidth fixed. The first attempt failed during the
+independent warmup because the existing FFM `max_to_col` attempted to assign a
+float64 maximum into a float32 pandas column. The failure is recorded in
+`tag1_capacity_four_pressure_initial_failure.json`. The code now replaces the
+column with the max result, preserving its promoted dtype; regression tests
+cover both mixed float32/float64 and float32-only maxima. After this fix, one
+post-warmup trial gave 22.63 s for independent searches and 9.57 s for shared
+search. The three EDPs matched; the 32 KiB optimum (4.72519e-11 J s) was
+higher than the 48 and 512 KiB optima (4.11212e-11 J s). The result is one
+trial in one process with a four-template limit, not evidence of stable or
+unrestricted-space speedup. See `tag1_capacity_four_pressure.json`.
+
+After the dtype fix, the 1,024-pair captured Join was repeated: median original
+0.130 s, generic streaming 1.950 s, incremental streaming 1.278 s, and
+partitioned 0.617 s. Counts and the 19,730-row/21-field comparison were
+unchanged. These timings include all shape, validation and merge changes; they
+cannot attribute the improvement to any one change. See
+`tag1_shape_aware_1024_postfix.json`.
+
+A separate follow-up reconstructed the independently selected and shared-selected
+mappings at 32, 48 and 512 KiB for the four-template case. At all three sizes,
+the EDPs agreed between searches; both selected mappings passed the target
+capacity check and their re-evaluated energy and latency agreed with FFM output
+within 1e-6 relative. The mappings could use different amounts of fixed
+LocalBuffer while remaining feasible. This tests six selected mappings, not
+candidate-set inclusion. See `tag1_capacity_four_reevaluation.json`.
+
+The four-template, capacity-pressure comparison was subsequently repeated in a
+single warmed process, alternating execution order for three trials. Independent
+three-capacity totals were 23.545, 23.061 and 23.354 s; shared totals were
+10.255, 9.762 and 9.690 s. Medians were 23.354 s and 9.762 s (2.39x), with
+all three EDPs equal on every trial. The process-wide peak RSS across both paths
+was 362,040 KiB and does not separate their memory use. These are repeat trials
+on one small workload, fixed bandwidth, and a four-template restriction, not a
+full Mapspace or cross-bandwidth result. Raw timings are in
+`tag1_capacity_four_pressure_repeated.json`.
