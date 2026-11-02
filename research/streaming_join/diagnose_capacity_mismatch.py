@@ -57,8 +57,9 @@ def best(data):
 full = search(build(max_capacity, resource_metrics))
 full_best = best(full.data)
 small_view = full.data[full.data[reservation] <= small_capacity/max_capacity*(1+1e-12)]
+filtered_best = best(small_view)
 describe('shared_unfiltered_best', full_best)
-describe('shared_filtered_best', best(small_view))
+describe('shared_filtered_best', filtered_best)
 small_spec = build(small_capacity, energy_latency)
 independent = search(small_spec)
 independent_best = best(independent.data)
@@ -67,6 +68,7 @@ describe('independent_best', independent_best)
 # Compare reconstructed structures without assuming equal EDP means equal mapping.
 independent_mapping = independent_best['Total<SEP>mapping']()
 shared_mapping = full_best['Total<SEP>mapping']()
+filtered_mapping = filtered_best['Total<SEP>mapping']()
 
 def fingerprint(mapping):
     try:
@@ -81,12 +83,14 @@ print('MAPPING_COMPARISON', json.dumps({'object_equal': independent_mapping == s
 
 # Tag 1.0 itself documents that reconstructed mappings may not be evaluable.
 for label, mapping, result in [('independent', independent_mapping, independent),
-                               ('shared', shared_mapping, full)]:
+                               ('shared_unfiltered', shared_mapping, full),
+                               ('shared_filtered', filtered_mapping, full)]:
     for cap in (small_capacity, max_capacity):
         for metric_name, metric in [('cost', energy_latency), ('resources', resource_metrics)]:
             try:
                 local_spec = build(cap, energy_latency)
                 local_spec.model.metrics = metric
+                local_spec.mapper.ffm.metrics = metric
                 local_spec.mapping = copy.deepcopy(mapping)
                 # Re-evaluate architecture at the tested capacity, not cached
                 # evaluated specs from another capacity.
