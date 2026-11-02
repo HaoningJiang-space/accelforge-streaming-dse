@@ -19,6 +19,11 @@ def no_children(event, args):
         raise RuntimeError('Child processes disabled: ' + event)
 
 
+# CUDA pathfinder asks ctypes to discover libdl via an ldconfig subprocess.
+# The standard Linux soname is sufficient and preserves the no-children guard.
+import ctypes.util
+_find_library = ctypes.util.find_library
+ctypes.util.find_library = lambda name: 'libdl.so.2' if name == 'dl' else _find_library(name)
 sys.addaudithook(no_children)
 import numpy as np
 import pandas as pd
