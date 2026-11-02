@@ -92,3 +92,29 @@ per Einsum reached the second Join under a 4 GiB single-process address-space
 limit but hit its 120-second timeout. A one-template trial at 0.5 MiB produced
 no valid FFH candidates. Neither run proves the full mapping space or previous
 OOM is handled; both used tag 1.0 rather than the newer historical baseline.
+
+A second fixture, `fixtures/real_join_large_tag1.pkl`, contains 19,730 left
+rows and 48 right rows (SHA-256
+`707e82d33955fb2aa47fbde8541a42abf42924695394c8182c946d3b61eaa150`).
+Although their product is 947,040, grouping by the actual FFM inner-join keys
+shows only 19,730 matching pairs across 48 keys. Therefore the original
+`pd.merge` does not materialize the full product. The replay, warmup followed
+by three alternating trials, found a 0.131 s median for original Join and 2.684 s
+for naive streaming. Their resulting 19,730 states matched on the relevant
+objective, key, reservation and live-tensor columns. These are two execution
+strategies on one group; no general performance claim follows.
+
+An opt-in keyed fast path counts matching pairs without materializing them,
+then calls the original Join only when their count is within the pair limit.
+It conservatively falls back for null keys, mismatched key dtypes, duplicate
+key columns or unsupported cases. For the same fixture, three alternating
+warmed trials yielded medians of 0.129 s original and 0.144 s streaming, with
+the same 19,730 states. End-to-end on the separately measured medium GLU, this
+reduced streaming Join from 16.28 s to 6.23 s versus 3.73 s original; 222
+objective/reservation rows and best EDP matched. Different timing runs are
+sensitive to shared-server load and are not statistical estimates.
+
+Five targeted tests cover count, nulls, incompatible types, no matches, and
+nonzero Pareto tolerance. Neither a global multi-worker memory budget nor GPU
+execution, architecture masks, or cross-architecture search reuse is
+implemented. For custom row filters the original unbounded join is used.
