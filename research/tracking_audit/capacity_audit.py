@@ -1,11 +1,13 @@
 """Time and strictly validate capacity-sweep search variants.
 
-usage: capacity_audit.py M,G,C CAP1,CAP2,... VARIANTS [--repeats N] [--no-warmup]
+usage: capacity_audit.py M,G,C CAP1,CAP2,... VARIANTS [--repeats N] [--jobs N] [--no-warmup]
                          [ABLATION=MEM[,MEM] ...]
 
   VARIANTS   comma-separated subset of indep,var,push (see common.py)
   CAPs       GlobalBuffer capacities in MiB; shared variants search once at the largest
   ABLATION   AF_ABL_SKIP_BIG_ENOUGH or AF_ABL_SKIP_PMAPPING_ONLY, applied to every search
+  --jobs     AccelForge worker processes (default 1 = serial, at most common.MAX_JOBS);
+             compare times only between runs with the same --jobs
 
 An untimed warm-up search runs first. Each repeat runs every variant in rotated order.
 Search time excludes validation. For
@@ -18,7 +20,6 @@ Exit status: 0 if every pick is valid, 2 if any pick is invalid.
 """
 import argparse
 import json
-import resource
 import statistics
 import sys
 import time
@@ -30,6 +31,7 @@ p.add_argument('shape')
 p.add_argument('caps')
 p.add_argument('variants')
 p.add_argument('--repeats', type=int, default=1)
+p.add_argument('--jobs', type=int, default=1)
 p.add_argument('--no-warmup', action='store_true',
                help='skip the untimed warm-up search (JIT compilation, caches)')
 p.add_argument('ablations', nargs='*')
@@ -40,6 +42,7 @@ variants = a.variants.split(',')
 if set(variants) - set(common.VARIANTS) or a.repeats < 1:
     raise SystemExit(f'variants must be from {common.VARIANTS}, repeats >= 1')
 ablations = common.parse_ablations(a.ablations)
+common.set_jobs(a.jobs)
 
 if not a.no_warmup:
     # The first search in a process pays numba compilation and cache warm-up, which
@@ -67,9 +70,10 @@ for r in range(a.repeats):
                              else {'cap_mib': cap, 'ok': False, 'error': 'no row fits'})
         print('RUN', json.dumps({'repeat': r, 'variant': v, 'seconds': times[v][-1], 'stats': stats,
                                  'picks': list(picks[v].values()),
-                                 'peak_rss_gb': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2**20}),
+                                 'main_peak_rss_gb': common.peak_rss_gb()['main']}),
               flush=True)
 
+common.shutdown_workers()
 median = {v: statistics.median(t) for v, t in times.items()}
 quality = {}
 for cap in caps:
@@ -83,8 +87,8 @@ for cap in caps:
         'suboptimal': [v for v in variants if picks[v][cap]['ok'] and best is not None
                        and picks[v][cap]['edp'] > best * (1 + 1e-6)],
     }
-summary = {'shape': shape, 'caps': caps, 'repeats': a.repeats, 'ablations': ablations,
-           'median_seconds': median, 'quality': quality}
+summary = {'shape': shape, 'caps': caps, 'repeats': a.repeats, 'jobs': a.jobs, 'ablations': ablations,
+           'median_seconds': median, 'quality': quality, 'peak_rss_gb': common.peak_rss_gb()}
 if 'indep' in median:
     summary['speedup_vs_indep'] = {v: median['indep'] / t for v, t in median.items()}
 print('SUMMARY', json.dumps(summary), flush=True)

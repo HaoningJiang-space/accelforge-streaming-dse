@@ -14,6 +14,7 @@ architecture with the exact target capacity and must reproduce the reported cost
 """
 import copy
 import os
+import resource
 import sys
 import time
 from pathlib import Path
@@ -35,22 +36,47 @@ SWITCHES = (
 ABLATIONS = ('AF_ABL_SKIP_BIG_ENOUGH', 'AF_ABL_SKIP_PMAPPING_ONLY')
 
 
-def forbid_child_processes():
-    """Keep the run inside one process so the RSS watchdog sees all of it."""
-    def hook(event, args):
-        if event in {'os.fork', 'os.forkpty', 'os.posix_spawn', 'subprocess.Popen'}:
-            raise RuntimeError('Child processes disabled: ' + event)
-    sys.addaudithook(hook)
-
-
-forbid_child_processes()
-import accelforge as af  # noqa: E402  (after the audit hook)
+import accelforge as af  # noqa: E402
 from accelforge.mapper.FFM.main import make_pmappings, join_pmappings  # noqa: E402
 from accelforge.model.main import evaluate_mapping  # noqa: E402
 
-af.set_n_parallel_jobs(1)
 EL = af.Metrics.ENERGY | af.Metrics.LATENCY
 RU = EL | af.Metrics.RESOURCE_USAGE
+MAX_JOBS = 16  # hard ceiling: the default (os.cpu_count() = 256) exhausted the shared server
+
+
+def set_jobs(n):
+    """Use n worker processes for AccelForge (1 = serial, no child processes at all).
+
+    Workers are loky processes in the caller's process group, so run_capped.sh counts
+    their memory and kills them together with the main process. With n == 1 an audit
+    hook forbids child processes, so a serial run really stays in one process.
+    """
+    if not 1 <= n <= MAX_JOBS:
+        raise ValueError(f'jobs must be in [1, {MAX_JOBS}], got {n}')
+    af.set_n_parallel_jobs(n)
+    if n == 1:
+        def hook(event, args):
+            if event in {'os.fork', 'os.forkpty', 'os.posix_spawn', 'subprocess.Popen'}:
+                raise RuntimeError('Child processes disabled: ' + event)
+        sys.addaudithook(hook)
+
+
+def shutdown_workers():
+    """Stop the reusable loky worker pool so no idle workers outlive the run."""
+    from joblib.externals.loky import get_reusable_executor
+    get_reusable_executor().shutdown(wait=True)
+
+
+def peak_rss_gb():
+    """Peak RSS of this process and of its largest finished child, in GB.
+
+    Children count only once reaped, so call after shutdown_workers(). The total for the
+    whole process group is in the run_capped.sh watchdog line.
+    """
+    self_kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    child_kb = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+    return {'main': self_kb / 2**20, 'largest_worker': child_kb / 2**20}
 
 
 def clear_switches():

@@ -20,9 +20,11 @@ All are environment variables holding comma-separated memory names. Unknown name
 - `common.py`: spec construction, the three search variants (`indep`, `var`, `push`), switch
   hygiene (every switch is cleared before each search), and `check_pick`, which re-evaluates a
   picked mapping at its exact capacity and requires energy and latency to match within 1e-6.
-- `capacity_audit.py M,G,C CAPS VARIANTS [--repeats N] [ABLATION=MEMS ...]`: times the variants,
-  strictly validates every pick, and prints a `SUMMARY` with speedups and per-capacity quality.
-  Exits 2 if any pick is invalid.
+- `capacity_audit.py M,G,C CAPS VARIANTS [--repeats N] [--jobs N] [ABLATION=MEMS ...]`: times the
+  variants, strictly validates every pick, and prints a `SUMMARY` with speedups and per-capacity
+  quality. Exits 2 if any pick is invalid. `--jobs` (at most 16) sets AccelForge worker processes;
+  workers share the process group, so `run_capped.sh` counts and kills them with the main process.
+  Compare times only between runs with the same `--jobs`.
 - `run_capped.sh CAP_GB TIMEOUT_S LOG -- cmd`: runs a command in its own process group under an
   RSS and time cap, and exits with the command's status (137 if the watchdog killed it).
 - `legacy_p0/`: earlier join profiling and GPU Pareto scripts (upstream `04cf894e`, reference only).
