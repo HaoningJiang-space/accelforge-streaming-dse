@@ -1,12 +1,14 @@
 """Time and strictly validate capacity-sweep search variants.
 
-usage: capacity_audit.py M,G,C CAP1,CAP2,... VARIANTS [--repeats N] [ABLATION=MEM[,MEM] ...]
+usage: capacity_audit.py M,G,C CAP1,CAP2,... VARIANTS [--repeats N] [--no-warmup]
+                         [ABLATION=MEM[,MEM] ...]
 
   VARIANTS   comma-separated subset of indep,var,push (see common.py)
   CAPs       GlobalBuffer capacities in MiB; shared variants search once at the largest
   ABLATION   AF_ABL_SKIP_BIG_ENOUGH or AF_ABL_SKIP_PMAPPING_ONLY, applied to every search
 
-Each repeat runs every variant in rotated order. Search time excludes validation. For
+An untimed warm-up search runs first. Each repeat runs every variant in rotated order.
+Search time excludes validation. For
 every capacity, the best-EDP pick is re-evaluated at that exact capacity (common.check_pick).
 
 Output: one `RUN` JSON line per variant and repeat, then one `SUMMARY` line with median
@@ -28,6 +30,8 @@ p.add_argument('shape')
 p.add_argument('caps')
 p.add_argument('variants')
 p.add_argument('--repeats', type=int, default=1)
+p.add_argument('--no-warmup', action='store_true',
+               help='skip the untimed warm-up search (JIT compilation, caches)')
 p.add_argument('ablations', nargs='*')
 a = p.parse_args()
 shape = [int(x) for x in a.shape.split(',')]
@@ -36,6 +40,15 @@ variants = a.variants.split(',')
 if set(variants) - set(common.VARIANTS) or a.repeats < 1:
     raise SystemExit(f'variants must be from {common.VARIANTS}, repeats >= 1')
 ablations = common.parse_ablations(a.ablations)
+
+if not a.no_warmup:
+    # The first search in a process pays numba compilation and cache warm-up, which
+    # would otherwise be charged to whichever variant runs first.
+    t0 = time.perf_counter()
+    common.search(common.build(shape, max(caps), common.RU),
+                  {'AF_GENERATION_VARIABLE_RESOURCES': 'GlobalBuffer'},
+                  {'AF_VARIABLE_RESOURCES': 'GlobalBuffer'}, ablations=ablations)
+    print('WARMUP', json.dumps({'seconds': time.perf_counter() - t0}), flush=True)
 
 times = {v: [] for v in variants}
 picks = {v: {} for v in variants}  # variant -> cap -> check record (last repeat)
