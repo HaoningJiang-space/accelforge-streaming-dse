@@ -392,6 +392,7 @@ class PmappingDataframe:
         _pmapping_row_filter_function: Callable[[pd.Series], bool] | None = None,
         _streaming_disabled: bool = False,
         _streaming_matched_pairs: int | None = None,
+        _prepared_join_plan: dict | None = None,
     ) -> "PmappingDataframe":
         """
            A  B            A2
@@ -444,6 +445,100 @@ class PmappingDataframe:
                 ignored_resources, drop_valid_reservations, pair_limit, key_plan,
             )
 
+        plan = _prepared_join_plan
+        if plan is None:
+            plan = self._prepare_join_plan(
+                right, shared_loop_index, live_tensors, still_live_reservations,
+                compatibility_left, compatibility_right, compatibility_joined,
+            )
+        shared_tensors = plan["shared_tensors"]
+        left_match, right_match = plan["left_match"], plan["right_match"]
+        make_empty_result = plan["make_empty_result"]
+        max_nloops, min_nloops = plan["max_nloops"], plan["min_nloops"]
+
+        sd, rd = self.data, right.data
+        if make_empty_result:
+            sd = sd.iloc[0:0]
+            rd = rd.iloc[0:0]
+
+        if left_match:
+            df = pd.merge(
+                sd,
+                rd,
+                how="inner",
+                left_on=left_match,
+                right_on=right_match,
+                suffixes=["", "_RIGHT_MERGE"],
+            )
+        else:
+            df = pd.merge(sd, rd, how="cross", suffixes=["", "_RIGHT_MERGE"])
+
+        # Drop all fused loop columns that are not used anymore
+        remaining_symbols = plan["remaining_symbols"]
+        dropcols = [
+            c for c in df.columns if is_fused_loop_col(c) and c not in remaining_symbols
+        ]
+        df = df.drop(columns=dropcols)
+
+        # Number of combinations
+        n_total_pmappings = self.n_total_pmappings * right.n_total_pmappings
+        n_valid_pmappings = self.n_valid_pmappings * right.n_valid_pmappings
+        scale_by = len(df) / max(1, len(self.data) * len(right.data))
+        n_total_pmappings *= scale_by
+        n_valid_pmappings *= scale_by
+
+        schema = tuple(df.columns)
+        if plan["column_schema"] != schema:
+            operations, dropcols = self._prepare_column_operations(
+                right, df, max_nloops, min_nloops
+            )
+            plan["column_schema"] = schema
+            plan["column_operations"] = operations
+            plan["right_dropcols"] = dropcols
+        for target, source in plan["column_operations"]:
+            add_to_col(df, target, source)
+        df = df.drop(columns=plan["right_dropcols"])
+        result = PmappingDataframe(
+            df,
+            skip_pareto=True,
+            check_above_subset_below=False,
+            n_total_pmappings=n_total_pmappings,
+            n_valid_pmappings=n_valid_pmappings,
+        )
+        # Remove tensors that were allocated in both branches and got added
+        # together.
+        shared_to_free = plan["shared_to_free"]
+        live_to_alloc = plan["live_to_alloc"]
+        result.adjust_reservations(
+            alloc=live_to_alloc,
+            free=list(itertools.chain(shared_to_free, duplicated_aliased_tensors)),
+            ignored_resources=ignored_resources,
+        )
+
+        if CHECK_CORRECTNESS:
+            result.check_above_subset_below(live_tensors)
+            result.check_reservations(live_tensors)
+
+        result.free_to_loop_index(next_shared_loop_index, live_tensors=live_tensors)
+        if not CHECK_CORRECTNESS:
+            result.limit_capacity(
+                next_shared_loop_index,
+                drop_valid_reservations,
+                ignored_resources=ignored_resources,
+            )
+        result.max_right_to_left()
+        if _pmapping_row_filter_function is not None:
+            result = result.filter_rows(_pmapping_row_filter_function)
+        result.make_pareto()
+        result._check_reservations()
+
+        return result
+
+    def _prepare_join_plan(
+        self, right, shared_loop_index, live_tensors, still_live_reservations,
+        compatibility_left, compatibility_right, compatibility_joined,
+    ):
+        """Prepare compatibility and reservation structure once per group pair."""
         self._check_reservations()
         right._check_reservations()
         self.free_to_loop_index(shared_loop_index, live_tensors=live_tensors)
@@ -499,142 +594,58 @@ class PmappingDataframe:
         )
         min_nloops = min(self.get_min_loop_index(), right.get_min_loop_index())
 
-        sd, rd = self.data, right.data
-        if make_empty_result:
-            sd = sd.iloc[0:0]
-            rd = rd.iloc[0:0]
+        return {
+            "shared_tensors": shared_tensors,
+            "left_match": left_match,
+            "right_match": right_match,
+            "make_empty_result": make_empty_result,
+            "max_nloops": max_nloops,
+            "min_nloops": min_nloops,
+            "remaining_symbols": compatibility_joined.symbols(),
+            "shared_to_free": [s for s in shared_tensors if s.above_loop_index <= shared_loop_index],
+            "live_to_alloc": [s for s in still_live_reservations if s.above_loop_index > shared_loop_index],
+            "column_schema": None,
+            "column_operations": None,
+            "right_dropcols": None,
+        }
 
-        if left_match:
-            df = pd.merge(
-                sd,
-                rd,
-                how="inner",
-                left_on=left_match,
-                right_on=right_match,
-                suffixes=["", "_RIGHT_MERGE"],
-            )
-        else:
-            df = pd.merge(sd, rd, how="cross", suffixes=["", "_RIGHT_MERGE"])
-
-        # Drop all fused loop columns that are not used anymore
-        remaining_symbols = compatibility_joined.symbols()
-        dropcols = [
-            c for c in df.columns if is_fused_loop_col(c) and c not in remaining_symbols
-        ]
-        df = df.drop(columns=dropcols)
-
-        # Number of combinations
-        n_total_pmappings = self.n_total_pmappings * right.n_total_pmappings
-        n_valid_pmappings = self.n_valid_pmappings * right.n_valid_pmappings
-        scale_by = len(df) / max(1, len(self.data) * len(right.data))
-        n_total_pmappings *= scale_by
-        n_valid_pmappings *= scale_by
-
-        # Make sure everything is done in increasing loop order so we don't have
-        # read-after-write hazards
+    def _prepare_column_operations(self, right, df, max_nloops, min_nloops):
+        """Compile the existing reservation and cost-column operations."""
+        operations = []
         for nloops in range(max_nloops, min_nloops - 1, -1):
-
-            def iter_reservations(reservations_dict):
-                for resource in reservations_dict:
-                    if nloops in reservations_dict[resource]:
-                        yield resource
-
-            # For the RIGHT tree, RIGHT reservations: If there is no matching node in the left
-            # tree, add the above-this-level reservation from the left tree. If there is a matching
-            # node in the left tree, then we'll add this node to it in the next step.
-            for resource in iter_reservations(right.right_reservations):
-                if (
-                    source := self.get_reservation_or_parent(resource, nloops - 1)
-                ) is None:
+            for resource, levels in right.right_reservations.items():
+                if nloops not in levels:
                     continue
+                source = self.get_reservation_or_parent(resource, nloops - 1)
                 target = nameloop2col(resource, nloops)
-                # If there's a merged version column, then it's in both trees
-                if target + "_RIGHT_MERGE" in df:
+                if source is not None and target + "_RIGHT_MERGE" not in df:
+                    operations.append((target, source))
+            for resource, levels in self.left_reservations.items():
+                if nloops not in levels:
                     continue
-                add_to_col(df, target, source)
-            # For LEFT tree, LEFT reservations: Add the immediately-above
-            # reservation from the right tree.
-            for resource in iter_reservations(self.left_reservations):
-                if (
-                    source := right.get_reservation_or_parent(resource, nloops - 1)
-                ) is None:
-                    continue
-                right_merge_source = source + "_RIGHT_MERGE"
-                target = nameloop2col(resource, nloops, left=True)
+                source = right.get_reservation_or_parent(resource, nloops - 1)
                 if source is not None:
-                    add_to_col(
-                        df,
-                        target,
-                        right_merge_source if right_merge_source in df else source,
-                    )
-            # For LEFT tree, RIGHT reservations: Add the same-level reservation from
-            # the right tree. This will double-count reservations that are in both branches,
-            # so we remove them later.
-            for resource in iter_reservations(self.right_reservations):
-                if (
-                    source := right.get_reservation_or_parent(resource, nloops)
-                ) is None:
+                    merged = source + "_RIGHT_MERGE"
+                    operations.append((nameloop2col(resource, nloops, left=True),
+                                       merged if merged in df else source))
+            for resource, levels in self.right_reservations.items():
+                if nloops not in levels:
                     continue
-                right_merge_source = source + "_RIGHT_MERGE"
-                target = nameloop2col(resource, nloops)
+                source = right.get_reservation_or_parent(resource, nloops)
                 if source is not None:
-                    add_to_col(
-                        df,
-                        target,
-                        right_merge_source if right_merge_source in df else source,
-                    )
-
-        # For everything else: Simple add
+                    merged = source + "_RIGHT_MERGE"
+                    operations.append((nameloop2col(resource, nloops),
+                                       merged if merged in df else source))
         dropcols = [c for c in df.columns if c.endswith("_RIGHT_MERGE")]
         for source in dropcols:
-            target = source[: -len("_RIGHT_MERGE")]
+            target = source[:-len("_RIGHT_MERGE")]
             if is_tensor_col(target):
                 continue
             if not col_used_in_pareto(target):
                 raise ValueError(f"{target} is not used in pareto")
             if col2nameloop(target) is None:
-                add_to_col(df, target, source)
-
-        df = df.drop(columns=dropcols)
-        result = PmappingDataframe(
-            df,
-            skip_pareto=True,
-            check_above_subset_below=False,
-            n_total_pmappings=n_total_pmappings,
-            n_valid_pmappings=n_valid_pmappings,
-        )
-        # Remove tensors that were allocated in both branches and got added
-        # together.
-        shared_to_free = [
-            s for s in shared_tensors if s.above_loop_index <= shared_loop_index
-        ]
-        live_to_alloc = [
-            s for s in still_live_reservations if s.above_loop_index > shared_loop_index
-        ]
-        result.adjust_reservations(
-            alloc=live_to_alloc,
-            free=list(itertools.chain(shared_to_free, duplicated_aliased_tensors)),
-            ignored_resources=ignored_resources,
-        )
-
-        if CHECK_CORRECTNESS:
-            result.check_above_subset_below(live_tensors)
-            result.check_reservations(live_tensors)
-
-        result.free_to_loop_index(next_shared_loop_index, live_tensors=live_tensors)
-        if not CHECK_CORRECTNESS:
-            result.limit_capacity(
-                next_shared_loop_index,
-                drop_valid_reservations,
-                ignored_resources=ignored_resources,
-            )
-        result.max_right_to_left()
-        if _pmapping_row_filter_function is not None:
-            result = result.filter_rows(_pmapping_row_filter_function)
-        result.make_pareto()
-        result._check_reservations()
-
-        return result
+                operations.append((target, source))
+        return operations, dropcols
 
     def _matching_pair_count(self, right, compatibility_left, compatibility_right, limit):
         plan = self._matching_pair_plan(right, compatibility_left, compatibility_right)
@@ -715,10 +726,10 @@ class PmappingDataframe:
         drop_valid_reservations, pair_limit, key_plan=None,
     ):
         """Bound matched pairs per task; the accumulated frontier can grow."""
-        self._check_reservations()
-        right._check_reservations()
-        self.free_to_loop_index(shared_loop_index, live_tensors=live_tensors)
-        self.shift_bottom_reservation_left(shared_loop_index)
+        prepared_plan = self._prepare_join_plan(
+            right, shared_loop_index, live_tensors, still_live_reservations,
+            compatibility_left, compatibility_right, compatibility_joined,
+        )
         left_n, right_n = len(self.data), len(right.data)
         left_step = min(left_n, max(1, math.isqrt(pair_limit)))
         right_step = max(1, pair_limit // left_step)
@@ -787,6 +798,7 @@ class PmappingDataframe:
                 compatibility_left, compatibility_right, compatibility_joined,
                 ignored_resources, drop_valid_reservations=drop_valid_reservations,
                 _streaming_disabled=True, _streaming_matched_pairs=matched_pairs,
+                _prepared_join_plan=prepared_plan,
             )
             # Bound buffered local frontiers by the pair limit and at most
             # eight blocks. The accumulated global frontier remains unbounded.
