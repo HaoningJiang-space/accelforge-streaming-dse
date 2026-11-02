@@ -30,10 +30,11 @@ spec = af.Spec.from_yaml(root / 'examples/arches/tpu_v4i.yaml', root / 'research
                          jinja_parse_data=dict(zip(('M', 'G', 'C'), shape)))
 spec.arch.find('GlobalBuffer').size = 0.5 * 1024 * 1024 * 8
 spec.mapper.ffm.metrics = metrics
+spec.mapper.ffm.max_pmapping_templates_per_einsum = int(os.environ.get('COMPARE_MAX_TEMPLATES', '1'))
 start = time.perf_counter()
 pm = make_pmappings(spec, print_number_of_pmappings=False)
 make_s = time.perf_counter() - start
-print('GENERATED', json.dumps({'shape': shape, 'make_s': make_s, 'peak_rss_kib': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}), flush=True)
+print('GENERATED', json.dumps({'shape': shape, 'max_templates_per_einsum': spec.mapper.ffm.max_pmapping_templates_per_einsum, 'make_s': make_s, 'peak_rss_kib': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}), flush=True)
 
 original = PmappingDataframe.merge_next
 counts = {'chunks': 0, 'max_chunk_product': 0}
