@@ -56,8 +56,13 @@ def run(limit):
 baseline, baseline_s = run(0)
 print('BASELINE', json.dumps({'join_s': baseline_s, 'n': len(baseline), 'peak_rss_kib': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}), flush=True)
 streamed, streaming_s = run(pair_limit)
-columns = sorted(c for c in baseline.columns if c.startswith('Total<SEP>') and c != 'Total<SEP>mapping')
-assert columns and columns == sorted(c for c in streamed.columns if c.startswith('Total<SEP>') and c != 'Total<SEP>mapping'), columns
+def comparison_columns(data):
+    return sorted(c for c in data.columns if c.startswith('reservation<SEP>') or (c.startswith('Total<SEP>') and c != 'Total<SEP>mapping'))
+
+columns = comparison_columns(baseline)
+assert columns and columns == comparison_columns(streamed), columns
+if metrics & af.Metrics.RESOURCE_USAGE:
+    assert any(c.startswith('reservation<SEP>') for c in columns), columns
 assert len(baseline) == len(streamed), (len(baseline), len(streamed))
 a = baseline[columns].sort_values(columns).to_numpy(dtype=float)
 b = streamed[columns].sort_values(columns).to_numpy(dtype=float)
