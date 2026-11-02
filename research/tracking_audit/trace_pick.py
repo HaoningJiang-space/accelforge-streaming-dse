@@ -5,7 +5,8 @@ usage: trace_pick.py M,G,C CAP VARIANT [--jobs N] [--eval-cap MIB] [ABLATION=MEM
 Runs VARIANT (indep searches only at CAP; var/push search at --eval-cap, default 4 MiB, and
 filter to CAP), takes the best-EDP row that fits CAP, and prints:
   ROW       every non-callable column of that row
-  MAPPING   the reconstructed mapping (str)
+  PMAPPING  each Einsum's pmapping as rebuilt from the row (row2pmappings), as a skeleton
+  MAPPING   the merged mapping (Mapping._from_pmappings), as a skeleton
   EVAL      re-evaluation of the mapping at --eval-cap with RESOURCE_USAGE and ACTIONS,
             i.e. with enough capacity to succeed, listing all Total, reservation and
             energy columns
@@ -17,6 +18,7 @@ import copy
 import json
 
 import common
+from accelforge.mapper.FFM._join_pmappings.pmapping_dataframe import row2pmappings
 
 p = argparse.ArgumentParser()
 p.add_argument('shape')
@@ -45,8 +47,13 @@ def plain(v):
 
 
 print('ROW', json.dumps({c: plain(row[c]) for c in row.index if not callable(row[c])}), flush=True)
-mapping = row['Total<SEP>mapping']()
-print('MAPPING', json.dumps(str(mapping)), flush=True)
+# The two reconstruction stages: per-Einsum pmappings from the row, then their merge.
+from_row = row['Total<SEP>mapping']
+for name, pm in zip(from_row.einsum_names,
+                    row2pmappings(from_row.row, from_row.einsum_names, from_row.rank_variable_bounds)):
+    print('PMAPPING', json.dumps({'einsum': name, 'skeleton': common.skeleton(pm)}), flush=True)
+mapping = from_row()
+print('MAPPING', json.dumps(common.skeleton(mapping)), flush=True)
 
 metrics = common.RU | common.af.Metrics.ACTIONS
 spec = common.build(shape, a.eval_cap, metrics)

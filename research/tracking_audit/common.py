@@ -174,6 +174,34 @@ def check_pick(shape, cap_mib, row, rel_tol=1e-6):
     return rec
 
 
+def skeleton(obj):
+    """str(obj) without the bulky component objects and modeling logs, one node per line."""
+    s = str(obj)
+    for key in ('component_object=', 'component_modeling_log='):
+        out, i = [], 0
+        while (j := s.find(key, i)) >= 0:
+            out.append(s[i:j])
+            k, depth = j + len(key), 0
+            while k < len(s):  # skip the value up to its matching close or a top-level comma
+                c = s[k]
+                if c in '([{':
+                    depth += 1
+                elif c in ')]}':
+                    if depth == 0:
+                        break
+                    depth -= 1
+                    if depth == 0:
+                        k += 1
+                        break
+                elif c == ',' and depth == 0:
+                    break
+                k += 1
+            i = k
+        out.append(s[i:])
+        s = ''.join(out)
+    return ' '.join(s.split()).replace('), ', '),\n').replace('nodes=[', 'nodes=[\n')
+
+
 def parse_ablations(args):
     """Parse NAME=MEMORIES pairs (NAME from ABLATIONS) from the command line."""
     out = {}
