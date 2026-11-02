@@ -119,8 +119,12 @@ def gpu_run():
 def verify(reference, arrays):
     for name, arr in zip(names, arrays):
         assert arr is not None and name in reference
-        np.testing.assert_allclose(reference[name].to_numpy(dtype=float), arr.astype(float),
-                                   rtol=1e-12, atol=1e-20, equal_nan=True, err_msg=name)
+        expected = reference[name].to_numpy()
+        if expected.dtype.kind in 'biu' and arr.dtype.kind in 'biu':
+            np.testing.assert_array_equal(expected, arr, err_msg=name)
+        else:
+            np.testing.assert_allclose(expected.astype(float), arr.astype(float),
+                                       rtol=1e-12, atol=1e-20, equal_nan=True, err_msg=name)
 
 # Record post-context available memory; context and libraries may allocate GPU
 # memory outside CuPy's pool limit. All times include per-run copies.
