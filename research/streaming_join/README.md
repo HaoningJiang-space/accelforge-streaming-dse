@@ -52,3 +52,13 @@ needs broader validation. The isolated server dependency directory uses
 `numpy==2.2.6`, `scipy==1.15.3`, and `paretoset==1.2.5` with the existing
 `graph-dse` Python environment; `ACCELFORGE_CONFIG_PATH` points into the
 experiment directory.
+
+A separate-process test with M=64, G=128, C=256, one template per Einsum,
+RESOURCE_USAGE, pair limit 65,536, fixed `PYTHONHASHSEED=0`, one thread, and the
+same 4 GiB address-space limit returned 222 equal objective/reservation rows
+(rtol=1e-12, atol=1e-20) and equal best EDP of 4.112123481360056e-11 J s.
+The original Join took 3.73 s and peaked at 403,748 KiB RSS; streaming took
+25.11 s and peaked at 385,504 KiB. Each process includes candidate generation
+in its peak. This single run gives no robust speed or memory estimate: the
+streaming version is substantially slower here and has not yet met the goal.
+The separate JSON files include the entire compared numeric frontiers.
