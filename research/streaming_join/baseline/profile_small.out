@@ -1,0 +1,101 @@
+RESULT {"shape": [128, 256, 512], "glb_mib": 0.5, "bw_scale": 1, "jobs": 1, "make_s": 35.078221034258604, "join_profiled_s": 6.8949743416160345, "peak_rss_kib": 360224, "n": 1, "best_edp": 8.270975609994956e-10}
+
+PROFILE SORTED BY cumulative
+         9429758 function calls (9244419 primitive calls) in 6.878 seconds
+
+   Ordered by: cumulative time
+   List reduced from 1475 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.003    0.003    6.895    6.895 main.py:230(join_pmappings)
+        1    0.000    0.000    6.892    6.892 join_pmappings.py:551(clean_compress_and_join_pmappings)
+        1    0.001    0.001    6.519    6.519 join_pmappings.py:467(multi_strategy_join)
+        1    0.008    0.008    6.518    6.518 join_pmappings.py:380(join_strategy_2)
+    27/23    0.005    0.000    5.355    0.233 parallel.py:120(parallel)
+        3    0.006    0.002    5.009    1.670 join_pmappings.py:734(join_pmappings)
+      212    0.027    0.000    3.324    0.016 pmapping_dataframe.py:516(merge_next)
+      605    0.006    0.000    1.633    0.003 pmapping_dataframe.py:1088(make_pareto)
+      605    0.043    0.000    1.550    0.003 pareto.py:220(makepareto)
+    18282    0.071    0.000    1.497    0.000 frame.py:4283(__getitem__)
+        3    0.001    0.000    1.126    0.375 join_pmappings.py:279(prune_with_tolerance)
+      366    0.001    0.000    1.121    0.003 join_pmappings.py:299(prune)
+      574    0.005    0.000    1.069    0.002 pmapping_dataframe.py:1157(filter_rows)
+      776    0.008    0.000    0.810    0.001 concat.py:162(concat)
+      820    0.010    0.000    0.743    0.001 pmapping_dataframe.py:313(free_to_loop_index)
+       21    0.000    0.000    0.697    0.033 pmapping_group.py:328(combine_combineable)
+     3804    0.032    0.000    0.671    0.000 managers.py:817(reindex_indexer)
+      330    0.019    0.000    0.633    0.002 join_pmappings.py:202(__call__)
+      776    0.008    0.000    0.604    0.001 concat.py:574(_get_result)
+     1488    0.004    0.000    0.588    0.000 frame.py:6806(drop)
+     5851    0.034    0.000    0.580    0.000 base.py:3831(get_indexer)
+     1488    0.006    0.000    0.580    0.000 generic.py:4688(drop)
+      976    0.007    0.000    0.579    0.001 df_convention.py:351(add_to_col)
+    10406    0.078    0.000    0.578    0.000 series.py:360(__init__)
+     1488    0.012    0.000    0.571    0.000 generic.py:4729(_drop_axis)
+       24    0.001    0.000    0.570    0.024 pmapping_group.py:207(concat)
+    21554    0.101    0.000    0.525    0.000 managers.py:904(_slice_take_blocks_ax0)
+      537    0.006    0.000    0.514    0.001 df_convention.py:346(max_to_col)
+1789470/1765600    0.334    0.000    0.513    0.000 {built-in method builtins.isinstance}
+     8128    0.071    0.000    0.501    0.000 base.py:484(__new__)
+      216    0.001    0.000    0.495    0.002 merge.py:151(merge)
+     4248    0.008    0.000    0.481    0.000 base.py:6477(get_indexer_for)
+      216    0.003    0.000    0.453    0.002 merge.py:1130(get_result)
+       24    0.001    0.000    0.446    0.019 pmapping_dataframe.py:935(concat)
+     1464    0.012    0.000    0.436    0.000 base.py:6539(_get_indexer_strict)
+    16630    0.043    0.000    0.418    0.000 frame.py:4239(_ixs)
+      216    0.005    0.000    0.409    0.002 merge.py:1076(_reindex_and_concat)
+    14843    0.015    0.000    0.398    0.000 frame.py:4978(_get_item)
+     6891    0.013    0.000    0.387    0.000 generic.py:6800(copy)
+    10156    0.027    0.000    0.387    0.000 managers.py:743(copy)
+
+
+
+PROFILE SORTED BY tottime
+         9429758 function calls (9244419 primitive calls) in 6.878 seconds
+
+   Ordered by: internal time
+   List reduced from 1475 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+1789470/1765600    0.334    0.000    0.513    0.000 {built-in method builtins.isinstance}
+    18263    0.248    0.000    0.257    0.000 blocks.py:311(getitem_block_columns)
+    13577    0.136    0.000    0.349    0.000 construction.py:580(sanitize_array)
+517085/367429    0.114    0.000    0.158    0.000 {built-in method builtins.len}
+    99803    0.111    0.000    0.237    0.000 df_convention.py:37(wrapper)
+   164662    0.111    0.000    0.134    0.000 _mixins.py:385(__getitem__)
+    21554    0.101    0.000    0.525    0.000 managers.py:904(_slice_take_blocks_ax0)
+    40281    0.097    0.000    0.118    0.000 generic.py:6359(__finalize__)
+    17947    0.092    0.000    0.214    0.000 managers.py:1241(iget)
+   105336    0.092    0.000    0.185    0.000 _frozenset.py:22(__new__)
+    45258    0.090    0.000    0.090    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+   220690    0.079    0.000    0.176    0.000 generic.py:45(_instancecheck)
+    10406    0.078    0.000    0.578    0.000 series.py:360(__init__)
+    40828    0.074    0.000    0.096    0.000 generic.py:264(__init__)
+     8128    0.071    0.000    0.501    0.000 base.py:484(__new__)
+    18282    0.071    0.000    1.497    0.000 frame.py:4283(__getitem__)
+   220690    0.066    0.000    0.094    0.000 generic.py:40(_check)
+    11586    0.063    0.000    0.266    0.000 managers.py:410(apply)
+   398885    0.062    0.000    0.063    0.000 {built-in method builtins.getattr}
+    42867    0.061    0.000    0.138    0.000 range.py:662(_view)
+   212702    0.057    0.000    0.122    0.000 {built-in method __new__ of type object at 0x55878a217980}
+    50342    0.056    0.000    0.082    0.000 base.py:3771(get_loc)
+     9909    0.054    0.000    0.115    0.000 take.py:130(_take_nd_ndarray)
+   164456    0.053    0.000    0.165    0.000 base.py:584(__iter__)
+    48554    0.052    0.000    0.085    0.000 range.py:250(_simple_new)
+    24192    0.049    0.000    0.070    0.000 base.py:657(_simple_new)
+      605    0.043    0.000    1.550    0.003 pareto.py:220(makepareto)
+    16630    0.043    0.000    0.418    0.000 frame.py:4239(_ixs)
+    29862    0.043    0.000    0.090    0.000 common.py:1762(_is_dtype_type)
+    48941    0.042    0.000    0.213    0.000 base.py:1071(view)
+    39655    0.041    0.000    0.086    0.000 common.py:1831(pandas_dtype)
+    18264    0.038    0.000    0.144    0.000 generic.py:6436(__setattr__)
+    22566    0.037    0.000    0.052    0.000 blocks.py:655(copy)
+     4854    0.036    0.000    0.048    0.000 string_.py:764(_from_sequence)
+     5851    0.034    0.000    0.580    0.000 base.py:3831(get_indexer)
+     4155    0.034    0.000    0.043    0.000 base.py:3975(_get_indexer)
+     3804    0.032    0.000    0.671    0.000 managers.py:817(reindex_indexer)
+42815/40273    0.031    0.000    0.101    0.000 {built-in method builtins.all}
+    60827    0.031    0.000    0.047    0.000 inference.py:393(is_hashable)
+    29414    0.030    0.000    0.107    0.000 generic.py:300(_from_mgr)
+
+
