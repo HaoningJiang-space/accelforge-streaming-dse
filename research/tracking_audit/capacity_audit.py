@@ -15,7 +15,8 @@ every capacity, the best-EDP pick is re-evaluated at that exact capacity (common
 
 Output: one `RUN` JSON line per variant and repeat, then one `SUMMARY` line with median
 times, speedups over indep, per-capacity best EDP of each variant, the best valid EDP
-seen, and which variants were invalid or suboptimal.
+known at that capacity (any valid pick at a capacity <= it), and which variants were
+invalid or suboptimal against it.
 Exit status: 0 if every pick is valid, 2 if any pick is invalid.
 """
 import argparse
@@ -78,7 +79,9 @@ median = {v: statistics.median(t) for v, t in times.items()}
 quality = {}
 for cap in caps:
     edps = {v: picks[v][cap].get('edp') for v in variants}
-    valid = [picks[v][cap]['edp'] for v in variants if picks[v][cap]['ok']]
+    # A mapping valid at a smaller capacity is also valid here (same architecture otherwise),
+    # so the best known valid EDP takes every variant's valid picks at caps <= cap.
+    valid = [picks[v][c]['edp'] for v in variants for c in caps if c <= cap and picks[v][c]['ok']]
     best = min(valid) if valid else None
     quality[str(cap)] = {
         'edp': edps,

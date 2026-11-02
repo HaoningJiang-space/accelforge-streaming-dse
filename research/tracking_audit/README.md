@@ -80,3 +80,9 @@ So the invalid 0.375 MiB pick is not specific to the shared search: plain indepe
 it as soon as LocalBuffer is tracked. var tracks every memory during generation and inherits it;
 push and default indep eliminate LocalBuffer and avoid it, but also lose the valid 1.8202e-8.
 Both effects involve LocalBuffer, the only memory with a spatial fanout (Z=4) and `min_usage: 1`.
+
+Serial, 2 repeats (medians; group peak 0.65 GB): indep 533 s, var 193 s (2.77x), push 143 s (3.72x).
+Quality is identical to the 8-worker run. Note that push is *not* equal to indep at 0.375 MiB:
+push finds a valid 1.8260e-8 against 1.8361e-8. Neither reaches 1.8202e-8, which var found valid
+at 0.25 MiB and which is therefore also valid at 0.375 MiB. `capacity_audit.py` now uses this
+capacity monotonicity for the best known valid EDP.
