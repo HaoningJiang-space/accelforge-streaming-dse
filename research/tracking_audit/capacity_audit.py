@@ -19,8 +19,11 @@ best valid EDP known at that capacity (any valid pick at a capacity <= it, since
 mapping that fits a smaller GlobalBuffer fits a larger one), and which variants were
 invalid in any repeat, suboptimal, or short of a spatial min_usage.
 
-Exit status: 0 if every pick of every repeat is valid and each variant's EDP is the same
-across repeats; 2 if any pick was invalid; 3 if only the repeat consistency failed.
+Exit status, most severe first: 2 if any pick was invalid (including a min_usage check
+that did not complete); 5 if any variant missed the best valid EDP known at some
+capacity; 3 if a variant's EDP differed across repeats; otherwise 0. A min_usage
+shortfall alone does not fail the run: FFM keeps the best attainable usage when no
+choice reaches the minimum.
 """
 import argparse
 import json
@@ -109,7 +112,9 @@ def run(a):
                'median_seconds': median, 'seconds': times, 'quality': quality}
     if 'indep' in median:
         summary['speedup_vs_indep'] = {v: median['indep'] / t for v, t in median.items()}
-    return summary, 2 if any_invalid else 0 if all_consistent else 3
+    any_suboptimal = any(q['suboptimal'] for q in quality.values())
+    summary['all_picks_best_known'] = not any_suboptimal
+    return summary, 2 if any_invalid else 5 if any_suboptimal else 0 if all_consistent else 3
 
 
 def main(argv=None):

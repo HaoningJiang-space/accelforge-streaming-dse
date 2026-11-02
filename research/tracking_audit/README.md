@@ -92,12 +92,12 @@ The SUMMARY separates:
 - `all_repeats_consistent`: each variant's EDP agrees across repeats (relative 1e-9).
 - `all_min_usage_checks_completed` and `all_min_usage_satisfied`: successful checking
   versus actual attainment of the requested utilization.
-- `quality.*.suboptimal`: a valid pick has worse EDP than another known valid pick
-  feasible at that capacity (relative 1e-6). Exit 0 alone does **not** prove equal
-  quality across variants; inspect this list too.
+- `quality.*.suboptimal` and `all_picks_best_known`: a valid pick has worse EDP than
+  another known valid pick feasible at that capacity (relative 1e-6).
 
-Exit codes: 0 for completed, valid, repeat-consistent picks; 2 for invalid picks or
-arguments; 3 for inconsistent repeats. Unexpected search errors propagate as failures,
+Exit codes, most severe first: 2 for invalid picks (including an incomplete usage check)
+or arguments; 5 if any variant is suboptimal; 3 for inconsistent repeats; otherwise 0.
+A min_usage shortfall alone is reported but does not fail the run. Unexpected search errors propagate as failures,
 and the capacity-audit worker pool is cleaned up on both success and exceptions.
 
 ## Regression tests

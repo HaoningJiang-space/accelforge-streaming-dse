@@ -63,3 +63,23 @@ def test_usage_check_error_sets_failing_exit_status():
         summary, status = capacity_audit.run(args)
     assert status == 2
     assert not summary['all_min_usage_checks_completed']
+
+
+def test_suboptimal_variant_sets_failing_exit_status():
+    args = capacity_audit.parse_args(['1,2,3', '1', 'indep,var', '--no-warmup'])
+    data = pd.DataFrame({'Total<SEP>energy': [1.], 'Total<SEP>latency': [1.]})
+    records = {'indep': {'ok': True, 'edp': 1., 'min_usage_shortfall': []},
+               'var': {'ok': True, 'edp': 2., 'min_usage_shortfall': []}}
+    current = []
+
+    def run_variant(v, *rest):
+        current.append(v)
+        return [(1., data, {})]
+
+    with patch.object(capacity_audit.common, 'run_variant', side_effect=run_variant), \
+         patch.object(capacity_audit.common, 'check_pick',
+                      side_effect=lambda *a: dict(records[current[-1]])):
+        summary, status = capacity_audit.run(args)
+    assert status == 5
+    assert not summary['all_picks_best_known']
+    assert summary['quality']['1.0']['suboptimal'] == ['var']
