@@ -218,7 +218,11 @@ def get_memories_to_track(
                 if mem.size == 0:
                     usage = 2  # FAIL
                 else:
-                    scale = mem.bits_per_value_scale[tensor] / mem.size
+                    # get_tensor_size returns elements, while memory size is
+                    # in bits. Apply the evaluated tensor bit width before the
+                    # per-memory scaling factor, as newer upstream versions do.
+                    bits_per_value = spec.workload.einsums[einsum].tensor_accesses[tensor].bits_per_value
+                    scale = mem.bits_per_value_scale[tensor] * bits_per_value / mem.size
                     usage += tensor_sizes[tensor] * scale
 
         if usage <= 1:

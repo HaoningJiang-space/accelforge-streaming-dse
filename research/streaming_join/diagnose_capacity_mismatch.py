@@ -91,7 +91,7 @@ for label, mapping, result in [('independent', independent_mapping, independent)
                 # Re-evaluate architecture at the tested capacity, not cached
                 # evaluated specs from another capacity.
                 evaluated = evaluate_mapping(local_spec)
-                cols = [c for c in evaluated.data.columns if c.startswith('Total<SEP>') or c.startswith('reservation<SEP>')]
+                cols = [c for c in evaluated.data.columns if (c.startswith('Total<SEP>') and c != 'Total<SEP>mapping') or c.startswith('reservation<SEP>')]
                 print('REEVALUATED',json.dumps({'label':label,'capacity_mib':cap,'metrics':metric_name,
                     'rows':len(evaluated.data),'columns':cols,
                     'values':evaluated.data[cols].astype(float).to_numpy().tolist()}),flush=True)
