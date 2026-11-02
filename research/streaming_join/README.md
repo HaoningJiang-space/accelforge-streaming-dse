@@ -139,3 +139,31 @@ and 321,340 KiB respectively; smaller candidate tables did not reduce total
 RSS in this case. DataFrame deep-byte estimates do not measure all temporary
 arrays, fragmentation, shared memory, or simultaneous allocations, so they do
 not establish a global memory budget or explain the original OOM.
+
+At the original M=512/G=1024/C=2048 tensor dimensions, 8 MiB GlobalBuffer,
+RESOURCE_USAGE, and **two templates per Einsum**, separate single-process runs
+on commit `35dd2ec2` produced 1,650 equal numeric frontier rows and the same
+best EDP, 3.4053741543105104e-7 J s. The original Join took 150.16 s with
+2,951,796 KiB peak RSS; the streaming Join took 135.18 s with 759,596 KiB peak
+RSS. These are one-off observations with a constrained Mapspace and an older
+tag, not the full original search, 15-configuration DSE, or a stable speedup.
+The process peak includes generation. The complete numeric frontiers are saved.
+
+An opt-in selective-resource experiment at M=64/G=128/C=256, one template,
+protecting GlobalBuffer and dropping fixed memories only after the existing
+sum-of-maxima proof, reduced the sampled shared result from 222 to 18 rows.
+All five tested capacity-filtered EDP values matched the full RESOURCE_USAGE
+shared search. However, at 0.03125 MiB, the independently searched EDP was
+4.112123481360056e-11 versus 4.7251909016893453e-11 for either shared search.
+The other four sampled capacities matched. This is a correctness discrepancy,
+not a validated cross-architecture reuse result. The initial script printed
+this mismatch without a failing exit code; a later revision fails on it. The
+cause is being investigated and the policy remains experimental and off by
+default. See `results/tag1_resource_selection.json`.
+
+The first prepared-JoinPlan revision was compared against the pre-change
+`383dcb84` on a real group: both unblocked and blocked paths agreed across
+19,730 rows and 21 join-relevant fields. Its complete medium GLU numeric
+frontier also matched the earlier reference (222 rows); a single streaming
+Join was 4.02 s versus 3.95 s before preparing the plan. This does not yet
+establish a speed improvement or a numeric/CUDA backend.
