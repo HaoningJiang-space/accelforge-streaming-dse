@@ -1530,10 +1530,18 @@ def _make_tile_shapes(job: "Job"):
         component_name,
         name,
     ), constraint in job.constraints.min_usage_constraints.items():
+        # The constraint bounds the spatial usage of this fanout dimension (run_model).
+        # This used the formula left over from the memory-usage loop above, i.e. some
+        # memory's usage, which changed with the set of tracked memories.
+        key = f"usage<SEP>spatial<SEP>{component_name}<SEP>{name}"
+        assert key in usage_df, (
+            f"min_usage constraint on {component_name} {name} has no usage column; "
+            f"have {sorted(usage_df)}"
+        )
         objectives.append(
             Objective(
                 name=f"min_usage_{component_name}_{name}",
-                formula=v,
+                formula=usage_df[key],
                 symbols=symbols,
                 only_care_if_valid=True,
                 min_value=constraint.min_usage,
