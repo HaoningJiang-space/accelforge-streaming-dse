@@ -210,3 +210,19 @@ independent run had no FFH pmappings under the two-template limit; these sizes
 remain unverified. This is a single fixed-bandwidth, single-process run and is
 not a 15-configuration or full-Mapspace performance result. See
 `tag1_fullshape_capacity_comparison.json` and the saved numeric frontiers.
+
+A same-process capacity-reuse benchmark at M=512/G=1024/C=2048, two templates
+per Einsum, fixed bandwidth, and capacities 2/4/8 MiB warmed both strategies,
+then alternated their order for three trials. Each trial regenerated and joined
+all three independent configurations or performed one selective-resource
+search at 8 MiB and filtered the result. The independent total median was
+16.38 s; the shared total median was 6.31 s (2.60x). All three capacity EDPs
+matched in every trial. Process peak RSS across the whole benchmark was 362,084
+KiB. These are three trials in one warmed process on one workload and one
+bandwidth; they do not cover 0.5/1 MiB, unrestricted Mapspace, bandwidth reuse,
+or all 15 configurations. See `tag1_capacity_reuse_benchmark.json`.
+
+The full-resource 8 MiB baseline was also repeated in a separate process at
+the same `d8d741d0` revision: 126.41 s and 109.79 s Join time, with matching
+1,650-row numeric frontiers and peak RSS around 2.81 GiB. The different times
+show shared-server variability.
