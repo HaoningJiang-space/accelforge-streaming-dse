@@ -28,7 +28,8 @@ if '--resource-usage' in sys.argv:
     metrics |= af.Metrics.RESOURCE_USAGE
 spec = af.Spec.from_yaml(root / 'examples/arches/tpu_v4i.yaml', root / 'research/streaming_join/glu_tag1.yaml',
                          jinja_parse_data=dict(zip(('M', 'G', 'C'), shape)))
-spec.arch.find('GlobalBuffer').size = 0.5 * 1024 * 1024 * 8
+glb_mib = float(os.environ.get('COMPARE_GLB_MIB', '0.5'))
+spec.arch.find('GlobalBuffer').size = glb_mib * 1024 * 1024 * 8
 spec.mapper.ffm.metrics = metrics
 spec.mapper.ffm.max_pmapping_templates_per_einsum = int(os.environ.get('COMPARE_MAX_TEMPLATES', '1'))
 start = time.perf_counter()
@@ -94,7 +95,7 @@ if mode in {'baseline', 'stream'}:
         assert counts['chunks'] and counts['max_chunk_product'] <= pair_limit, counts
     best = (data['Total<SEP>energy'] * data['Total<SEP>latency']).idxmin()
     assert data.loc[best, 'Total<SEP>mapping']() is not None
-    out = {'mode': mode, 'shape': shape, 'resource_usage': bool(metrics & af.Metrics.RESOURCE_USAGE),
+    out = {'mode': mode, 'shape': shape, 'glb_mib': glb_mib, 'resource_usage': bool(metrics & af.Metrics.RESOURCE_USAGE),
            'max_templates_per_einsum': spec.mapper.ffm.max_pmapping_templates_per_einsum,
            'pair_limit': pair_limit, 'make_s': make_s, 'join_s': elapsed,
            'peak_rss_kib': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
