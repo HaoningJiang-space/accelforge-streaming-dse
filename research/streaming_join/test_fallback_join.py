@@ -5,6 +5,7 @@ import os
 import pickle
 import unittest
 import weakref
+from pathlib import Path
 from unittest.mock import patch
 import pandas as pd
 import accelforge as af
@@ -16,7 +17,8 @@ af.set_n_parallel_jobs(1)
 
 class FallbackJoinTest(unittest.TestCase):
     def test_fallback_after_first_chunk(self):
-        with open(os.environ['CAPTURE_FILE'], 'rb') as f:
+        capture = os.environ.get('CAPTURE_FILE', Path(__file__).parent / 'fixtures/real_join_large_tag1.pkl')
+        with open(capture, 'rb') as f:
             inputs = pickle.load(f)
         def run():
             left, right, args, kwargs = copy.deepcopy(inputs)

@@ -1,5 +1,8 @@
 # AccelForge
 
+For this research branch's capacity-reuse experiments, current correctness limits
+and test commands, see the [research index](research/README.md).
+
 AccelForge is a framework to model and design tensor algebra accelerators. Key features
 include:
 

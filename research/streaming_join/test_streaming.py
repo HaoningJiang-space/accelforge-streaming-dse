@@ -3,29 +3,34 @@ import copy
 import inspect
 import os
 import pickle
-import sys
 import unittest
-
-
-def no_children(event, args):
-    if event in {'os.fork', 'os.forkpty', 'os.posix_spawn', 'subprocess.Popen'}:
-        raise RuntimeError('Child processes disabled: ' + event)
-
-
-sys.addaudithook(no_children)
+from pathlib import Path
 import accelforge as af
 from accelforge.mapper.FFM._join_pmappings.pmapping_dataframe import PmappingDataframe
 from accelforge.mapper.FFM._pareto_df import pareto
 
 
-af.set_n_parallel_jobs(1)
-with open(os.environ['CAPTURE_FILE'], 'rb') as f:
-    LEFT, RIGHT, ARGS, KWARGS = pickle.load(f)
-BOUND = inspect.signature(PmappingDataframe.merge_next).bind(LEFT, RIGHT, *ARGS, **KWARGS)
-BOUND.apply_defaults()
-CL, CR = BOUND.arguments['compatibility_left'], BOUND.arguments['compatibility_right']
 LEFT_KEY = 'fused_loop<SEP>FFU<SEP>initial<SEP>C<SEP>1'
 RIGHT_KEY = 'fused_loop<SEP>FFH<SEP>initial<SEP>C<SEP>1'
+
+
+def setUpModule():
+    # The checked-in capture is trusted. An override must also be trusted: pickle
+    # loading executes code. Do not install an irreversible process-wide audit hook
+    # while pytest imports this module; it disables subprocesses in unrelated tests.
+    global LEFT, RIGHT, ARGS, KWARGS, CL, CR, PREVIOUS_JOBS
+    PREVIOUS_JOBS = af.util.get_n_parallel_jobs()
+    af.set_n_parallel_jobs(1)
+    capture = os.environ.get('CAPTURE_FILE', Path(__file__).parent / 'fixtures/real_join_large_tag1.pkl')
+    with open(capture, 'rb') as f:
+        LEFT, RIGHT, ARGS, KWARGS = pickle.load(f)
+    bound = inspect.signature(PmappingDataframe.merge_next).bind(LEFT, RIGHT, *ARGS, **KWARGS)
+    bound.apply_defaults()
+    CL, CR = bound.arguments['compatibility_left'], bound.arguments['compatibility_right']
+
+
+def tearDownModule():
+    af.set_n_parallel_jobs(PREVIOUS_JOBS)
 
 
 class KeyCountTests(unittest.TestCase):

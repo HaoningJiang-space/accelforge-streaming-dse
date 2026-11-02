@@ -1,0 +1,475 @@
+{
+  "purpose": "Local correctness smoke test, not a performance benchmark or exhaustive coverage audit",
+  "source_state": "Review working tree over f141c4f8; CONFIG records dirty=true",
+  "environment": {
+    "python": "3.12.14",
+    "pandas": "3.1.0",
+    "numpy": "2.3.5",
+    "paretoset": "1.2.5",
+    "platform": "macOS"
+  },
+  "exit_code": 0,
+  "limitations": [
+    "One repeat without warmup; timings are not a speedup claim",
+    "Small shape deliberately underutilizes spatial arrays; shortfalls are reported separately from capacity/cost validity"
+  ],
+  "records": [
+    {
+      "kind": "CONFIG",
+      "data": {
+        "commit": "f141c4f8abec53ca26950e6ed6acf2d0990cf842",
+        "dirty": true,
+        "max_pmapping_templates_per_einsum": "inf",
+        "inherited_switches": [],
+        "args": {
+          "shape": [
+            4,
+            8,
+            16
+          ],
+          "caps": [
+            0.03125,
+            0.125
+          ],
+          "variants": [
+            "indep",
+            "push"
+          ],
+          "repeats": 1,
+          "jobs": 1,
+          "no_warmup": true,
+          "ablations": {}
+        }
+      }
+    },
+    {
+      "kind": "RUN",
+      "data": {
+        "repeat": 0,
+        "variant": "indep",
+        "seconds": 59.14013466599863,
+        "stats": [
+          {
+            "make_s": 37.57723062497098,
+            "join_s": 0.14725920907221735,
+            "rows_generated": 488,
+            "rows_front": 1
+          },
+          {
+            "make_s": 21.20889300003182,
+            "join_s": 0.1551867499947548,
+            "rows_generated": 488,
+            "rows_front": 1
+          }
+        ],
+        "picks": [
+          {
+            "cap_mib": 0.03125,
+            "edp": 1.1906192914835282e-15,
+            "energy": 6.579737829914216e-08,
+            "latency": 1.8095239084914283e-08,
+            "reevaluated": {
+              "energy": 6.5797376e-08,
+              "latency": 1.8095238095238096e-08,
+              "edp": 1.1906191847619048e-15,
+              "reservations": {
+                "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 5.7220458984375e-06,
+                "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+                "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.0078125,
+                "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+              }
+            },
+            "ok": true,
+            "min_usage_shortfall": [
+              {
+                "einsum": "FFG",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFG",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFU",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFU",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFH",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.0078125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFH",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0078125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFB",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFB",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.125,
+                "min_usage": 1.0
+              }
+            ]
+          },
+          {
+            "cap_mib": 0.125,
+            "edp": 1.1906192914835282e-15,
+            "energy": 6.579737829914216e-08,
+            "latency": 1.8095239084914283e-08,
+            "reevaluated": {
+              "energy": 6.5797376e-08,
+              "latency": 1.8095238095238096e-08,
+              "edp": 1.1906191847619048e-15,
+              "reservations": {
+                "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 5.7220458984375e-06,
+                "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+                "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.001953125,
+                "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+              }
+            },
+            "ok": true,
+            "min_usage_shortfall": [
+              {
+                "einsum": "FFG",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFG",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFU",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFU",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFH",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.0078125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFH",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0078125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFB",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFB",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.125,
+                "min_usage": 1.0
+              }
+            ]
+          }
+        ],
+        "main_peak_rss_gb": 0.31170654296875
+      }
+    },
+    {
+      "kind": "RUN",
+      "data": {
+        "repeat": 0,
+        "variant": "push",
+        "seconds": 25.22732095804531,
+        "stats": [
+          {
+            "make_s": 24.84319000004325,
+            "join_s": 0.33856508298777044,
+            "rows_generated": 494,
+            "rows_front": 5
+          }
+        ],
+        "picks": [
+          {
+            "cap_mib": 0.03125,
+            "edp": 1.1906192914835282e-15,
+            "energy": 6.579737829914216e-08,
+            "latency": 1.8095239084914283e-08,
+            "reported_gb_mib_fraction": 0.001953125,
+            "reevaluated": {
+              "energy": 6.5797376e-08,
+              "latency": 1.8095238095238096e-08,
+              "edp": 1.1906191847619048e-15,
+              "reservations": {
+                "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 5.7220458984375e-06,
+                "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+                "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.0078125,
+                "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+              }
+            },
+            "ok": true,
+            "min_usage_shortfall": [
+              {
+                "einsum": "FFG",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFG",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFU",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFU",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFH",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.0078125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFH",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0078125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFB",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFB",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.125,
+                "min_usage": 1.0
+              }
+            ]
+          },
+          {
+            "cap_mib": 0.125,
+            "edp": 1.1906192914835282e-15,
+            "energy": 6.579737829914216e-08,
+            "latency": 1.8095239084914283e-08,
+            "reported_gb_mib_fraction": 0.001953125,
+            "reevaluated": {
+              "energy": 6.5797376e-08,
+              "latency": 1.8095238095238096e-08,
+              "edp": 1.1906191847619048e-15,
+              "reservations": {
+                "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 5.7220458984375e-06,
+                "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+                "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.001953125,
+                "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+              }
+            },
+            "ok": true,
+            "min_usage_shortfall": [
+              {
+                "einsum": "FFG",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFG",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFU",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFU",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFH",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.0078125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFH",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.0078125,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFB",
+                "component": "ArrayFanout",
+                "dimension": "reuse_input",
+                "usage": 0.0625,
+                "min_usage": 1.0
+              },
+              {
+                "einsum": "FFB",
+                "component": "ArrayFanout",
+                "dimension": "reuse_output",
+                "usage": 0.125,
+                "min_usage": 1.0
+              }
+            ]
+          }
+        ],
+        "main_peak_rss_gb": 0.3159027099609375
+      }
+    },
+    {
+      "kind": "SUMMARY",
+      "data": {
+        "shape": [
+          4,
+          8,
+          16
+        ],
+        "caps": [
+          0.03125,
+          0.125
+        ],
+        "repeats": 1,
+        "jobs": 1,
+        "ablations": {},
+        "all_picks_valid": true,
+        "all_repeats_consistent": true,
+        "all_min_usage_checks_completed": true,
+        "all_min_usage_satisfied": false,
+        "median_seconds": {
+          "indep": 59.14013466599863,
+          "push": 25.22732095804531
+        },
+        "seconds": {
+          "indep": [
+            59.14013466599863
+          ],
+          "push": [
+            25.22732095804531
+          ]
+        },
+        "quality": {
+          "0.03125": {
+            "edp": {
+              "indep": 1.1906192914835282e-15,
+              "push": 1.1906192914835282e-15
+            },
+            "consistent_across_repeats": {
+              "indep": true,
+              "push": true
+            },
+            "invalid": [],
+            "suboptimal": [],
+            "min_usage_shortfall": [
+              "indep",
+              "push"
+            ],
+            "min_usage_check_error": [],
+            "best_valid_edp": 1.1906192914835282e-15
+          },
+          "0.125": {
+            "edp": {
+              "indep": 1.1906192914835282e-15,
+              "push": 1.1906192914835282e-15
+            },
+            "consistent_across_repeats": {
+              "indep": true,
+              "push": true
+            },
+            "invalid": [],
+            "suboptimal": [],
+            "min_usage_shortfall": [
+              "indep",
+              "push"
+            ],
+            "min_usage_check_error": [],
+            "best_valid_edp": 1.1906192914835282e-15
+          }
+        },
+        "speedup_vs_indep": {
+          "indep": 1.0,
+          "push": 2.3442891444697023
+        },
+        "peak_rss_gb": {
+          "main": 0.3160247802734375,
+          "largest_worker": 0.0052947998046875
+        }
+      }
+    }
+  ]
+}

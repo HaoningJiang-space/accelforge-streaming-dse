@@ -26,6 +26,8 @@ import sys
 import time
 from pathlib import Path
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[2]
 GB = 'reservation<SEP>GlobalBuffer<SEP>0<SEP>right'
 VARIANTS = ('indep', 'var', 'push')
@@ -81,9 +83,11 @@ def peak_rss_gb():
     Children count only once reaped, so call after shutdown_workers(). The total for the
     whole process group is in the run_capped.sh watchdog line.
     """
-    self_kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    child_kb = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
-    return {'main': self_kb / 2**20, 'largest_worker': child_kb / 2**20}
+    # macOS reports bytes; Linux reports KiB. Output is GiB on both systems.
+    divisor = 2**30 if sys.platform == 'darwin' else 2**20
+    own = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    child = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+    return {'main': own / divisor, 'largest_worker': child / divisor}
 
 
 def clear_switches():
@@ -100,7 +104,8 @@ def effective_config(**extra):
         except Exception as e:
             return f'unavailable: {type(e).__name__}'
     spec = build((1, 1, 1), 1, EL)
-    return {'commit': git('rev-parse', 'HEAD'), 'dirty': bool(git('status', '--porcelain', '--', 'accelforge')),
+    return {'commit': git('rev-parse', 'HEAD'),
+            'dirty': bool(git('status', '--porcelain', '--', 'accelforge', 'research')),
             'max_pmapping_templates_per_einsum': str(spec.mapper.ffm.max_pmapping_templates_per_einsum),
             'inherited_switches': sorted(k for k in os.environ if k.startswith(SWITCH_PREFIX)),
             **extra}
@@ -160,8 +165,14 @@ def best_row(data):
     """Row with the lowest EDP, or None if no row fits."""
     if data.empty:
         return None
-    edp = data['Total<SEP>energy'] * data['Total<SEP>latency']
-    return data.loc[edp.idxmin()]
+    # Match capacity_breakpoints: multiply in float64, not the input's float32 or
+    # fixed-width integer dtype. Use positions because joined indices may repeat.
+    energy = data['Total<SEP>energy'].to_numpy(dtype=np.float64)
+    latency = data['Total<SEP>latency'].to_numpy(dtype=np.float64)
+    edp = energy * latency
+    if any(not np.isfinite(a).all() or (a < 0).any() for a in (energy, latency, edp)):
+        raise ValueError('candidate costs must be finite and nonnegative')
+    return data.iloc[int(edp.argmin())]
 
 
 def strict_evaluate(shape, cap_mib, mapping):
@@ -193,20 +204,28 @@ def spatial_usage_shortfalls(shape, mapping):
     bounds = get_rank_variable_bounds_for_all_einsums(spec)  # rank variable -> bound, shared
     found = []
 
-    def check(einsum, loops):
+    def check(compute, loops):
+        einsum = compute.einsum
+        evaluated = spec._spec_eval_expressions(einsum_name=einsum)
+        path = evaluated._get_flattened_architecture(compute_node=compute.component)
+        dimensions = {(node.name, dim.name): dim for node in path for dim in node.spatial}
         size = dict(bounds)
         used = collections.defaultdict(lambda: 1.0)
         for loop in loops:
             rv, tile = loop.rank_variable, loop.tile_shape
-            if rv not in size or not isinstance(tile, numbers.Number) or tile <= 0:
-                continue
+            if rv not in size or not isinstance(tile, numbers.Number) or not math.isfinite(tile) or tile <= 0:
+                raise ValueError(f'cannot check loop {rv!r} with tile {tile!r}')
             count = size[rv] / tile
             size[rv] = tile
             if isinstance(loop, Spatial):
+                if (loop.component, loop.name) not in dimensions:
+                    raise ValueError(f'spatial dimension outside compute path: {loop.component}/{loop.name}')
                 used[(loop.component, loop.name)] *= count
-        for (component, name), n in used.items():
-            dims = {d.name: d for d in spec.arch.find(component).spatial}
-            dim = dims[name]
+        # A missing spatial loop still uses one instance, not the whole fanout.
+        # Iterate the active architecture path, including dimensions omitted by
+        # loop beautification. Other compute branches must not be checked here.
+        for (component, name), dim in dimensions.items():
+            n = used[(component, name)]
             usage = n / float(dim.fanout)
             if dim.min_usage and usage < float(dim.min_usage) - 1e-9:
                 found.append({'einsum': einsum, 'component': component, 'dimension': name,
@@ -225,7 +244,7 @@ def spatial_usage_shortfalls(shape, mapping):
             if isinstance(n, Loop):
                 loops.append(n)
             elif isinstance(n, Compute):
-                check(n.einsum, loops)
+                check(n, loops)
 
     walk(list(mapping.nodes), [])
     return found
@@ -241,10 +260,12 @@ def check_pick(shape, cap_mib, row, rel_tol=1e-6):
     ok requires finite nonnegative reported and re-evaluated costs, a successful
     re-evaluation at exactly cap_mib, and energy and latency matching within rel_tol.
     Spatial min_usage shortfalls are reported in 'min_usage_shortfall' but do not
-    affect ok (see module docstring).
+    affect ok (see module docstring). A checker error does invalidate the audit:
+    an unavailable check must not be mistaken for a completed check.
     """
-    rec = {'cap_mib': cap_mib, 'edp': float(row['Total<SEP>energy'] * row['Total<SEP>latency']),
-           'energy': float(row['Total<SEP>energy']), 'latency': float(row['Total<SEP>latency'])}
+    energy, latency = float(row['Total<SEP>energy']), float(row['Total<SEP>latency'])
+    rec = {'cap_mib': cap_mib, 'edp': energy * latency,
+           'energy': energy, 'latency': latency}
     if GB in row.index:
         rec['reported_gb_mib_fraction'] = float(row[GB])
     if not _finite_nonnegative(rec['energy'], rec['latency'], rec['edp']):
@@ -267,6 +288,8 @@ def check_pick(shape, cap_mib, row, rel_tol=1e-6):
         rec['min_usage_shortfall'] = spatial_usage_shortfalls(shape, mapping)
     except Exception as e:
         rec['min_usage_shortfall_error'] = f'{type(e).__name__}: {str(e)[:200]}'
+        rec['ok'] = False
+        rec.setdefault('error', 'spatial min_usage check did not complete')
     return rec
 
 
@@ -277,6 +300,9 @@ def summarize_quality(history, variants, caps):
     invalid at a capacity if any repeat's pick was invalid, so a later success never
     hides an earlier failure. Returns (quality, any_invalid, all_consistent).
     """
+    def verified(rec):
+        return rec['ok'] and not rec.get('min_usage_shortfall_error')
+
     def same(xs):
         xs = [x for x in xs if x is not None]
         return all(abs(x - xs[0]) <= 1e-9 * abs(xs[0]) for x in xs)
@@ -284,7 +310,7 @@ def summarize_quality(history, variants, caps):
     quality = {}
     for cap in caps:
         valid_edps = [rec['edp'] for v in variants for c in caps if c <= cap
-                      for rec in history[v][c] if rec['ok']]
+                      for rec in history[v][c] if verified(rec)]
         best = min(valid_edps) if valid_edps else None
         q = {'edp': {}, 'consistent_across_repeats': {}, 'invalid': [], 'suboptimal': [],
              'min_usage_shortfall': [], 'min_usage_check_error': [], 'best_valid_edp': best}
@@ -293,7 +319,7 @@ def summarize_quality(history, variants, caps):
             edps = [rec.get('edp') for rec in recs]
             q['edp'][v] = edps[-1]
             q['consistent_across_repeats'][v] = same(edps)
-            if not all(rec['ok'] for rec in recs):
+            if not all(verified(rec) for rec in recs):
                 q['invalid'].append(v)
             elif best is not None and max(edps) > best * (1 + 1e-6):
                 q['suboptimal'].append(v)

@@ -2,7 +2,9 @@
 import math
 import os
 import unittest
+from unittest.mock import patch
 
+import numpy as np
 import pandas as pd
 
 import common
@@ -38,6 +40,33 @@ class SummarizeQualityTest(unittest.TestCase):
         self.assertEqual(quality['0.5']['suboptimal'], ['a'])
         self.assertEqual(quality['0.25']['suboptimal'], ['b'])
 
+    def test_checker_error_is_not_a_valid_reference(self):
+        bad = dict(rec(0.1), min_usage_shortfall_error='checker failed')
+        history = {'var': {0.25: [bad], 0.5: [rec(1.0)]}}
+        quality, invalid, _ = self.summarize(history)
+        self.assertTrue(invalid)
+        self.assertIsNone(quality['0.25']['best_valid_edp'])
+        self.assertEqual(quality['0.5']['best_valid_edp'], 1.0)
+
+
+class BestRowTest(unittest.TestCase):
+    def test_float32_product_does_not_overflow(self):
+        data = pd.DataFrame({'Total<SEP>energy': np.array([1e20, 2e20], dtype=np.float32),
+                             'Total<SEP>latency': np.array([2e20, .5e20], dtype=np.float32),
+                             'source': ['bad', 'best']})
+        self.assertEqual(common.best_row(data)['source'], 'best')
+
+    def test_duplicate_index_still_returns_one_row(self):
+        data = pd.DataFrame({'Total<SEP>energy': [2., 1.], 'Total<SEP>latency': [1., 1.]},
+                            index=[0, 0])
+        self.assertIsInstance(common.best_row(data), pd.Series)
+        self.assertEqual(common.best_row(data)['Total<SEP>energy'], 1.)
+
+    def test_invalid_candidate_is_not_silently_ignored(self):
+        data = pd.DataFrame({'Total<SEP>energy': [math.nan, 1.], 'Total<SEP>latency': [1., 1.]})
+        with self.assertRaises(ValueError):
+            common.best_row(data)
+
 
 class CheckPickTest(unittest.TestCase):
     def test_non_finite_reported_cost_is_rejected(self):
@@ -46,6 +75,57 @@ class CheckPickTest(unittest.TestCase):
         r = common.check_pick((1, 1, 1), 1.0, row)
         self.assertFalse(r['ok'])
         self.assertIn('finite', r['error'])
+
+    def test_checker_exception_invalidates_pick(self):
+        row = pd.Series({'Total<SEP>energy': 1., 'Total<SEP>latency': 1.,
+                         'Total<SEP>mapping': lambda: object()})
+        with patch.object(common, 'strict_evaluate', return_value=dict(energy=1., latency=1., edp=1.)), \
+             patch.object(common, 'spatial_usage_shortfalls', side_effect=KeyError('bounds')):
+            result = common.check_pick((1, 1, 1), 1.0, row)
+        self.assertFalse(result['ok'])
+        self.assertIn('KeyError', result['min_usage_shortfall_error'])
+
+    def test_shortfall_is_distinguished_from_checker_failure(self):
+        row = pd.Series({'Total<SEP>energy': 1., 'Total<SEP>latency': 1.,
+                         'Total<SEP>mapping': lambda: object()})
+        with patch.object(common, 'strict_evaluate', return_value=dict(energy=1., latency=1., edp=1.)), \
+             patch.object(common, 'spatial_usage_shortfalls', return_value=[{'usage': .5}]):
+            result = common.check_pick((1, 1, 1), 1.0, row)
+        self.assertTrue(result['ok'])  # FFM permits best attainable usage as a fallback.
+        self.assertTrue(result['min_usage_shortfall'])
+
+    def test_reported_edp_is_computed_after_promotion(self):
+        value = np.float32(1e20)
+        row = pd.Series({'Total<SEP>energy': value, 'Total<SEP>latency': value,
+                         'Total<SEP>mapping': lambda: object()})
+        cost = float(value)
+        with patch.object(common, 'strict_evaluate', return_value=dict(energy=cost, latency=cost, edp=cost*cost)), \
+             patch.object(common, 'spatial_usage_shortfalls', return_value=[]):
+            result = common.check_pick((1, 1, 1), 1.0, row)
+        self.assertTrue(result['ok'])
+        self.assertEqual(result['edp'], cost * cost)
+
+
+class SpatialUsageTest(unittest.TestCase):
+    def test_absent_spatial_loop_uses_one_instance(self):
+        mapping = common.af.Mapping(nodes=[common.Compute(einsum='FFG', component='MAC')])
+        shortfalls = common.spatial_usage_shortfalls((256, 512, 1024), mapping)
+        local = [r for r in shortfalls if r['component'] == 'LocalBuffer']
+        self.assertEqual(len(local), 1)
+        self.assertEqual(local[0]['usage'], .25)
+
+    def test_other_compute_branches_are_not_checked(self):
+        mapping = common.af.Mapping(nodes=[common.Compute(einsum='FFG', component='ScalarUnit')])
+        shortfalls = common.spatial_usage_shortfalls((256, 512, 1024), mapping)
+        self.assertFalse(any(r['component'] == 'ArrayFanout' for r in shortfalls))
+
+    def test_unknown_loop_is_not_silently_skipped(self):
+        mapping = common.af.Mapping(nodes=[
+            common.Spatial(rank_variable='missing', tile_shape=1, component='LocalBuffer', name='Z'),
+            common.Compute(einsum='FFG', component='MAC'),
+        ])
+        with self.assertRaises(ValueError):
+            common.spatial_usage_shortfalls((256, 512, 1024), mapping)
 
 
 class ClearSwitchesTest(unittest.TestCase):

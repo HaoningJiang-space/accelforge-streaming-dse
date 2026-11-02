@@ -1197,7 +1197,9 @@ def get_tile_shape_choices(
                             choices_enumerated = choices_enumerated[valid]
                             choices_enumerated_float = choices_enumerated_float[valid]
                         elif complete:
-                            valid |= result == np.min(result)
+                            # No candidate reaches the minimum: preserve the highest
+                            # attainable usage, as _MinUsageConstraintLambda does.
+                            valid |= result == np.max(result)
                             choices_enumerated = choices_enumerated[valid]
                             choices_enumerated_float = choices_enumerated_float[valid]
                 except (TypeError, ValueError):
