@@ -494,6 +494,31 @@ class Compatibility(Updatable):
             tensors=fzs(t.populate_loops() for t in self.tensors),
         )
 
+    @staticmethod
+    def has_copy_above_fused_loops(mapping: Mapping, tensors: set[TensorName]) -> bool:
+        """Does the mapping keep a non-backing copy of a fusable tensor above a fused loop?
+
+        from_mapping records only the first (backing) reservation of each fusable tensor,
+        so such a copy is invisible to compatibility. Two pmappings that disagree on it
+        are then joined, but nodes above the shared loops form one common prefix when the
+        mapping is rebuilt (Mapping._from_pmappings), so the rebuilt mapping gives the copy
+        to every Einsum. It no longer matches the cost and reservation that were scored.
+        Loops count as fused exactly as in from_mapping.
+        """
+        backing_remaining = set(tensors)
+        n_seen_loops = n_fused_loops = 0
+        copy_loop_indices = []
+        for n in mapping.nodes:
+            if isinstance(n, MappingReservation):
+                purposes = set(n.purposes) & set(tensors)
+                if purposes - backing_remaining:
+                    copy_loop_indices.append(n_seen_loops)
+                backing_remaining -= purposes
+            elif isinstance(n, MappingLoop):
+                n_seen_loops += 1
+                n_fused_loops += bool(backing_remaining)
+        return any(i < n_fused_loops for i in copy_loop_indices)
+
     @classmethod
     def from_mapping(
         cls,

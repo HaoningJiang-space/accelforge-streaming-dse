@@ -100,8 +100,15 @@ def get_jobs(
         )
         einsum2spec[einsum_name] = _memmap_read(einsum2spec[einsum_name])
 
+    # Templates with a copy of a fusable tensor above a fused loop can be joined with
+    # templates that lack it, but the joined result cannot be rebuilt as the mapping
+    # that was scored (see Compatibility.has_copy_above_fused_loops). They are skipped
+    # unless the AF_ABL_ALLOW_UNREPRESENTABLE=1 ablation restores the old behaviour.
+    skip_unrepresentable = os.environ.get("AF_ABL_ALLOW_UNREPRESENTABLE") != "1"
+
     def make_jobs_for_einsum(einsum_name: EinsumName, spec: Spec):
         jobs = {}
+        n_skipped = 0
         workload_einsum = spec.workload.einsums[einsum_name]
         for flattened_arch in spec._get_flattened_architecture(einsum_name=einsum_name):
             # Create jobs for each Einsum
@@ -115,8 +122,16 @@ def get_jobs(
                 fusable_tensors=fusable_tensors & workload_einsum.tensor_names,
             )
             for j in make_pmapping_templates(job):
+                if skip_unrepresentable and j.has_copy_above_fused_loops:
+                    n_skipped += 1
+                    continue
                 jobs.setdefault(j.compatibility, SameCompatibilityJobs()).append(j)
 
+        if n_skipped:
+            print(
+                f"Skipped {n_skipped} {einsum_name} templates that keep a copy of a "
+                f"fusable tensor above a fused loop."
+            )
         return einsum_name, jobs
 
     for einsum_name, jobs in parallel(

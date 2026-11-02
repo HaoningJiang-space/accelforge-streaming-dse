@@ -69,6 +69,7 @@ class Job:
     """If the Job is for a single einsum, this is the einsum name."""
 
     _compatibility: Compatibility | None = None
+    _has_copy_above_fused_loops: bool | None = None
     memories_track_all: list[str] | None = None
     memories_track_pmappings_only: list[str] | None = None
     ignored_resources: set[str] | None = None
@@ -102,6 +103,25 @@ class Job:
     def compatibility(self, compatibility: Compatibility):
         self._compatibility = compatibility
 
+    @property
+    def has_copy_above_fused_loops(self) -> bool:
+        """See Compatibility.has_copy_above_fused_loops."""
+        if self._has_copy_above_fused_loops is None:
+            if self._compatibility is None:
+                self._make_compatibility_and_updater()
+            else:
+                # Do not rebuild a compatibility that may have been set or populated.
+                from accelforge.model._looptree.reuse.symbolic import (
+                    quick_insert_reservation_nodes,
+                )
+
+                self._has_copy_above_fused_loops = (
+                    Compatibility.has_copy_above_fused_loops(
+                        quick_insert_reservation_nodes(self), self.fusable_tensors
+                    )
+                )
+        return self._has_copy_above_fused_loops
+
     def update_compatibility_with_tile_shapes(
         self, tile_shapes: Sequence[Number], tensor2size: dict
     ) -> Callable[[Sequence[Number], dict], Compatibility]:
@@ -120,6 +140,9 @@ class Job:
         )
 
         with_reservations = quick_insert_reservation_nodes(self)
+        self._has_copy_above_fused_loops = Compatibility.has_copy_above_fused_loops(
+            with_reservations, self.fusable_tensors
+        )
         self._compatibility = make_compatibility(
             with_reservations,
             self.fusable_tensors,
