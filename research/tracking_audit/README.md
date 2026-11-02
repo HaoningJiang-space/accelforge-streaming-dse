@@ -145,3 +145,31 @@ var 51 s (3.2x), push 37 s (4.5x); group peak 3.7 GB.
 
 Open: eliminating LocalBuffer as "big enough" (default indep, push) still loses the valid 1.8202e-8,
 although a memory that never overflows should only add candidates when untracked.
+
+## Root cause of the LocalBuffer loss: min-usage constraint used a leftover formula (fixed in 47f2a732)
+
+`_make_tile_shapes` built the min-usage objectives with `formula=v`, where `v` was left over from the
+preceding memory-usage loop, i.e. the usage of whichever memory came last. Which memory that was
+depended on the tracked set, so eliminating LocalBuffer changed tile-shape pruning. Upstream main
+already fixed this. The fix uses the run_model spatial usage column
+`usage<SEP>spatial<SEP>{component}<SEP>{dimension}` and asserts it exists.
+
+Confirmation before the fix: `AF_ABL_BIG_ENOUGH_UNTRACK_ONLY=LocalBuffer` (stop reservation tracking
+but keep the usage objective) recovered 1.8202e-8, so the usage-objective set, not reservation
+tracking, caused the difference.
+
+After the fix (half scale, 8 workers, 1 repeat; 39 tests pass; group peak 3.5 GB):
+
+| GLB | indep | var | push | indep, LocalBuffer tracked |
+|---|---|---|---|---|
+| 0.25 MiB | 1.8444e-8 | 1.8444e-8 | 1.8444e-8 | 1.8444e-8 |
+| 0.375 MiB | 1.8414e-8 | 1.8414e-8 | 1.8414e-8 | 1.8414e-8 |
+| 1, 4 MiB | 1.5786e-8 | 1.5786e-8 | 1.5786e-8 | not run |
+
+All variants agree at every capacity and every pick re-evaluates. Times: indep 135 s, var 38 s (3.6x),
+push 36 s (3.7x).
+
+The earlier "best known" 1.8202e-8 and 1.5488e-8 were not legal: e.g. the 1.8202e-8 mapping splits g by
+256 across LocalBuffer's spatial dimension Z (G = 512, fanout 4), using 2 of 4 instances, while
+tpu_v4i requires `min_usage: 1`. `check_pick` missed this because `evaluate_mapping` checks capacity and
+cost but not mapper constraints such as min_usage. That check is still to be added.
