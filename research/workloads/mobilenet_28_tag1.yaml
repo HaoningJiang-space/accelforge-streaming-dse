@@ -1,5 +1,8 @@
-# Tag 1.0 copy of examples/workloads/mobilenet_28.yaml (upstream syntax): the only
-# change is that per-Einsum 'shape' is spelled 'iteration_space_shape', the tag1 field.
+# Tag 1.0 copy of examples/workloads/mobilenet_28.yaml (upstream syntax). Changes:
+# - per-Einsum 'shape' is spelled 'iteration_space_shape', the tag1 field;
+# - Depthwise1's window is 0 <= r1,s1 < 3 like Depthwise0 (upstream: 1 <= r1,s1 < 3).
+#   The tag1 mapper requires a rank variable to have the same bounds in every Einsum,
+#   and the shifted window gave p2/q2 27 values in Depthwise1 but 28 in PiecewiseB2.
 workload:
   rank_sizes:
     {% set BATCH_SIZE = BATCH_SIZE | default(1) %}
@@ -60,7 +63,7 @@ workload:
         B: b
     - {name: WAB1, projection: [r1, s1, t1]}
     - {name: TB1, projection: [p2, q2, t1, b], output: True}
-    iteration_space_shape: [1 <= r1 < 3, 1 <= s1 < 3]
+    iteration_space_shape: [0 <= r1 < 3, 0 <= s1 < 3]
 
   - name: PiecewiseB2
     tensor_accesses:

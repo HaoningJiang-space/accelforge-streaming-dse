@@ -66,6 +66,7 @@ Remaining limits:
 
 | File | Purpose |
 | --- | --- |
+| `summarize_audit.py` | One table per audit log: EDP per capacity and variant with invalid/suboptimal/shortfall flags, medians and speedups. |
 | `capacity_audit.py` | Validated CLI, timed experiment loop, summary, worker cleanup in `finally`. Importing it does not start an experiment. |
 | `common.py` | Spec/search setup, environment hygiene, float64 EDP selection, mapping re-evaluation, spatial-usage checks, quality accounting. |
 | `test_audit_logic.py`, `test_capacity_audit.py` | Validation, failure propagation, numeric boundaries, CLI and cleanup regressions. |
@@ -91,7 +92,20 @@ research/tracking_audit/run_capped.sh 16 3600 audit.log -- \
     256,512,1024 0.25,0.375,1,4 indep,var,push --jobs 8 --repeats 3
 ```
 
-Compare only runs with identical jobs, shape, constraints and cost models. Search time
+The positional list holds the workload's parameters. `--workload` and `--arch` select
+another case from `common.WORKLOADS` and `common.ARCHES`:
+
+| Workload | Parameters | Graph |
+| --- | --- | --- |
+| `glu` (default) | M,G,C | Z feeds FFG and FFU, which merge in elementwise FFH, then FFB |
+| `matmuls` | N_EINSUMS,M,KN | chain of N matrix multiplications |
+| `mobilenet` | BATCH_SIZE | MobileNet block: pointwise and 3x3 depthwise convolutions (`research/workloads/mobilenet_28_tag1.yaml`) |
+
+Architectures: `tpu_v4i` (default) and `nvdla`. `eyeriss` is excluded because its
+energy plugin is incompatible with the tag1 library. Summarize logs with
+`python research/tracking_audit/summarize_audit.py audit.log ...`.
+
+Compare only runs with identical jobs, case, constraints and cost models. Search time
 excludes re-evaluation; total elapsed time includes validation. Each RUN is saved in
 the log before the next variant. Archive the log and exact code revision together.
 
