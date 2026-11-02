@@ -26,3 +26,23 @@ search returned EDP 1.8202e-8 and 1.8105e-8 while independent FFM returned 1.836
   at 0.25 MiB (hence also at 0.375 MiB), but independent FFM returns 1.8361e-8 at both capacities.
 - The `jobs` fix (54a7c6ff) does not change the independent result at 0.375 MiB.
 - At small scale (64,128,256) all three agree and every pick is valid; `push` took 173 s vs 214 s for `var`.
+
+## Locating the independent-FFM loss (0.25 MiB, ENERGY|LATENCY, `AF_ABL_KEEP`)
+
+| memories kept fully tracked | best EDP |
+|---|---|
+| none (default: LocalBuffer and MainMemory "big enough", Register pmapping-only) | 1.8361e-8 |
+| Register | 1.8361e-8 |
+| LocalBuffer | **1.8202e-8** |
+| LocalBuffer, Register | **1.8202e-8** |
+
+Dropping LocalBuffer through the "big enough to hold every tensor" proof loses the valid 1.8202e-8 mapping.
+The mechanism is not yet known: tag1 adds energy and latency across Einsums, so the extra LocalBuffer
+Pareto dimension should not matter if the proof were exact.
+
+## The invalid 0.375 MiB pick is not caused by sharing
+
+Running the `var` configuration directly at 0.375 MiB (the join checks the real capacity at every step)
+returns the same row: reported GB 0.375 MiB, EDP 1.8105e-8, and re-evaluation fails at 0.375 MiB. The row's
+reported energy (2.5087e-4) also differs from the re-evaluated energy of its reconstructed mapping
+(2.4992e-4), so either the RESOURCE_USAGE path under-counts or the row is reconstructed into a different mapping.
