@@ -1,4 +1,5 @@
 import logging
+import os
 from math import prod
 
 from typing import Callable, Optional
@@ -187,14 +188,30 @@ def get_memories_to_track(
             ignored_resources,
         )
 
+    # Memories whose capacity varies across the target architecture family. With
+    # RESOURCE_USAGE and this set given, only these stay fully tracked; every other
+    # memory has a fixed capacity and gets the same treatment as an independent
+    # ENERGY|LATENCY search.
+    protected = frozenset(
+        x.strip()
+        for x in os.environ.get("AF_GENERATION_VARIABLE_RESOURCES", "").split(",")
+        if x.strip()
+    )
     if metrics.RESOURCE_USAGE in metrics:
-        # Resource usage is an objective, so no memory may be ignored.
-        ignored_resources = set()
-        return (
-            memories_track_all,
-            memories_track_pmappings_only,
-            ignored_resources,
-        )
+        if not protected:
+            # Resource usage is an objective, so no memory may be ignored.
+            ignored_resources = set()
+            return (
+                memories_track_all,
+                memories_track_pmappings_only,
+                ignored_resources,
+            )
+        if not protected <= memories_track_all:
+            raise ValueError(
+                f"Unknown variable resources: {sorted(protected - memories_track_all)}"
+            )
+    else:
+        protected = frozenset()
 
     tensor_sizes = {}
     for tensor, size in get_per_tensor_size(spec).items():
@@ -206,7 +223,9 @@ def get_memories_to_track(
 
     # If the memory is big enough to hold all the tensors then we don't need to consider
     # it
-    for memory in list(memories_track_all):
+    # The capacity of a protected memory is only known for the largest family member,
+    # so no "big enough" proof may be drawn from it.
+    for memory in list(memories_track_all - protected):
         usage = 0
         for einsum in einsum2jobs.keys():
             job = einsum2jobs[einsum][0]
@@ -236,7 +255,7 @@ def get_memories_to_track(
 
     # If the memory is below every backing tensor holder node, then we need it for the
     # pmapping exploration but can drop it immediately
-    for m in list(memories_track_all):
+    for m in list(memories_track_all - protected):
         must_track = False
         for job in (j for jobs in einsum2jobs.values() for j in jobs):
             seen = False
