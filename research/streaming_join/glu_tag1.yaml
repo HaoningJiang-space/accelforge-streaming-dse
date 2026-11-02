@@ -1,0 +1,42 @@
+# Tag 1.0 workload syntax. Mirrors the four tensor contractions in the
+# historical GLU workload; activation and residual operations are omitted.
+workload:
+  iteration_space_shape:
+    b: 0 <= b < 1
+    m: 0 <= m < {{ M }}
+    g: 0 <= g < {{ G }}
+    c: 0 <= c < {{ C }}
+    j: 0 <= j < {{ G }}
+  bits_per_value: {All: 8}
+  einsums:
+  - name: FFG
+    tensor_accesses:
+    - {name: Z, projection: [b, m, g]}
+    - {name: WFFG, projection: [g, c]}
+    - {name: FFG, projection: [b, m, c], output: True}
+    renames: {input: Z}
+  - name: FFU
+    tensor_accesses:
+    - {name: Z, projection: [b, m, g]}
+    - {name: WFFU, projection: [g, c]}
+    - {name: FFU, projection: [b, m, c], output: True}
+    renames: {input: Z}
+  - name: FFH
+    tensor_accesses:
+    - {name: FFG, projection: [b, m, c]}
+    - {name: FFU, projection: [b, m, c]}
+    - {name: FFH, projection: [b, m, c], output: True}
+    renames: {input: FFG}
+  - name: FFB
+    tensor_accesses:
+    - {name: FFH, projection: [b, m, c]}
+    - {name: WFFD, projection: [c, j]}
+    - {name: FFB, projection: [b, m, j], output: True}
+    renames: {input: FFH}
+renames:
+  einsums:
+  - name: default
+    tensor_accesses:
+    - {name: input, source: Inputs & Intermediates, expected_count: 1}
+    - {name: output, source: Outputs, expected_count: 1}
+    - {name: weight, source: '~(input | output)', expected_count: 1}
