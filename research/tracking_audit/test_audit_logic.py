@@ -72,7 +72,7 @@ class CheckPickTest(unittest.TestCase):
     def test_non_finite_reported_cost_is_rejected(self):
         row = pd.Series({'Total<SEP>energy': math.inf, 'Total<SEP>latency': 1.0,
                          'Total<SEP>mapping': lambda: None})
-        r = common.check_pick((1, 1, 1), 1.0, row)
+        r = common.check_pick(common.DEFAULT_CASE, 1.0, row)
         self.assertFalse(r['ok'])
         self.assertIn('finite', r['error'])
 
@@ -81,7 +81,7 @@ class CheckPickTest(unittest.TestCase):
                          'Total<SEP>mapping': lambda: object()})
         with patch.object(common, 'strict_evaluate', return_value=dict(energy=1., latency=1., edp=1.)), \
              patch.object(common, 'spatial_usage_shortfalls', side_effect=KeyError('bounds')):
-            result = common.check_pick((1, 1, 1), 1.0, row)
+            result = common.check_pick(common.DEFAULT_CASE, 1.0, row)
         self.assertFalse(result['ok'])
         self.assertIn('KeyError', result['min_usage_shortfall_error'])
 
@@ -90,7 +90,7 @@ class CheckPickTest(unittest.TestCase):
                          'Total<SEP>mapping': lambda: object()})
         with patch.object(common, 'strict_evaluate', return_value=dict(energy=1., latency=1., edp=1.)), \
              patch.object(common, 'spatial_usage_shortfalls', return_value=[{'usage': .5}]):
-            result = common.check_pick((1, 1, 1), 1.0, row)
+            result = common.check_pick(common.DEFAULT_CASE, 1.0, row)
         self.assertTrue(result['ok'])  # FFM permits best attainable usage as a fallback.
         self.assertTrue(result['min_usage_shortfall'])
 
@@ -101,7 +101,7 @@ class CheckPickTest(unittest.TestCase):
         cost = float(value)
         with patch.object(common, 'strict_evaluate', return_value=dict(energy=cost, latency=cost, edp=cost*cost)), \
              patch.object(common, 'spatial_usage_shortfalls', return_value=[]):
-            result = common.check_pick((1, 1, 1), 1.0, row)
+            result = common.check_pick(common.DEFAULT_CASE, 1.0, row)
         self.assertTrue(result['ok'])
         self.assertEqual(result['edp'], cost * cost)
 
@@ -109,14 +109,14 @@ class CheckPickTest(unittest.TestCase):
 class SpatialUsageTest(unittest.TestCase):
     def test_absent_spatial_loop_uses_one_instance(self):
         mapping = common.af.Mapping(nodes=[common.Compute(einsum='FFG', component='MAC')])
-        shortfalls = common.spatial_usage_shortfalls((256, 512, 1024), mapping)
+        shortfalls = common.spatial_usage_shortfalls(common.DEFAULT_CASE, mapping)
         local = [r for r in shortfalls if r['component'] == 'LocalBuffer']
         self.assertEqual(len(local), 1)
         self.assertEqual(local[0]['usage'], .25)
 
     def test_other_compute_branches_are_not_checked(self):
         mapping = common.af.Mapping(nodes=[common.Compute(einsum='FFG', component='ScalarUnit')])
-        shortfalls = common.spatial_usage_shortfalls((256, 512, 1024), mapping)
+        shortfalls = common.spatial_usage_shortfalls(common.DEFAULT_CASE, mapping)
         self.assertFalse(any(r['component'] == 'ArrayFanout' for r in shortfalls))
 
     def test_unknown_loop_is_not_silently_skipped(self):
@@ -125,7 +125,7 @@ class SpatialUsageTest(unittest.TestCase):
             common.Compute(einsum='FFG', component='MAC'),
         ])
         with self.assertRaises(ValueError):
-            common.spatial_usage_shortfalls((256, 512, 1024), mapping)
+            common.spatial_usage_shortfalls(common.DEFAULT_CASE, mapping)
 
 
 class ClearSwitchesTest(unittest.TestCase):

@@ -1,7 +1,8 @@
 """Shared helpers for the capacity-tracking audit.
 
-Every experiment here studies the tag1 GLU workload (glu_tag1.yaml) on tpu_v4i while
-sweeping the GlobalBuffer capacity. Three search variants are compared:
+Every experiment sweeps the GlobalBuffer capacity of one Case: a workload from WORKLOADS
+with its template parameters, on an architecture from ARCHES (default: GLU on tpu_v4i).
+Three search variants are compared:
 
   indep  one ENERGY|LATENCY search per capacity (the normal FFM baseline)
   var    one RESOURCE_USAGE search at the largest capacity; the join keeps only
@@ -24,6 +25,7 @@ import resource
 import subprocess
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -31,6 +33,44 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 GB = 'reservation<SEP>GlobalBuffer<SEP>0<SEP>right'
 VARIANTS = ('indep', 'var', 'push')
+
+# Workload name -> (YAML file relative to ROOT, names of its Jinja parameters in the
+# order they are given on the command line).
+WORKLOADS = {
+    'glu': ('research/streaming_join/glu_tag1.yaml', ('M', 'G', 'C')),  # branch and merge
+    'matmuls': ('examples/workloads/matmuls.yaml', ('N_EINSUMS', 'M', 'KN')),  # chain
+    'mobilenet': ('examples/workloads/mobilenet_28.yaml', ('BATCH_SIZE',)),  # convolutions
+}
+ARCHES = ('tpu_v4i', 'nvdla', 'eyeriss')  # examples/arches/<name>.yaml, each with a GlobalBuffer
+
+
+@dataclass(frozen=True)
+class Case:
+    """What is searched: a workload with its parameter values, on an architecture."""
+    workload: str
+    arch: str
+    params: tuple
+
+    def __post_init__(self):
+        if self.workload not in WORKLOADS:
+            raise ValueError(f'workload must be one of {tuple(WORKLOADS)}, got {self.workload!r}')
+        if self.arch not in ARCHES:
+            raise ValueError(f'arch must be one of {ARCHES}, got {self.arch!r}')
+        names = WORKLOADS[self.workload][1]
+        if len(self.params) != len(names) or any(not isinstance(x, int) or x <= 0 for x in self.params):
+            raise ValueError(f'{self.workload} takes {len(names)} positive integers {",".join(names)}')
+
+    @classmethod
+    def parse(cls, workload, arch, params):
+        """Case from command-line strings; params is comma-separated, e.g. '256,512,1024'."""
+        return cls(workload, arch, tuple(int(x) for x in params.split(',')))
+
+    def __str__(self):
+        names = WORKLOADS[self.workload][1]
+        return f'{self.workload}({",".join(f"{k}={v}" for k, v in zip(names, self.params))})@{self.arch}'
+
+
+DEFAULT_CASE = Case('glu', 'tpu_v4i', (256, 512, 1024))
 
 # Every research switch read by the library starts with this prefix. All such variables
 # are cleared before each search so one inherited from the shell cannot silently change
@@ -103,7 +143,7 @@ def effective_config(**extra):
                                   text=True, check=True).stdout.strip()
         except Exception as e:
             return f'unavailable: {type(e).__name__}'
-    spec = build((1, 1, 1), 1, EL)
+    spec = build(DEFAULT_CASE, 1, EL)
     return {'commit': git('rev-parse', 'HEAD'),
             'dirty': bool(git('status', '--porcelain', '--', 'accelforge', 'research')),
             'max_pmapping_templates_per_einsum': str(spec.mapper.ffm.max_pmapping_templates_per_einsum),
@@ -111,9 +151,11 @@ def effective_config(**extra):
             **extra}
 
 
-def build(shape, cap_mib, metrics):
-    spec = af.Spec.from_yaml(ROOT/'examples/arches/tpu_v4i.yaml', ROOT/'research/streaming_join/glu_tag1.yaml',
-                             jinja_parse_data=dict(zip(('M', 'G', 'C'), shape)))
+def build(case, cap_mib, metrics):
+    """Spec of `case` with exactly cap_mib MiB of GlobalBuffer, searching for `metrics`."""
+    path, names = WORKLOADS[case.workload]
+    spec = af.Spec.from_yaml(ROOT/f'examples/arches/{case.arch}.yaml', ROOT/path,
+                             jinja_parse_data=dict(zip(names, case.params)))
     spec.arch.find('GlobalBuffer').size = cap_mib * 1024 * 1024 * 8
     spec.mapper.ffm.metrics = metrics
     return spec
@@ -144,16 +186,16 @@ def search(spec, gen_env=None, join_env=None, ablations=None):
                  'rows_front': len(res.data)}
 
 
-def run_variant(variant, shape, caps, ablations=None):
+def run_variant(variant, case, caps, ablations=None):
     """Yield (cap, data, stats) per capacity; shared variants search once at max(caps)."""
     maxcap = max(caps)
     if variant == 'indep':
         for cap in caps:
-            res, st = search(build(shape, cap, EL), ablations=ablations)
+            res, st = search(build(case, cap, EL), ablations=ablations)
             yield cap, res.data, st
     elif variant in ('var', 'push'):
         gen_env = {'AF_GENERATION_VARIABLE_RESOURCES': 'GlobalBuffer'} if variant == 'push' else None
-        res, st = search(build(shape, maxcap, RU), gen_env, {'AF_VARIABLE_RESOURCES': 'GlobalBuffer'},
+        res, st = search(build(case, maxcap, RU), gen_env, {'AF_VARIABLE_RESOURCES': 'GlobalBuffer'},
                          ablations=ablations)
         for cap in caps:
             yield cap, res.data[res.data[GB] <= cap / maxcap * (1 + 1e-12)], st
@@ -175,13 +217,13 @@ def best_row(data):
     return data.iloc[int(edp.argmin())]
 
 
-def strict_evaluate(shape, cap_mib, mapping):
+def strict_evaluate(case, cap_mib, mapping):
     """Re-evaluate `mapping` on the architecture with exactly `cap_mib` of GlobalBuffer.
 
     Returns energy, latency, edp and every reservation column, or raises if the mapping
     does not fit or the evaluation does not produce exactly one row.
     """
-    spec = build(shape, cap_mib, RU)
+    spec = build(case, cap_mib, RU)
     spec.model.metrics = RU
     spec.mapping = copy.deepcopy(mapping)
     clear_switches()
@@ -193,14 +235,14 @@ def strict_evaluate(shape, cap_mib, mapping):
     return {'energy': e, 'latency': l, 'edp': e * l, 'reservations': reservations}
 
 
-def spatial_usage_shortfalls(shape, mapping):
+def spatial_usage_shortfalls(case, mapping):
     """Spatial fanout dimensions whose usage in `mapping` is below their min_usage.
 
     Independent of the mapper: along each path to a Compute node, a spatial loop uses
     (enclosing tile of its rank variable) / (its tile shape) instances of its fanout
     dimension; usage = product over that dimension's loops / fanout.
     """
-    spec = build(shape, 1, EL)
+    spec = build(case, 1, EL)
     bounds = get_rank_variable_bounds_for_all_einsums(spec)  # rank variable -> bound, shared
     found = []
 
@@ -254,7 +296,7 @@ def _finite_nonnegative(*xs):
     return all(isinstance(x, numbers.Number) and math.isfinite(x) and x >= 0 for x in xs)
 
 
-def check_pick(shape, cap_mib, row, rel_tol=1e-6):
+def check_pick(case, cap_mib, row, rel_tol=1e-6):
     """Strictly validate a picked row. Returns a record with 'ok' set.
 
     ok requires finite nonnegative reported and re-evaluated costs, a successful
@@ -273,7 +315,7 @@ def check_pick(shape, cap_mib, row, rel_tol=1e-6):
         return rec
     try:
         mapping = row['Total<SEP>mapping']()
-        ev = strict_evaluate(shape, cap_mib, mapping)
+        ev = strict_evaluate(case, cap_mib, mapping)
     except Exception as e:
         rec.update(ok=False, error=f'{type(e).__name__}: {str(e)[:200]}')
         return rec
@@ -285,7 +327,7 @@ def check_pick(shape, cap_mib, row, rel_tol=1e-6):
     if not rec['ok']:
         rec['error'] = 'reported cost differs from re-evaluation'
     try:
-        rec['min_usage_shortfall'] = spatial_usage_shortfalls(shape, mapping)
+        rec['min_usage_shortfall'] = spatial_usage_shortfalls(case, mapping)
     except Exception as e:
         rec['min_usage_shortfall_error'] = f'{type(e).__name__}: {str(e)[:200]}'
         rec['ok'] = False

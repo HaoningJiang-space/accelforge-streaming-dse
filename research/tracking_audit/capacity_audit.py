@@ -1,8 +1,10 @@
 """Time and strictly validate capacity-sweep search variants.
 
-usage: capacity_audit.py M,G,C CAP1,CAP2,... VARIANTS [--repeats N] [--jobs N] [--no-warmup]
-                         [ABLATION=VALUE ...]
+usage: capacity_audit.py PARAMS CAP1,CAP2,... VARIANTS [--workload W] [--arch A]
+                         [--repeats N] [--jobs N] [--no-warmup] [ABLATION=VALUE ...]
 
+  PARAMS     comma-separated parameters of the workload, e.g. M,G,C for glu (the
+             default workload, on tpu_v4i); see common.WORKLOADS and common.ARCHES
   VARIANTS   comma-separated subset of indep,var,push (see common.py)
   CAPs       GlobalBuffer capacities in MiB; shared variants search once at the largest
   ABLATION   one of common.ABLATIONS, applied to every search
@@ -36,9 +38,11 @@ import common
 
 def parse_args(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('shape')
+    p.add_argument('params')
     p.add_argument('caps')
     p.add_argument('variants')
+    p.add_argument('--workload', default=common.DEFAULT_CASE.workload, choices=common.WORKLOADS)
+    p.add_argument('--arch', default=common.DEFAULT_CASE.arch, choices=common.ARCHES)
     p.add_argument('--repeats', type=int, default=1)
     p.add_argument('--jobs', type=int, default=1)
     p.add_argument('--no-warmup', action='store_true',
@@ -46,13 +50,11 @@ def parse_args(argv=None):
     p.add_argument('ablations', nargs='*')
     a = p.parse_intermixed_args(argv)
     try:
-        a.shape = [int(x) for x in a.shape.split(',')]
+        a.case = common.Case.parse(a.workload, a.arch, a.params)
         a.caps = [float(x) for x in a.caps.split(',')]
-    except ValueError:
-        p.error('shape must contain integers and capacities must contain numbers')
+    except ValueError as error:
+        p.error(f'bad parameters or capacities: {error}')
     a.variants = a.variants.split(',')
-    if len(a.shape) != 3 or any(x <= 0 for x in a.shape):
-        p.error('shape must be exactly three positive integers: M,G,C')
     if any(not math.isfinite(x) or x <= 0 for x in a.caps) or len(set(a.caps)) != len(a.caps):
         p.error('capacities must be finite, positive and distinct')
     if set(a.variants) - set(common.VARIANTS) or len(set(a.variants)) != len(a.variants):
@@ -68,11 +70,11 @@ def parse_args(argv=None):
 
 def run(a):
     """Run the experiment; worker cleanup is owned by main(), including on failure."""
-    shape, caps, variants, ablations = a.shape, a.caps, a.variants, a.ablations
+    case, caps, variants, ablations = a.case, a.caps, a.variants, a.ablations
     if not a.no_warmup:
         # Do not charge first-use compilation to whichever variant runs first.
         t0 = time.perf_counter()
-        common.search(common.build(shape, max(caps), common.RU),
+        common.search(common.build(case, max(caps), common.RU),
                       {'AF_GENERATION_VARIABLE_RESOURCES': 'GlobalBuffer'},
                       {'AF_VARIABLE_RESOURCES': 'GlobalBuffer'}, ablations=ablations)
         print('WARMUP', json.dumps({'seconds': time.perf_counter() - t0}), flush=True)
@@ -84,7 +86,7 @@ def run(a):
         for v in order:
             t0 = time.perf_counter()
             rows, stats = {}, []
-            for cap, data, st in common.run_variant(v, shape, caps, ablations):
+            for cap, data, st in common.run_variant(v, case, caps, ablations):
                 rows[cap] = common.best_row(data)
                 if st not in stats:
                     stats.append(st)
@@ -92,7 +94,7 @@ def run(a):
             records = []
             for cap in caps:
                 row = rows.get(cap)
-                rec = (common.check_pick(shape, cap, row) if row is not None
+                rec = (common.check_pick(case, cap, row) if row is not None
                        else {'cap_mib': cap, 'ok': False, 'error': 'no row fits'})
                 history[v][cap].append(rec)
                 records.append(rec)
@@ -102,7 +104,7 @@ def run(a):
 
     quality, any_invalid, all_consistent = common.summarize_quality(history, variants, caps)
     median = {v: statistics.median(t) for v, t in times.items()}
-    summary = {'shape': shape, 'caps': caps, 'repeats': a.repeats, 'jobs': a.jobs, 'ablations': ablations,
+    summary = {'case': str(case), 'caps': caps, 'repeats': a.repeats, 'jobs': a.jobs, 'ablations': ablations,
                'all_picks_valid': not any_invalid, 'all_repeats_consistent': all_consistent,
                'all_min_usage_checks_completed': all(
                    'min_usage_shortfall' in rec and not rec.get('min_usage_shortfall_error')
@@ -119,7 +121,7 @@ def run(a):
 
 def main(argv=None):
     a = parse_args(argv)
-    print('CONFIG', json.dumps(common.effective_config(args=vars(a))), flush=True)
+    print('CONFIG', json.dumps(common.effective_config(args=vars(a)), default=str), flush=True)
     common.set_jobs(a.jobs)
     try:
         summary, status = run(a)

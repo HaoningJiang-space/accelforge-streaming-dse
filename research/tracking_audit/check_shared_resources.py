@@ -1,6 +1,6 @@
 """Do joined groups share a tensor that the two sides reserve in different memories?
 
-usage: check_shared_resources.py M,G,C CAP [--jobs N] [ABLATION=MEM[,MEM] ...]
+usage: check_shared_resources.py PARAMS CAP [--workload W] [--arch A] [--jobs N] [ABLATION=MEM[,MEM] ...]
 
 PmappingDataframe.merge_next frees one copy of every shared tensor reserved above the
 shared loop, taking the reservation from the *left* compatibility. That is only right if
@@ -17,12 +17,14 @@ import common
 from accelforge.mapper.FFM._join_pmappings.pmapping_group import PmappingGroup
 
 p = argparse.ArgumentParser()
-p.add_argument('shape')
+p.add_argument('params')
+p.add_argument('--workload', default=common.DEFAULT_CASE.workload, choices=common.WORKLOADS)
+p.add_argument('--arch', default=common.DEFAULT_CASE.arch, choices=common.ARCHES)
 p.add_argument('cap', type=float)
 p.add_argument('--jobs', type=int, default=1)
 p.add_argument('ablations', nargs='*')
 a = p.parse_args()
-shape = [int(x) for x in a.shape.split(',')]
+case = common.Case.parse(a.workload, a.arch, a.params)
 common.set_jobs(a.jobs)
 
 pairs = collections.Counter()
@@ -49,7 +51,7 @@ def merge_next(self, right, live_tensors, *args, **kwargs):
 
 
 PmappingGroup.merge_next = merge_next
-res, st = common.search(common.build(shape, a.cap, common.EL), ablations=common.parse_ablations(a.ablations))
+res, st = common.search(common.build(case, a.cap, common.EL), ablations=common.parse_ablations(a.ablations))
 common.shutdown_workers()
 fmt = lambda c: {f'{k[0]} L={k[1]} R={k[2]} freed={k[3]}': v for k, v in c.items()}
 print('SHARED', json.dumps({'cap_mib': a.cap, 'ablations': a.ablations, 'stats': st,

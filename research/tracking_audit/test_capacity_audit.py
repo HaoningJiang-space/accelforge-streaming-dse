@@ -7,16 +7,27 @@ import pandas as pd
 import capacity_audit
 
 
-@pytest.mark.parametrize('shape,caps,variants', [
-    ('1,2', '1', 'indep'), ('1,2,0', '1', 'indep'),
-    ('1,2,3', 'nan', 'indep'), ('1,2,3', 'inf', 'indep'),
-    ('1,2,3', '0', 'indep'), ('1,2,3', '1,1', 'indep'),
-    ('1,2,3', '1', 'indep,indep'), ('1,2,3', '1', 'unknown'),
+@pytest.mark.parametrize('params,caps,variants,extra', [
+    ('1,2', '1', 'indep', []), ('1,2,0', '1', 'indep', []), ('1,x,3', '1', 'indep', []),
+    ('1,2,3', 'nan', 'indep', []), ('1,2,3', 'inf', 'indep', []),
+    ('1,2,3', '0', 'indep', []), ('1,2,3', '1,1', 'indep', []),
+    ('1,2,3', '1', 'indep,indep', []), ('1,2,3', '1', 'unknown', []),
+    ('1,2,3', '1', 'indep', ['--workload', 'mobilenet']),  # mobilenet takes one parameter
+    ('1,2,3', '1', 'indep', ['--workload', 'unknown']),
+    ('1,2,3', '1', 'indep', ['--arch', 'unknown']),
 ])
-def test_invalid_config_fails_before_search(shape, caps, variants):
+def test_invalid_config_fails_before_search(params, caps, variants, extra):
     with pytest.raises(SystemExit) as error:
-        capacity_audit.parse_args([shape, caps, variants])
+        capacity_audit.parse_args([params, caps, variants, *extra])
     assert error.value.code == 2
+
+
+def test_workload_and_arch_select_the_case():
+    args = capacity_audit.parse_args(['3,64,128', '0.5', 'indep', '--workload', 'matmuls',
+                                      '--arch', 'nvdla'])
+    assert args.case == capacity_audit.common.Case('matmuls', 'nvdla', (3, 64, 128))
+    assert str(args.case) == 'matmuls(N_EINSUMS=3,M=64,KN=128)@nvdla'
+    assert capacity_audit.parse_args(['4,8,16', '1', 'indep']).case.workload == 'glu'
 
 
 def test_options_can_precede_or_follow_ablations():
