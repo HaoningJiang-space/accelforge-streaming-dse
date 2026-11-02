@@ -22,6 +22,7 @@ from accelforge._accelerated_imports import pd
 
 from accelforge.mapper.FFM._pareto_df.df_convention import *
 from accelforge.mapper.FFM._pareto_df.pareto import makepareto
+from accelforge.mapper.FFM._pareto_df import pareto as pareto_module
 
 
 CHECK_CORRECTNESS = False
@@ -411,6 +412,8 @@ class PmappingDataframe:
         # Opt-in experiment. Arbitrary row callbacks may depend on the complete
         # dataframe, so leave them on the original path.
         pair_limit = int(os.environ.get("AF_STREAMING_JOIN_PAIRS", "0"))
+        if pair_limit > 0 and pareto_module.TOLERANCE != 0:
+            raise ValueError("Streaming join requires zero Pareto tolerance")
         if (
             not _streaming_disabled
             and _pmapping_row_filter_function is None

@@ -69,8 +69,11 @@ b = streamed[columns].sort_values(columns).to_numpy(dtype=float)
 np.testing.assert_allclose(a, b, rtol=1e-12, atol=1e-20)
 assert counts['chunks'] > 0, 'No streaming was exercised'
 assert counts['max_chunk_product'] <= pair_limit, counts
+for data in (baseline, streamed):
+    best = (data['Total<SEP>energy'] * data['Total<SEP>latency']).idxmin()
+    assert data.loc[best, 'Total<SEP>mapping']() is not None
 print('COMPARISON', json.dumps({'resource_usage': bool(metrics & af.Metrics.RESOURCE_USAGE), 'shape': shape,
     'pair_limit': pair_limit, 'make_s': make_s, 'baseline_join_s': baseline_s,
     'streaming_join_s': streaming_s, 'rows': len(a), 'objective_columns': columns,
-    'objectives_equal': True, 'peak_rss_kib_process_so_far': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+    'objectives_equal': True, 'best_mapping_reconstructed': True, 'peak_rss_kib_process_so_far': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
     **counts}), flush=True)
