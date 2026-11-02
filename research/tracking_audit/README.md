@@ -1,11 +1,53 @@
 # Capacity-tracking audit
 
 This is the current experiment entry point for fixed-bandwidth GlobalBuffer capacity
-reuse on tag 1.0 GLU. The three paths are `indep` (one search per capacity), `var`
+reuse on tag 1.0 (GLU, a matmul chain and MobileNet; tpu_v4i and nvdla). The three paths are `indep` (one search per capacity), `var`
 (shared generation, selective resource tracking at Join), and `push` (also eliminate
 provably unnecessary fixed resources during generation).
 
 ## Current status and limits
+
+### Multi-workload validation, commit `3e6a8502`
+
+Five cases, each with indep/var/push, three repeats in rotated order after an untimed
+warmup, eight workers, no template-count limit, fixed bandwidth. Two cases ran at a
+time under `run_capped.sh 24 7200`. Records: [results/multi_3e6a8502/](results/multi_3e6a8502/).
+
+| Case | GlobalBuffer MiB | Median s indep / var / push | var | push | Peak RSS |
+| --- | --- | --- | --- | --- | --- |
+| glu 256,512,1024 @ tpu_v4i | 0.25, 0.375, 1, 4 | 124.3 / 33.9 / 32.9 | 3.66x | 3.78x | 3.8 GB |
+| matmuls 3,256,256 @ tpu_v4i | 0.0625, 0.25, 1 | 60.4 / 25.4 / 21.2 | 2.38x | 2.85x | 3.5 GB |
+| glu 64,128,256 @ nvdla | 0.03125, 0.0625, 0.25 | 23.6 / 8.0 / 7.4 | 2.97x | 3.20x | 3.1 GB |
+| matmuls 3,256,256 @ nvdla | 0.03125, 0.0625, 0.25 | 10.9 / 4.4 / 5.4 | 2.46x | 2.01x | 3.0 GB |
+| mobilenet 1 @ nvdla | 0.03125, 0.0625, 0.25 | 183.0 / 69.3 / 49.8 | 2.64x | 3.67x | 4.6 GB |
+
+In every case indep, var and push pick mappings with the same re-evaluated EDP at every
+capacity in every repeat; every pick re-evaluates exactly at its capacity, no variant
+is below the best known EDP, and every usage check completed. The GLU@tpu_v4i EDPs equal
+the `d422ce05` baseline below. The server load average was 150-220 on 256 cores, so
+absolute times are noisy; each case's variants share its run's conditions.
+
+- matmuls@tpu_v4i exited 3 under the then-current rule: at 0.0625 MiB, FFM's *reported*
+  energy was 5.26846525e-5 in two repeats and 5.26846488e-5 in one (7e-8 relative),
+  while every pick re-evaluates to E=5.2684652544e-5. Commit `371fb0e6` judges
+  consistency and optimality on the re-evaluated EDP; re-judging all five logs with it
+  finds every case consistent and best known.
+- min_usage shortfalls are reported for GLU and MobileNet on both architectures and
+  are all at the attainable maximum: a spatial dimension can only unroll ranks
+  irrelevant to its tensor, so e.g. GLU FFG reuse_output on nvdla is 128/192, MobileNet
+  pointwise 24/192 and 24/32, depthwise reuse_output 9/192, and FFH/depthwise
+  reuse_input 1/128 or 1/32 (no irrelevant rank).
+- MobileNet needed two fixes. The tag1 copy of the workload
+  (`research/workloads/mobilenet_28_tag1.yaml`) renames `shape` and aligns Depthwise1's
+  window. Its depthwise layers then failed in unmodified tag 1.0 with
+  `KeyError: 'Depthwise0<SEP>n_iterations<SEP>2'`: a backing holder lowered through a
+  sliding-window loop had its reservation below that loop (Compatibility counted it as
+  fused) but `label_fused_loops` did not label the loop fused. `3e6a8502` labels fused
+  loops from the actual reservation positions.
+- Not covered: mobilenet@tpu_v4i (indep alone exceeded the 40-minute probe limit),
+  eyeriss (energy plugin incompatible with tag1), bandwidth variation, larger shapes.
+
+### GLU baseline, commit `d422ce05`
 
 Current baseline, commit `d422ce05` (min-usage fallback fix, suboptimal picks fail the
 audit). Half-scale GLU (256,512,1024), GlobalBuffer 0.25/0.375/1/4 MiB, fixed bandwidth,
