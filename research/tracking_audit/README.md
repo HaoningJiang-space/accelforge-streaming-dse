@@ -7,27 +7,40 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
-The recorded half-scale experiment uses shape (256,512,1024), capacities
-0.25/0.375/1/4 MiB, eight workers, and no template-count limit. At `9a4af4fc`,
-the recorded three-repeat medians were 136.7 s / 39.8 s / 33.6 s for indep/var/push.
-However, its min-usage checker raised a KeyError. A separate one-repeat run at
-`64fd1fb0` reported agreeing EDPs and completed checks. That does not retroactively
-validate all three repeats. These figures are historical measurements, not new
-measurements of the current revision; the raw server logs are not included here.
-The investigation and obsolete results are preserved in [HISTORY.md](HISTORY.md).
+Current baseline, commit `d422ce05` (min-usage fallback fix, suboptimal picks fail the
+audit). Half-scale GLU (256,512,1024), GlobalBuffer 0.25/0.375/1/4 MiB, fixed bandwidth,
+no template-count limit, eight workers, three repeats in rotated order after an
+untimed warmup. Run under `run_capped.sh 24 5400`; exit 0. Records:
+[results/capacity_d422ce05_r3.log](results/capacity_d422ce05_r3.log).
 
-The current review fixes another tile-enumeration bug: when no candidate reached
-`min_usage`, FFM selected the **lowest** usage instead of the highest attainable
-usage. A small test using the real enumerator reproduced usage 0.125 instead of 0.5.
-The fix preserves 0.5. The historical benchmark needs a new run after this change.
+| Capacity (MiB) | EDP, identical for indep/var/push in all repeats |
+| --- | --- |
+| 0.25 | 1.844437720269433e-08 |
+| 0.375 | 1.841359736486614e-08 |
+| 1, 4 | 1.5785650060107967e-08 |
 
-Local review validation: 32 audit/enumerator/CLI tests and 39 Streaming/Pareto
-tests passed. A one-process GLU smoke run at shape (4,8,16), capacities
-0.03125/0.125 MiB, found identical indep/push EDP 1.1906192914835282e-15.
-All four picks re-evaluated and all usage checks completed; the small workload
-has spatial utilization shortfalls, which are explicitly reported. The run had
-one repeat and no warmup, so its timing is not a speedup result. Structured
-records are saved in [results/review_smoke.json](results/review_smoke.json).
+| Variant | Search seconds per repeat | Median | Speedup vs indep |
+| --- | --- | --- | --- |
+| indep | 129.3 / 134.4 / 132.8 | 132.8 | 1.00x |
+| var | 38.6 / 39.0 / 35.5 | 38.6 | 3.44x |
+| push | 34.1 / 31.6 / 32.9 | 32.9 | 4.03x |
+
+All flags are true except `all_min_usage_satisfied`: `all_picks_valid`,
+`all_repeats_consistent`, `all_picks_best_known`, `all_min_usage_checks_completed`.
+Process-group peak RSS was 3.8 GB. The server load average was about 216 on 256 cores,
+so absolute times are noisy; the variants share each run's conditions.
+
+Every pick has the same two shortfalls: Einsum FFH on ArrayFanout `reuse_input` and
+`reuse_output`, usage 1/128 against min_usage 1. FFH is elementwise (b,m,c are relevant
+to both its input and output), so neither reuse dimension has a rank to unroll and
+1/128 is the highest attainable usage, which is FFM's documented fallback. Earlier
+runs had the same mapping but reported no shortfall because the old checker skipped
+dimensions without an explicit spatial loop. The min-usage fallback fix did not change
+any pick in this experiment; the EDPs equal those recorded before it.
+
+Earlier measurements and the investigation are in [HISTORY.md](HISTORY.md). The small
+(4,8,16) smoke run used for the review is in
+[results/review_smoke.json](results/review_smoke.json).
 
 Remaining limits:
 

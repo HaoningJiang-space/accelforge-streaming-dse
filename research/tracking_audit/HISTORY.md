@@ -162,3 +162,18 @@ validated against the pre-fix library (6f0752fa) with `AF_ABL_SKIP_BIG_ENOUGH=Lo
 1.8202e-8 pick with LocalBuffer dimension Z at usage 0.5 < 1 for FFG and FFU.
 
 Scope: one workload (GLU) at one shape, GlobalBuffer capacity only, fixed bandwidth.
+
+## Min-usage fallback fix and review (commit 7d348e87)
+
+When no tile candidate reached `min_usage`, FFM kept the **lowest** usage instead of
+the highest attainable usage. A test on the real enumerator reproduced usage 0.125
+instead of 0.5; the fix keeps 0.5. The review also made a usage-checker exception
+invalidate the audit and extended the check to dimensions without an explicit spatial
+loop. Validation then: 32 audit/enumerator/CLI tests and 39 Streaming/Pareto tests
+passed; a one-process GLU smoke run at (4,8,16), capacities 0.03125/0.125 MiB, found
+identical indep/push EDP 1.1906192914835282e-15 with all checks completed
+([results/review_smoke.json](results/review_smoke.json)).
+
+The three-repeat medians recorded at `9a4af4fc` (136.7 s / 39.8 s / 33.6 s) predate
+both fixes and their usage check raised a KeyError. They are superseded by the
+`d422ce05` baseline in the README.
