@@ -12,3 +12,17 @@ Bounded experiments behind the 1/2-scale GLU shared-vs-independent EDP mismatch.
 
 Observed on tag1 (`ea09a3df`), unlimited templates, fixed bandwidth: at 0.25 and 0.375 MiB the shared
 search returned EDP 1.8202e-8 and 1.8105e-8 while independent FFM returned 1.8361e-8 for both.
+
+## Results (half scale 256,512,1024; strict = `evaluate_mapping` at the exact capacity)
+
+| GLB | independent FFM | shared, join-only (`var`) | shared, generation pushdown (`push`) |
+|---|---|---|---|
+| 0.25 MiB | 1.8361e-8 | 1.8202e-8, valid | 1.8361e-8, valid |
+| 0.375 MiB | 1.8361e-8 | 1.8105e-8, **invalid** (reports 0.375 MiB GB, true 0.5 MiB) | 1.8260e-8, valid |
+| 1, 4 MiB | 1.5488e-8 | same, valid | same, valid |
+
+- The `var` join path under-counts the GlobalBuffer reservation of at least one mapping.
+- Independent ENERGY|LATENCY FFM misses valid mappings under capacity pressure: 1.8202e-8 is valid
+  at 0.25 MiB (hence also at 0.375 MiB), but independent FFM returns 1.8361e-8 at both capacities.
+- The `jobs` fix (54a7c6ff) does not change the independent result at 0.375 MiB.
+- At small scale (64,128,256) all three agree and every pick is valid; `push` took 173 s vs 214 s for `var`.
