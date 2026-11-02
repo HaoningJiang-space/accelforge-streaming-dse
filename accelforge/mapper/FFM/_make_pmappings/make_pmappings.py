@@ -220,10 +220,14 @@ def get_memories_to_track(
     #       as in an independent ENERGY|LATENCY search.
     #   AF_ABL_SKIP_BIG_ENOUGH / AF_ABL_SKIP_PMAPPING_ONLY: ablations that exempt the
     #       listed memories from one of the two eliminations below.
+    #   AF_ABL_BIG_ENOUGH_UNTRACK_ONLY: ablation; for the listed memories the "big
+    #       enough" elimination only stops tracking reservations and keeps the memory's
+    #       usage objective (it is not added to ignored_resources).
     known = frozenset(memories_track_all)
     variable = _memories_from_env("AF_GENERATION_VARIABLE_RESOURCES", known)
     skip_big_enough = _memories_from_env("AF_ABL_SKIP_BIG_ENOUGH", known)
     skip_pmapping_only = _memories_from_env("AF_ABL_SKIP_PMAPPING_ONLY", known)
+    untrack_only = _memories_from_env("AF_ABL_BIG_ENOUGH_UNTRACK_ONLY", known)
 
     if metrics.RESOURCE_USAGE in metrics:
         if not variable:
@@ -272,7 +276,8 @@ def get_memories_to_track(
                     usage += tensor_sizes[tensor] * scale
 
         if usage <= 1:
-            ignored_resources.add(memory)
+            if memory not in untrack_only:
+                ignored_resources.add(memory)
             print(
                 f"Not tracking memory {memory}. It is big enough to simultaneously "
                 f"hold every workload tensor that may be stored in it. Max possible "

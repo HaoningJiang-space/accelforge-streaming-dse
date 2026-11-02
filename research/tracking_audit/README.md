@@ -14,6 +14,7 @@ All are environment variables. Memory lists are comma-separated; unknown memory 
 | `AF_GENERATION_VARIABLE_RESOURCES` | `make_pmappings.get_memories_to_track` | With RESOURCE_USAGE: only the listed memories stay fully tracked; fixed memories are eliminated as in an ENERGY\|LATENCY search. |
 | `AF_ABL_SKIP_BIG_ENOUGH` | same | Ablation: the listed memories skip the "big enough for every tensor" elimination. |
 | `AF_ABL_SKIP_PMAPPING_ONLY` | same | Ablation: the listed memories skip the "never reserved across fused loops" elimination. |
+| `AF_ABL_BIG_ENOUGH_UNTRACK_ONLY` | `make_pmappings.get_memories_to_track` | Ablation: for the listed memories, "big enough" only stops reservation tracking and keeps the usage objective. |
 | `AF_ABL_ALLOW_UNREPRESENTABLE` | `make_pmappings` | Ablation (`1`): keep templates with a copy of a fusable tensor above a fused loop, which are skipped by default (see "Root cause" below). |
 
 ## Scripts
