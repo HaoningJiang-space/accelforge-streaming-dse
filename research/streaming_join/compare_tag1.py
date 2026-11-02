@@ -53,6 +53,33 @@ def run(limit):
     result = join_pmappings(copy.deepcopy(pm))
     return result.data, time.perf_counter() - t
 
+mode = os.environ.get('COMPARE_MODE', 'paired')
+if mode in {'baseline', 'stream'}:
+    data, elapsed = run(0 if mode == 'baseline' else pair_limit)
+    cols = sorted(c for c in data.columns if c.startswith('reservation<SEP>') or
+                  (c.startswith('Total<SEP>') and c != 'Total<SEP>mapping'))
+    assert cols and len(data)
+    if metrics & af.Metrics.RESOURCE_USAGE:
+        assert any(c.startswith('reservation<SEP>') for c in cols), cols
+    if mode == 'stream':
+        assert counts['chunks'] and counts['max_chunk_product'] <= pair_limit, counts
+    best = (data['Total<SEP>energy'] * data['Total<SEP>latency']).idxmin()
+    assert data.loc[best, 'Total<SEP>mapping']() is not None
+    out = {'mode': mode, 'shape': shape, 'resource_usage': bool(metrics & af.Metrics.RESOURCE_USAGE),
+           'max_templates_per_einsum': spec.mapper.ffm.max_pmapping_templates_per_einsum,
+           'pair_limit': pair_limit, 'make_s': make_s, 'join_s': elapsed,
+           'peak_rss_kib': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+           'columns': cols, 'values': data[cols].sort_values(cols).to_numpy(dtype=float).tolist(),
+           'best_edp': float((data['Total<SEP>energy'] * data['Total<SEP>latency']).min()), **counts}
+    target = os.environ['COMPARE_RESULT_PATH']
+    with open(target + '.tmp', 'w') as f:
+        json.dump(out, f)
+    os.replace(target + '.tmp', target)
+    print('RESULT', json.dumps({k: v for k, v in out.items() if k != 'values'}), flush=True)
+    sys.exit(0)
+if mode != 'paired':
+    raise ValueError('COMPARE_MODE must be paired, baseline, or stream')
+
 baseline, baseline_s = run(0)
 print('BASELINE', json.dumps({'join_s': baseline_s, 'n': len(baseline), 'peak_rss_kib': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}), flush=True)
 streamed, streaming_s = run(pair_limit)
