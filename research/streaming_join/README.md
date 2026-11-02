@@ -62,3 +62,11 @@ The original Join took 3.73 s and peaked at 403,748 KiB RSS; streaming took
 in its peak. This single run gives no robust speed or memory estimate: the
 streaming version is substantially slower here and has not yet met the goal.
 The separate JSON files include the entire compared numeric frontiers.
+
+Batching up to eight local frontiers (and at most 65,536 buffered rows) reduced
+the same seeded medium streaming test from 25.11 s to 16.28 s in a single
+run; it still took more than four times the original Join's 3.73 s. The full
+222-row numeric frontier and best EDP matched the separate baseline under the
+same tolerances. Instrumentation measured 669 chunks and 87 frontier merges,
+with 13.11 s in chunk joins and 1.62 s in frontier merges. Streaming peak RSS
+was 384,568 KiB. These are exploratory measurements, not a statistical claim.
