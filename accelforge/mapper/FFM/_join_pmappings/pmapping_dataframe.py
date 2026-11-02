@@ -2,6 +2,8 @@ from collections import defaultdict
 import copy
 import functools
 import itertools
+import math
+import os
 
 from typing import Any, Callable, Iterable
 
@@ -526,6 +528,7 @@ class PmappingDataframe:
         _pmapping_row_filter_function: Callable[[pd.Series], bool] | None = None,
         _force_allow_invalid_only_for_runtime_test: bool = False,
         _is_invalid: bool = False,
+        _streaming_disabled: bool = False,
     ) -> "PmappingDataframe":
         """
            A  B            A2
@@ -544,6 +547,30 @@ class PmappingDataframe:
               |
               F2+D
         """
+        # Experimental opt-in: leave existing semantics unchanged by default.
+        # The row filter must be the mapper's row-wise thresholder (or absent);
+        # arbitrary callbacks may depend on the entire dataframe.
+        pair_limit = int(os.environ.get("AF_STREAMING_JOIN_PAIRS", "0"))
+        row_filter_safe = _pmapping_row_filter_function is None or (
+            type(_pmapping_row_filter_function).__name__ == "OptimalityThresholder"
+            and type(_pmapping_row_filter_function).__module__
+            == "accelforge.mapper.FFM._join_pmappings.join_pmappings"
+            and _pmapping_row_filter_function._pmapping_row_filter_function is None
+        )
+        if (
+            not _streaming_disabled
+            and not _force_allow_invalid_only_for_runtime_test
+            and not _is_invalid
+            and pair_limit > 0
+            and len(self.data) * len(right.data) > pair_limit
+            and row_filter_safe
+        ):
+            return self._merge_next_streaming(
+                right, duplicated_aliased_tensors, compatibility_left,
+                compatibility_right, compatibility_joined, ignored_resources,
+                do_not_free, _pmapping_row_filter_function, pair_limit,
+            )
+
         live_tensors = compatibility_joined.tensor_names
         shared_loop_index = compatibility_left.n_loops - 1
         next_shared_loop_index = compatibility_joined.n_loops - 1
@@ -851,6 +878,46 @@ class PmappingDataframe:
             )
 
         return result
+
+    def _merge_next_streaming(
+        self, right, duplicated_aliased_tensors, compatibility_left,
+        compatibility_right, compatibility_joined, ignored_resources,
+        do_not_free, row_filter, pair_limit,
+    ):
+        """Bound candidate pairs per merge; the resulting frontier can still grow."""
+        # Preserve the original method's in-place preprocessing of the left input.
+        shared_loop_index = compatibility_left.n_loops - 1
+        self.free_to_loop_index(shared_loop_index)
+        self.shift_bottom_reservation_left(shared_loop_index)
+        left_n, right_n = len(self.data), len(right.data)
+        left_step = min(left_n, max(1, math.isqrt(pair_limit)))
+        right_step = max(1, pair_limit // left_step)
+        frontier = None
+
+        def partition(source, start, stop, size):
+            part = copy.copy(source)
+            part._data = source.data.iloc[start:stop].copy()
+            fraction = len(part.data) / size
+            part.n_total_pmappings = source.n_total_pmappings * fraction
+            part.n_valid_pmappings = source.n_valid_pmappings * fraction
+            return part
+
+        for left_start in range(0, left_n, left_step):
+            for right_start in range(0, right_n, right_step):
+                left_part = partition(self, left_start, left_start + left_step, left_n)
+                right_part = partition(right, right_start, right_start + right_step, right_n)
+                joined = left_part.merge_next(
+                    right_part, duplicated_aliased_tensors, compatibility_left,
+                    compatibility_right, compatibility_joined, ignored_resources,
+                    do_not_free=do_not_free,
+                    _pmapping_row_filter_function=row_filter,
+                    _streaming_disabled=True,
+                )
+                if frontier is None:
+                    frontier = joined
+                else:
+                    frontier = PmappingDataframe.concat([frontier, joined])
+        return frontier
 
     @error_check_wrapper
     def _adjust_reservations_one_resource(
