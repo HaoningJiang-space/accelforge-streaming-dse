@@ -188,7 +188,8 @@ def get_memories_to_track(
         )
 
     if metrics.RESOURCE_USAGE in metrics:
-        ignored_resources = memories_track_all
+        # Resource usage is an objective, so no memory may be ignored.
+        ignored_resources = set()
         return (
             memories_track_all,
             memories_track_pmappings_only,
