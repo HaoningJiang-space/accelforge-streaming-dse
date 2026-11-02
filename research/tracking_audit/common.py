@@ -30,10 +30,11 @@ SWITCHES = (
     'AF_GENERATION_VARIABLE_RESOURCES',
     'AF_ABL_SKIP_BIG_ENOUGH',
     'AF_ABL_SKIP_PMAPPING_ONLY',
+    'AF_ABL_ALLOW_UNREPRESENTABLE',
     'AF_STREAMING_JOIN_PAIRS',
 )
 # Ablations a caller may request for every search in a run, e.g. from the command line.
-ABLATIONS = ('AF_ABL_SKIP_BIG_ENOUGH', 'AF_ABL_SKIP_PMAPPING_ONLY')
+ABLATIONS = ('AF_ABL_SKIP_BIG_ENOUGH', 'AF_ABL_SKIP_PMAPPING_ONLY', 'AF_ABL_ALLOW_UNREPRESENTABLE')
 
 
 import accelforge as af  # noqa: E402
@@ -203,11 +204,11 @@ def skeleton(obj):
 
 
 def parse_ablations(args):
-    """Parse NAME=MEMORIES pairs (NAME from ABLATIONS) from the command line."""
+    """Parse NAME=VALUE pairs (NAME from ABLATIONS) from the command line."""
     out = {}
     for a in args:
         name, _, value = a.partition('=')
         if name not in ABLATIONS or not value:
-            raise SystemExit(f'bad ablation {a!r}; expected one of {ABLATIONS} as NAME=MEM[,MEM]')
+            raise SystemExit(f'bad ablation {a!r}; expected one of {ABLATIONS} as NAME=VALUE')
         out[name] = value
     return out
