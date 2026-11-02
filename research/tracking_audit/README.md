@@ -86,3 +86,19 @@ Quality is identical to the 8-worker run. Note that push is *not* equal to indep
 push finds a valid 1.8260e-8 against 1.8361e-8. Neither reaches 1.8202e-8, which var found valid
 at 0.25 MiB and which is therefore also valid at 0.375 MiB. `capacity_audit.py` now uses this
 capacity monotonicity for the best known valid EDP.
+
+## Tracing the invalid 0.375 MiB pick (indep, LocalBuffer tracked)
+
+`trace_pick.py` (8 workers): the reconstructed mapping stores the shared input Z (256x512, 128 KiB)
+in GlobalBuffer *above* the fused `c` loop. The valid 0.25 MiB pick never puts Z in GlobalBuffer.
+Re-evaluated at 4 MiB, the bad mapping needs 0.5 MiB of GlobalBuffer (FFM: 0.375 MiB, short by one
+Z) and 9.5e-7 J less energy than FFM scored. That is about one MainMemory read of Z (9.2e-7 J).
+
+`check_shared_resources.py`: no shared tensor is freed with mismatched left/right memory or level, with
+or without LocalBuffer tracked. Shared compatibility tensors are backing reservations (Z is backed in
+MainMemory), so the GlobalBuffer copy of Z is not freed there. Shared-tensor freeing is ruled out.
+
+Leading hypothesis (unverified): FFM scored a pmapping that keeps Z in GlobalBuffer *below* the fused
+loop (freed before FFU, re-read from MainMemory each `c` iteration), but the mapping reconstructed from
+the row places that Z storage above the fused loop. Next: rebuild the FFG pmapping of the bad row alone
+and compare its scored and re-evaluated reservation and energy.
