@@ -1,48 +1,61 @@
-# Tracking audit
+# Capacity-tracking audit
 
-Bounded experiments behind the 1/2-scale GLU shared-vs-independent EDP mismatch.
+Can one RESOURCE_USAGE search replace one FFM search per GlobalBuffer capacity, and is the
+FFM baseline itself optimal under capacity pressure? Workload: tag1 GLU (`glu_tag1.yaml`) on
+`tpu_v4i`, fixed bandwidth, GlobalBuffer capacity swept.
 
-- `run_capped.sh CAP_GB TIMEOUT_S LOG -- cmd...`: runs `cmd` in its own process group and kills only that
-  group when total RSS or wall time exceeds the cap. Set `NO_VLIMIT=1` for CUDA runs.
-- `diag_half.py [CAP_MIB]`: half-scale GLU (256,512,1024) on tpu_v4i. Runs (A) shared RESOURCE_USAGE
-  search at 4 MiB with `AF_VARIABLE_RESOURCES=GlobalBuffer`, filters it to CAP and re-evaluates the
-  best mapping at CAP; (B) independent ENERGY|LATENCY at CAP; (C) independent with RESOURCE_USAGE at CAP.
-- `p0_profile.py`, `p0_bench.py`, `p0_diag.py`, `sumprof.py`: join profiling and CPU-vs-GPU Pareto
-  microbenchmarks. They were written against upstream `04cf894e` and are kept for reference.
+## Library switches
 
-Observed on tag1 (`ea09a3df`), unlimited templates, fixed bandwidth: at 0.25 and 0.375 MiB the shared
-search returned EDP 1.8202e-8 and 1.8105e-8 while independent FFM returned 1.8361e-8 for both.
+All are environment variables holding comma-separated memory names. Unknown names raise.
 
-## Results (half scale 256,512,1024; strict = `evaluate_mapping` at the exact capacity)
+| switch | read in | effect |
+|---|---|---|
+| `AF_VARIABLE_RESOURCES` | `join_pmappings` | Join: keep the listed memories as objectives; drop other memories only when the sum of per-Einsum maxima proves they fit (tag1). |
+| `AF_GENERATION_VARIABLE_RESOURCES` | `make_pmappings.get_memories_to_track` | With RESOURCE_USAGE: only the listed memories stay fully tracked; fixed memories are eliminated as in an ENERGY\|LATENCY search. |
+| `AF_ABL_SKIP_BIG_ENOUGH` | same | Ablation: the listed memories skip the "big enough for every tensor" elimination. |
+| `AF_ABL_SKIP_PMAPPING_ONLY` | same | Ablation: the listed memories skip the "never reserved across fused loops" elimination. |
 
-| GLB | independent FFM | shared, join-only (`var`) | shared, generation pushdown (`push`) |
+## Scripts
+
+- `common.py`: spec construction, the three search variants (`indep`, `var`, `push`), switch
+  hygiene (every switch is cleared before each search), and `check_pick`, which re-evaluates a
+  picked mapping at its exact capacity and requires energy and latency to match within 1e-6.
+- `capacity_audit.py M,G,C CAPS VARIANTS [--repeats N] [ABLATION=MEMS ...]`: times the variants,
+  strictly validates every pick, and prints a `SUMMARY` with speedups and per-capacity quality.
+  Exits 2 if any pick is invalid.
+- `run_capped.sh CAP_GB TIMEOUT_S LOG -- cmd`: runs a command in its own process group under an
+  RSS and time cap, and exits with the command's status (137 if the watchdog killed it).
+- `legacy_p0/`: earlier join profiling and GPU Pareto scripts (upstream `04cf894e`, reference only).
+
+Run on the shared server from the repository root, with the tag1 venv and single-threaded math libraries:
+
+    export PYTHONPATH=$PWD OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMBA_NUM_THREADS=1
+    research/tracking_audit/run_capped.sh 16 3600 audit.log -- \
+        ~/graph_dse/venv-tag1/bin/python research/tracking_audit/capacity_audit.py \
+        256,512,1024 0.25,0.375,1,4 indep,var,push
+
+## Findings so far
+
+These came from the earlier per-question scripts (see commit `1dfa68c5`) and are to be
+re-run with `capacity_audit.py`. Half scale (256,512,1024); "valid" means re-evaluation at the
+exact capacity succeeded.
+
+| GLB | indep | var | push |
 |---|---|---|---|
 | 0.25 MiB | 1.8361e-8 | 1.8202e-8, valid | 1.8361e-8, valid |
-| 0.375 MiB | 1.8361e-8 | 1.8105e-8, **invalid** (reports 0.375 MiB GB, true 0.5 MiB) | 1.8260e-8, valid |
+| 0.375 MiB | 1.8361e-8 | 1.8105e-8, **invalid** | 1.8260e-8, valid |
 | 1, 4 MiB | 1.5488e-8 | same, valid | same, valid |
 
-- The `var` join path under-counts the GlobalBuffer reservation of at least one mapping.
-- Independent ENERGY|LATENCY FFM misses valid mappings under capacity pressure: 1.8202e-8 is valid
-  at 0.25 MiB (hence also at 0.375 MiB), but independent FFM returns 1.8361e-8 at both capacities.
-- The `jobs` fix (54a7c6ff) does not change the independent result at 0.375 MiB.
-- At small scale (64,128,256) all three agree and every pick is valid; `push` took 173 s vs 214 s for `var`.
-
-## Locating the independent-FFM loss (0.25 MiB, ENERGY|LATENCY, `AF_ABL_KEEP`)
-
-| memories kept fully tracked | best EDP |
-|---|---|
-| none (default: LocalBuffer and MainMemory "big enough", Register pmapping-only) | 1.8361e-8 |
-| Register | 1.8361e-8 |
-| LocalBuffer | **1.8202e-8** |
-| LocalBuffer, Register | **1.8202e-8** |
-
-Dropping LocalBuffer through the "big enough to hold every tensor" proof loses the valid 1.8202e-8 mapping.
-The mechanism is not yet known: tag1 adds energy and latency across Einsums, so the extra LocalBuffer
-Pareto dimension should not matter if the proof were exact.
-
-## The invalid 0.375 MiB pick is not caused by sharing
-
-Running the `var` configuration directly at 0.375 MiB (the join checks the real capacity at every step)
-returns the same row: reported GB 0.375 MiB, EDP 1.8105e-8, and re-evaluation fails at 0.375 MiB. The row's
-reported energy (2.5087e-4) also differs from the re-evaluated energy of its reconstructed mapping
-(2.4992e-4), so either the RESOURCE_USAGE path under-counts or the row is reconstructed into a different mapping.
+1. **var can pick an infeasible mapping.** At 0.375 MiB it reports 0.375 MiB of GlobalBuffer, but the
+   reconstructed mapping needs 0.5 MiB and fails re-evaluation. Its reported energy (2.5087e-4)
+   also differs from the re-evaluated energy (2.4992e-4). Searching directly at 0.375 MiB gives the
+   same row, so filtering across capacities is not the cause. It is still open whether the
+   reservation is under-counted or the row is reconstructed into a different mapping.
+2. **Independent FFM misses valid mappings under capacity pressure.** 1.8202e-8 is valid at 0.25 MiB
+   (hence also at 0.375 MiB), but indep returns 1.8361e-8 at both. With LocalBuffer exempt from
+   both eliminations (former `AF_ABL_KEEP`), indep finds 1.8202e-8; exempting Register does not help.
+   Which of the two eliminations is responsible, and why, is open.
+3. The `jobs` leftover-variable fix (`54a7c6ff`) does not change indep at 0.375 MiB.
+4. At small scale (64,128,256) all variants agree (within about 2e-8 relative) and every pick is
+   valid; push took 173 s vs 214 s for var.
+5. Full RESOURCE_USAGE without any elimination did not finish at half scale within 90 min / 24 GB.
