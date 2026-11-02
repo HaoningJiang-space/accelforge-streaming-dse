@@ -167,3 +167,27 @@ The first prepared-JoinPlan revision was compared against the pre-change
 frontier also matched the earlier reference (222 rows); a single streaming
 Join was 4.02 s versus 3.95 s before preparing the plan. This does not yet
 establish a speed improvement or a numeric/CUDA backend.
+
+### Capacity discrepancy: corrected and retested
+
+The previous 32 KiB discrepancy was traced to tag 1.0's pre-search memory
+redundancy bound: `get_tensor_size` returns element counts, while memory size
+is in bits, but the bound omitted each tensor's bits-per-value. The newer
+upstream commit multiplies by effective bit width. This branch now applies the
+tag's per-memory bit scaling and tensor bit width before comparing against
+capacity; three targeted tests exercise 1-bit, 8-bit, and scaled storage.
+
+After the correction, the same five-capacity sample (32, 64, 128, 256, and
+512 KiB; M=64/G=128/C=256, one template, fixed bandwidth) matched between
+full RESOURCE_USAGE, selective RESOURCE_USAGE, and independent searches.
+An independently reconstructed optimal 32 KiB mapping and the filtered shared
+mapping both re-evaluated with GlobalBuffer reservation 1.0; their re-evaluated
+energy and latency agreed with FFM output to about 3e-8 relative. The
+unfiltered shared optimum needs 48 KiB and re-evaluation at 32 KiB found no
+valid mapping. This is evidence for the specific discrepancy, not a proof for
+all mappings or capacities. Raw records are in `tag1_capacity_reevaluation.json`.
+
+After warmup, three alternating full/selective Join runs had medians 1.737 s
+and 1.229 s on the same sample, with 222 versus 18 final rows and the same five
+best EDP values. This does not establish 15-configuration or bandwidth reuse,
+and selective resource tracking is still opt-in and requires further tests.
