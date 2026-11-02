@@ -63,7 +63,8 @@ class PmappingGroup:
                 if (aliased_tensor := right.tensors.get(aliased_tensor, None)) is None:
                     continue
                 if my_tensor.resource_name == aliased_tensor.resource_name:
-                    duplicated_aliased_tensors.add(aliased_tensor.name)
+                    # adjust_reservations needs the reservation, not just its name.
+                    duplicated_aliased_tensors.add(aliased_tensor)
 
         mapping = delayed(self.mappings.merge_next)(
             right.mappings,
