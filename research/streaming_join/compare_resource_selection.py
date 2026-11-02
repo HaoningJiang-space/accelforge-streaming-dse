@@ -9,6 +9,7 @@ import math
 import os
 from pathlib import Path
 import sys
+import statistics
 import time
 
 
@@ -90,6 +91,29 @@ for cap in capacities:
     print('CAPACITY',json.dumps(record),flush=True)
 assert all(c['equal'] for c in checks), 'Selective resource policy changed the shared-search optimum'
 assert any(c['full_edp'] is not None for c in checks), 'No capacity produced a valid mapping'
+
+# The initial full and selective runs serve as warmup. Alternate the execution
+# order to avoid presenting a single cold/warm comparison as a speedup.
+full_times, selective_times = [], []
+repeats = int(os.environ.get('COMPARE_REPEATS', '3'))
+for iteration in range(repeats):
+    if iteration % 2 == 0:
+        repeated_full, elapsed_full = join(pm)
+        repeated_selective, elapsed_selective = join(pm, 'GlobalBuffer')
+    else:
+        repeated_selective, elapsed_selective = join(pm, 'GlobalBuffer')
+        repeated_full, elapsed_full = join(pm)
+    for cap in capacities:
+        expected = next(c['full_edp'] for c in checks if c['capacity_mib'] == cap)
+        for result in (repeated_full, repeated_selective):
+            actual = best(result.data, cap)
+            assert ((expected is None and actual is None) or
+                    (expected is not None and actual is not None and math.isclose(expected, actual, rel_tol=1e-12, abs_tol=1e-20)))
+    full_times.append(elapsed_full)
+    selective_times.append(elapsed_selective)
+print('TIMINGS',json.dumps({'full_seconds':full_times,'selective_seconds':selective_times,
+      'full_median_s':statistics.median(full_times),
+      'selective_median_s':statistics.median(selective_times)}),flush=True)
 
 independent_ok = True
 for cap in capacities:
