@@ -129,3 +129,13 @@ Join was 3.95 s with 383,472 KiB peak RSS versus original 3.73 s with 403,748
 KiB. All 222 compared frontier rows and best EDP matched. Both measurements are
 single-workload evidence, and the separate-process medium timing was not
 repeated. The saved JSON includes full numeric frontiers for replay.
+
+For the large captured group and a 4,096-pair budget, separate-process
+instrumentation measured the largest materialized candidate DataFrame at
+10,654,332 bytes (original) and 2,157,432 bytes (streaming). Both retained
+19,730 rows, approximately 6,076,972 DataFrame bytes, in the final frontier.
+The input DataFrames totaled 5,773,580 bytes. Process peak RSS was 315,044 KiB
+and 321,340 KiB respectively; smaller candidate tables did not reduce total
+RSS in this case. DataFrame deep-byte estimates do not measure all temporary
+arrays, fragmentation, shared memory, or simultaneous allocations, so they do
+not establish a global memory budget or explain the original OOM.
