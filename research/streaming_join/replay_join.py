@@ -24,13 +24,18 @@ af.set_n_parallel_jobs(1)
 with open(os.environ['CAPTURE_FILE'], 'rb') as f:
     original_left, original_right, args, kwargs = pickle.load(f)
 limit = int(os.environ.get('COMPARE_PAIR_LIMIT', '4096'))
-counts = {'chunks': 0, 'max_chunk_product': 0}
+counts = {'chunks': 0, 'max_chunk_product': 0, 'keyed_fast_paths': 0, 'max_keyed_matched_pairs': 0}
 original = PmappingDataframe.merge_next
 
 def measured(self, right, *a, **kw):
     if kw.get('_streaming_disabled'):
         counts['chunks'] += 1
-        counts['max_chunk_product'] = max(counts['max_chunk_product'], len(self.data)*len(right.data))
+        matched = kw.get('_streaming_matched_pairs')
+        if matched is None:
+            counts['max_chunk_product'] = max(counts['max_chunk_product'], len(self.data) * len(right.data))
+        else:
+            counts['keyed_fast_paths'] += 1
+            counts['max_keyed_matched_pairs'] = max(counts['max_keyed_matched_pairs'], matched)
     return original(self, right, *a, **kw)
 
 PmappingDataframe.merge_next = measured
@@ -67,7 +72,7 @@ for iteration in range(3):
     assert verify(base, stream) == rows
     base_times.append(elapsed_base)
     stream_times.append(elapsed_stream)
-assert counts['chunks'] and counts['max_chunk_product'] <= limit, counts
+assert counts['chunks'] and counts['max_chunk_product'] <= limit and counts['max_keyed_matched_pairs'] <= limit, counts
 print('REPLAY', json.dumps({'left_rows':len(original_left.data), 'right_rows':len(original_right.data),
     'pair_upper_bound':len(original_left.data)*len(original_right.data), 'pair_limit':limit,
     'warmup_baseline_s':warm_base_s, 'warmup_streaming_s':warm_stream_s,

@@ -38,7 +38,7 @@ make_s = time.perf_counter() - start
 print('GENERATED', json.dumps({'shape': shape, 'max_templates_per_einsum': spec.mapper.ffm.max_pmapping_templates_per_einsum, 'make_s': make_s, 'peak_rss_kib': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}), flush=True)
 
 original = PmappingDataframe.merge_next
-counts = {'chunks': 0, 'max_chunk_product': 0, 'empty_chunks': 0,
+counts = {'chunks': 0, 'max_chunk_product': 0, 'keyed_fast_paths': 0, 'max_keyed_matched_pairs': 0, 'empty_chunks': 0,
           'chunk_join_s': 0.0, 'frontier_merge_s': 0.0, 'frontier_merges': 0}
 inside_stream = False
 
@@ -46,7 +46,12 @@ def measured(self, right, *args, **kwargs):
     if not kwargs.get('_streaming_disabled'):
         return original(self, right, *args, **kwargs)
     counts['chunks'] += 1
-    counts['max_chunk_product'] = max(counts['max_chunk_product'], len(self.data) * len(right.data))
+    matched = kwargs.get('_streaming_matched_pairs')
+    if matched is None:
+        counts['max_chunk_product'] = max(counts['max_chunk_product'], len(self.data) * len(right.data))
+    else:
+        counts['keyed_fast_paths'] += 1
+        counts['max_keyed_matched_pairs'] = max(counts['max_keyed_matched_pairs'], matched)
     start = time.perf_counter()
     result = original(self, right, *args, **kwargs)
     counts['chunk_join_s'] += time.perf_counter() - start
@@ -92,7 +97,7 @@ if mode in {'baseline', 'stream'}:
     if metrics & af.Metrics.RESOURCE_USAGE:
         assert any(c.startswith('reservation<SEP>') for c in cols), cols
     if mode == 'stream':
-        assert counts['chunks'] and counts['max_chunk_product'] <= pair_limit, counts
+        assert counts['chunks'] and counts['max_chunk_product'] <= pair_limit and counts['max_keyed_matched_pairs'] <= pair_limit, counts
     best = (data['Total<SEP>energy'] * data['Total<SEP>latency']).idxmin()
     assert data.loc[best, 'Total<SEP>mapping']() is not None
     out = {'mode': mode, 'shape': shape, 'glb_mib': glb_mib, 'resource_usage': bool(metrics & af.Metrics.RESOURCE_USAGE),
@@ -125,7 +130,7 @@ a = baseline[columns].sort_values(columns).to_numpy(dtype=float)
 b = streamed[columns].sort_values(columns).to_numpy(dtype=float)
 np.testing.assert_allclose(a, b, rtol=1e-12, atol=1e-20)
 assert counts['chunks'] > 0, 'No streaming was exercised'
-assert counts['max_chunk_product'] <= pair_limit, counts
+assert counts['max_chunk_product'] <= pair_limit and counts['max_keyed_matched_pairs'] <= pair_limit, counts
 for data in (baseline, streamed):
     best = (data['Total<SEP>energy'] * data['Total<SEP>latency']).idxmin()
     assert data.loc[best, 'Total<SEP>mapping']() is not None

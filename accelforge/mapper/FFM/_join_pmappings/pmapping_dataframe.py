@@ -391,6 +391,7 @@ class PmappingDataframe:
         drop_valid_reservations: bool = True,
         _pmapping_row_filter_function: Callable[[pd.Series], bool] | None = None,
         _streaming_disabled: bool = False,
+        _streaming_matched_pairs: int | None = None,
     ) -> "PmappingDataframe":
         """
            A  B            A2
@@ -420,6 +421,19 @@ class PmappingDataframe:
             and pair_limit > 0
             and len(self.data) * len(right.data) > pair_limit
         ):
+            matched_pairs = self._matching_pair_count(
+                right, compatibility_left, compatibility_right, pair_limit
+            )
+            if matched_pairs is not None and matched_pairs <= pair_limit:
+                # An inner join materializes matched pairs, not the Cartesian
+                # product. Avoid splitting sparse joins that already fit.
+                return self.merge_next(
+                    right, shared_loop_index, next_shared_loop_index, live_tensors,
+                    still_live_reservations, duplicated_aliased_tensors,
+                    compatibility_left, compatibility_right, compatibility_joined,
+                    ignored_resources, drop_valid_reservations=drop_valid_reservations,
+                    _streaming_disabled=True, _streaming_matched_pairs=matched_pairs,
+                )
             return self._merge_next_streaming(
                 right, shared_loop_index, next_shared_loop_index, live_tensors,
                 still_live_reservations, duplicated_aliased_tensors,
@@ -618,6 +632,57 @@ class PmappingDataframe:
         result._check_reservations()
 
         return result
+
+    def _matching_pair_count(self, right, compatibility_left, compatibility_right, limit):
+        """Count equijoin pairs from key frequencies, or return None if uncertain.
+
+        This deliberately accepts only identical dtypes and non-null, unique
+        key columns. Other pandas join cases fall back to the generic path.
+        """
+        left_keys, right_keys = [], []
+
+        def check_match(a, b, param):
+            a, b = getattr(a.tile_pattern, param), getattr(b.tile_pattern, param)
+            if isinstance(a, str) or isinstance(b, str):
+                left_keys.append(a)
+                right_keys.append(b)
+            elif a != b:
+                raise ValueError("incompatible constant join keys")
+
+        try:
+            for name in compatibility_left.tensor_names & compatibility_right.tensor_names:
+                ta = compatibility_left.get_tensor_by_name(name)
+                tb = compatibility_right.get_tensor_by_name(name)
+                for a, b in zip(ta.loops, tb.loops):
+                    check_match(a, b, "initial_tile_shape")
+                    check_match(a, b, "tile_shape")
+            for a, b in zip(compatibility_left.loops, compatibility_right.loops):
+                check_match(a, b, "calculated_n_iterations")
+        except ValueError:
+            return None
+
+        if (not left_keys or len(set(left_keys)) != len(left_keys)
+                or len(set(right_keys)) != len(right_keys)):
+            return None
+        for a, b in zip(left_keys, right_keys):
+            if (a not in self.data or b not in right.data
+                    or self.data[a].dtype != right.data[b].dtype
+                    or self.data[a].isna().any() or right.data[b].isna().any()):
+                return None
+        if {"__ffm_left_count", "__ffm_right_count"} & set(left_keys + right_keys):
+            return None
+        try:
+            left_counts = self.data.groupby(left_keys, sort=False, observed=True).size().reset_index(name="__ffm_left_count")
+            right_counts = right.data.groupby(right_keys, sort=False, observed=True).size().reset_index(name="__ffm_right_count")
+            matched = pd.merge(left_counts, right_counts, how="inner", left_on=left_keys, right_on=right_keys)
+        except (TypeError, ValueError):
+            return None
+        count = 0
+        for l, r in zip(matched["__ffm_left_count"], matched["__ffm_right_count"]):
+            count += int(l) * int(r)
+            if count > limit:
+                break
+        return count
 
     def _merge_next_streaming(
         self, right, shared_loop_index, next_shared_loop_index, live_tensors,
