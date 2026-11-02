@@ -23,6 +23,9 @@ from accelforge._accelerated_imports import pd
 from accelforge.mapper.FFM._pareto_df.df_convention import *
 from accelforge.mapper.FFM._pareto_df.pareto import makepareto
 from accelforge.mapper.FFM._pareto_df import pareto as pareto_module
+from accelforge.mapper.FFM._join_pmappings.numeric_join import (
+    apply_numpy_program, compile_column_program,
+)
 
 
 CHECK_CORRECTNESS = False
@@ -495,8 +498,15 @@ class PmappingDataframe:
             plan["column_schema"] = schema
             plan["column_operations"] = operations
             plan["right_dropcols"] = dropcols
-        for target, source in plan["column_operations"]:
-            add_to_col(df, target, source)
+            plan["numeric_program"] = None
+        numeric_done = False
+        if os.environ.get("AF_NUMERIC_JOIN") == "1":
+            if plan["numeric_program"] is None:
+                plan["numeric_program"] = compile_column_program(plan["column_operations"])
+            numeric_done = apply_numpy_program(df, plan["numeric_program"])
+        if not numeric_done:
+            for target, source in plan["column_operations"]:
+                add_to_col(df, target, source)
         df = df.drop(columns=plan["right_dropcols"])
         result = PmappingDataframe(
             df,
@@ -607,6 +617,7 @@ class PmappingDataframe:
             "column_schema": None,
             "column_operations": None,
             "right_dropcols": None,
+            "numeric_program": None,
         }
 
     def _prepare_column_operations(self, right, df, max_nloops, min_nloops):

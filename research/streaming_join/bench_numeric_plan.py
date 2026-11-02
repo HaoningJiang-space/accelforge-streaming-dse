@@ -30,6 +30,9 @@ import pandas as pd
 import cupy as cp
 from accelforge.mapper.FFM._join_pmappings import pmapping_dataframe as mod
 from accelforge.mapper.FFM._pareto_df.df_convention import is_fused_loop_col
+from accelforge.mapper.FFM._join_pmappings.numeric_join import (
+    compile_column_program, numeric_inputs, execute_column_program,
+)
 
 with open(os.environ['CAPTURE_FILE'], 'rb') as f:
     left, right, args, kwargs = pickle.load(f)
@@ -51,42 +54,12 @@ if len(df) > limit:
 operations, _ = left._prepare_column_operations(right, df, plan['max_nloops'], plan['min_nloops'])
 assert operations and len(df)
 
-# Compile names into column IDs, preserving intermediate columns created by
-# the original add_to_col operation and its dtype-promotion semantics.
-names, ids = [], {}
-def add_id(name):
-    if name not in ids:
-        ids[name] = len(names)
-        names.append(name)
-    return ids[name]
-for target, source in operations:
-    add_id(source)
-    add_id(target)
-steps = np.asarray([(ids[target], ids[source]) for target,source in operations], dtype=np.int32)
-initial = []
-for name in names:
-    if name not in df:
-        initial.append(None)
-        continue
-    arr = np.ascontiguousarray(df[name].to_numpy(copy=True))
-    if arr.dtype.kind not in 'biuf':
-        raise TypeError(f'non-numeric operation column {name}: {arr.dtype}')
-    initial.append(arr)
-
-
-def compute(xp, arrays):
-    for target, source in steps:
-        target, source = int(target), int(source)
-        if arrays[source] is None:
-            raise ValueError(f'source column missing for operation {source}')
-        if arrays[target] is None:
-            arrays[target] = arrays[source].copy()
-            continue
-        if arrays[target].dtype != arrays[source].dtype:
-            arrays[target] = arrays[target].astype(xp.float64)
-            arrays[source] = arrays[source].astype(xp.float64)
-        arrays[target] = arrays[target] + arrays[source]
-    return arrays
+# The exact same integer-indexed program is used by the opt-in FFM CPU path.
+program = compile_column_program(operations)
+names, steps = program.names, program.steps
+initial = numeric_inputs(df, program)
+if initial is None:
+    raise TypeError('fixture has non-numeric operation columns')
 
 
 def pandas_run():
@@ -100,7 +73,7 @@ def pandas_run():
 def numpy_run():
     start=time.perf_counter()
     arrays=[None if x is None else x.copy() for x in initial]
-    compute(np, arrays)
+    execute_column_program(np, arrays, program)
     return arrays,time.perf_counter()-start
 
 
@@ -109,7 +82,7 @@ def gpu_run():
     arrays=[None if x is None else cp.asarray(x) for x in initial]
     cp.cuda.Stream.null.synchronize()
     uploaded=time.perf_counter()
-    compute(cp, arrays)
+    execute_column_program(cp, arrays, program)
     cp.cuda.Stream.null.synchronize()
     computed=time.perf_counter()
     result=[None if x is None else cp.asnumpy(x) for x in arrays]
