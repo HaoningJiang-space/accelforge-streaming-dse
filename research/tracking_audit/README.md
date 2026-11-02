@@ -11,7 +11,7 @@ Current baseline, commit `d422ce05` (min-usage fallback fix, suboptimal picks fa
 audit). Half-scale GLU (256,512,1024), GlobalBuffer 0.25/0.375/1/4 MiB, fixed bandwidth,
 no template-count limit, eight workers, three repeats in rotated order after an
 untimed warmup. Run under `run_capped.sh 24 5400`; exit 0. Records:
-[results/capacity_d422ce05_r3.log](results/capacity_d422ce05_r3.log).
+[results/capacity_d422ce05_r3.txt](results/capacity_d422ce05_r3.txt).
 
 | Capacity (MiB) | EDP, identical for indep/var/push in all repeats |
 | --- | --- |
