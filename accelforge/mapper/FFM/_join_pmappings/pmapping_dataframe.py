@@ -634,6 +634,16 @@ class PmappingDataframe:
         left_step = min(left_n, max(1, math.isqrt(pair_limit)))
         right_step = max(1, pair_limit // left_step)
         frontier = None
+        pending = []
+        pending_rows = 0
+
+        def flush_pending():
+            nonlocal frontier, pending, pending_rows
+            if pending:
+                inputs = ([frontier] if frontier is not None else []) + pending
+                frontier = PmappingDataframe.concat(inputs)
+                pending = []
+                pending_rows = 0
 
         def partition(source, start, stop, size):
             part = copy.copy(source)
@@ -656,10 +666,14 @@ class PmappingDataframe:
                     ignored_resources, drop_valid_reservations=drop_valid_reservations,
                     _streaming_disabled=True,
                 )
-                if frontier is None:
-                    frontier = joined
-                else:
-                    frontier = PmappingDataframe.concat([frontier, joined])
+                # Bound buffered local frontiers by the pair limit and at most
+                # eight blocks. The accumulated global frontier remains unbounded.
+                if pending and (len(pending) >= 8 or
+                                pending_rows + len(joined.data) > pair_limit):
+                    flush_pending()
+                pending.append(joined)
+                pending_rows += len(joined.data)
+        flush_pending()
         return frontier
 
     @error_check_wrapper
