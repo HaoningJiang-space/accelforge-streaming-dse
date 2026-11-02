@@ -102,3 +102,28 @@ Leading hypothesis (unverified): FFM scored a pmapping that keeps Z in GlobalBuf
 loop (freed before FFU, re-read from MainMemory each `c` iteration), but the mapping reconstructed from
 the row places that Z storage above the fused loop. Next: rebuild the FFG pmapping of the bad row alone
 and compare its scored and re-evaluated reservation and energy.
+
+## Root cause of the invalid pick (verified with `trace_pick.py`, commit a2754ccb)
+
+Per-Einsum pmappings rebuilt from the bad row (`row2pmappings`):
+
+- FFG keeps Z only in MainMemory and, below the fused `c` loop, in LocalBuffer. It does not use GlobalBuffer.
+- FFU additionally keeps Z in **GlobalBuffer above the fused `c` loop**.
+
+`Mapping._from_pmappings` merges both into one tree. Nodes above the shared loop form the common prefix, so
+the merged mapping holds Z in GlobalBuffer for FFG as well. FFG then reads Z from GlobalBuffer instead
+of re-reading it from MainMemory: the energy is lower and the reservation spans FFG's execution, needing
+0.5 MiB. FFM scored a different object: the combination where only FFU holds the GlobalBuffer copy
+(0.375 MiB).
+
+Why the join accepted it: `TensorReservation.get_backing_tensors` (compatibility.py; identical in
+upstream main) keeps one reservation per tensor name, the backing one. FFU's extra GlobalBuffer copy of
+Z above the shared loop is therefore not part of its compatibility, and FFG and FFU look compatible
+although the tree language cannot express "only FFU holds this copy above the shared loop". Tracking
+LocalBuffer only changes which candidates survive pruning, so this combination becomes the EDP winner.
+
+Fix options:
+1. Join side (conservative): treat non-backing holders of a shared tensor above the shared loop as part of
+   compatibility, so the two sides must agree on them. Every accepted combination is then representable.
+2. Reconstruction side: keep per-Einsum holders below a split instead of elevating them. This represents
+   what FFM scored, but needs a check that the model evaluates such trees as intended.
