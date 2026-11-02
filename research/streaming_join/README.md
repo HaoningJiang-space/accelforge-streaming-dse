@@ -226,3 +226,49 @@ The full-resource 8 MiB baseline was also repeated in a separate process at
 the same `d8d741d0` revision: 126.41 s and 109.79 s Join time, with matching
 1,650-row numeric frontiers and peak RSS around 2.81 GiB. The different times
 show shared-server variability.
+
+## Prepared numeric column program
+
+`AF_NUMERIC_JOIN=1` opts into the shared integer-indexed NumPy column-addition
+program in the CPU Join; leave it unset to retain the default Pandas path.
+Unsupported input dtypes fall back to the original operations. The same
+`ColumnProgram` can run on CuPy arrays, but the CUDA experiment is **only** a
+microbenchmark of the prepared additions. Matching, tensor allocation and
+freeing, capacity checks, Pareto pruning and mapping reconstruction still use
+FFM's CPU path. There is no CUDA Join backend, architecture mask, global memory
+budget or spill-to-disk implementation on this branch.
+
+On the 19,730-row captured Join (five column additions, 789,200 input bytes),
+three post-warmup trials gave median 3.829 ms for Pandas operations, 0.143 ms
+for NumPy, and 0.901 ms for CuPy including host-to-device and device-to-host
+transfers. All columns matched, including integer columns checked exactly. The
+GPU was an RTX 5090; the CuPy memory pool was limited to 256 MiB, excluding
+CUDA context and other allocations. This small operation did not benefit from
+GPU offload. The raw timings and per-phase transfer measurements are in
+`results/tag1_numeric_plan.json`.
+
+A separate end-to-end replay of the captured FFM Join, with 4,096-pair blocks,
+warmed both CPU paths and alternated three trials. The Pandas median was
+0.670 s and NumPy-program median was 0.658 s; all 19,730 rows and 21
+join-relevant fields matched. This small single-process observation does not
+establish a stable Join speedup. The medium GLU full RESOURCE_USAGE search also
+matched the 222-row original numeric frontier and best EDP. See
+`results/tag1_numeric_join.json` and `results/tag1_medium_numeric.json`.
+
+The opt-in selective policy is `AF_VARIABLE_RESOURCES=GlobalBuffer`. It protects
+that resource while using the original bound to remove a fixed-memory
+reservation only when its sum-of-per-Einsum maxima fits capacity. This is
+experimental, and does not change the requirement to check any resources not
+proved redundant. The validated capacity reuse results above apply only to the
+specified fixed-bandwidth, restricted-template workload; it is not a general
+multi-architecture implementation.
+
+For the same captured group, one instrumented warm run split the original
+0.130 s Join into 0.001 s preparation, 0.009 s matching, 0.008 s resource
+operations, 0.003 s column addition and 0.108 s local Pareto. With streaming
+at 4,096 pairs, the 0.647 s Join included 0.017 s key partitioning, 0.018 s
+matching, 0.044 s resource operations, 0.014 s column addition, 0.142 s local
+Pareto and 0.397 s frontier merges. Timing hooks and scheduling add overhead;
+these measurements are one run of one group and must not be generalized to all
+joins. The actual matching count was 19,730, not the 947,040 Cartesian upper
+bound. See `results/tag1_join_phases.json` for the complete measurements.
