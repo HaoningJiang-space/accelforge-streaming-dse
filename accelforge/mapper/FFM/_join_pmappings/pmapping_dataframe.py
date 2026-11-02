@@ -2,6 +2,8 @@ from collections import defaultdict
 import copy
 import functools
 import itertools
+import math
+import os
 
 from typing import Callable, Iterable, Optional
 
@@ -387,6 +389,7 @@ class PmappingDataframe:
         ignored_resources: set[str],
         drop_valid_reservations: bool = True,
         _pmapping_row_filter_function: Callable[[pd.Series], bool] | None = None,
+        _streaming_disabled: bool = False,
     ) -> "PmappingDataframe":
         """
            A  B            A2
@@ -405,6 +408,22 @@ class PmappingDataframe:
               |
               F2+D
         """
+        # Opt-in experiment. Arbitrary row callbacks may depend on the complete
+        # dataframe, so leave them on the original path.
+        pair_limit = int(os.environ.get("AF_STREAMING_JOIN_PAIRS", "0"))
+        if (
+            not _streaming_disabled
+            and _pmapping_row_filter_function is None
+            and pair_limit > 0
+            and len(self.data) * len(right.data) > pair_limit
+        ):
+            return self._merge_next_streaming(
+                right, shared_loop_index, next_shared_loop_index, live_tensors,
+                still_live_reservations, duplicated_aliased_tensors,
+                compatibility_left, compatibility_right, compatibility_joined,
+                ignored_resources, drop_valid_reservations, pair_limit,
+            )
+
         self._check_reservations()
         right._check_reservations()
         self.free_to_loop_index(shared_loop_index, live_tensors=live_tensors)
@@ -596,6 +615,49 @@ class PmappingDataframe:
         result._check_reservations()
 
         return result
+
+    def _merge_next_streaming(
+        self, right, shared_loop_index, next_shared_loop_index, live_tensors,
+        still_live_reservations, duplicated_aliased_tensors, compatibility_left,
+        compatibility_right, compatibility_joined, ignored_resources,
+        drop_valid_reservations, pair_limit,
+    ):
+        """Bound each pair product. The accumulated frontier remains unbounded."""
+        self._check_reservations()
+        right._check_reservations()
+        self.free_to_loop_index(shared_loop_index, live_tensors=live_tensors)
+        self.shift_bottom_reservation_left(shared_loop_index)
+        left_n, right_n = len(self.data), len(right.data)
+        left_step = min(left_n, max(1, math.isqrt(pair_limit)))
+        right_step = max(1, pair_limit // left_step)
+        frontier = None
+
+        def partition(source, start, stop, size):
+            part = copy.copy(source)
+            part._data = source.data.iloc[start:stop].copy()
+            part.left_reservations = copy.deepcopy(source.left_reservations)
+            part.right_reservations = copy.deepcopy(source.right_reservations)
+            fraction = len(part.data) / size
+            part.n_total_pmappings = source.n_total_pmappings * fraction
+            part.n_valid_pmappings = source.n_valid_pmappings * fraction
+            return part
+
+        for left_start in range(0, left_n, left_step):
+            for right_start in range(0, right_n, right_step):
+                left_part = partition(self, left_start, left_start + left_step, left_n)
+                right_part = partition(right, right_start, right_start + right_step, right_n)
+                joined = left_part.merge_next(
+                    right_part, shared_loop_index, next_shared_loop_index,
+                    live_tensors, still_live_reservations, duplicated_aliased_tensors,
+                    compatibility_left, compatibility_right, compatibility_joined,
+                    ignored_resources, drop_valid_reservations=drop_valid_reservations,
+                    _streaming_disabled=True,
+                )
+                if frontier is None:
+                    frontier = joined
+                else:
+                    frontier = PmappingDataframe.concat([frontier, joined])
+        return frontier
 
     @error_check_wrapper
     def _adjust_reservations_one_resource(
