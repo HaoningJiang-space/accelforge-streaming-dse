@@ -173,3 +173,25 @@ The earlier "best known" 1.8202e-8 and 1.5488e-8 were not legal: e.g. the 1.8202
 256 across LocalBuffer's spatial dimension Z (G = 512, fanout 4), using 2 of 4 instances, while
 tpu_v4i requires `min_usage: 1`. `check_pick` missed this because `evaluate_mapping` checks capacity and
 cost but not mapper constraints such as min_usage. That check is still to be added.
+
+## Hardened audit, 3 repeats (commit 9a4af4fc; min-usage check fixed in 64fd1fb0)
+
+Half scale (256,512,1024), caps 0.25/0.375/1/4 MiB, 8 workers, unlimited templates
+(`max_pmapping_templates_per_einsum = inf`), no inherited `AF_*` switches, clean tree.
+
+| GLB | indep = var = push (all 3 repeats) | valid | min_usage shortfall |
+|---|---|---|---|
+| 0.25 MiB | 1.8444e-8 | yes | none |
+| 0.375 MiB | 1.8414e-8 | yes | none |
+| 1, 4 MiB | 1.5786e-8 | yes | none |
+
+Median search time over 3 repeats: indep 136.7 s (124.0-138.8), var 39.8 s (36.9-42.1, **3.44x**),
+push 33.6 s (31.2-36.7, **4.07x**). Group peak 3.8 GB, no worker left behind. A separate 1-repeat
+run at 64fd1fb0 gave the same EDPs, no shortfall and no check error (var 3.64x, push 4.18x).
+
+The 3-repeat run reported every pick as a min_usage shortfall. That was a KeyError in the checker
+(bounds were indexed by Einsum), counted as a shortfall; 64fd1fb0 fixes both. The checker was then
+validated against the pre-fix library (6f0752fa) with `AF_ABL_SKIP_BIG_ENOUGH=LocalBuffer`: it flags the
+1.8202e-8 pick with LocalBuffer dimension Z at usage 0.5 < 1 for FFG and FFU.
+
+Scope: one workload (GLU) at one shape, GlobalBuffer capacity only, fixed bandwidth.
