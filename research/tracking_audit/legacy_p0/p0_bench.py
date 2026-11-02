@@ -11,6 +11,7 @@ import pandas as pd
 import cupy as cp
 from accelforge.mapper.FFM._pareto_df.fast_pareto import fast_pareto_mask, _dedup_mask
 
+MAX_DIMS = 32  # size of the per-thread rank buffer ri[] in the kernel below
 KERNEL = cp.RawKernel(r"""
 extern "C" __global__
 void pareto(const int* __restrict__ R, const long long* __restrict__ seg_start,
@@ -60,6 +61,8 @@ def gpu_pareto(data, goals):
     t0 = time.perf_counter()
     ranks, gid = prep(data, goals)
     n, d = ranks.shape
+    if d > MAX_DIMS:
+        raise ValueError(f'{d} Pareto dimensions exceed the kernel limit of {MAX_DIMS}')
     rsum = ranks.sum(axis=1, dtype=np.int64)
     order = np.lexsort((rsum, gid))
     g_s, s_s = gid[order], rsum[order]
