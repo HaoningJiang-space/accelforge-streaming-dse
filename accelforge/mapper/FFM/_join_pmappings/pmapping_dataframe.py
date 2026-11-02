@@ -747,6 +747,10 @@ class PmappingDataframe:
         frontier = None
         pending = []
         pending_rows = 0
+        boundary_enabled = os.environ.get("AF_PARTITIONED_FRONTIER") == "1"
+        boundary_frontier = None
+        boundary_total = 0.0
+        boundary_valid = 0.0
 
         def flush_pending():
             nonlocal frontier, pending, pending_rows
@@ -826,6 +830,24 @@ class PmappingDataframe:
                 _streaming_disabled=True, _streaming_matched_pairs=matched_pairs,
                 _prepared_join_plan=prepared_plan,
             )
+            if boundary_enabled:
+                from accelforge.mapper.FFM._join_pmappings.boundary_frontier import BoundaryFrontier
+
+                if boundary_frontier is None:
+                    boundary_frontier = BoundaryFrontier()
+                if boundary_frontier.add(joined.data):
+                    boundary_total += joined.n_total_pmappings
+                    boundary_valid += joined.n_valid_pmappings
+                    continue
+                # Preserve the accumulated frontier and fall back to the
+                # original general-purpose merge for this and later chunks.
+                saved = boundary_frontier.finish()
+                if saved is not None:
+                    frontier = PmappingDataframe(
+                        saved, skip_pareto=True, n_total_pmappings=boundary_total,
+                        n_valid_pmappings=boundary_valid,
+                    )
+                boundary_enabled = False
             # Bound buffered local frontiers by the pair limit and at most
             # eight blocks. The accumulated global frontier remains unbounded.
             if pending and (len(pending) >= 8 or
@@ -833,6 +855,10 @@ class PmappingDataframe:
                 flush_pending()
             pending.append(joined)
             pending_rows += len(joined.data)
+        if boundary_enabled and boundary_frontier is not None:
+            data = boundary_frontier.finish()
+            return PmappingDataframe(data, skip_pareto=True,
+                n_total_pmappings=boundary_total, n_valid_pmappings=boundary_valid)
         flush_pending()
         return frontier
 

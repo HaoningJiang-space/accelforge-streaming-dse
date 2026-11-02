@@ -328,3 +328,57 @@ its best mapping was reconstructable. Seven incremental-specific tests include
 randomized comparisons with the original Pareto, overlapping boundary groups,
 identical points, symbolic integer keys, and guarded fallbacks. They supplement,
 but cannot replace, broader workload and mapping re-evaluation tests.
+
+## Persistent output-boundary frontier and final capacity breakpoints
+
+`AF_PARTITIONED_FRONTIER=1` enables an experimental, in-memory frontier keyed
+by the actual output boundary columns used by tag 1.0 Pareto. Each incoming
+local frontier is partitioned *after* the original Join and resource semantics;
+only touched old groups are scanned for cross-frontier dominance. A final
+DataFrame is assembled once after the Join. If a chunk fails the existing exact
+zero-tolerance, schema, dtype or numerical checks, the accumulated state is
+preserved and the rest of the Join uses the original general merge. This path
+is off by default. It does not infer output boundaries from input join keys, and
+it does not yet implement boundary-complete scheduling across chunks.
+
+The following compare four paths on the same captured Join, after warmup,
+three alternating-order trials, one worker and a 4 GiB address-space limit:
+
+| Pair limit | Original, unblocked | General streaming | Incremental streaming | Persistent boundary |
+| ---: | ---: | ---: | ---: | ---: |
+| 4,096 | 0.129 s | 0.632 s | 0.331 s | 0.328 s |
+| 1,024 | 0.131 s | 3.362 s | 3.531 s | 2.670 s |
+
+All four outputs match on 19,730 rows and 21 relevant fields. For 4,096 pairs,
+the persistent path scanned no old rows because no output boundary was split
+across chunks. For 1,024 pairs it scanned 161,792 old rows, across warmup and
+three trials, with 5,092,352 cross-pair comparisons; the earlier separate
+incremental measurement scanned 5,617,980 old rows with the same number of
+cross pairs. Counts are cumulative over four executions, not per Join. The
+persistent path reduces unrelated scanning but remains much slower than the
+unblocked original on this capture. Process peak RSS is cumulative across all
+four modes, so it cannot establish per-mode memory savings. See
+`results/tag1_boundary_frontier_*.json`.
+
+A complete M=64/G=128/C=256 GLU run, one template, RESOURCE_USAGE, 4,096-pair
+blocks and persistent boundaries matched the original 222-row numeric frontier
+and best EDP, and reconstructed a best mapping. One run took 10.18 s for Join;
+the earlier separate unblocked reference took 3.73 s. These are single runs,
+not a speedup claim. The existing 2.60x capacity-reuse measurement did not use
+streaming and is a distinct result.
+
+`capacity_breakpoints.py` provides a final-result-only query: sort the GLB
+reservation and retain positions that strictly improve energy times latency.
+It retains original row positions for mapping reconstruction and does not
+replace energy, latency, or reservation during intermediate joins. On the saved
+95-row full-size selective frontier, 14 breakpoints answered 45 exact capacity
+queries, including representable one-byte boundary neighbors, identically to a
+full scan. These queries are exact relative to this saved frontier and fixed
+cost model; they do not prove candidate coverage, optimality outside the
+restricted Mapspace, or re-evaluate every returned mapping. See
+`results/tag1_capacity_breakpoints.json`.
+
+Neither feature provides a global search-memory cap, external spill, arbitrary
+bandwidth sharing, or a guarantee that all target capacities are covered by
+maximum-capacity candidates. Outputs remain subject to the existing Mapspace
+and resource-policy assumptions.
