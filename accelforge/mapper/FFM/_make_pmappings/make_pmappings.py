@@ -211,7 +211,10 @@ def get_memories_to_track(
                 f"Unknown variable resources: {sorted(protected - memories_track_all)}"
             )
     else:
-        protected = frozenset()
+        # EXPERIMENT: memories listed in AF_ABL_KEEP skip both eliminations below.
+        protected = frozenset(
+            x.strip() for x in os.environ.get("AF_ABL_KEEP", "").split(",") if x.strip()
+        )
 
     tensor_sizes = {}
     for tensor, size in get_per_tensor_size(spec).items():
