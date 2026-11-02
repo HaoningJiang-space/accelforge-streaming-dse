@@ -61,3 +61,22 @@ exact capacity succeeded.
 4. At small scale (64,128,256) all variants agree (within about 2e-8 relative) and every pick is
    valid; push took 173 s vs 214 s for var.
 5. Full RESOURCE_USAGE without any elimination did not finish at half scale within 90 min / 24 GB.
+
+## Re-run with capacity_audit.py (commit 30261d90, half scale, caps 0.25/0.375/1/4 MiB)
+
+`--jobs 8` reproduces the serial EDPs and validity exactly (group peak 3.9 GB, no worker left
+afterwards), so later runs use 8 workers. One repeat with 8 workers: indep 192 s, var 64 s (3.0x),
+push 46 s (4.2x).
+
+LocalBuffer ablations of indep (serial):
+
+| indep with | 0.25 MiB | 0.375 MiB |
+|---|---|---|
+| default (LocalBuffer eliminated as big enough) | 1.8361e-8 valid | 1.8361e-8 valid |
+| `AF_ABL_SKIP_BIG_ENOUGH=LocalBuffer` | **1.8202e-8 valid** | **1.8105e-8 invalid** |
+| `AF_ABL_SKIP_PMAPPING_ONLY=LocalBuffer` | 1.8361e-8 valid | 1.8361e-8 valid |
+
+So the invalid 0.375 MiB pick is not specific to the shared search: plain independent FFM produces
+it as soon as LocalBuffer is tracked. var tracks every memory during generation and inherits it;
+push and default indep eliminate LocalBuffer and avoid it, but also lose the valid 1.8202e-8.
+Both effects involve LocalBuffer, the only memory with a spatial fanout (Z=4) and `min_usage: 1`.
