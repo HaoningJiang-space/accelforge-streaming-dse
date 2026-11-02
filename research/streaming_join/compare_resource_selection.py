@@ -91,6 +91,7 @@ for cap in capacities:
 assert all(c['equal'] for c in checks), 'Selective resource policy changed the shared-search optimum'
 assert any(c['full_edp'] is not None for c in checks), 'No capacity produced a valid mapping'
 
+independent_ok = True
 for cap in capacities:
     os.environ.pop('AF_VARIABLE_RESOURCES', None)
     try:
@@ -102,5 +103,8 @@ for cap in capacities:
                 (ref is not None and independent_best is not None and math.isclose(ref, independent_best, rel_tol=1e-12, abs_tol=1e-20)))
         print('INDEPENDENT',json.dumps({'capacity_mib':cap,'independent_edp':independent_best,
               'shared_edp':ref,'equal':same,'make_s':gen_s,'join_s':run_s}),flush=True)
+        independent_ok &= same
     except (ValueError, AssertionError) as exc:
+        independent_ok = False
         print('INDEPENDENT_ERROR',json.dumps({'capacity_mib':cap,'error':str(exc)}),flush=True)
+assert independent_ok, 'At least one independent search disagreed or failed'
