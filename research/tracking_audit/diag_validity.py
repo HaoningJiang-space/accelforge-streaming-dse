@@ -65,4 +65,14 @@ for cap in caps:
         rec['valid_at_cap'] = rec['true_gb_mib'] <= cap * (1 + 1e-12)
     except Exception as e:
         rec.update(reeval_error=f'{type(e).__name__}: {str(e)[:200]}')
+    # Strict check: evaluate the mapping on the architecture with this exact capacity.
+    try:
+        s = build(cap, EL)
+        s.model.metrics = EL
+        s.mapping = copy.deepcopy(row['Total<SEP>mapping']())
+        ev = evaluate_mapping(s).data
+        e, l = float(ev['Total<SEP>energy'].iloc[0]), float(ev['Total<SEP>latency'].iloc[0])
+        rec.update(at_cap_ok=True, at_cap_edp=e * l)
+    except Exception as e:
+        rec.update(at_cap_ok=False, at_cap_error=f'{type(e).__name__}: {str(e)[:200]}')
     print('CAP', json.dumps(rec), flush=True)
