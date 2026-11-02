@@ -161,6 +161,16 @@ def get_jobs(
     return einsum2jobs
 
 
+def _memories_from_env(name: str, known: frozenset[str]) -> frozenset[str]:
+    """Parse a comma-separated memory list from environment variable `name`."""
+    memories = frozenset(
+        x.strip() for x in os.environ.get(name, "").split(",") if x.strip()
+    )
+    if unknown := memories - known:
+        raise ValueError(f"{name} names unknown memories: {sorted(unknown)}")
+    return memories
+
+
 def get_memories_to_track(
     spec: Spec,
     einsum2jobs: dict[EinsumName, list[Job]],
@@ -188,17 +198,20 @@ def get_memories_to_track(
             ignored_resources,
         )
 
-    # Memories whose capacity varies across the target architecture family. With
-    # RESOURCE_USAGE and this set given, only these stay fully tracked; every other
-    # memory has a fixed capacity and gets the same treatment as an independent
-    # ENERGY|LATENCY search.
-    protected = frozenset(
-        x.strip()
-        for x in os.environ.get("AF_GENERATION_VARIABLE_RESOURCES", "").split(",")
-        if x.strip()
-    )
+    # Research switches (environment variables, comma-separated memory names):
+    #   AF_GENERATION_VARIABLE_RESOURCES: with RESOURCE_USAGE, memories whose capacity
+    #       varies across the target architecture family. Only these stay fully
+    #       tracked; every other memory has a fixed capacity and is eliminated exactly
+    #       as in an independent ENERGY|LATENCY search.
+    #   AF_ABL_SKIP_BIG_ENOUGH / AF_ABL_SKIP_PMAPPING_ONLY: ablations that exempt the
+    #       listed memories from one of the two eliminations below.
+    known = frozenset(memories_track_all)
+    variable = _memories_from_env("AF_GENERATION_VARIABLE_RESOURCES", known)
+    skip_big_enough = _memories_from_env("AF_ABL_SKIP_BIG_ENOUGH", known)
+    skip_pmapping_only = _memories_from_env("AF_ABL_SKIP_PMAPPING_ONLY", known)
+
     if metrics.RESOURCE_USAGE in metrics:
-        if not protected:
+        if not variable:
             # Resource usage is an objective, so no memory may be ignored.
             ignored_resources = set()
             return (
@@ -206,15 +219,13 @@ def get_memories_to_track(
                 memories_track_pmappings_only,
                 ignored_resources,
             )
-        if not protected <= memories_track_all:
-            raise ValueError(
-                f"Unknown variable resources: {sorted(protected - memories_track_all)}"
-            )
-    else:
-        # EXPERIMENT: memories listed in AF_ABL_KEEP skip both eliminations below.
-        protected = frozenset(
-            x.strip() for x in os.environ.get("AF_ABL_KEEP", "").split(",") if x.strip()
-        )
+    elif variable:
+        raise ValueError("AF_GENERATION_VARIABLE_RESOURCES requires RESOURCE_USAGE")
+
+    # A variable memory's capacity is only known for the largest family member, so no
+    # elimination may be drawn from it.
+    skip_big_enough |= variable
+    skip_pmapping_only |= variable
 
     tensor_sizes = {}
     for tensor, size in get_per_tensor_size(spec).items():
@@ -226,9 +237,7 @@ def get_memories_to_track(
 
     # If the memory is big enough to hold all the tensors then we don't need to consider
     # it
-    # The capacity of a protected memory is only known for the largest family member,
-    # so no "big enough" proof may be drawn from it.
-    for memory in list(memories_track_all - protected):
+    for memory in list(memories_track_all - skip_big_enough):
         usage = 0
         for einsum in einsum2jobs.keys():
             job = einsum2jobs[einsum][0]
@@ -258,7 +267,7 @@ def get_memories_to_track(
 
     # If the memory is below every backing tensor holder node, then we need it for the
     # pmapping exploration but can drop it immediately
-    for m in list(memories_track_all - protected):
+    for m in list(memories_track_all - skip_pmapping_only):
         must_track = False
         for job in (j for jobs in einsum2jobs.values() for j in jobs):
             seen = False
