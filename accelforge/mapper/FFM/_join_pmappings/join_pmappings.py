@@ -1,6 +1,7 @@
 from collections import defaultdict
 import itertools
 import logging
+import os
 import time
 from typing import Callable
 
@@ -138,6 +139,8 @@ def make_full_equivalent_rank_variables(pairwise_equivalent_rank_variables):
 
 def get_memories_to_track(
     pmapping_groups: dict[str, list[PmappingGroup]],
+    protected_resources: frozenset[str] = frozenset(),
+    capacity_proof_only: bool = False,
 ) -> tuple[dict[str, list[PmappingGroup]], set[str], set[str]]:
 
     always_below = set()
@@ -177,7 +180,13 @@ def get_memories_to_track(
         for name, size in max_sizes.items():
             total_sizes[name] = total_sizes.get(name, 0) + size
 
-    ignore = set(t for t, s in total_sizes.items() if s <= 1) | always_below
+    # Protected resources remain objectives even when capacity is ample. In
+    # selective mode only remove a fixed resource when the sum of per-Einsum
+    # maxima proves it cannot overflow, including across simultaneous lifetimes.
+    ignore = set(t for t, s in total_sizes.items() if s <= 1)
+    if not capacity_proof_only:
+        ignore |= always_below
+    ignore -= protected_resources
 
     if not ignore:
         return pmapping_groups, ignore
@@ -195,10 +204,10 @@ def get_memories_to_track(
             s.mappings.update(data=data[keep_cols], skip_pareto=not run_pareto),
         )
 
-    for a in sorted(always_below):
+    for a in sorted(always_below & ignore):
         print(f"Not tracking {a} because it is never reserved for multiple pmappings.")
     for t, s in sorted(total_sizes.items(), key=lambda x: x[1], reverse=True):
-        if s <= 1:
+        if s <= 1 and t in ignore:
             print(
                 f"Not tracking {t} because its size is enough for the sum of all "
                 f"reservations ({s * 100:.2f}% of the total)"
@@ -261,6 +270,20 @@ def join_pmappings(
 
     if drop_valid_reservations:
         pmapping_groups, ignored_resources = get_memories_to_track(pmapping_groups)
+    elif variable_resources := os.environ.get("AF_VARIABLE_RESOURCES"):
+        protected = frozenset(x.strip() for x in variable_resources.split(",") if x.strip())
+        present = {
+            name_nloops[0]
+            for groups in pmapping_groups.values()
+            for group in groups
+            for col in group.mappings.data.columns
+            if (name_nloops := col2nameloop(col)) is not None
+        }
+        if not protected or not protected.issubset(present):
+            raise ValueError(f"Unknown or empty variable resources: {sorted(protected - present)}")
+        pmapping_groups, ignored_resources = get_memories_to_track(
+            pmapping_groups, protected_resources=protected, capacity_proof_only=True
+        )
 
     mixable_ranks = spec.workload._get_ranks_that_share_indexing_rank_variables()
 
