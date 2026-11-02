@@ -93,9 +93,15 @@ def build_capacity_breakpoints(data, reservation, capacity_scale, *, mode='ffm_c
     requirements = data[reservation].to_numpy()
     energy = data['Total<SEP>energy'].to_numpy()
     latency = data['Total<SEP>latency'].to_numpy()
-    edps = (data['Total<SEP>energy'] * data['Total<SEP>latency']).to_numpy()
-    if any(a.dtype.kind not in 'biuf' for a in (requirements, energy, latency, edps)):
+    if any(a.dtype.kind not in 'biuf' for a in (requirements, energy, latency)):
         raise ValueError('requirements and costs must be numeric')
+    # Costs are compared as float64. A fixed-width integer product could wrap around
+    # (2**32 * 2**32 == 0 in uint64), so integer costs must fit a float64 exactly.
+    for name, a in (('energy', energy), ('latency', latency)):
+        if a.dtype.kind in 'iu' and len(a) and (np.abs(a) > 2**53).any():
+            raise ValueError(f'integer {name} exceeds exact float range')
+    energy, latency = energy.astype(np.float64), latency.astype(np.float64)
+    edps = energy * latency
     if mode == 'exact_integer':
         if requirements.dtype.kind not in 'iu':
             raise ValueError('exact_integer requires a preserved integer requirement column')
