@@ -157,9 +157,8 @@ shared search. However, at 0.03125 MiB, the independently searched EDP was
 4.112123481360056e-11 versus 4.7251909016893453e-11 for either shared search.
 The other four sampled capacities matched. This is a correctness discrepancy,
 not a validated cross-architecture reuse result. The initial script printed
-this mismatch without a failing exit code; a later revision fails on it. The
-cause is being investigated and the policy remains experimental and off by
-default. See `results/tag1_resource_selection.json`.
+this mismatch without a failing exit code; a later revision fails on it. The cause and follow-up are described below; the policy remains experimental
+and off by default. See `results/tag1_resource_selection.json`.
 
 The first prepared-JoinPlan revision was compared against the pre-change
 `383dcb84` on a real group: both unblocked and blocked paths agreed across
@@ -191,3 +190,12 @@ After warmup, three alternating full/selective Join runs had medians 1.737 s
 and 1.229 s on the same sample, with 222 versus 18 final rows and the same five
 best EDP values. This does not establish 15-configuration or bandwidth reuse,
 and selective resource tracking is still opt-in and requires further tests.
+
+On the original tensor dimensions, 8 MiB maximum GlobalBuffer and two
+templates per Einsum, one selective-resource search returned 95 rows versus
+1,650 in the earlier full-resource reference. Filtering gave matching optimum
+EDPs at 2, 4 and 8 MiB; neither shared frontier had a candidate at 0.5 or
+1 MiB, so those two capacities are unverified, not passes. The observed
+selection Join time was 3.90 s and process peak RSS 369,580 KiB. The earlier
+full reference used a different code revision; a same-revision run is required
+before a performance comparison, and independent searches are still needed.
