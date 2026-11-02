@@ -39,9 +39,11 @@ VARIANTS = ('indep', 'var', 'push')
 WORKLOADS = {
     'glu': ('research/streaming_join/glu_tag1.yaml', ('M', 'G', 'C')),  # branch and merge
     'matmuls': ('examples/workloads/matmuls.yaml', ('N_EINSUMS', 'M', 'KN')),  # chain
-    'mobilenet': ('examples/workloads/mobilenet_28.yaml', ('BATCH_SIZE',)),  # convolutions
+    'mobilenet': ('research/workloads/mobilenet_28_tag1.yaml', ('BATCH_SIZE',)),  # convolutions
 }
-ARCHES = ('tpu_v4i', 'nvdla', 'eyeriss')  # examples/arches/<name>.yaml, each with a GlobalBuffer
+ARCHES = ('tpu_v4i', 'nvdla')  # examples/arches/<name>.yaml, each with a GlobalBuffer
+# eyeriss is left out: its energy comes from a component-model plugin whose installed
+# version returns ActionCost objects that the tag1 library cannot index.
 
 
 @dataclass(frozen=True)
