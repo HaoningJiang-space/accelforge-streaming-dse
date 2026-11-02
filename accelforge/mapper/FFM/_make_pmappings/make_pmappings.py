@@ -238,7 +238,7 @@ def get_memories_to_track(
     # pmapping exploration but can drop it immediately
     for m in list(memories_track_all):
         must_track = False
-        for job in jobs:
+        for job in (j for jobs in einsum2jobs.values() for j in jobs):
             seen = False
             for node in job.mapping.nodes:
                 if isinstance(node, TensorHolder) and node.component == m:

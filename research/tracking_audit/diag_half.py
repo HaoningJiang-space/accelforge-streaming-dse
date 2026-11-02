@@ -1,4 +1,5 @@
-"""Half-scale GLU: is the shared-search EDP below independent FFM real (valid mapping) or an artifact?
+"""usage: diag_half.py [CAP_MIB] [STAGES, default ABC]
+Half-scale GLU: is the shared-search EDP below independent FFM real (valid mapping) or an artifact?
 A shared (RU + AF_VARIABLE_RESOURCES=GlobalBuffer at max cap) -> filter -> re-evaluate best at CAP
 B independent ENERGY|LATENCY at CAP
 C independent ENERGY|LATENCY|RESOURCE_USAGE at CAP
@@ -13,6 +14,7 @@ root = Path(__file__).resolve().parents[2]
 af.set_n_parallel_jobs(1)
 shape = [256, 512, 1024]
 CAP, MAXCAP = float(sys.argv[1]) if len(sys.argv) > 1 else 0.375, 4.0
+STAGES = sys.argv[2] if len(sys.argv) > 2 else 'ABC'
 EL = af.Metrics.ENERGY | af.Metrics.LATENCY
 RU = EL | af.Metrics.RESOURCE_USAGE
 GB = 'reservation<SEP>GlobalBuffer<SEP>0<SEP>right'
@@ -61,24 +63,35 @@ def reevaluate(label, mapping, cap):
             out('REEVAL_ERROR', label=label, cap_mib=cap, metrics=mname, type=type(e).__name__, msg=str(e)[:500])
 
 
-t = time.time()
-shared = search(build(MAXCAP, RU), variable='GlobalBuffer')
-view = shared.data[shared.data[GB] <= CAP / MAXCAP * (1 + 1e-12)]
-sb = best(view)
-out('A_SHARED', seconds=time.time() - t, rows=len(shared.data), rows_fit=len(view),
-    edp=sb['Total<SEP>energy'] * sb['Total<SEP>latency'], energy=sb['Total<SEP>energy'],
-    latency=sb['Total<SEP>latency'], gb_frac_of_max=sb[GB], gb_frac_of_cap=sb[GB] * MAXCAP / CAP)
-reevaluate('shared_best', sb['Total<SEP>mapping'](), CAP)
+def stage_a():
+    t = time.time()
+    shared = search(build(MAXCAP, RU), variable='GlobalBuffer')
+    view = shared.data[shared.data[GB] <= CAP / MAXCAP * (1 + 1e-12)]
+    sb = best(view)
+    out('A_SHARED', seconds=time.time() - t, rows=len(shared.data), rows_fit=len(view),
+        edp=sb['Total<SEP>energy'] * sb['Total<SEP>latency'], energy=sb['Total<SEP>energy'],
+        latency=sb['Total<SEP>latency'], gb_frac_of_max=sb[GB], gb_frac_of_cap=sb[GB] * MAXCAP / CAP)
+    reevaluate('shared_best', sb['Total<SEP>mapping'](), CAP)
 
-t = time.time()
-ind = search(build(CAP, EL))
-ib = best(ind.data)
-out('B_INDEP_EL', seconds=time.time() - t, rows=len(ind.data),
-    edp=ib['Total<SEP>energy'] * ib['Total<SEP>latency'], energy=ib['Total<SEP>energy'], latency=ib['Total<SEP>latency'])
-reevaluate('indep_el_best', ib['Total<SEP>mapping'](), CAP)
 
-t = time.time()
-indr = search(build(CAP, RU))
-rb = best(indr.data)
-out('C_INDEP_RU', seconds=time.time() - t, rows=len(indr.data),
-    edp=rb['Total<SEP>energy'] * rb['Total<SEP>latency'], energy=rb['Total<SEP>energy'], latency=rb['Total<SEP>latency'])
+def stage_b():
+    t = time.time()
+    ind = search(build(CAP, EL))
+    ib = best(ind.data)
+    out('B_INDEP_EL', seconds=time.time() - t, rows=len(ind.data),
+        edp=ib['Total<SEP>energy'] * ib['Total<SEP>latency'], energy=ib['Total<SEP>energy'],
+        latency=ib['Total<SEP>latency'])
+    reevaluate('indep_el_best', ib['Total<SEP>mapping'](), CAP)
+
+
+def stage_c():
+    t = time.time()
+    indr = search(build(CAP, RU))
+    rb = best(indr.data)
+    out('C_INDEP_RU', seconds=time.time() - t, rows=len(indr.data),
+        edp=rb['Total<SEP>energy'] * rb['Total<SEP>latency'], energy=rb['Total<SEP>energy'],
+        latency=rb['Total<SEP>latency'])
+
+
+for stage in STAGES:
+    {'A': stage_a, 'B': stage_b, 'C': stage_c}[stage]()
