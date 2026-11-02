@@ -118,3 +118,14 @@ Five targeted tests cover count, nulls, incompatible types, no matches, and
 nonzero Pareto tolerance. Neither a global multi-worker memory budget nor GPU
 execution, architecture masks, or cross-architecture search reuse is
 implemented. For custom row filters the original unbounded join is used.
+
+The subsequent key-group scheduler collects only matching keys and tiles each
+set to stay within the matched-pair limit; unsupported key cases use the generic
+streaming fallback. On the 947,040-product capture, with a 4,096 matching-pair
+limit, warmed medians were 0.132 s original and 0.615 s streaming, with 19,730
+matching boundary/resource/objective rows; the largest materialized matching
+block was 3,995. On the independent medium GLU run with limit 65,536, streamed
+Join was 3.95 s with 383,472 KiB peak RSS versus original 3.73 s with 403,748
+KiB. All 222 compared frontier rows and best EDP matched. Both measurements are
+single-workload evidence, and the separate-process medium timing was not
+repeated. The saved JSON includes full numeric frontiers for replay.
