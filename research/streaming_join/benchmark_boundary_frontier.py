@@ -19,6 +19,7 @@ import accelforge as af
 import pandas as pd
 from accelforge.mapper.FFM._pareto_df.df_convention import col_used_in_joining
 from accelforge.mapper.FFM._join_pmappings.boundary_frontier import BoundaryFrontier
+from accelforge.mapper.FFM._join_pmappings.pmapping_dataframe import PmappingDataframe
 
 af.set_n_parallel_jobs(1)
 with open(os.environ['CAPTURE_FILE'], 'rb') as f:
@@ -28,6 +29,15 @@ repeats = int(os.environ.get('COMPARE_REPEATS', '3'))
 counts = {'stores':0, 'new_groups':0, 'touched_groups':0, 'old_rows_scanned':0,
           'new_rows_scanned':0, 'cross_pairs':0, 'overlap_groups':0, 'fallbacks':0}
 original_init, original_add = BoundaryFrontier.__init__, BoundaryFrontier.add
+original_merge = PmappingDataframe.merge_next
+chunk_counts = {name: 0 for name in ('original','stream','incremental','partitioned')}
+mode_name = None
+
+def measured_merge(self, right, *args, **kwargs):
+    if kwargs.get('_streaming_disabled'):
+        chunk_counts[mode_name] += 1
+    return original_merge(self, right, *args, **kwargs)
+PmappingDataframe.merge_next = measured_merge
 
 def measured_init(self, *args, **kwargs):
     counts['stores'] += 1
@@ -41,6 +51,8 @@ BoundaryFrontier.__init__, BoundaryFrontier.add = measured_init, measured_add
 
 
 def run(mode):
+    global mode_name
+    mode_name = mode
     os.environ['AF_STREAMING_JOIN_PAIRS'] = str(0 if mode == 'original' else limit)
     os.environ['AF_INCREMENTAL_PARETO'] = str(int(mode == 'incremental'))
     os.environ['AF_PARTITIONED_FRONTIER'] = str(int(mode == 'partitioned'))
@@ -71,5 +83,5 @@ for i in range(repeats):
         times[mode].append(elapsed)
 print('BOUNDARY_BENCH', json.dumps({'pair_limit':limit, 'warmup_s':{k:v[1] for k,v in warm.items()},
     'seconds':times, 'median_s':{k:statistics.median(v) for k,v in times.items()},
-    'rows':rows, 'fields':fields, 'equal':True, 'partitioned_counts_including_warmup':counts,
+    'rows':rows, 'fields':fields, 'equal':True, 'chunks_including_warmup':chunk_counts, 'partitioned_counts_including_warmup':counts,
     'process_peak_rss_kib':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}), flush=True)

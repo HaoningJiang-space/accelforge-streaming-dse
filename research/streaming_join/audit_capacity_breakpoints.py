@@ -17,7 +17,7 @@ queries = {0, scale, 2*1024*1024, 4*1024*1024}
 for r in data[reservation]:
     b = float(r)*scale
     if b.is_integer():
-        queries.update([max(0, int(b)-1), int(b), int(b)+1])
+        queries.update(q for q in (int(b)-1, int(b), int(b)+1) if 0 <= q <= scale)
 for capacity in sorted(queries):
     filtered = data[data[reservation] <= capacity/scale]
     answer = breakpoints.query(capacity)

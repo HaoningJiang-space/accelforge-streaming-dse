@@ -21,6 +21,18 @@ class BoundaryTests(unittest.TestCase):
             ref = makepareto(data).sort_values([K,E,T,R]).reset_index(drop=True)
             pd.testing.assert_frame_equal(got,ref,check_dtype=False)
 
+    def test_reordered_chunks_preserve_numeric_frontier(self):
+        rng = np.random.default_rng(98)
+        data = pd.DataFrame(rng.integers(0,12,(120,4)), columns=[K,E,T,R])
+        blocks = [makepareto(data.iloc[i:i+20]) for i in range(0,len(data),20)]
+        outputs = []
+        for blocks_ordered in (blocks, list(reversed(blocks))):
+            store = BoundaryFrontier()
+            for block in blocks_ordered:
+                self.assertTrue(store.add(block))
+            outputs.append(store.finish().sort_values([K,E,T,R]).reset_index(drop=True))
+        pd.testing.assert_frame_equal(outputs[0],outputs[1],check_dtype=False)
+
     def test_new_groups_do_not_scan_old(self):
         stats = {}
         store = BoundaryFrontier(stats)
@@ -28,6 +40,17 @@ class BoundaryTests(unittest.TestCase):
         self.assertTrue(store.add(pd.DataFrame({K:[2],E:[1.],T:[2.]})))
         self.assertEqual(stats.get('old_rows_scanned', 0), 0)
         self.assertEqual(len(store.finish()),2)
+
+    def test_boundary_disappearing_requires_new_pareto(self):
+        # After a boundary column disappears the existing store cannot compare
+        # with its old schema; rebuild using the new output boundary semantics.
+        data = pd.DataFrame({K:[1,2], E:[1.,2.], T:[1.,2.]})
+        store = BoundaryFrontier()
+        self.assertTrue(store.add(data))
+        reduced = data.drop(columns=[K])
+        self.assertFalse(store.add(reduced))
+        self.assertEqual(len(makepareto(reduced)), 1)
+        self.assertEqual(len(store.finish()), 2)
 
     def test_unsupported_schema_falls_back_without_mutation(self):
         store = BoundaryFrontier()

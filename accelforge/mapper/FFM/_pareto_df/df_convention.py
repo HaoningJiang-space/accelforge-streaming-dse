@@ -220,7 +220,10 @@ def add_to_col(df, target, source):
 
 
 def max_to_col(df, target, source):
-    df.loc[:, target] = df[[target, source]].max(axis=1) if target in df else df[source]
+    # Whole-column replacement preserves pandas' result dtype. In particular,
+    # mixed float32/float64 maxima must not be assigned into an existing
+    # float32 buffer (newer pandas rejects that lossy inplace assignment).
+    df[target] = df[[target, source]].max(axis=1) if target in df else df[source]
 
 
 def is_objective_col(c):

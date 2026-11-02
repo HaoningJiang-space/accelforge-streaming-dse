@@ -27,9 +27,10 @@ os.environ.pop('AF_STREAMING_JOIN_PAIRS', None)
 os.environ.pop('AF_INCREMENTAL_PARETO', None)
 os.environ.pop('AF_VARIABLE_RESOURCES', None)
 shape = [int(x) for x in os.getenv('COMPARE_SHAPE', '512,1024,2048').split(',')]
-max_bytes = 8 * 1024 * 1024
+max_bytes = int(os.getenv('COMPARE_MAX_BYTES', str(8 * 1024 * 1024)))
 boundaries = [int(x) for x in os.getenv('COMPARE_BOUNDARIES_BYTES', '2097152,3145728').split(',')]
 templates = int(os.getenv('COMPARE_MAX_TEMPLATES', '2'))
+deltas = [int(x) for x in os.getenv('COMPARE_DELTAS_BYTES', '-1,0,1').split(',')]
 energy_latency = af.Metrics.ENERGY | af.Metrics.LATENCY
 resource_metrics = energy_latency | af.Metrics.RESOURCE_USAGE
 reservation = 'reservation<SEP>GlobalBuffer<SEP>0<SEP>right'
@@ -85,7 +86,7 @@ os.environ.pop('AF_VARIABLE_RESOURCES', None)
 print('SHARED', json.dumps({'rows':len(shared.data), 'max_bytes':max_bytes}), flush=True)
 all_results=[]
 for boundary in boundaries:
-    for delta in (-1,0,1):
+    for delta in deltas:
         size_bytes=boundary+delta
         selected = get_best(shared.data[shared.data[reservation] <= size_bytes/max_bytes])
         item={'boundary_bytes':boundary, 'delta_bytes':delta, 'capacity_bytes':size_bytes}

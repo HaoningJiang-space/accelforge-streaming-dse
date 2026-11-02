@@ -37,6 +37,35 @@ class BreakpointTests(unittest.TestCase):
         for capacity in (float(r)-1e-10, float(r), float(r)+1e-10):
             self.assertEqual(points.query(capacity) is not None, bool((data[R] <= capacity).iloc[0]))
 
+    def test_exact_integer_boundary_and_coverage_range(self):
+        max_bytes = 128*1024*1024
+        data = pd.DataFrame({R:np.array([max_bytes//2],dtype=np.int64), E:[1.], T:[1.], 'source':['m1']})
+        points = build_capacity_breakpoints(data, R, max_bytes, mode='exact_integer', source_id_column='source')
+        self.assertIsNone(points.query(max_bytes//2-1))
+        self.assertEqual(points.query_source_id(max_bytes//2), (1., 'm1'))
+        self.assertTrue(points.verify_snapshot(data))
+        self.assertFalse(points.verify_snapshot(data.assign(source=['m2'])))
+        with self.assertRaises(ValueError): points.query(max_bytes+1)
+        with self.assertRaises(ValueError): points.query(float(max_bytes//2))
+        with self.assertRaises(ValueError): build_capacity_breakpoints(data.assign(**{R:[.5]}), R, max_bytes, mode='exact_integer')
+
+    def test_ffm_compatible_boundary_can_round(self):
+        cap = 128*1024*1024
+        data = pd.DataFrame({R:np.array([.5],dtype=np.float32),E:[1.],T:[1.]})
+        points = build_capacity_breakpoints(data, R, cap)
+        self.assertIsNotNone(points.query(cap//2-1))
+        self.assertEqual(points.coverage_status, 'unverified')
+        with self.assertRaises(ValueError): points.verify_snapshot(data)
+        with self.assertRaises(ValueError): points.query(cap+1)
+
+    def test_exact_uint64_values_above_float_precision(self):
+        x = 2**53+1
+        data = pd.DataFrame({R:np.array([x], dtype=np.uint64),E:[1.],T:[1.]})
+        points = build_capacity_breakpoints(data,R,2**64,mode='exact_integer')
+        self.assertIsNone(points.query(x-1))
+        self.assertEqual(points.query(x)[0],1.)
+        self.assertEqual(points.query(2**64)[0],1.)
+
     def test_invalid_values_rejected(self):
         with self.assertRaises(ValueError):
             build_capacity_breakpoints(pd.DataFrame({R:[0],E:[float('nan')],T:[1]}), R, 1)

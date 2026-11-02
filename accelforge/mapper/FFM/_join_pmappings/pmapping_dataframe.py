@@ -31,6 +31,16 @@ from accelforge.mapper.FFM._join_pmappings.numeric_join import (
 CHECK_CORRECTNESS = False
 
 
+def choose_tile_shape(n_left: int, n_right: int, pair_budget: int) -> tuple[int, int]:
+    """Choose bounded tiles while avoiding wasted space on a short axis."""
+    if min(n_left, n_right, pair_budget) <= 0:
+        raise ValueError("tile dimensions and pair budget must be positive")
+    left = min(n_left, max(1, math.isqrt(pair_budget)))
+    right = min(n_right, max(1, pair_budget // left))
+    left = min(n_left, max(1, pair_budget // right))
+    return left, right
+
+
 def error_check_wrapper(func):
     if not CHECK_CORRECTNESS:
         return func
@@ -742,8 +752,7 @@ class PmappingDataframe:
             compatibility_left, compatibility_right, compatibility_joined,
         )
         left_n, right_n = len(self.data), len(right.data)
-        left_step = min(left_n, max(1, math.isqrt(pair_limit)))
-        right_step = max(1, pair_limit // left_step)
+        left_step, right_step = choose_tile_shape(left_n, right_n, pair_limit)
         frontier = None
         pending = []
         pending_rows = 0
@@ -802,8 +811,7 @@ class PmappingDataframe:
                     if left_batch:
                         yield left_batch, right_batch, batch_pairs
                         left_batch, right_batch, batch_pairs = [], [], 0
-                    ls = min(len(left_rows), max(1, math.isqrt(pair_limit)))
-                    rs = max(1, pair_limit // ls)
+                    ls, rs = choose_tile_shape(len(left_rows), len(right_rows), pair_limit)
                     for i in range(0, len(left_rows), ls):
                         for j in range(0, len(right_rows), rs):
                             l = left_rows[i:i + ls]
@@ -847,6 +855,10 @@ class PmappingDataframe:
                         saved, skip_pareto=True, n_total_pmappings=boundary_total,
                         n_valid_pmappings=boundary_valid,
                     )
+                # The concatenated frame and its provenance now own their
+                # references; release the old per-boundary container.
+                boundary_frontier = None
+                saved = None
                 boundary_enabled = False
             # Bound buffered local frontiers by the pair limit and at most
             # eight blocks. The accumulated global frontier remains unbounded.
