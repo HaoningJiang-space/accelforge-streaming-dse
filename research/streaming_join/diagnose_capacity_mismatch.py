@@ -1,6 +1,7 @@
 """Inspect a shared-vs-independent capacity discrepancy under bounded execution."""
 import copy
 import json
+import hashlib
 import os
 from pathlib import Path
 import sys
@@ -63,16 +64,37 @@ independent = search(small_spec)
 independent_best = best(independent.data)
 describe('independent_best', independent_best)
 
+# Compare reconstructed structures without assuming equal EDP means equal mapping.
+independent_mapping = independent_best['Total<SEP>mapping']()
+shared_mapping = full_best['Total<SEP>mapping']()
+
+def fingerprint(mapping):
+    try:
+        encoded = json.dumps(mapping.model_dump(mode='json'), sort_keys=True, separators=(',', ':')).encode()
+        return hashlib.sha256(encoded).hexdigest()
+    except Exception as exc:
+        return 'unavailable:' + type(exc).__name__
+
+print('MAPPING_COMPARISON', json.dumps({'object_equal': independent_mapping == shared_mapping,
+    'independent_sha256': fingerprint(independent_mapping),
+    'shared_sha256': fingerprint(shared_mapping)}), flush=True)
+
 # Tag 1.0 itself documents that reconstructed mappings may not be evaluable.
-try:
-    local_spec = copy.deepcopy(small_spec)
-    local_spec.model.metrics = resource_metrics
-    local_spec.mapping = independent_best['Total<SEP>mapping']()
-    evaluated = evaluate_mapping(local_spec, flattened_arches=independent.flattened_arches,
-                                 evaluated_specs=independent.evaluated_specs)
-    cols = [c for c in evaluated.data.columns if c.startswith('Total<SEP>') or c.startswith('reservation<SEP>')]
-    print('REEVALUATED',json.dumps({'rows':len(evaluated.data),'columns':cols,
-        'values':evaluated.data[cols].astype(float).to_numpy().tolist()}),flush=True)
-except Exception as exc:
-    print('REEVALUATION_ERROR',json.dumps({'type':type(exc).__name__,'message':str(exc)}),flush=True)
-    traceback.print_exc()
+for label, mapping, result in [('independent', independent_mapping, independent),
+                               ('shared', shared_mapping, full)]:
+    for cap in (small_capacity, max_capacity):
+        for metric_name, metric in [('cost', energy_latency), ('resources', resource_metrics)]:
+            try:
+                local_spec = build(cap, energy_latency)
+                local_spec.model.metrics = metric
+                local_spec.mapping = copy.deepcopy(mapping)
+                # Re-evaluate architecture at the tested capacity, not cached
+                # evaluated specs from another capacity.
+                evaluated = evaluate_mapping(local_spec)
+                cols = [c for c in evaluated.data.columns if c.startswith('Total<SEP>') or c.startswith('reservation<SEP>')]
+                print('REEVALUATED',json.dumps({'label':label,'capacity_mib':cap,'metrics':metric_name,
+                    'rows':len(evaluated.data),'columns':cols,
+                    'values':evaluated.data[cols].astype(float).to_numpy().tolist()}),flush=True)
+            except Exception as exc:
+                print('REEVALUATION_ERROR',json.dumps({'label':label,'capacity_mib':cap,'metrics':metric_name,
+                    'type':type(exc).__name__,'message':str(exc)}),flush=True)
