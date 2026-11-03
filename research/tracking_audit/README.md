@@ -51,6 +51,63 @@ NUMBA_NUM_THREADS=1` in both processes. Defaults reproduce NVDLA; TPU arguments 
 `--output FILE.json` to each run. Numeric frontiers, timings and re-evaluated picks:
 [results/symbolic_preparation/](results/symbolic_preparation/).
 
+### Speedup versus the number of capacities after the coverage fix, commit `238511ee`
+
+`sweep_capacity_count.sh` as before (K nested log-spaced capacities, two repeats, eight
+workers). Records: [results/sweepK_238511ee/](results/sweepK_238511ee/). All twelve
+runs exit 0. Speedup of push (var) over per-capacity search:
+
+| Case | K=2 | K=4 | K=6 | K=16 | push seconds K=2 -> 16 |
+| --- | --- | --- | --- | --- | --- |
+| glu 256,512,1024 @ tpu_v4i | 1.59x (1.43x) | 2.77x (2.45x) | 3.70x (3.48x) | 5.99x (5.29x) | 34.0 -> 74.7 |
+| glu 64,128,256 @ nvdla | 1.82x (1.57x) | 3.55x (3.13x) | 4.80x (4.19x) | 9.74x (9.25x) | 7.1 -> 10.2 |
+| matmuls 3,256,256 @ nvdla | 1.61x (1.23x) | 3.03x (2.49x) | 3.78x (3.25x) | 5.73x (5.25x) | 4.6 -> 9.2 |
+
+**This supersedes the `70df4847` sweep below** (15-17x at K=16), which ran before the
+min_usage coverage fix and therefore without the guarantee that every target's
+candidates are covered. With per-target enumeration the shared search is no longer
+constant in K: templates with min-usage constraints are enumerated once per target,
+so generation grows with K (GLU@tpu_v4i push 34 s at K=2, 75 s at K=16). The speedup
+still grows with K but sublinearly. Removing this per-target repetition is the next
+algorithmic step. The tpu K=16 run started at 238511ee; the server checkout was
+updated to d3f2fee9 (symbolic-preparation reuse, identical fronts) while it ran.
+
+### Cost of the unrepresentable-template filter
+
+`unrepresentable_gain.py` runs the default search and the same search with
+`AF_ABL_ALLOW_UNREPRESENTABLE=1` (RESOURCE_USAGE fronts), and re-evaluates every row of
+the latter as the mapping it rebuilds into. Records:
+[results/unrepresentable_gain/](results/unrepresentable_gain/).
+
+| Case | Skipped / templates | Restored front rows | Scored differently | Do not fit | Best rebuilt vs default |
+| --- | --- | --- | --- | --- | --- |
+| glu 64,128,256 @ nvdla, 1/4 MiB | FFH 6/48 | 47 | 0 | 0 | equal |
+| glu 256,512,1024 @ tpu_v4i, 1/4 MiB | none | 537 | 0 | 47 | equal |
+| same, 3/8 MiB | FFH 12/132, FFU 8/41 | 674 | 4 | 71 | 0.17% worse |
+| same, 4 MiB | FFG 8/41, FFU 8/41 | 1031 | 50 | 0 | **1.18% better** |
+| matmuls 3,256,256 @ tpu_v4i / nvdla | 0 / Matmul1 6/24 | 93 / 26 | 0 | 0 | equal |
+| mobilenet 1 @ nvdla, 1/16 MiB | Depthwise1 22/126, PiecewiseA1 6/24 | 167 | 0 | 0 | equal |
+
+At 4 MiB the better mapping (EDP 1.56018e-8 against 1.57857e-8) is scored exactly as
+it rebuilds (`matches: true`), fits, and has only the usual FFH reuse shortfalls
+([results/unrepresentable_gain/glu_tpu_4_best_row.txt](results/unrepresentable_gain/glu_tpu_4_best_row.txt)):
+the conservative filter discards a representable, better mapping. At 3/8 MiB the
+restored search is worse because it prunes with some wrong scores, so the ablation is
+not a superset of the default. A boundary contract that admits matching copies on both
+sides, instead of skipping every such template, would keep the 4 MiB mapping.
+
+### Mapping identity is not stable across runs
+
+Audits now record `mapping_id` (`common.mapping_identity`), `tied_optima` and
+`optimal_mappings`, and `best_row` breaks final EDP ties by the smallest identity. On
+`matmuls(2,4,8)@nvdla` (64/128 bytes x scales 1/32/256, two repeats) the picks at 128
+bytes still differ between runs (identities e3a7c7, 0bb805, 9b2a24) with equal EDP and
+a single tied row in each final front: different equal-cost mappings survive earlier
+Pareto pruning depending on order. A count of distinct optimal mappings is therefore
+not well defined when equal-cost mappings exist. A robust switch measure is to
+re-evaluate each configuration's pick at the others and count where it stops being
+optimal; this is not implemented yet.
+
 ### Capacity x bandwidth grid, commit `9be3f809`
 
 `grid_audit.py`: one search per grid point (`indep`) against one shared search at the
@@ -68,7 +125,9 @@ warmup, eight workers, two cases at a time under `run_capped.sh 24 7200`. Record
 All three exit 0: every pick re-evaluates exactly at its capacity and scale, repeats
 agree, both variants have the same EDP at every point. "Distinct best EDPs" counts
 different optimal costs, not different optimal mappings: one mapping's cost can
-change with bandwidth. Mapping identities were not recorded. The shared search spends
+change with bandwidth, and different mappings can tie. Mapping identities were not
+recorded; audits now store `mapping_id` per pick (`common.mapping_identity`, a
+structural fingerprint) and `optimal_mappings` per variant. The shared search spends
 84.3 s of 86.2 s generating on GLU@tpu_v4i: per-target enumeration repeats the
 min-usage templates once per capacity. These runs predate `d7c86825`, which changes
 only fixed (symbol-free) templates, absent here, and narrows the audit reference to
@@ -211,7 +270,7 @@ scales action latencies before evaluating `total_latency` (see the bug-fix revie
 Limits: one repeat, small shapes, one capacity per run; capacity and bandwidth are not
 yet varied together; leak power must be zero.
 
-### Speedup versus the number of capacities, commit `70df4847`
+### Speedup versus the number of capacities, commit `70df4847` (superseded: before the coverage fix)
 
 `sweep_capacity_count.sh` with K = 2, 4, 6, 16 GlobalBuffer capacities spaced evenly in
 log2 (nested sets; nvdla 1/32-1 MiB, tpu_v4i 1/4-4 MiB), two repeats each, eight
