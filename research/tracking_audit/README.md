@@ -7,6 +7,33 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Bandwidth reuse (`AF_LATENCY_SCALES`), validated before commit
+
+One search carries one latency objective per GlobalBuffer latency scale f (f = 4 is a
+quarter of the bandwidth); `bandwidth_audit.py` compares it with one search per scale.
+Five scales 0.25, 1, 4, 16, 64; one repeat, no warmup, eight workers, run under
+`run_capped.sh 24 3600` on 71591f38 plus the then-uncommitted bandwidth changes, which
+are committed unchanged except that the summary now also reports
+`all_min_usage_checks_completed`. Their CONFIG shows commit `48b3216e`, dirty: 71591f38
+re-applied in a temporary worktree. Records: [results/bandwidth_review/](results/bandwidth_review/).
+
+| Case | GB MiB | EDP at f = 0.25 / 1 / 4 / 16 / 64 (indep = shared) | indep s | shared s | Speedup | Final front indep / shared |
+| --- | --- | --- | --- | --- | --- | --- |
+| glu 64,128,256 @ nvdla | 0.25 | 1.674e-10 / 1.674e-10 / 1.838e-10 / 3.151e-10 / 8.403e-10 | 54.3 | 15.4 | 3.54x | 1 each / 1 |
+| matmuls 3,256,256 @ nvdla | 0.25 | 3.470e-10 / 3.470e-10 / 5.783e-10 / 2.313e-09 / 9.254e-09 | 44.3 | 16.0 | 2.77x | 1 each / 1 |
+| glu 64,128,256 @ tpu_v4i | 4 | 6.448e-11 / 6.448e-11 / 6.980e-11 / 7.541e-11 / 8.959e-11 | 156.3 | 62.9 | 2.48x | 1, 1, 13, 25, 22 / 50 |
+
+Every pick re-evaluates exactly on the architecture with its scale and the shared pick
+has the independent EDP at every scale, including the bandwidth-bound ones where EDP
+grows up to 27x. The final front grows only on GLU@tpu_v4i (50 rows). The scaled
+objectives do carry information beyond Total latency: per pmapping, latency(f=64) /
+latency(f=1) ranges over 19.2-64 on nvdla FFG. An earlier run of the linear version
+(scaling the component's total latency) gave the same EDPs; the committed version
+scales action latencies before evaluating `total_latency` (see the bug-fix review).
+
+Limits: one repeat, small shapes, one capacity per run; capacity and bandwidth are not
+yet varied together; leak power must be zero.
+
 ### Speedup versus the number of capacities, commit `70df4847`
 
 `sweep_capacity_count.sh` with K = 2, 4, 6, 16 GlobalBuffer capacities spaced evenly in
@@ -139,6 +166,8 @@ Remaining limits:
 | --- | --- |
 | `summarize_audit.py` | One table per audit log: EDP per capacity and variant with invalid/suboptimal/shortfall flags, medians and speedups. |
 | `capacity_audit.py` | Validated CLI, timed experiment loop, summary, worker cleanup in `finally`. Importing it does not start an experiment. |
+| `bandwidth_audit.py` | Same for GlobalBuffer bandwidth: one search per latency scale (`indep`) against one search with `AF_LATENCY_SCALES` (`shared`), each pick re-evaluated at its scale. |
+| `sweep_capacity_count.sh` | Runs `capacity_audit.py` for K = given numbers of log-spaced capacities per case. |
 | `common.py` | Spec/search setup, environment hygiene, float64 EDP selection, mapping re-evaluation, spatial-usage checks, quality accounting. |
 | `test_audit_logic.py`, `test_capacity_audit.py` | Validation, failure propagation, numeric boundaries, CLI and cleanup regressions. |
 | `test_min_usage.py` | Real tile-enumerator regression for unreachable min_usage and reachable/hard minima. |
@@ -227,6 +256,31 @@ all usage checks completed. Expected shortfalls on this small shape are reported
 This was one run without warmup, not a speedup benchmark. Structured log lines:
 [results/bugfix_matmuls_smoke.txt](results/bugfix_matmuls_smoke.txt).
 
+## Bug-fix review after 79ab1f61
+
+- Reservation prefixes now accumulate in sorted lifetime order. Unordered set
+  iteration placed persistent depth -1 after depth 0, or depth 8 before depth 1.
+  A 100-bit memory incorrectly accepted 60 persistent + 60 temporary bits because
+  the deepest Reservation reported only 60 bits. The focused regression now rejects it.
+- `limit_capacity()` removes the requested finished level, rather than reusing the
+  column name from the deepest-level capacity check. Deeper reservations are retained.
+- The working-tree bandwidth feature now scales modeled action latencies before
+  evaluating the component's `total_latency`, instead of scaling its final result.
+  Fixed overheads, fixed latency floors, direct action counts and constant formulas
+  do not scale linearly. Tests compare with a separately scaled architecture and
+  check that scenario evaluation leaves the base architecture unchanged.
+- Bandwidth CONFIG now records the selected Case, matching capacity CONFIG.
+
+Validation: 130 audit/Streaming tests passed locally, with 62 existing Pandas
+deprecation warnings. The five reservation tests failed before the fixes; four
+latency-formula cases also exposed the incorrect scalar projection. A single-process
+`matmuls(2,4,8)@nvdla` run at 0.125 MiB and latency factors 1/32/256 passed all six
+pick re-evaluations. Independent and shared EDPs agree at every factor, including
+the bandwidth-limited cases. The watchdog reported exit 0 and 0.288 GiB sampled
+group RSS. This small, un-warmed run is a correctness smoke check, not a performance
+claim or exhaustive coverage proof. Its CONFIG identifies the dirty working tree;
+records: [results/review_bandwidth_pressure.txt](results/review_bandwidth_pressure.txt).
+
 ## Regression tests
 
 ```bash
@@ -249,6 +303,7 @@ Memory lists are comma-separated and unknown memory names raise.
 | --- | --- |
 | `AF_VARIABLE_RESOURCES` | Join retains the listed resource tradeoffs; fixed resources are removed only after the sum-of-maxima capacity proof. |
 | `AF_GENERATION_VARIABLE_RESOURCES` | With RESOURCE_USAGE, preserve listed variable memories during generation; fixed memories use the normal elimination rules. |
+| `AF_LATENCY_SCALES` | `COMPONENT:f1,f2,...`: during generation, add one objective `Total<SEP>latency_scaled<SEP>COMPONENT<SEP>f` per factor. Scale that component's action latencies before evaluating its `total_latency` formula. Summed in the join like `Total<SEP>latency`. Requires LATENCY and zero leak power; other architecture attributes, dynamic energy costs and candidate constraints must remain fixed. |
 | `AF_ABL_SKIP_BIG_ENOUGH` | Exempt listed memories from the full-tensor-size upper-bound elimination. |
 | `AF_ABL_SKIP_PMAPPING_ONLY` | Exempt listed memories from the below-all-backing-holders elimination. |
 | `AF_ABL_BIG_ENOUGH_UNTRACK_ONLY` | Stop reservation tracking for listed "big enough" memories while retaining usage objectives. |
