@@ -208,9 +208,11 @@ def rows_for_capacity(data, cap, maxcap):
     its GlobalBuffer and every pmapping was kept by that target's enumeration."""
     rows = data[data[GB] <= cap / maxcap * (1 + 1e-12)]
     excluded = capacity_excluded2col('GlobalBuffer', cap / maxcap)
-    if excluded in rows:
-        rows = rows[rows[excluded] == 0]
-    return rows
+    if excluded not in data:
+        # Shared searches always run with AF_GENERATION_CAPACITY_FRACTIONS. Filtering
+        # by capacity alone would return candidates the target's own search removed.
+        raise ValueError(f'shared search result lacks target membership column {excluded!r}')
+    return rows[rows[excluded] == 0]
 
 
 def run_variant(variant, case, caps, ablations=None):
@@ -232,8 +234,19 @@ def run_variant(variant, case, caps, ablations=None):
         raise ValueError(f'unknown variant {variant}')
 
 
+TIE_REL = 1e-6  # tied optima: within float32 cost precision and check_pick rel_tol
+MAX_TIES = 64   # rebuild at most this many tied rows to break the tie
+
+
 def best_row(data, latency_col=LATENCY):
-    """Row with the lowest EDP (energy times `latency_col`), or None if no row fits."""
+    """Row with the lowest EDP (energy times `latency_col`), or None if no row fits.
+
+    Several different mappings can tie for the lowest EDP, and the joined row order
+    depends on parallel scheduling. Ties are therefore broken deterministically by the
+    smallest mapping_identity of the tied rows, so the same configuration yields the
+    same mapping in every run. row.attrs['tied_optima'] is the number of distinct
+    tied mappings (None if the tie could not be broken, e.g. unbuildable rows).
+    """
     if data.empty:
         return None
     # Match capacity_breakpoints: multiply in float64, not the input's float32 or
@@ -243,7 +256,19 @@ def best_row(data, latency_col=LATENCY):
     edp = energy * latency
     if any(not np.isfinite(a).all() or (a < 0).any() for a in (energy, latency, edp)):
         raise ValueError('candidate costs must be finite and nonnegative')
-    return data.iloc[int(edp.argmin())]
+    tied = np.flatnonzero(edp <= edp.min() * (1 + TIE_REL))[:MAX_TIES]
+    best, count = int(edp.argmin()), None
+    if len(tied) > 1:
+        try:
+            ids = {mapping_identity(data.iloc[int(i)]['Total<SEP>mapping']()): int(i) for i in tied}
+            best, count = ids[min(ids)], len(ids)
+        except Exception:
+            pass  # keep argmin; the tie is reported as unknown
+    else:
+        count = 1
+    row = data.iloc[best].copy()
+    row.attrs['tied_optima'] = count
+    return row
 
 
 def strict_evaluate(case, cap_mib, mapping, gb_latency_scale=1.0):
@@ -329,6 +354,38 @@ def spatial_usage_shortfalls(case, mapping):
     return found
 
 
+def mapping_identity(mapping):
+    """Stable fingerprint of a mapping's structure: node types, components, tensors,
+    loop rank variables and tile shapes, spatial dimensions and nesting, in order.
+
+    Built from these fields rather than str(mapping): node sets (e.g. backing tensors)
+    print in hash-seed-dependent order, and component objects are irrelevant. Equal
+    identities mean the same mapping; costs are not part of it, so one mapping keeps
+    its identity across bandwidths and capacities.
+    """
+    def norm(x):
+        if isinstance(x, (set, frozenset)):
+            return sorted(map(str, x))
+        if isinstance(x, (list, tuple)):
+            return [str(v) for v in x]
+        return str(x) if x is not None else None
+
+    def node(n):
+        fields = {'type': type(n).__name__}
+        for name in ('component', 'tensors', 'rank_variable', 'tile_shape', 'initial_tile_shape',
+                     'name', 'einsum', 'purposes', 'resource', 'persistent'):
+            if hasattr(n, name):
+                fields[name] = norm(getattr(n, name))
+        if hasattr(n, 'nodes') and not isinstance(n, (Loop,)):
+            fields['nodes'] = [node(c) for c in n.nodes]
+        return fields
+
+    import hashlib
+    import json as _json
+    blob = _json.dumps([node(n) for n in mapping.nodes], sort_keys=True)
+    return hashlib.sha256(blob.encode()).hexdigest()[:16]
+
+
 def _finite_nonnegative(*xs):
     return all(isinstance(x, numbers.Number) and math.isfinite(x) and x >= 0 for x in xs)
 
@@ -353,8 +410,13 @@ def check_pick(case, cap_mib, row, rel_tol=1e-6, latency_col=LATENCY, gb_latency
     if not _finite_nonnegative(rec['energy'], rec['latency'], rec['edp']):
         rec.update(ok=False, error='reported cost is not finite and nonnegative')
         return rec
+    rec['tied_optima'] = getattr(row, 'attrs', {}).get('tied_optima')
     try:
         mapping = row['Total<SEP>mapping']()
+        try:
+            rec['mapping_id'] = mapping_identity(mapping)
+        except Exception:  # record only; does not affect validity
+            rec['mapping_id'] = None
         ev = strict_evaluate(case, cap_mib, mapping, gb_latency_scale)
     except Exception as e:
         rec.update(ok=False, error=f'{type(e).__name__}: {str(e)[:200]}')
@@ -373,6 +435,16 @@ def check_pick(case, cap_mib, row, rel_tol=1e-6, latency_col=LATENCY, gb_latency
         rec['ok'] = False
         rec.setdefault('error', 'spatial min_usage check did not complete')
     return rec
+
+
+def distinct_optimal_mappings(history):
+    """Per variant: how many different mappings its picks use across all configurations
+    (last repeat), and each configuration's mapping identity."""
+    out = {}
+    for v, by_key in history.items():
+        ids = {str(k): recs[-1].get('mapping_id') for k, recs in by_key.items() if recs}
+        out[v] = {'distinct': len({i for i in ids.values() if i}), 'by_configuration': ids}
+    return out
 
 
 def summarize_quality(history, variants, caps, monotone=False, fits=None):

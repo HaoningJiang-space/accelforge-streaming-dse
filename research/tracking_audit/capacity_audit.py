@@ -105,7 +105,8 @@ def run(a):
     quality, any_invalid, all_consistent = common.summarize_quality(history, variants, caps)
     median = {v: statistics.median(t) for v, t in times.items()}
     summary = {'case': str(case), 'caps': caps, 'repeats': a.repeats, 'jobs': a.jobs, 'ablations': ablations,
-               'all_picks_valid': not any_invalid, 'all_repeats_consistent': all_consistent,
+               'all_picks_valid': not any_invalid,
+               'optimal_mappings': common.distinct_optimal_mappings(history), 'all_repeats_consistent': all_consistent,
                'all_min_usage_checks_completed': all(
                    'min_usage_shortfall' in rec and not rec.get('min_usage_shortfall_error')
                    for by_cap in history.values() for recs in by_cap.values() for rec in recs),

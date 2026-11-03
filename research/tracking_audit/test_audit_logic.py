@@ -196,3 +196,55 @@ class EffectiveConfigTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class MappingIdentityTest(unittest.TestCase):
+    def mapping(self, tile, backing):
+        holder = common.af.frontend.mapping.Storage(tensors=['B', 'A'], component='GlobalBuffer')
+        holder._backing = set(backing)
+        return common.af.Mapping(nodes=[
+            holder,
+            common.af.frontend.mapping.Temporal(rank_variable='m', tile_shape=tile),
+            common.Compute(einsum='E', component='MAC'),
+        ])
+
+    def test_identity_depends_on_structure_not_on_set_order(self):
+        a = common.mapping_identity(self.mapping(4, ['A', 'B']))
+        self.assertEqual(a, common.mapping_identity(self.mapping(4, ['B', 'A'])))
+        self.assertNotEqual(a, common.mapping_identity(self.mapping(2, ['A', 'B'])))
+
+    def test_distinct_optimal_mappings_counts_last_repeat(self):
+        history = {'v': {1: [{'mapping_id': 'x'}, {'mapping_id': 'y'}], 2: [{'mapping_id': 'y'}]}}
+        out = common.distinct_optimal_mappings(history)
+        self.assertEqual(out['v']['distinct'], 1)
+        self.assertEqual(out['v']['by_configuration'], {'1': 'y', '2': 'y'})
+
+
+class RowsForCapacityTest(unittest.TestCase):
+    def test_missing_membership_is_an_error(self):
+        data = pd.DataFrame({common.GB: [0.1]})
+        with self.assertRaises(ValueError):
+            common.rows_for_capacity(data, 0.5, 1.0)
+
+    def test_rows_must_fit_and_belong_to_the_target(self):
+        col = common.capacity_excluded2col('GlobalBuffer', 0.5)
+        data = pd.DataFrame({common.GB: [0.4, 0.4, 0.6], col: [0, 1, 0]})
+        self.assertEqual(list(common.rows_for_capacity(data, 0.5, 1.0).index), [0])
+
+
+class TieBreakTest(unittest.TestCase):
+    def test_tied_rows_resolve_to_the_smallest_mapping_identity(self):
+        ids = {'b': 'mapping_b', 'a': 'mapping_a'}
+        data = pd.DataFrame({'Total<SEP>energy': [1., 1., 2.], 'Total<SEP>latency': [1., 1., 1.],
+                             'Total<SEP>mapping': [lambda: 'b', lambda: 'a', lambda: 'c']})
+        with patch.object(common, 'mapping_identity', side_effect=lambda m: ids.get(m, m)):
+            first = common.best_row(data)
+            second = common.best_row(data.iloc[::-1])
+        self.assertEqual(first['Total<SEP>mapping'](), 'a')
+        self.assertEqual(second['Total<SEP>mapping'](), 'a')
+        self.assertEqual(first.attrs['tied_optima'], 2)
+
+    def test_unique_optimum_needs_no_rebuild(self):
+        data = pd.DataFrame({'Total<SEP>energy': [1., 2.], 'Total<SEP>latency': [1., 1.],
+                             'Total<SEP>mapping': [lambda: 1 / 0, lambda: 1 / 0]})
+        self.assertEqual(common.best_row(data).attrs['tied_optima'], 1)

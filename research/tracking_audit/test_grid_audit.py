@@ -39,7 +39,8 @@ def test_warmup_does_not_collect_every_query_frame(monkeypatch):
 
 def test_capacity_slice_is_reused_across_factors(monkeypatch):
     gb = grid_audit.common.GB
-    source = pd.DataFrame({gb: [.25, .75], 'Total<SEP>energy': [1., 2.]})
+    member = {grid_audit.common.capacity_excluded2col('GlobalBuffer', f): [0, 0] for f in (.5, 1.)}
+    source = pd.DataFrame({gb: [.25, .75], 'Total<SEP>energy': [1., 2.], **member})
     searches = []
 
     def search(*a):
