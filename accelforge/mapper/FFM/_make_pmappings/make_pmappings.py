@@ -108,7 +108,7 @@ def get_jobs(
 
     def make_jobs_for_einsum(einsum_name: EinsumName, spec: Spec):
         jobs = {}
-        n_skipped = 0
+        n_skipped = n_templates = 0
         workload_einsum = spec.workload.einsums[einsum_name]
         for flattened_arch in spec._get_flattened_architecture(einsum_name=einsum_name):
             # Create jobs for each Einsum
@@ -122,6 +122,7 @@ def get_jobs(
                 fusable_tensors=fusable_tensors & workload_einsum.tensor_names,
             )
             for j in make_pmapping_templates(job):
+                n_templates += 1
                 if skip_unrepresentable and j.has_copy_above_fused_loops:
                     n_skipped += 1
                     continue
@@ -129,7 +130,7 @@ def get_jobs(
 
         if n_skipped:
             print(
-                f"Skipped {n_skipped} {einsum_name} templates that keep a copy of a "
+                f"Skipped {n_skipped} of {n_templates} {einsum_name} templates that keep a copy of a "
                 f"fusable tensor above a fused loop."
             )
         return einsum_name, jobs
