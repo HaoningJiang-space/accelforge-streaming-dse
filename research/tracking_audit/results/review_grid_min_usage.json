@@ -1,0 +1,97 @@
+{
+  "base_commit": "610a2b10",
+  "working_tree": "cache and audit review fixes; generation policy unchanged",
+  "case": {
+    "workload": "matmuls",
+    "arch": "nvdla",
+    "params": [
+      2,
+      4,
+      8
+    ]
+  },
+  "search_capacity_bytes": 128,
+  "query_capacity_bytes": 64,
+  "latency_scale": 1,
+  "jobs": 1,
+  "generation_switches": {
+    "AF_GENERATION_VARIABLE_RESOURCES": "GlobalBuffer"
+  },
+  "join_switches": {
+    "AF_VARIABLE_RESOURCES": "GlobalBuffer"
+  },
+  "ablation": "Second run sets every architecture spatial dimension min_usage=0 before generation. This changes Mapspace; not an equivalence or performance claim.",
+  "runs": [
+    {
+      "min_usage": 1,
+      "stats": {
+        "make_s": 7.111824334017001,
+        "join_s": 0.019667375017888844,
+        "rows_generated": 25,
+        "rows_front": 5
+      },
+      "min_glb": 0.625,
+      "rows_fit_64B": 0,
+      "pick": null
+    },
+    {
+      "min_usage": 0,
+      "stats": {
+        "make_s": 4.254692416987382,
+        "join_s": 0.11060891603119671,
+        "rows_generated": 530,
+        "rows_front": 86
+      },
+      "min_glb": 0.0234375,
+      "rows_fit_64B": 74,
+      "pick": {
+        "cap_mib": 6.103515625e-05,
+        "edp": 3.1491685168225276e-16,
+        "energy": 1.9682303786794364e-08,
+        "latency": 1.5999999547489097e-08,
+        "reported_gb_mib_fraction": 0.4375,
+        "reevaluated": {
+          "energy": 1.9682303999999998e-08,
+          "latency": 1.6e-08,
+          "edp": 3.14916864e-16,
+          "reservations": {
+            "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875,
+            "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+            "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+          }
+        },
+        "ok": true,
+        "min_usage_shortfall": [
+          {
+            "einsum": "Matmul0",
+            "component": "ArrayFanout",
+            "dimension": "reuse_input",
+            "usage": 0.125,
+            "min_usage": 1.0
+          },
+          {
+            "einsum": "Matmul0",
+            "component": "ArrayFanout",
+            "dimension": "reuse_output",
+            "usage": 0.041666666666666664,
+            "min_usage": 1.0
+          },
+          {
+            "einsum": "Matmul1",
+            "component": "ArrayFanout",
+            "dimension": "reuse_input",
+            "usage": 0.125,
+            "min_usage": 1.0
+          },
+          {
+            "einsum": "Matmul1",
+            "component": "ArrayFanout",
+            "dimension": "reuse_output",
+            "usage": 0.041666666666666664,
+            "min_usage": 1.0
+          }
+        ]
+      }
+    }
+  ]
+}

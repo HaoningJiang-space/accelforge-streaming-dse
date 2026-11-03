@@ -7,6 +7,58 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Capacity reuse has a confirmed coverage counterexample
+
+Review of `610a2b10`, with the cache/audit fixes below, found a failure on
+`matmuls(2,4,8)@nvdla`, GlobalBuffer **64/128 bytes** (not KiB), latency scales
+1/32/256, one worker, one repeat without warmup. Independent search returns valid,
+re-evaluated mappings at all six points. Shared search at 128 bytes returns no
+candidate fitting 64 bytes at any scale; its 128-byte answers match. The grid audit
+correctly exits **2**. Its runtime ratio is **not** an accepted speedup result.
+Records: [results/review_grid_coverage.txt](results/review_grid_coverage.txt).
+
+The cause is capacity-dependent `min_usage` fallback in tile enumeration: when a
+minimum is unreachable, FFM keeps the highest attainable usage *among candidates
+feasible at that capacity*. Increasing capacity can change that maximum and remove
+the lower-usage candidates needed by a smaller capacity. Thus the retained candidate
+set at maximum capacity need not cover the smaller search, even with RESOURCE_USAGE
+and protected GlobalBuffer reservations. This also affects capacity-only reuse.
+
+A capacity-only diagnostic at 128 bytes confirms the issue: with the original
+min_usage, the smallest retained GLB requirement is 80 bytes and no row fits 64;
+setting spatial min_usage to zero produces 74 rows fitting 64 bytes. This ablation
+changes the Mapspace and is **not a fix** or an equivalent baseline. Evidence:
+[results/review_grid_min_usage.json](results/review_grid_min_usage.json).
+`test_min_usage_fallback_is_capacity_dependent` provides a small real-enumerator
+counterexample without an FFM workload search.
+
+Resolving this requires retaining and applying the fallback policy per target
+capacity, or explicitly running separate searches for affected capacity groups.
+The current shared implementation remains experimental and must pass the independent
+comparison at every target point. The successful larger-capacity measurements below
+do not establish general candidate coverage.
+
+### Cache and audit fixes after 610a2b10
+
+- Candidate-cache keys now include all six generation switches and Pareto tolerance.
+  Previously changing bandwidth objectives, selective resource tracking or ablations
+  could silently reuse a candidate set generated under different rules.
+- Strict re-evaluation checks every returned Reservation for finite occupancy in
+  [0, 1]. A single-Einsum evaluation can bypass pairwise capacity filtering: a real
+  `matmuls(1,4,8)` mapping reevaluated at 1 byte returned GLB usage 128 and was formerly
+  certified `ok=True`. It now fails; exact-capacity usage remains accepted.
+- Grid warmup discards query frames as they arrive, and each capacity slice is reused
+  across bandwidth factors. Previously warmup retained copies for the whole grid.
+  Grid CONFIG uses the selected Case; the log table labels capacity and latency-scale
+  keys separately.
+
+Validation: 147 audit/Streaming tests passed, followed by the five min-usage tests
+including the new coverage counterexample (148 distinct tests in total). This includes
+disk-cache reuse/invalidation, real one-Einsum capacity rejection, and weak-reference
+checks that warmup does not retain the grid's frames. All 868 saved picks with recorded
+Reservations satisfy the new occupancy check; this checks those records, not a new
+server run or a proof of their candidate coverage.
+
 ### Capacity re-validation after the reservation fixes, commit `52953a43`
 
 71591f38 changed reservation accounting, so the five multi-workload cases below were

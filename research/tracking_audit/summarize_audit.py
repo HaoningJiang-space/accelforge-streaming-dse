@@ -1,4 +1,4 @@
-"""Print a compact table of one or more capacity_audit.py logs.
+"""Print a compact table of capacity, bandwidth or grid audit logs.
 
 usage: summarize_audit.py LOG [LOG ...]
 
@@ -63,7 +63,8 @@ def show(path):
         print(f'   no SUMMARY; {len(log["RUN"])} RUN lines; last line: {log["last"]}')
         return
     variants = list(s['median_seconds'])
-    print('   cap_mib  ' + '  '.join(f'{v:>14}' for v in variants))
+    dimension = ('(cap_mib, latency_scale)' if 'caps' in s else 'latency_scale') if 'factors' in s else 'cap_mib'
+    print(f'   {dimension}  ' + '  '.join(f'{v:>14}' for v in variants))
     for cap, q in s['quality'].items():
         cells = [f'{q["edp"][v]:.6e}{flags(q, v):<3}' if q['edp'][v] is not None else f'{"none":>12}{flags(q, v):<3}'
                  for v in variants]

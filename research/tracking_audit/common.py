@@ -241,6 +241,13 @@ def strict_evaluate(case, cap_mib, mapping, gb_latency_scale=1.0):
         raise ValueError(f're-evaluation returned {len(ev)} rows')
     e, l = float(ev['Total<SEP>energy'].iloc[0]), float(ev['Total<SEP>latency'].iloc[0])
     reservations = {c: float(ev[c].iloc[0]) for c in ev.columns if c.startswith('reservation<SEP>')}
+    # evaluate_mapping can report an infeasible single-Einsum mapping without
+    # passing through a pairwise Join's capacity filter. Check every returned
+    # lifetime/branch, including fixed memories, before certifying the pick.
+    invalid = {c: usage for c, usage in reservations.items()
+               if not math.isfinite(usage) or not 0 <= usage <= 1}
+    if invalid:
+        raise ValueError(f'invalid or over-capacity Reservations: {invalid}')
     return {'energy': e, 'latency': l, 'edp': e * l, 'reservations': reservations}
 
 

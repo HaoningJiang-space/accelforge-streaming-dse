@@ -18,9 +18,21 @@ from accelforge.mapper.FFM._join_pmappings.join_pmappings import (
     _check_einsum2pmappings_not_empty,
 )
 from accelforge._accelerated_imports import pd
+from accelforge.mapper.FFM._pareto_df import pareto as pareto_module
 
 
 logger = logging.getLogger(__name__)
+
+# These options affect the generated candidate set, not only Join execution.
+# Keep this list in sync with new generation switches in _make_pmappings.
+_GENERATION_ENV_VARS = (
+    "AF_LATENCY_SCALES",
+    "AF_GENERATION_VARIABLE_RESOURCES",
+    "AF_ABL_ALLOW_UNREPRESENTABLE",
+    "AF_ABL_SKIP_BIG_ENOUGH",
+    "AF_ABL_SKIP_PMAPPING_ONLY",
+    "AF_ABL_BIG_ENOUGH_UNTRACK_ONLY",
+)
 
 
 def map_workload_to_arch(
@@ -130,10 +142,15 @@ def make_pmappings(
     else:
 
         @joblib.Memory(location=os.path.join(cache_dir), compress=True).cache
-        def _make_pmappings_cached(**kwargs) -> MultiEinsumPmappings:
+        def _make_pmappings_cached(generation_options, **kwargs) -> MultiEinsumPmappings:
+            # Explicit cache-key input: generation reads these options outside Spec.
             return _make_pmappings(**kwargs)
 
-        result = _make_pmappings_cached(**kwargs)
+        generation_options = {
+            name: os.environ.get(name) for name in _GENERATION_ENV_VARS
+        }
+        generation_options["pareto_tolerance"] = pareto_module.TOLERANCE
+        result = _make_pmappings_cached(generation_options, **kwargs)
 
     if print_number_of_pmappings:
         print(result.n_pmapping_string())

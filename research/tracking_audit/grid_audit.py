@@ -21,6 +21,7 @@ larger (they fit too); a different scale is not comparable.
 Exit status as capacity_audit.py: 2 invalid pick, 5 suboptimal, 3 inconsistent, 0 ok.
 """
 import argparse
+from collections import deque
 import itertools
 import json
 import math
@@ -73,9 +74,10 @@ def run_variant(variant, case, caps, factors):
             gen_env['AF_LATENCY_SCALES'] = 'GlobalBuffer:' + ','.join(map(repr, scaled))
         res, st = common.search(common.build(case, maxcap, common.RU), gen_env,
                                 {'AF_VARIABLE_RESOURCES': 'GlobalBuffer'})
-        for cap, f in itertools.product(caps, factors):
+        for cap in caps:
             fits = res.data[res.data[common.GB] <= cap / maxcap * (1 + 1e-12)]
-            yield (cap, f), fits, latency_column(f), st
+            for f in factors:
+                yield (cap, f), fits, latency_column(f), st
     else:
         raise ValueError(f'unknown variant {variant}')
 
@@ -85,7 +87,9 @@ def run(a):
     points = list(itertools.product(caps, factors))
     if not a.no_warmup:
         t0 = time.perf_counter()
-        list(run_variant('shared', case, caps, factors))
+        # Consume and release query slices instead of keeping the whole grid's
+        # DataFrames alive at once during warmup.
+        deque(run_variant('shared', case, caps, factors), maxlen=0)
         print('WARMUP', json.dumps({'seconds': time.perf_counter() - t0}), flush=True)
 
     times = {v: [] for v in VARIANTS}
@@ -128,7 +132,7 @@ def run(a):
 
 def main(argv=None):
     a = parse_args(argv)
-    print('CONFIG', json.dumps(common.effective_config(args=vars(a)), default=str), flush=True)
+    print('CONFIG', json.dumps(common.effective_config(a.case, args=vars(a)), default=str), flush=True)
     common.set_jobs(a.jobs)
     try:
         summary, status = run(a)
