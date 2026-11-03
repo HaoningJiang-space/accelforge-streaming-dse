@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Invalidate candidates produced before the shared formula-goal cache fix.
 # Bump when generation semantics change outside the cached wrapper's source.
-_GENERATION_CACHE_VERSION = 1
+_GENERATION_CACHE_VERSION = 2
 
 # These options affect the generated candidate set, not only Join execution.
 # Keep this list in sync with new generation switches in _make_pmappings.
@@ -34,6 +34,8 @@ _GENERATION_ENV_VARS = (
     "AF_ENUMERATION_PARETO_BYTES",
     "AF_TARGET_ENUMERATION",
     "AF_CAPACITY_MEMBERSHIP",
+    "AF_RESOURCE_UNITS",
+    "AF_GENERATION_CAPACITY_BITS",
     "AF_LATENCY_SCALES",
     "AF_GENERATION_CAPACITY_FRACTIONS",
     "AF_GENERATION_VARIABLE_RESOURCES",
@@ -91,10 +93,15 @@ def map_workload_to_arch(
         _pmapping_row_filter_function=_pmapping_row_filter_function,
     )
 
+    from accelforge.frontend.mapper.metrics import Metrics
+    from accelforge.mapper.FFM._pareto_df.capacity_membership import is_membership_col, is_excluded_col
+    membership_columns = [c for c in mappings.data if is_membership_col(c) or is_excluded_col(c)]
     new_mapping_data = []
     for i in range(len(mappings.data)):
         local_spec = deepcopy(spec)
         local_spec.model.metrics = local_spec.mapper.ffm.info_metrics
+        if membership_columns:
+            local_spec.model.metrics |= Metrics.RESOURCE_USAGE
         local_spec.mapping = mappings.data.iloc[i]["Total<SEP>mapping"]()
         # BUG: Mapping._from_pmappings create mappings that cannot be evaluated!
         this_mapping = evaluate_mapping(
@@ -102,9 +109,18 @@ def map_workload_to_arch(
             flattened_arches=mappings.flattened_arches,
             evaluated_specs=mappings.evaluated_specs,
         )
-        new_mapping_data.append(this_mapping.data)
+        if len(this_mapping.data) != 1:
+            raise ValueError('mapping re-evaluation must return exactly one source-associated row')
+        data = this_mapping.data.copy()
+        # Membership describes the source search policy, not the re-evaluated
+        # physical mapping. Carry it positionally without a mixed-dtype Series
+        # conversion (which can lose the top bits of a uint64 word).
+        for column in membership_columns:
+            data[column] = mappings.data[column].iloc[i:i+1].to_numpy(copy=True)
+        new_mapping_data.append(data)
 
-    mappings.data = pd.concat(new_mapping_data)
+    if new_mapping_data:
+        mappings.data = pd.concat(new_mapping_data, ignore_index=True)
 
     return mappings
 

@@ -3,6 +3,7 @@ import itertools
 import logging
 import os
 import time
+from fractions import Fraction
 from typing import Callable
 
 from accelforge._accelerated_imports import pd
@@ -29,6 +30,7 @@ from accelforge.mapper.FFM._join_pmappings.pmapping_group import (
 )
 from accelforge.mapper.FFM._pareto_df.df_convention import col2nameloop
 from accelforge.util import parallel, delayed
+from accelforge.mapper.FFM._pareto_df import exact_resources as exact
 
 
 logger = logging.getLogger(__name__)
@@ -102,7 +104,7 @@ def clean_compress_and_join_pmappings(
             for x in list(einsum2pmappings.keys())
             if x in pmappings.einsums_with_pmappings_generated
         ),
-        joined.data,
+        exact.public_frame(joined.data),
         total_mappings=joined.n_total_pmappings,
         valid_mappings=joined.n_valid_pmappings,
         flattened_arches=pmappings.flattened_arches,
@@ -171,6 +173,9 @@ def get_memories_to_track(
                     if tensor.resource_name in always_below:
                         always_below.remove(tensor.resource_name)
                 size = s.mappings.data[col].max()
+                if exact.capacity_column(name) in s.mappings.data:
+                    bound = exact.capacity(s.mappings.data,name)
+                    size = Fraction(exact.integer_bits(size),bound) if bound else (0 if size == 0 else float('inf'))
                 max_sizes[name] = max(max_sizes.get(name, 0), size)
 
                 # nloops < 0 means that the reservation will live through all Einsums

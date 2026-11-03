@@ -7,6 +7,73 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Integer resource accounting fixes the 68-byte coverage regression
+
+The reported failure is reproduced on `07e2f4c8`: a physical 68 B NVDLA
+`matmuls(2,4,8)` search returns re-evaluated EDP `2.04476416e-16`, whereas
+shared `{68,96}` returns `3.16297216e-16` with either enumerator. Both returned
+Mappings re-evaluate successfully. Backend agreement and successful re-evaluation
+therefore did **not** certify candidate coverage.
+
+New model runs carry absolute integer bits through generation constraints,
+Reservation addition/maxima, shared-tensor deductions, capacity filtering and
+resource-elimination proofs. Exact symbolic capacity evaluation precedes the
+ordered fallback; rational prefix objectives are compared without float32
+rounding. Public `reservation<SEP>...` fields remain normalized display views;
+`reservation_bits<SEP>...` and `capacity_reference_bits<SEP>...` retain the
+physical quantities. Capacity queries use the bit columns, without an epsilon.
+Internal frames have `resource_capacity_bits<SEP>...` metadata; mixing units or
+inconsistent capacities fails explicitly. Old normalized capture fixtures remain
+supported. Existing row-filter callbacks still receive normalized display columns.
+The experimental numeric Join program falls back to per-operation checked integer
+arithmetic for exact-bit frames. Generation cache version was bumped.
+
+`AF_GENERATION_CAPACITY_BITS=Memory:b1,b2,...` supplies integer thresholds paired
+with `AF_GENERATION_CAPACITY_FRACTIONS` labels in their original input order.
+The audit helpers now supply both. Fraction-only callers retain a compatibility
+decoder (integer ratio round trips, otherwise floor). Prefer explicit bits for
+boundary experiments. A fractional physical bit capacity is floored, which
+preserves feasibility for integer-bit occupancies. Supported resource counts and
+capacities are nonnegative integers up to `2**52`; unsupported expressions,
+nonintegral resource counts or larger intermediate states fail rather than
+silently approximate. Energy/latency still use the existing model precision.
+`AF_RESOURCE_UNITS=legacy` is available only for historical reproduction; it
+retains the known boundary defect.
+
+`audit_exact_capacity.py` builds each target's physical architecture separately.
+On 18 integer capacities around six boundaries and three shared upper limits
+(96/128/160 B), all **196** comparable combinations of target, upper limit,
+enumerator and codec agree: the same 24 templates and their complete selected
+Tile sets, Energy–Latency frontiers, and target-capacity re-evaluation. The 68 B
+case recovers all **48** Tile assignments and the same best Mapping identity,
+using 544 bits and EDP `2.04476416e-16`. This is a bounded regression audit of
+FFM's existing policy, **not** exhaustive proof of the physical Mapping space.
+Small GLU `(8,16,32)` on NVDLA and TPU v4i also matches physical EL-only
+searches at 128/256/1024 B (six full Energy–Latency frontier checks and twelve
+selected-Mapping re-evaluations). **352 research/Streaming tests pass.** The
+saved audit includes a source-tree SHA256 so its working revision is identifiable.
+
+The high-level `map_workload_to_arch()` API also retains each source row's target
+membership across re-evaluation, preserving integer word dtypes. Membership
+benchmarks now validate every warmup and measured result outside the timers,
+save failures immediately and stop with a nonzero exit status. An injected
+reconstruction failure in the first measured run is caught despite identical
+numeric frontiers. Historical 704/5,440 selection counts concern the saved
+final selections, not every timing repeat.
+
+Results and the reproduced pre-fix failure are in [exact_capacity](results/exact_capacity/).
+Run `python research/tracking_audit/audit_exact_capacity.py --output RESULT.json`
+(add `--glu` for the two-architecture GLU check) and
+`python -m pytest -q research/tracking_audit research/streaming_join`.
+Earlier timing tables are historical measurements of the normalized-resource
+implementation; they are not fresh performance or coverage evidence for this
+change. No new speedup is claimed here.
+
+Still open: the conservative Fusion Copy filter's quality loss, the distinction
+between complete-candidate and prefix fallback policies, continuous capacity
+regions, and an independent exhaustive resource-lifetime oracle. This fix changes
+resource arithmetic, not those search policies or the Fusion template filter.
+
 ### Ordered-fallback policy regions and finite interval membership
 
 The restricted fixed-complete-candidate policy now has a written single-interval

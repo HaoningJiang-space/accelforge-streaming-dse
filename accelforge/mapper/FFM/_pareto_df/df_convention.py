@@ -5,6 +5,7 @@ from accelforge.util._frozenset import fzs
 from accelforge.frontend.workload import Rank
 from accelforge.util._base_analysis_types import ActionKey, VerboseActionKey
 from .capacity_membership import is_membership_col
+from .exact_resources import is_capacity_column, BITS_PREFIX
 
 
 MAPPING_COLUMN = "mapping"
@@ -225,6 +226,13 @@ def is_n_iterations_col(c: str) -> bool:
 
 
 def add_to_col(df, target, source):
+    from . import exact_resources as exact
+    resource = col2nameloop(target)
+    if resource is not None and exact.capacity_column(resource[0]) in df:
+        a = exact.checked_values(df[target].to_numpy()) if target in df else 0
+        b = exact.checked_values(df[source].to_numpy())
+        df[target] = exact.checked_values(a + b)
+        return
     if target in df:
         target_type = df[target].dtype
         source_type = df[source].dtype
@@ -246,7 +254,7 @@ def is_objective_col(c):
 
 
 def col_used_in_pareto(c):
-    return col2nameloop(c) is not None or is_objective_col(c) or is_membership_col(c)
+    return col2nameloop(c) is not None or is_objective_col(c) or is_membership_col(c) or c.startswith(BITS_PREFIX)
 
 
 def col_used_in_joining(c):
@@ -256,6 +264,7 @@ def col_used_in_joining(c):
         or is_fused_loop_col(c)
         or is_tensor_col(c)
         or is_n_iterations_col(c)
+        or is_capacity_column(c)
     )
 
 

@@ -78,6 +78,8 @@ class Job:
     scaled_latency2col(component, factor), the Einsum's latency with that component's
     action latencies multiplied by factor (research switch AF_LATENCY_SCALES)."""
     capacity_fractions: tuple[str, tuple[float, ...]] | None = None
+    capacity_target_bits: dict[float, int] = field(default_factory=dict)
+    resource_capacities: dict[str, int] = field(default_factory=dict)
     """(memory, fractions of its modeled size): target capacities of a shared capacity
     search; min-usage fallback is applied per target (AF_GENERATION_CAPACITY_FRACTIONS)."""
     time_limit: float | int = float("inf")

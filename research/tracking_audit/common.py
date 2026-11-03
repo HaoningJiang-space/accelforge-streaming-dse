@@ -200,13 +200,17 @@ def capacity_fractions_env(caps):
     """Generation switch telling a search at max(caps) its target capacities, so the
     min-usage fallback is applied per target (see AF_GENERATION_CAPACITY_FRACTIONS)."""
     maxcap = max(caps)
-    return {'AF_GENERATION_CAPACITY_FRACTIONS': 'GlobalBuffer:' + ','.join(repr(c / maxcap) for c in caps)}
+    return {'AF_GENERATION_CAPACITY_FRACTIONS': 'GlobalBuffer:' + ','.join(repr(c / maxcap) for c in caps),
+            'AF_GENERATION_CAPACITY_BITS': 'GlobalBuffer:' + ','.join(str(math.floor(c * 2**23)) for c in caps)}
 
 
 def rows_for_capacity(data, cap, maxcap):
     """Rows of a shared search at maxcap that belong to the search at `cap`: they fit
     its GlobalBuffer and every pmapping was kept by that target's enumeration."""
-    rows = data[data[GB] <= cap / maxcap * (1 + 1e-12)]
+    raw = 'reservation_bits<SEP>GlobalBuffer<SEP>0<SEP>right'
+    if 'capacity_reference_bits<SEP>GlobalBuffer' in data and raw not in data:
+        raise ValueError('exact capacity query requires absolute-bit reservations')
+    rows = data[data[raw] <= math.floor(cap * 2**23)] if raw in data else data[data[GB] <= cap / maxcap * (1 + 1e-12)]
     from accelforge.mapper.FFM._pareto_df.capacity_membership import is_membership_col, membership_for_target
     if any(is_membership_col(c) for c in rows):
         return rows[membership_for_target(rows, 'GlobalBuffer', cap / maxcap)]
@@ -216,6 +220,20 @@ def rows_for_capacity(data, cap, maxcap):
         # by capacity alone would return candidates the target's own search removed.
         raise ValueError(f'shared search result lacks target membership column {excluded!r}')
     return rows[rows[excluded] == 0]
+
+
+def validate_capacity_picks(case, caps, data):
+    """Validate one completed search, including selection/reconstruction failures."""
+    records = []
+    for cap in caps:
+        try:
+            row = best_row(rows_for_capacity(data, cap, max(caps)))
+            if row is None:
+                raise ValueError('no feasible target mapping')
+            records.append(check_pick(case, cap, row))
+        except Exception as error:
+            records.append(dict(cap_mib=cap, ok=False, error=f'{type(error).__name__}: {error}'))
+    return records
 
 
 def run_variant(variant, case, caps, ablations=None):
@@ -294,9 +312,19 @@ def strict_evaluate(case, cap_mib, mapping, gb_latency_scale=1.0):
     # lifetime/branch, including fixed memories, before certifying the pick.
     invalid = {c: usage for c, usage in reservations.items()
                if not math.isfinite(usage) or not 0 <= usage <= 1}
+    exact_reservations = {}
+    for c in ev:
+        if c.startswith('reservation_bits<SEP>'):
+            value = ev[c].iloc[0]
+            memory = c.split('<SEP>')[1]
+            bound = ev['capacity_reference_bits<SEP>' + memory].iloc[0]
+            if not math.isfinite(value) or value != int(value) or not 0 <= value <= bound:
+                invalid[c] = float(value)
+            exact_reservations[c] = int(value)
     if invalid:
         raise ValueError(f'invalid or over-capacity Reservations: {invalid}')
-    return {'energy': e, 'latency': l, 'edp': e * l, 'reservations': reservations}
+    return {'energy': e, 'latency': l, 'edp': e * l, 'reservations': reservations,
+            'reservation_bits': exact_reservations}
 
 
 def spatial_usage_shortfalls(case, mapping):

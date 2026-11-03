@@ -24,7 +24,7 @@ class Cohort:
     history: tuple = ()
 
 
-def capacity_events(values, targets, bounds):
+def capacity_events(values, targets, bounds, strict=False):
     """Partition target IDs by the exact mask of ``values <= bounds[target]``.
 
     Float-array events use sorted attained values and NumPy's scalar promotion
@@ -61,9 +61,11 @@ def capacity_events(values, targets, bounds):
     for target in targets:
         try:
             mask = np.asarray(original <= bounds[target], dtype=bool)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as error:
             # The oracle defers this target's unsupported comparison only. Do
             # not accidentally defer every other target in the same cohort.
+            if strict:
+                raise RuntimeError('could not compare an exact capacity target') from error
             mask = np.ones(values.shape, dtype=bool)
         key = (mask.shape, mask.tobytes())
         if key not in groups:
@@ -115,20 +117,22 @@ def _symbol_order(symbols, relations):
 
 class TargetEnumerator:
     def __init__(self, api, objectives, targets, symbols, what_tiles_symbol, job,
-                 keep_symbols=(), max_loop_check_groups=(), membership_format='excluded'):
+                 keep_symbols=(), max_loop_check_groups=(), membership_format='excluded', capacity_exact=False):
         self.api, self.job, self.relations = api, job, what_tiles_symbol
         self.symbols, self.keep = tuple(symbols), set(keep_symbols)
         self.loop_groups = max_loop_check_groups
         self.bounds = [bound for _, bound in targets]
         self.membership_format = membership_format
-        self.full_target = next((i for i, b in reversed(list(enumerate(self.bounds))) if b == 1), None)
+        full_bound = max(self.bounds) if capacity_exact else 1
+        self.full_target = next((i for i, b in reversed(list(enumerate(self.bounds))) if b == full_bound), None)
         first_min = next((i for i, o in enumerate(objectives) if o.try_best_if_none_reaches_min), len(objectives))
         # The target's name and threshold are metadata; the formula/position are
         # the same as each independent invocation. Distinguish it by identity.
         self.capacity = api.Objective('capacity_target', targets[0][0], max_value=1,
-                                      only_care_if_valid=True, symbols=symbols)
+                                      only_care_if_valid=True, symbols=symbols, exact=capacity_exact)
         self.active = [copy.copy(o) for o in objectives]
         self.active.insert(first_min, self.capacity)
+        self.exact_goals = any(o.exact for o in self.active)
         self.done, self.compiled = [], {}
         self.text = api.SymbolicText()
         self.stats = dict(supported=1, state_expansions=0, expanded_rows=0,
@@ -147,10 +151,10 @@ class TargetEnumerator:
         if self.full_target in state.targets:
             self.job.log_porp_pmappings_kept(name, after / max(1, before))
 
-    def evaluate(self, formula, state, minimize=None, maximize=None):
+    def evaluate(self, formula, state, minimize=None, maximize=None, exact_evaluation=False):
         self.stats['value_evaluations'] += 1
         self.stats['target_value_evaluations'] += len(state.targets)
-        values = state.choices.astype(self.api.util.NUMPY_FLOAT_TYPE)
+        values = state.choices if exact_evaluation else state.choices.astype(self.api.util.NUMPY_FLOAT_TYPE)
         if formula in self.done:
             return values[:, self.done.index(formula)]
         padded = self.api.get_padded_choices(
@@ -158,6 +162,9 @@ class TargetEnumerator:
             symbols_non_enumerated_set=set(self.symbols) - set(self.done),
             choices_enumerated=values, what_tiles_symbol=self.relations,
             minimize_formula=minimize, maximize_formula=maximize)
+        if exact_evaluation:
+            from accelforge.mapper.FFM._pareto_df import exact_resources
+            return exact_resources.evaluate(formula,padded)
         if formula not in self.compiled:
             self.compiled[formula] = self.api.util._lambdify_type_check(self.symbols, formula)
         return self.compiled[formula](**{str(k): v for k, v in padded.items()})
@@ -174,11 +181,14 @@ class TargetEnumerator:
             if objective.max_value is None:
                 return [state]
             try:
-                values = self.evaluate(objective.formula, state, minimize=objective.formula)
-            except (TypeError, ValueError):
+                values = self.evaluate(objective.formula, state, minimize=objective.formula, exact_evaluation=objective.exact)
+            except (TypeError, ValueError) as error:
                 # Same unsupported-bound deferral as the independent enumerator.
+                if objective.exact and complete:
+                    raise RuntimeError('could not evaluate a complete exact capacity constraint') from error
                 return [state]
-            partitions = capacity_events(values, state.targets, self.bounds)
+            partitions = capacity_events(values, state.targets, self.bounds,
+                                         strict=objective.exact and complete)
             self.stats['capacity_partitions'] += 1
             self.stats['capacity_masks'] += len(partitions)
             result = []
@@ -191,11 +201,12 @@ class TargetEnumerator:
 
         if objective.max_value is not None:
             try:
-                values = self.evaluate(objective.formula, state, minimize=objective.formula)
+                values = self.evaluate(objective.formula, state, minimize=objective.formula, exact_evaluation=objective.exact)
                 valid = values <= objective.max_value if objective.inclusive else values < objective.max_value
                 state = self.mask_rows(state, valid)
-            except (TypeError, ValueError):
-                pass
+            except (TypeError, ValueError) as error:
+                if objective.exact and complete:
+                    raise RuntimeError('could not evaluate a complete exact capacity constraint') from error
         if objective.min_value is not None:
             try:
                 values = self.evaluate(objective.formula, state, maximize=objective.formula)
@@ -241,7 +252,14 @@ class TargetEnumerator:
         if any(previous.issubset(key) for previous in state.history):
             return state
         state = replace(state, history=state.history + (key,))
-        values = [self.evaluate(formula, state) for formula in goals]
+        values = []
+        for formula in goals:
+            use_exact = self.exact_goals and not formula.atoms(sympy.Float)
+            value = self.evaluate(formula,state,exact_evaluation=use_exact)
+            if use_exact:
+                from accelforge.mapper.FFM._pareto_df.exact_resources import comparison_values
+                value = comparison_values(value)
+            values.append(value)
         if not values:
             self.log_keep(state, 'Pareto', len(state.choices), 1)
             return replace(state, choices=state.choices[:1])

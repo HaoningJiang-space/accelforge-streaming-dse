@@ -40,12 +40,13 @@ def reservation_frame(monkeypatch, levels, sizes, instances=1):
 
 
 @pytest.mark.parametrize('levels,sizes,instances,expected', [
-    ([-1, 0], [20, 30], 1, {-1: .2, 0: .5}),
-    ([0, -1], [30, 20], 2, {-1: .4, 0: .7}),
-    ([8, 1], [30, 20], 1, {1: .2, 8: .5}),
+    ([-1, 0], [20, 30], 1, {-1: 20, 0: 50}),
+    ([0, -1], [30, 20], 2, {-1: 40, 0: 70}),
+    ([8, 1], [30, 20], 1, {1: 20, 8: 50}),
 ])
 def test_prefixes_follow_lifetime_order(monkeypatch, levels, sizes, instances, expected):
     data = reservation_frame(monkeypatch, levels, sizes, instances)
+    assert data['resource_capacity_bits<SEP>Memory'].iloc[0] == 100
     for level, value in expected.items():
         assert data[nameloop2col('Memory', level)].iloc[0] == pytest.approx(value)
 

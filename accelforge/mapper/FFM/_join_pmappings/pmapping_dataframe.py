@@ -27,6 +27,7 @@ from accelforge.mapper.FFM._pareto_df.capacity_membership import (
     validate_same_membership, intersect_join_membership,
 )
 from accelforge.mapper.FFM._pareto_df.interval_membership import align_membership_frames
+from accelforge.mapper.FFM._pareto_df import exact_resources as exact
 from accelforge.mapper.FFM._join_pmappings.numeric_join import (
     apply_numpy_program, compile_column_program,
 )
@@ -436,6 +437,7 @@ class PmappingDataframe:
         if aligned[1] is not right.data:
             right = right.update(data=aligned[1], skip_pareto=True)
         membership_columns = validate_same_membership([self.data, right.data])
+        exact.check_units([self.data,right.data])
         membership_join = os.environ.get('AF_MEMBERSHIP_JOIN', 'late')
         if membership_join not in ('late', 'early'):
             raise ValueError('AF_MEMBERSHIP_JOIN must be late or early')
@@ -542,7 +544,9 @@ class PmappingDataframe:
             plan["right_dropcols"] = dropcols
             plan["numeric_program"] = None
         numeric_done = False
-        if os.environ.get("AF_NUMERIC_JOIN") == "1":
+        if os.environ.get("AF_NUMERIC_JOIN") == "1" and not any(exact.is_capacity_column(c) for c in df):
+            # The experimental array program has no per-step integer range
+            # checks. Exact-bit frames use checked resource arithmetic below.
             if plan["numeric_program"] is None:
                 plan["numeric_program"] = compile_column_program(plan["column_operations"])
             numeric_done = apply_numpy_program(df, plan["numeric_program"])
@@ -697,7 +701,7 @@ class PmappingDataframe:
         dropcols = [c for c in df.columns if c.endswith("_RIGHT_MERGE")]
         for source in dropcols:
             target = source[:-len("_RIGHT_MERGE")]
-            if is_tensor_col(target) or is_membership_col(target):
+            if is_tensor_col(target) or is_membership_col(target) or exact.is_capacity_column(target):
                 continue
             if not col_used_in_pareto(target):
                 raise ValueError(f"{target} is not used in pareto")
@@ -928,6 +932,10 @@ class PmappingDataframe:
 
         for t, negate in [(t, False) for t in alloc] + [(t, True) for t in free]:
             size = self.data[tensor2col(t.name)]
+            exact_units = exact.capacity_column(resource) in self.data
+            if exact_units:
+                exact.checked_values(size.to_numpy())
+                size = size.astype('int64')
             size = -size if negate else size
             targets[t.above_loop_index, False] += size
             # Allocate at any levels below the above_loop_index level
@@ -937,6 +945,9 @@ class PmappingDataframe:
             for level in self.left_reservations.get(resource, set()):
                 if level > t.above_loop_index:
                     targets[level, True] += size
+            if exact_units:
+                for accumulated in targets.values():
+                    exact.checked_values(accumulated.to_numpy(), signed=True)
 
         # Now apply the allocations. Sort so we go from top to bottom in case
         # there are maxes that propagate down.
@@ -944,6 +955,11 @@ class PmappingDataframe:
             targets.items(), key=lambda x: x[0], reverse=True
         ):
             target = nameloop2col(resource, level, left=left)
+            if exact.capacity_column(resource) in self.data:
+                source = target if target in self.data else self.get_reservation_or_parent(resource, level - 1)
+                old = exact.checked_values(self.data[source].to_numpy()) if source else 0
+                self.data[target] = exact.checked_values(old + size.to_numpy())
+                continue
             if target in self.data:
                 self.data.loc[:, target] += size
                 continue
@@ -992,6 +1008,7 @@ class PmappingDataframe:
         paretos = [p if frame is p.data else p.update(data=frame, skip_pareto=True)
                    for p, frame in zip(paretos, aligned)]
         validate_same_membership([p.data for p in paretos])
+        exact.check_units([p.data for p in paretos])
         required_cols = set.union(*[set(p.data.columns) for p in paretos])
         shared_cols = set.intersection(*[set(p.data.columns) for p in paretos])
         fill_cols = required_cols - shared_cols
@@ -1037,6 +1054,7 @@ class PmappingDataframe:
         drop_valid_reservations: bool = True,
         ignored_resources: set[str] = set(),
     ):
+        exact.validate_reservations(self.data)
         dropcols = []
         for resource in sorted(
             set(self.right_reservations) | set(self.left_reservations)
@@ -1048,7 +1066,7 @@ class PmappingDataframe:
             if right_loops:
                 n = max(right_loops)
                 col = nameloop2col(resource, n)
-                self._data = self.data[self.data[col] <= 1]
+                self._data = self.data[self.data[col] <= exact.capacity(self.data,resource)]
             for l in list(right_loops):
                 if (
                     l == 0
@@ -1064,7 +1082,7 @@ class PmappingDataframe:
             left_loops = self.left_reservations.get(resource, set())
             for l in list(left_loops):
                 col = nameloop2col(resource, l, left=True)
-                self._data = self.data[self.data[col] <= 1]
+                self._data = self.data[self.data[col] <= exact.capacity(self.data,resource)]
                 if (
                     l == 0
                     and drop_valid_reservations
@@ -1077,6 +1095,7 @@ class PmappingDataframe:
         self._make_reservations()
 
     def make_pareto(self, columns: list[str] = None, parallelize: bool = False):
+        exact.validate_reservations(self.data)
         self._check_reservations()
         self._data = makepareto(self.data, columns, parallelize=parallelize)
         self._check_reservations()
@@ -1123,7 +1142,7 @@ class PmappingDataframe:
         # if s.sum() > 0:
         #     print(f"Filter rate: {s.sum() / len(s):.2%}")
         return self.update(
-            data=self._data[_pmapping_row_filter_function(self._data)].copy(),
+            data=self._data[_pmapping_row_filter_function(exact.public_frame(self._data))].copy(),
             skip_pareto=True,
         )
 

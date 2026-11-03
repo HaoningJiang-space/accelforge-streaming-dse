@@ -301,7 +301,7 @@ def make_pmappings_from_templates(
 
     tensor_cols = [tensor2col(tensor) for tensor in fusable_tensors]
     df.columns = [
-        c if col_used_in_pareto(c) or c in tensor_cols else f"{einsum_name}<SEP>{c}"
+        c if col_used_in_pareto(c) or c in tensor_cols or c.startswith("resource_capacity_bits<SEP>") else f"{einsum_name}<SEP>{c}"
         for c in df.columns
     ]
 

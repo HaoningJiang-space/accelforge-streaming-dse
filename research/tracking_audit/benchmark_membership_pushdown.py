@@ -126,10 +126,15 @@ def main():
                        full_live_frontier=ids[0], per_target_frontiers=ids[1], exact=ids==expected,
                        rows_front=len(result.data))
             report['runs'].append(row)
+            # Outside both timers, validate provenance on EVERY repeat. A
+            # numerically identical later run must not erase a bad source row.
+            row['picks'] = common.validate_capacity_picks(case, caps, result.data)
+            row['picks_valid'] = all(pick['ok'] for pick in row['picks'])
+            report['all_picks_valid'] = all(r['picks_valid'] for r in report['runs'])
             last[method] = result
             save()
-            print('RUN', json.dumps({k:v for k,v in row.items() if k not in ('output_payloads','input')}), flush=True)
-            if not row['exact']:
+            print('RUN', json.dumps({k:v for k,v in row.items() if k not in ('output_payloads','input','picks')}), flush=True)
+            if not row['exact'] or not row['picks_valid']:
                 return 2
     if frozen is None:
         frozen = generate(False)[0]
@@ -161,7 +166,7 @@ def main():
     for method, result in last.items():
         report['picks'][method] = [common.check_pick(case, cap, common.best_row(
             common.rows_for_capacity(result.data, cap, high))) for cap in caps]
-    report['all_picks_valid'] = all(p['ok'] for picks in report['picks'].values() for p in picks)
+    report['all_picks_valid'] &= all(p['ok'] for picks in report['picks'].values() for p in picks)
     report['summary'] = {}
     for method in methods:
         rows = [r for r in report['runs'] if r['method']==method and r['repeat']>=0]

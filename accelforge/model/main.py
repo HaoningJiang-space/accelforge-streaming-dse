@@ -21,6 +21,7 @@ from accelforge.frontend._workload_isl._symbolic import (
     get_rank_variable_relevancy,
 )
 from accelforge.mapper.FFM._pareto_df.df_convention import col_used_in_joining
+from accelforge.mapper.FFM._pareto_df import exact_resources as exact
 
 
 def evaluate_mapping(
@@ -168,6 +169,10 @@ def evaluate_mapping(
         }
 
         _, df, _, _, tensor2mapping = run_model(job)
+        if job.resource_capacities:
+            for key in df:
+                if key.startswith(('reservation<SEP>','tensor<SEP>')) or exact.is_capacity_column(key):
+                    df[key] = exact.bit_array(df[key],{},1)[0]
 
         # Calculate iteration counts and rank columns
         _calculate_iterations_and_rank_columns(

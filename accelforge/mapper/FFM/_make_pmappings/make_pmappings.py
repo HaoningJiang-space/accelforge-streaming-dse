@@ -1,5 +1,6 @@
 import logging
 import os
+import math
 from math import prod
 
 from typing import Callable, Optional
@@ -260,6 +261,38 @@ def _capacity_fractions_from_env(
     return memory, tuple(sorted(fractions | {1.0}))
 
 
+def _capacity_bits_from_env(einsum2jobs, fractions):
+    """Optional exact bit targets, paired with the fraction labels in input order.
+
+    Fractions identify membership columns for compatibility; supplied integers
+    are the actual feasibility thresholds and never reconstructed from ratios.
+    """
+    from accelforge.mapper.FFM._pareto_df import exact_resources as exact
+    value = os.environ.get('AF_GENERATION_CAPACITY_BITS', '').strip()
+    if not value:
+        return {}
+    memory, sep, values = value.partition(':')
+    if not fractions or not sep or memory.strip() != fractions[0]:
+        raise ValueError('AF_GENERATION_CAPACITY_BITS requires matching CAPACITY_FRACTIONS memory')
+    labels = [float(f) for f in os.environ['AF_GENERATION_CAPACITY_FRACTIONS'].split(':')[1].split(',') if f.strip()]
+    bits = [exact.integer_bits(int(b)) for b in values.split(',') if b.strip()]
+    if len(labels) != len(bits):
+        raise ValueError('capacity bits must match fraction labels in input order')
+    sizes = {exact.capacity_bits(n.size) for jobs in einsum2jobs.values() for j in jobs
+             for n in j.flattened_arch if isinstance(n, arch.Memory) and n.name == fractions[0]}
+    if len(sizes) != 1:
+        raise ValueError('shared target capacity requires the same memory size for all Einsums')
+    size = sizes.pop()
+    result = {1.0: size}
+    for label, bound in zip(labels, bits):
+        if bound > size or (label in result and result[label] != bound):
+            raise ValueError('conflicting or out-of-range capacity target bits')
+        result[label] = bound
+    if any(result[b] < result[a] for a,b in zip(sorted(result),sorted(result)[1:])):
+        raise ValueError('capacity bit targets must be ordered like their fraction labels')
+    return result
+
+
 def get_memories_to_track(
     spec: Spec,
     einsum2jobs: dict[EinsumName, list[Job]],
@@ -346,7 +379,14 @@ def get_memories_to_track(
                     # in bits. Apply the evaluated tensor bit width before the
                     # per-memory scaling factor, as newer upstream versions do.
                     bits_per_value = spec.workload.einsums[einsum].tensor_accesses[tensor].bits_per_value
-                    scale = mem.bits_per_value_scale[tensor] * bits_per_value / mem.size
+                    from fractions import Fraction
+                    from accelforge.mapper.FFM._pareto_df import exact_resources as exact
+                    if exact.enabled():
+                        bound = exact.capacity_bits(mem.size) if math.isfinite(mem.size) else None
+                        scale = (Fraction(mem.bits_per_value_scale[tensor]) * bits_per_value / bound
+                                 if bound else (0 if bound is None else float('inf')))
+                    else:
+                        scale = mem.bits_per_value_scale[tensor] * bits_per_value / mem.size
                     usage += tensor_sizes[tensor] * scale
 
         if usage <= 1:
@@ -536,6 +576,7 @@ def _fill_jobs_with_memories_to_track(
     )
     latency_scales = _latency_scales_from_env(einsum2jobs_flattened, metrics)
     capacity_fractions = _capacity_fractions_from_env(einsum2jobs_flattened, metrics)
+    capacity_target_bits = _capacity_bits_from_env(einsum2jobs_flattened, capacity_fractions)
     for jobs in einsum2jobs_flattened.values():
         for j in jobs:
             j.memories_track_all = memories_track_all
@@ -543,3 +584,4 @@ def _fill_jobs_with_memories_to_track(
             j.ignored_resources = ignored_resources
             j.latency_scales = latency_scales
             j.capacity_fractions = capacity_fractions
+            j.capacity_target_bits = capacity_target_bits

@@ -129,16 +129,19 @@ def main():
                        input=input_stats(pm), boolean_frontier=full_id,
                        per_target_frontiers=query_id, exact=exact)
             report['runs'].append(row)
+            row['picks'] = common.validate_capacity_picks(case, caps, result.data)
+            row['picks_valid'] = all(p['ok'] for p in row['picks'])
+            report['all_picks_valid'] = all(r['picks_valid'] for r in report['runs'])
             last_results[mode] = result
             save()
-            print('RUN', json.dumps(row), flush=True)
-            if not exact:
+            print('RUN', json.dumps({k:v for k,v in row.items() if k != 'picks'}), flush=True)
+            if not exact or not row['picks_valid']:
                 return 2
     report['picks'] = {}
     for mode, result in last_results.items():
         report['picks'][mode] = [common.check_pick(case, cap, common.best_row(
             common.rows_for_capacity(result.data, cap, high))) for cap in caps]
-    report['all_picks_valid'] = all(p['ok'] for picks in report['picks'].values() for p in picks)
+    report['all_picks_valid'] &= all(p['ok'] for picks in report['picks'].values() for p in picks)
     report['summary'] = {}
     for mode in methods:
         runs = [r for r in report['runs'] if r['mode'] == mode and r['repeat'] >= 0]

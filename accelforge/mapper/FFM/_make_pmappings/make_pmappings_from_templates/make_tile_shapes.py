@@ -324,6 +324,7 @@ class Objective:
         min_value: float = None,
         inclusive: bool = True,
         try_best_if_none_reaches_min: bool = False,
+        exact: bool = False,
     ):
         if isinstance(formula, Number):
             formula = sympy.Number(formula)
@@ -337,6 +338,7 @@ class Objective:
             assert max_value is not None or min_value is not None
         self.inclusive: bool = inclusive
         self.try_best_if_none_reaches_min: bool = try_best_if_none_reaches_min
+        self.exact = exact
 
 
 def is_constant(f: Expr) -> bool:
@@ -929,11 +931,12 @@ def _expand_symbol_choices(symbol, choices_enumerated, symbols_enumerated,
     return np.concatenate(choices, axis=0)
 
 
-def get_tile_shape_choices_for_targets(objectives, capacity_targets, membership_format='excluded', **kwargs):
+def get_tile_shape_choices_for_targets(objectives, capacity_targets, membership_format='excluded', capacity_exact=False, **kwargs):
     """get_tile_shape_choices for a shared capacity search: the union over targets.
 
     capacity_targets: (usage formula, bound) pairs, one per target capacity of the
-    searched memory (bound = target / searched capacity). The min-usage fallback keeps
+    searched memory (absolute bits when capacity_exact, otherwise target / searched
+    capacity). The min-usage fallback keeps
     the highest attainable usage among the candidates that fit, so it depends on the
     capacity and on earlier fallbacks; a single enumeration at the largest capacity
     does not cover the smaller targets. Each target is therefore enumerated as an
@@ -941,7 +944,8 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, membership_
     bound`, placed before the first min-usage objective, i.e. after the memory checks
     as in an independent search. The result is the union of the targets' choices.
 
-    Job statistics are those of the full-capacity target (bound 1), as in a single
+    Job statistics are those of the full-capacity target (largest bit bound, or
+    normalized bound 1), as in a single
     search; n_evaluated_pmappings counts the work of all targets.
     enumeration_stats separately records requested versus actually executed prefix
     expansions. AF_ENUMERATION_PREFIX_BYTES enables a template-local payload cache;
@@ -966,7 +970,7 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, membership_
         import sys
         from .target_enumeration import enumerate_targets
         result = enumerate_targets(sys.modules[__name__], objectives, capacity_targets,
-                                   membership_format=membership_format, **kwargs)
+                                   membership_format=membership_format, capacity_exact=capacity_exact, **kwargs)
         if result is not None:
             kwargs['job'].enumeration_stats = {}
             kwargs['job'].enumeration_pareto_stats = {}
@@ -992,13 +996,13 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, membership_
         job.pmapping_keep_rates = dict(start[2])
         target = Objective(
             name=f"capacity_target_{bound!r}", formula=formula, symbols=kwargs["symbols"],
-            only_care_if_valid=True, max_value=bound,
+            only_care_if_valid=True, max_value=bound, exact=capacity_exact,
         )
         parts.append(get_tile_shape_choices(
             objectives[:first_min] + [target] + objectives[first_min:], **kwargs
         ))
         evaluated += job.n_evaluated_pmappings - start[1]
-        if bound == 1:
+        if bound == (max(b for _,b in capacity_targets) if capacity_exact else 1):
             full_stats = (job.n_total_pmappings, dict(job.pmapping_keep_rates))
     job.n_total_pmappings, job.pmapping_keep_rates = full_stats
     job.n_evaluated_pmappings = start[1] + evaluated
@@ -1029,6 +1033,7 @@ def get_tile_shape_choices(
     # expressions are immutable; deepcopy needlessly reconstructs their Max/Min
     # nodes (including symbolic ordering proofs) for every target capacity.
     objectives = [copy.copy(o) for o in objectives]
+    exact_goals = any(o.exact for o in objectives)
     if _compiled_objectives is None:
         _compiled_objectives = {}
     symbol_order = tuple(symbols)
@@ -1104,7 +1109,9 @@ def get_tile_shape_choices(
         choices: np.ndarray,
         minimize_formula: Expr = None,
         maximize_formula: Expr = None,
+        exact_evaluation: bool = False,
     ):
+        from accelforge.mapper.FFM._pareto_df import exact_resources
         if isinstance(formula, Objective):
             formula = formula.formula
         if formula in symbols_enumerated:
@@ -1118,6 +1125,8 @@ def get_tile_shape_choices(
             minimize_formula=minimize_formula,
             maximize_formula=maximize_formula,
         )
+        if exact_evaluation:
+            return exact_resources.evaluate(formula,padded_choices)
         key = (symbol_order, formula)
         if key not in _compiled_objectives:
             _compiled_objectives[key] = util._lambdify_type_check(symbols, formula)
@@ -1297,8 +1306,9 @@ def get_tile_shape_choices(
                     # symbols
                     result = eval_objective(
                         objective.formula,
-                        choices_enumerated_float,
+                        choices_enumerated if objective.exact else choices_enumerated_float,
                         minimize_formula=objective.formula,
+                        exact_evaluation=objective.exact,
                     )
                     if objective.inclusive:
                         valid = result <= objective.max_value
@@ -1310,8 +1320,9 @@ def get_tile_shape_choices(
                         )
                     choices_enumerated = choices_enumerated[valid]
                     choices_enumerated_float = choices_enumerated_float[valid]
-                except (TypeError, ValueError):
-                    pass
+                except (TypeError, ValueError) as error:
+                    if objective.exact and complete:
+                        raise RuntimeError('could not evaluate a complete exact capacity constraint') from error
             if objective.min_value is not None:
                 try:
                     # minimize_for_objective may raise a TypeError if there's unknown
@@ -1398,9 +1409,13 @@ def get_tile_shape_choices(
 
         objective_values = {}
         for formula, goal in list(symbol2goal.items()):
-            objective_values[formula] = eval_objective(
-                formula, choices_enumerated_float
-            )
+            use_exact = exact_goals and not formula.atoms(sympy.Float)
+            values = eval_objective(formula, choices_enumerated if use_exact else choices_enumerated_float,
+                                    exact_evaluation=use_exact)
+            if use_exact:
+                from accelforge.mapper.FFM._pareto_df.exact_resources import comparison_values
+                values = comparison_values(values)
+            objective_values[formula] = values
             symbol2goal[formula] = goal
             log_message("eval", f"{goal.goal}", text(formula))
 
@@ -1579,6 +1594,7 @@ def _calculate_iterations_and_rank_columns(
 
 
 def _make_tile_shapes(job: "Job"):
+    from accelforge.mapper.FFM._pareto_df import exact_resources as exact
     # We're going to convert the job into a list of symbols and objectives
     pmapping = job.mapping
     constraints = job.constraints
@@ -1677,7 +1693,8 @@ def _make_tile_shapes(job: "Job"):
                 formula=v,
                 symbols=symbols,
                 only_care_if_valid=only_care_if_valid,
-                max_value=1,
+                max_value=job.resource_capacities.get(k.split('<SEP>')[-1],1) if k in per_memory_usage_df else 1,
+                exact=k in per_memory_usage_df and k.split('<SEP>')[-1] in job.resource_capacities,
             )
         )
 
@@ -1739,15 +1756,20 @@ def _make_tile_shapes(job: "Job"):
     # Shared capacity search (AF_GENERATION_CAPACITY_FRACTIONS): enumerate per target
     # capacity when a min-usage fallback could make the result capacity-dependent.
     capacity_targets = ()
+    capacity_exact = False
     if getattr(job, "capacity_fractions", None) is not None and job.constraints.min_usage_constraints:
         memory, fractions = job.capacity_fractions
         usage_key = f"usage<SEP>memory<SEP>{memory}"
         if usage_key in per_memory_usage_df:
-            capacity_targets = tuple((per_memory_usage_df[usage_key], f) for f in fractions)
+            capacity_exact = memory in job.resource_capacities
+            capacity_targets = tuple((per_memory_usage_df[usage_key],
+                job.capacity_target_bits.get(f, exact.target_bits(job.resource_capacities[memory],f))
+                if capacity_exact else f) for f in fractions)
 
     from accelforge.mapper.FFM._pareto_df.capacity_membership import membership_mode, encode_membership
     choices_enumerated, excluded = get_tile_shape_choices_for_targets(
         capacity_targets=capacity_targets,
+        capacity_exact=capacity_exact,
         membership_format='packed' if membership_mode() in ('bitset', 'interval') else 'excluded',
         objectives=objectives,
         symbols=symbols,
@@ -1793,7 +1815,10 @@ def _make_tile_shapes(job: "Job"):
 
     t0 = time.time()
     for key in compiled_df:
-        df[key] = call_compiled_objective(compiled_df[key], *choices_float.T)
+        if job.resource_capacities and (key.startswith('reservation<SEP>') or key.startswith('tensor<SEP>') or exact.is_capacity_column(key)):
+            df[key] = exact.bit_array(symbolic_df[key],dict(zip(symbols,choices_enumerated.T)),len(choices_enumerated))
+        else:
+            df[key] = call_compiled_objective(compiled_df[key], *choices_float.T)
         if "latency" in key and "first_latency" not in key:
             val = [df[key]] if isinstance(df[key], Number) else df[key]
             if any(l < 0 for l in val):

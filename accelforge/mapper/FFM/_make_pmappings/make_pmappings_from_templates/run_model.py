@@ -1,4 +1,5 @@
 from functools import lru_cache
+import math
 
 from sympy import Symbol
 import accelforge.frontend.arch as arch
@@ -25,6 +26,7 @@ from accelforge.frontend.mapper.metrics import Metrics
 import sympy
 from numbers import Number
 from accelforge.util._sympy.broadcast_max import Max
+from accelforge.mapper.FFM._pareto_df import exact_resources as exact
 
 
 @lru_cache(maxsize=512)
@@ -85,6 +87,11 @@ def run_model(
             non_power_gated_instances *= usage
         component_to_non_power_gated_porp[node.name] = non_power_gated_instances
 
+    job.resource_capacities = {name:exact.capacity_bits(size) for name,size in memory_to_size.items()
+                               if exact.enabled() and math.isfinite(size)}
+    for name,size in job.resource_capacities.items():
+        df[exact.capacity_column(name)] = size
+
     actions = gather_actions(reuse, None, use_name=True)
     energy = compute_energy_from_actions(
         spec, actions, overall_latency, component_to_non_power_gated_porp
@@ -119,7 +126,8 @@ def run_model(
 
         for tensor, backing in tensor_to_backing.items():
             if (is_copy_op or buffet.tensor == tensor) and buffet.level == backing:
-                df[tensor2col(tensor)] = occupancy / memory_to_size[buffet.level]
+                df[tensor2col(tensor)] = (occupancy if buffet.level in job.resource_capacities
+                                        else occupancy / memory_to_size[buffet.level])
 
         total_occupancy.setdefault(buffet.level, {}).setdefault(stats.n_loops_above, 0)
         total_occupancy[buffet.level][stats.n_loops_above] += occupancy
@@ -134,7 +142,7 @@ def run_model(
         for n_loop in sorted(occupancies):
             running_total += occupancies[n_loop]
             df[nameloop2col(memory, n_loop)] = (
-                running_total / memory_to_size[memory]
+                running_total if memory in job.resource_capacities else running_total / memory_to_size[memory]
             )
 
     if metrics & Metrics.ACTIONS:
@@ -183,7 +191,8 @@ def run_model(
         if job.ignored_resources is not None and memory not in job.ignored_resources:
             key = f"usage<SEP>memory<SEP>{memory}"
             per_memory_usage_df[key] = (
-                sum(occupancies.values()) / memory_to_size[memory]
+                sum(occupancies.values()) if memory in job.resource_capacities
+                else sum(occupancies.values()) / memory_to_size[memory]
             )
 
     return (
