@@ -241,6 +241,7 @@ class TargetEnumerator:
         state = replace(state, history=state.history + (key,))
         values = [self.evaluate(formula, state) for formula in goals]
         if not values:
+            self.log_keep(state, 'Pareto', len(state.choices), 1)
             return replace(state, choices=state.choices[:1])
         if all(goals.get(s) == self.api.Goal('diff') for s in self.done):
             return state
@@ -249,8 +250,7 @@ class TargetEnumerator:
         self.stats['target_pareto_calls'] += len(state.targets)
         keep = self.api.makepareto_numpy(matrix, [g.goal for g in goals.values()], dirty=True)
         result = self.mask_rows(state, keep)
-        # Retain the oracle's existing diagnostic convention for this counter.
-        self.log_keep(state, 'Pareto', len(result.choices), int(np.sum(keep)))
+        self.log_keep(state, 'Pareto', len(state.choices), len(result.choices))
         return result
 
     def run(self):

@@ -7,6 +7,60 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Event audit: keep-rate fixes and repeated NVDLA Join measurements
+
+The review of `326999a6` correctly identified a Pareto accounting error in both
+enumerators: the remaining row count was used as the denominator, making the
+reported keep rate 100%. Both now use the input row count, including the
+no-objective case that reduces all rows to one. The numerical pruning masks are
+unchanged. A 144-to-1 regression verifies the rate is 1/144, including the cached
+reference path.
+
+The same audit also found an actual exception in the reference enumerator: a first
+objective with neither bound accessed an uninitialized `valid` mask. Constraint
+accounting now uses rows-after / rows-before for the complete operation. This also
+fixes deferred min-usage fallback being reported as dropping all candidates when
+it had actually kept them. These are estimate/diagnostic corrections; the new
+tests include candidate checks as well as rates. Historical keep-rate-derived
+Mapping count estimates must not be used as measured search-work counts.
+
+For NVDLA GLU 64,128,256, K=64, a new local single-worker comparison warms both
+backends on the full case and then alternates their order over **five runs each**.
+The baseline has the previous 8 MiB Pareto cache; events have no execution cache.
+All rows below are medians, measured without profiling:
+
+| Phase | Independent-target shared search | Event shared search |
+| --- | ---: | ---: |
+| Generation | 7.761 s | 4.247 s |
+| Join after generation | 2.091 s | 2.026 s |
+| Generation + Join | 9.898 s | 6.223 s |
+| Join replay from fixed input | 1.995 s | 1.987 s |
+
+The total ratio is **1.59x** in this experiment (not a fresh-process/server claim).
+All ten generated Join inputs have the same fingerprint: 197 compatibility groups,
+2,943 rows, schemas/dtypes, numeric row order, normalized template provenance,
+indices, compatibility fields, estimates and Pandas block layouts. Replays use a
+deep copy of each method's saved input; the copy consolidates 196 groups' Pandas
+blocks, so the replay layout is recorded separately. Only layout changes on copy;
+the replay inputs are identical across methods. Copying and fingerprints are
+outside timers. The final 49-row numerical frontier equals `326999a6`, and all
+64 selected mappings per method re-evaluate.
+
+The old 4.49-second event Join was **not reproduced**. Its single-run record lacks
+these input fingerprints, so the cause cannot be retrospectively identified as
+noise alone. Separate diagnostic Join profiles execute 144 pair joins and 157
+DataFrame Pareto calls for each input, with roughly 0.40 s in DataFrame Pareto.
+Inclusive/exclusive timers are not a count of dominance comparisons.
+
+Validation: **266 research/Streaming tests pass**. Differential tests now cover
+three random seeds, shuffled target/symbol/constraint orders, duplicates and empty
+targets; each ordered program is checked against its own oracle. Nine synthetic
+cases also pass separately under each of `PYTHONHASHSEED=17` and `71`. Real-template
+checks compare keep rates and count estimates in addition to Tile dtype, values
+and target membership. This completes the finite-target P0 audit; membership
+bitsets/continuous parameter regions and the Fusion Copy Contract remain separate
+work. [Records and reproduction](results/event_join_audit/).
+
 ### Capacity-event shared Tile enumeration
 
 `AF_TARGET_ENUMERATION=events` selects a new **finite-target shared enumerator**.

@@ -136,8 +136,9 @@ def test_merging_requires_same_row_order_dtype_and_pareto_history():
     assert stats['state_merges'] == 1
 
 
-def test_deterministic_small_space_fuzz(monkeypatch):
-    rng = np.random.default_rng(813)
+@pytest.mark.parametrize('seed', [7, 813, 2603])
+def test_deterministic_small_space_fuzz(monkeypatch, seed):
+    rng = np.random.default_rng(seed)
     for _ in range(20):
         objectives, memory, args = problem(int(rng.choice([12, 24, 60, 120])), float(rng.choice([.125, .5, 1., 2.])))
         # Include hard/exclusive constraints and retained cost objectives, with
@@ -146,7 +147,59 @@ def test_deterministic_small_space_fuzz(monkeypatch):
         objectives[2].try_best_if_none_reaches_min = bool(rng.integers(2))
         objectives.append(tiles.Objective('cost', args['symbols'][0] + args['symbols'][2]))
         targets = [(memory, float(f)) for f in [1., *rng.uniform(.0001, .95, 5)]]
+        # A different ordered constraint program can legitimately return different
+        # candidates. Compare each shuffled program to its own per-target oracle,
+        # never to another constraint order. Include repeated and empty targets.
+        targets.extend([(memory, 1e-10), targets[1]])
+        rng.shuffle(targets)
+        rng.shuffle(objectives)
+        rng.shuffle(args['symbols'])
         check_targets(objectives, targets, args, monkeypatch)
+
+
+@pytest.mark.parametrize('mode,budget', [('independent', 0), ('independent', 8388608), ('events', 0)])
+@pytest.mark.parametrize('with_objective', [False, True])
+def test_pareto_keep_rate_uses_input_size(monkeypatch, mode, budget, with_objective):
+    from accelforge.mapper.FFM._make_pmappings.pmapper_job import Job
+    x, y = sympy.symbols('rate_x rate_y', positive=True, integer=True)
+    relations = tiles.SymbolRelations()
+    relations.what_tiles_symbol = [(60, x), (x, 1), (60, y), (y, 1)]
+    relations.make_bounds()
+    objectives = [tiles.Objective('cost', x + y)] if with_objective else []
+    monkeypatch.setenv('AF_TARGET_ENUMERATION', mode)
+    monkeypatch.setenv('AF_ENUMERATION_PREFIX_BYTES', '0')
+    monkeypatch.setenv('AF_ENUMERATION_PARETO_BYTES', str(budget))
+    j = job()
+    j.log_porp_pmappings_kept = lambda *a, **kw: Job.log_porp_pmappings_kept(j, *a, **kw)
+    choices, _ = tiles.get_tile_shape_choices_for_targets(
+        objectives, [((x + y) / 120, 1.)], symbols=[x, y],
+        what_tiles_symbol=relations, job=j)
+    # 12 divisors per rank: all 144 pairs satisfy capacity, then collapse to one.
+    assert len(choices) == 1
+    assert j.pmapping_keep_rates['Pareto'] == pytest.approx(1 / 144)
+    assert j.n_total_pmappings * np.prod(list(j.pmapping_keep_rates.values())) == pytest.approx(1)
+
+
+@pytest.mark.parametrize('mode', ['independent', 'events'])
+def test_deferred_fallback_counts_retained_rows(monkeypatch, mode):
+    from accelforge.mapper.FFM._make_pmappings.pmapper_job import Job
+    x, y = sympy.symbols('deferred_x deferred_y', positive=True, integer=True)
+    relations = tiles.SymbolRelations()
+    relations.what_tiles_symbol = [(4, x), (x, 1), (4, y), (y, 1)]
+    relations.make_bounds()
+    objectives = [tiles.Objective('usage', x + y, min_value=1000,
+                                  try_best_if_none_reaches_min=True, only_care_if_valid=True)]
+    monkeypatch.setenv('AF_TARGET_ENUMERATION', mode)
+    j = job()
+    j.log_porp_pmappings_kept = lambda *a, **kw: Job.log_porp_pmappings_kept(j, *a, **kw)
+    choices, _ = tiles.get_tile_shape_choices_for_targets(
+        objectives, [((x + y) / 8, 1.)], symbols=[x, y],
+        what_tiles_symbol=relations, job=j)
+    # The first partial stage reaches no minimum, but keeps all rows because
+    # fallback is deferred. Only the complete stage selects the maximum.
+    np.testing.assert_array_equal(choices, [[4, 4]])
+    assert j.pmapping_keep_rates['usage'] == pytest.approx(1 / 9)
+    assert j.n_total_pmappings * np.prod(list(j.pmapping_keep_rates.values())) == pytest.approx(1)
 
 
 def test_unsupported_modes_use_independent_enumeration(monkeypatch):
@@ -204,6 +257,8 @@ def test_real_templates_match_independent_choices_and_membership(monkeypatch, ca
             assert result[0].dtype == expected[0].dtype, detail
             np.testing.assert_array_equal(result[0], expected[0], err_msg=detail)
             np.testing.assert_array_equal(result[1], expected[1], err_msg=detail)
+            assert kwargs['job'].pmapping_keep_rates == pytest.approx(reference_job.pmapping_keep_rates), detail
+            assert kwargs['job'].n_total_pmappings == pytest.approx(reference_job.n_total_pmappings), detail
             comparisons.append(kwargs['job'].target_enumeration_stats)
         return result
 

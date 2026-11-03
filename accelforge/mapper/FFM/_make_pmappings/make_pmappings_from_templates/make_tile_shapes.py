@@ -1341,11 +1341,11 @@ def get_tile_shape_choices(
                 except (TypeError, ValueError):
                     pass
 
-            porp = sum(valid) / max(1, choices_enumerated.shape[0])
-            job.log_porp_pmappings_kept(
-                f"{objective.name}",
-                sum(valid) / max(1, prev_size),
-            )
+            # Count the complete ordered constraint operation. A goal can have
+            # no bound, both bounds, or a deferred fallback; the last `valid`
+            # mask alone is not its keep rate and may not even be defined.
+            porp = choices_enumerated.shape[0] / max(1, prev_size)
+            job.log_porp_pmappings_kept(objective.name, porp)
             log_message(f"Valid check", f"{objective.name}", f"porp={porp:.2%}")
             if complete:
                 objective.max_value = None  # We don't care anymore
@@ -1401,6 +1401,7 @@ def get_tile_shape_choices(
 
         if not objective_values:
             # Objective values don't depend on tile shapes
+            job.log_porp_pmappings_kept("Pareto", 1 / choices_enumerated.shape[0])
             choices_enumerated = choices_enumerated[:1, :]
             choices_enumerated_float = choices_enumerated_float[:1, :]
 
@@ -1435,7 +1436,7 @@ def get_tile_shape_choices(
             prev_size = choices_enumerated.shape[0]
             choices_enumerated = choices_enumerated[keep]
             job.log_porp_pmappings_kept(
-                f"Pareto", sum(keep) / choices_enumerated.shape[0]
+                "Pareto", choices_enumerated.shape[0] / prev_size
             )
             log_message("pareto", f"size {prev_size} -> {choices_enumerated.shape[0]}")
 
