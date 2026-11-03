@@ -1016,7 +1016,7 @@ class PmappingDataframe:
                     and resource not in ignored_resources
                 ):
                     right_loops.discard(l)
-                    dropcols.append(col)
+                    dropcols.append(nameloop2col(resource, l))
 
             # Left reservations: Check all levels. If a loop is 0,
             # then we can drop the column.

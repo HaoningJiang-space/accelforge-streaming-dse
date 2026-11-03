@@ -96,7 +96,6 @@ def run_model(
 
     n_instances = workload.n_instances * workload.einsums[job.einsum_name].n_instances
 
-    n_loop_options = set()
     for buffet, stats in reuse.buffet_stats.items():
         if buffet.level == compute_unit:
             continue
@@ -114,18 +113,19 @@ def run_model(
 
         total_occupancy.setdefault(buffet.level, {}).setdefault(stats.n_loops_above, 0)
         total_occupancy[buffet.level][stats.n_loops_above] += occupancy
-        n_loop_options.add(stats.n_loops_above)
 
     for memory, occupancies in total_occupancy.items():
         if memory not in job.memories_track_all:
             continue
         running_total = 0
-        for n_loop in n_loop_options:
-            if n_loop in occupancies:
-                running_total += occupancies[n_loop]
-                df[nameloop2col(memory, n_loop)] = (
-                    running_total / memory_to_size[memory]
-                )
+        # Reservations are prefixes of lifetime depth, including persistent data
+        # at depth -1. Set iteration can visit inner depths first and undercount
+        # the innermost reservation used for capacity checks.
+        for n_loop in sorted(occupancies):
+            running_total += occupancies[n_loop]
+            df[nameloop2col(memory, n_loop)] = (
+                running_total / memory_to_size[memory]
+            )
 
     if metrics & Metrics.ACTIONS:
         detailed_actions = gather_actions(reuse, None, verbose=True, use_name=True)
