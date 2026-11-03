@@ -1,0 +1,851 @@
+{
+  "case": "glu(M=256,G=512,C=1024)@tpu_v4i",
+  "caps": [0.25, 0.30075625902052916, 0.36181730936009454, 0.43527528164806206, 0.5236470614103134, 0.6299605249474366, 0.7578582832551991, 0.9117224885582168, 1.096824979694626, 1.3195079107728942, 1.5874010519681994, 1.9096832078208328, 2.29739670999407, 2.7638257599355525, 3.324951584571151, 4.0],
+  "factors": [1.0],
+  "jobs": 1,
+  "phase_timers": false,
+  "cprofile": false,
+  "prefix_bytes": 0,
+  "pareto_bytes": 0,
+  "target_mode": "events",
+  "python": "3.12.14",
+  "pythonhashseed": "0",
+  "commit": "467333788ebc294eb358b239d0d0f568f20ef3d6",
+  "diff": "diff --git a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\nindex 767d4d1a..0885f373 100755\n--- a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\n+++ b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\n@@ -954,6 +954,18 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):\n     \"\"\"\n     if not capacity_targets:\n         return get_tile_shape_choices(objectives, **kwargs), None\n+    mode = os.environ.get('AF_TARGET_ENUMERATION', 'independent')\n+    if mode not in ('independent', 'events'):\n+        raise ValueError('AF_TARGET_ENUMERATION must be independent or events')\n+    kwargs['job'].target_enumeration_stats = {}\n+    if mode == 'events':\n+        import sys\n+        from .target_enumeration import enumerate_targets\n+        result = enumerate_targets(sys.modules[__name__], objectives, capacity_targets, **kwargs)\n+        if result is not None:\n+            kwargs['job'].enumeration_stats = {}\n+            kwargs['job'].enumeration_pareto_stats = {}\n+            return result\n     # Compiled functions depend on the expression and symbol order, not capacity.\n     # Keep them only for this template so repeated target enumeration shares the\n     # preparation without a process-wide cache retaining compiled namespaces.\ndiff --git a/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py b/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\nindex b5489488..810e90f3 100755\n--- a/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\n+++ b/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\n@@ -96,6 +96,7 @@ class Job:\n     These do not measure total process memory or the whole candidate search tree.\n     \"\"\"\n     enumeration_pareto_stats: dict[str, int] = field(default_factory=dict)\n+    target_enumeration_stats: dict[str, int] = field(default_factory=dict)\n \n     _update_compatibility_with_tile_shapes_args: dict[str, Any] | None = None\n \ndiff --git a/accelforge/mapper/FFM/main.py b/accelforge/mapper/FFM/main.py\nindex 8c92d550..3662103c 100755\n--- a/accelforge/mapper/FFM/main.py\n+++ b/accelforge/mapper/FFM/main.py\n@@ -32,6 +32,7 @@ _GENERATION_CACHE_VERSION = 1\n _GENERATION_ENV_VARS = (\n     \"AF_ENUMERATION_PREFIX_BYTES\",  # Also separates cached work statistics.\n     \"AF_ENUMERATION_PARETO_BYTES\",\n+    \"AF_TARGET_ENUMERATION\",\n     \"AF_LATENCY_SCALES\",\n     \"AF_GENERATION_CAPACITY_FRACTIONS\",\n     \"AF_GENERATION_VARIABLE_RESOURCES\",\n",
+  "runs": [
+    {
+      "repeat": 0,
+      "make_s": 48.016809041029774,
+      "join_s": 1.3759888750500977,
+      "rows_generated": 7673,
+      "rows_front": 10,
+      "search_s": 49.39279791607987,
+      "enumeration": {
+        "templates_with_targets": 0,
+        "requests": 0,
+        "expansions": 0,
+        "hits": 0,
+        "requested_rows": 0,
+        "expanded_rows": 0,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "enumeration_pareto": {
+        "requests": 0,
+        "computations": 0,
+        "hits": 0,
+        "requested_rows": 0,
+        "computed_rows": 0,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "target_enumeration": {
+        "supported_templates": 219,
+        "fallback_templates": 0,
+        "state_expansions": 2215,
+        "expanded_rows": 606839,
+        "target_expansions": 23844,
+        "target_expanded_rows": 4514936,
+        "value_evaluations": 13366,
+        "target_value_evaluations": 131704,
+        "capacity_partitions": 2109,
+        "capacity_masks": 2818,
+        "pareto_calls": 1010,
+        "target_pareto_calls": 4713,
+        "state_merges": 90,
+        "max_template_peak_cohorts": 8,
+        "max_template_peak_state_rows": 6797,
+        "max_template_peak_state_bytes": 326256
+      },
+      "model_caches_cumulative": {
+        "_parse_projection_expr": {
+          "hits": 13088,
+          "misses": 7,
+          "maxsize": 1024,
+          "currsize": 7
+        },
+        "_prepare_rank_projection": {
+          "hits": 1589,
+          "misses": 3,
+          "maxsize": 512,
+          "currsize": 3
+        },
+        "_maximum_stat": {
+          "hits": 126002,
+          "misses": 2119,
+          "maxsize": 4096,
+          "currsize": 2119
+        }
+      },
+      "phases": null,
+      "numeric_frontier_sha256": "6ec172e79149e6306aa4c397da7dce992a02dbd6d4ed1063370b88fc5e31dbd6"
+    },
+    {
+      "repeat": 1,
+      "make_s": 19.023963334038854,
+      "join_s": 1.341971040936187,
+      "rows_generated": 7673,
+      "rows_front": 10,
+      "search_s": 20.36593437497504,
+      "enumeration": {
+        "templates_with_targets": 0,
+        "requests": 0,
+        "expansions": 0,
+        "hits": 0,
+        "requested_rows": 0,
+        "expanded_rows": 0,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "enumeration_pareto": {
+        "requests": 0,
+        "computations": 0,
+        "hits": 0,
+        "requested_rows": 0,
+        "computed_rows": 0,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "target_enumeration": {
+        "supported_templates": 219,
+        "fallback_templates": 0,
+        "state_expansions": 2215,
+        "expanded_rows": 606839,
+        "target_expansions": 23844,
+        "target_expanded_rows": 4514936,
+        "value_evaluations": 13366,
+        "target_value_evaluations": 131704,
+        "capacity_partitions": 2109,
+        "capacity_masks": 2818,
+        "pareto_calls": 1010,
+        "target_pareto_calls": 4713,
+        "state_merges": 90,
+        "max_template_peak_cohorts": 8,
+        "max_template_peak_state_rows": 6797,
+        "max_template_peak_state_bytes": 326256
+      },
+      "model_caches_cumulative": {
+        "_parse_projection_expr": {
+          "hits": 26057,
+          "misses": 7,
+          "maxsize": 1024,
+          "currsize": 7
+        },
+        "_prepare_rank_projection": {
+          "hits": 3181,
+          "misses": 3,
+          "maxsize": 512,
+          "currsize": 3
+        },
+        "_maximum_stat": {
+          "hits": 252499,
+          "misses": 2119,
+          "maxsize": 4096,
+          "currsize": 2119
+        }
+      },
+      "phases": null,
+      "numeric_frontier_sha256": "6ec172e79149e6306aa4c397da7dce992a02dbd6d4ed1063370b88fc5e31dbd6"
+    },
+    {
+      "repeat": 2,
+      "make_s": 17.858691458939575,
+      "join_s": 1.3449361660750583,
+      "rows_generated": 7673,
+      "rows_front": 10,
+      "search_s": 19.203627625014633,
+      "enumeration": {
+        "templates_with_targets": 0,
+        "requests": 0,
+        "expansions": 0,
+        "hits": 0,
+        "requested_rows": 0,
+        "expanded_rows": 0,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "enumeration_pareto": {
+        "requests": 0,
+        "computations": 0,
+        "hits": 0,
+        "requested_rows": 0,
+        "computed_rows": 0,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "target_enumeration": {
+        "supported_templates": 219,
+        "fallback_templates": 0,
+        "state_expansions": 2215,
+        "expanded_rows": 606839,
+        "target_expansions": 23844,
+        "target_expanded_rows": 4514936,
+        "value_evaluations": 13366,
+        "target_value_evaluations": 131704,
+        "capacity_partitions": 2109,
+        "capacity_masks": 2818,
+        "pareto_calls": 1010,
+        "target_pareto_calls": 4713,
+        "state_merges": 90,
+        "max_template_peak_cohorts": 8,
+        "max_template_peak_state_rows": 6797,
+        "max_template_peak_state_bytes": 326256
+      },
+      "model_caches_cumulative": {
+        "_parse_projection_expr": {
+          "hits": 39026,
+          "misses": 7,
+          "maxsize": 1024,
+          "currsize": 7
+        },
+        "_prepare_rank_projection": {
+          "hits": 4773,
+          "misses": 3,
+          "maxsize": 512,
+          "currsize": 3
+        },
+        "_maximum_stat": {
+          "hits": 378996,
+          "misses": 2119,
+          "maxsize": 4096,
+          "currsize": 2119
+        }
+      },
+      "phases": null,
+      "numeric_frontier_sha256": "6ec172e79149e6306aa4c397da7dce992a02dbd6d4ed1063370b88fc5e31dbd6"
+    }
+  ],
+  "frontiers": {
+    "6ec172e79149e6306aa4c397da7dce992a02dbd6d4ed1063370b88fc5e31dbd6": {
+      "columns": ["FFB<SEP>initial<SEP>B<SEP>0", "FFB<SEP>initial<SEP>B<SEP>3", "FFB<SEP>initial<SEP>B<SEP>4", "FFB<SEP>initial<SEP>C<SEP>1", "FFB<SEP>initial<SEP>C<SEP>3", "FFB<SEP>initial<SEP>C<SEP>5", "FFB<SEP>initial<SEP>M<SEP>2", "FFB<SEP>initial<SEP>M<SEP>4", "FFB<SEP>initial<SEP>M<SEP>5", "FFB<SEP>lower_iterations<SEP>0", "FFB<SEP>lower_iterations<SEP>1", "FFB<SEP>lower_iterations<SEP>2", "FFB<SEP>n_iterations<SEP>0", "FFB<SEP>n_iterations<SEP>1", "FFB<SEP>n_iterations<SEP>2", "FFB<SEP>n_iterations<SEP>3", "FFB<SEP>n_iterations<SEP>4", "FFB<SEP>n_iterations<SEP>5", "FFB<SEP>stride0", "FFB<SEP>stride1", "FFB<SEP>stride10", "FFB<SEP>stride11", "FFB<SEP>stride12", "FFB<SEP>stride13", "FFB<SEP>stride14", "FFB<SEP>stride2", "FFB<SEP>stride3", "FFB<SEP>stride4", "FFB<SEP>stride5", "FFB<SEP>stride6", "FFB<SEP>stride7", "FFB<SEP>stride8", "FFB<SEP>stride9", "FFG<SEP>initial<SEP>B<SEP>0", "FFG<SEP>initial<SEP>B<SEP>3", "FFG<SEP>initial<SEP>C<SEP>1", "FFG<SEP>initial<SEP>M<SEP>2", "FFG<SEP>initial<SEP>M<SEP>4", "FFG<SEP>lower_iterations<SEP>0", "FFG<SEP>lower_iterations<SEP>1", "FFG<SEP>lower_iterations<SEP>2", "FFG<SEP>lower_iterations<SEP>3", "FFG<SEP>n_iterations<SEP>0", "FFG<SEP>n_iterations<SEP>1", "FFG<SEP>n_iterations<SEP>2", "FFG<SEP>n_iterations<SEP>3", "FFG<SEP>n_iterations<SEP>4", "FFG<SEP>stride0", "FFG<SEP>stride1", "FFG<SEP>stride10", "FFG<SEP>stride11", "FFG<SEP>stride12", "FFG<SEP>stride13", "FFG<SEP>stride14", "FFG<SEP>stride2", "FFG<SEP>stride3", "FFG<SEP>stride4", "FFG<SEP>stride5", "FFG<SEP>stride6", "FFG<SEP>stride7", "FFG<SEP>stride8", "FFG<SEP>stride9", "FFH<SEP>initial<SEP>B<SEP>0", "FFH<SEP>initial<SEP>B<SEP>3", "FFH<SEP>initial<SEP>C<SEP>1", "FFH<SEP>initial<SEP>C<SEP>4", "FFH<SEP>initial<SEP>M<SEP>2", "FFH<SEP>initial<SEP>M<SEP>5", "FFH<SEP>lower_iterations<SEP>0", "FFH<SEP>lower_iterations<SEP>1", "FFH<SEP>lower_iterations<SEP>2", "FFH<SEP>lower_iterations<SEP>3", "FFH<SEP>n_iterations<SEP>0", "FFH<SEP>n_iterations<SEP>1", "FFH<SEP>n_iterations<SEP>2", "FFH<SEP>n_iterations<SEP>3", "FFH<SEP>n_iterations<SEP>4", "FFH<SEP>n_iterations<SEP>5", "FFH<SEP>stride1", "FFH<SEP>stride2", "FFH<SEP>stride4", "FFH<SEP>stride5", "FFH<SEP>stride7", "FFH<SEP>stride8", "FFU<SEP>initial<SEP>B<SEP>0", "FFU<SEP>initial<SEP>B<SEP>3", "FFU<SEP>initial<SEP>C<SEP>1", "FFU<SEP>initial<SEP>M<SEP>2", "FFU<SEP>initial<SEP>M<SEP>4", "FFU<SEP>lower_iterations<SEP>0", "FFU<SEP>lower_iterations<SEP>1", "FFU<SEP>lower_iterations<SEP>2", "FFU<SEP>lower_iterations<SEP>3", "FFU<SEP>n_iterations<SEP>0", "FFU<SEP>n_iterations<SEP>1", "FFU<SEP>n_iterations<SEP>2", "FFU<SEP>n_iterations<SEP>3", "FFU<SEP>n_iterations<SEP>4", "FFU<SEP>stride0", "FFU<SEP>stride1", "FFU<SEP>stride10", "FFU<SEP>stride11", "FFU<SEP>stride12", "FFU<SEP>stride13", "FFU<SEP>stride14", "FFU<SEP>stride2", "FFU<SEP>stride3", "FFU<SEP>stride4", "FFU<SEP>stride5", "FFU<SEP>stride6", "FFU<SEP>stride7", "FFU<SEP>stride8", "FFU<SEP>stride9", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.0625", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.07518906475513229", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.09045432734002364", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.10881882041201552", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.13091176535257834", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.15749013123685915", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.18946457081379978", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.2279306221395542", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.2742062449236565", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.32987697769322355", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.39685026299204984", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.4774208019552082", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.5743491774985175", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.6909564399838881", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.8312378961427878", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>1.0", "Total<SEP>energy", "Total<SEP>latency", "reservation<SEP>GlobalBuffer<SEP>0<SEP>right", "reservation<SEP>MainMemory<SEP>0<SEP>right", "tensor<SEP>FFG", "tensor<SEP>FFH", "tensor<SEP>FFU", "tensor<SEP>Z"],
+      "values": [
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 256.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 256.0, 0.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 256.0, 1.0, 4.0, 0.0, 0.0, 1.0, 0.0, 256.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 512.0, 256.0, 0.0, 128.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0003232224869320368, 6.845090683782473e-05, 0.015625, 0.0, 0.0, 0.0, 0.015625, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 512.0, 0.0, 256.0, 0.0, 0.0, 512.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 512.0, 256.0, 1.0, 4.0, 0.0, 0.0, 1.0, 0.0, 512.0, 256.0, 0.0, 0.0, 512.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 512.0, 256.0, 0.0, 128.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00028136753348048904, 6.826666503911838e-05, 0.03125, 0.0, 0.0, 0.0, 0.03125, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00032324136394700073, 6.881940498715267e-05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 256.0, 0.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 256.0, 1.0, 4.0, 0.0, 0.0, 1.0, 0.0, 256.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 512.0, 256.0, 0.0, 128.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00031810962786080443, 6.86351559124887e-05, 0.015625, 0.0, 0.0, 0.0, 0.015625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00027018131312149605, 6.826666503911838e-05, 0.0625, 0.0, 0.0, 0.0625, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00025093365173908995, 6.826666503911838e-05, 0.125, 0.0, 0.0, 0.0625, 0.0625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00023168599035668395, 6.826666503911838e-05, 0.1875, 0.0, 0.0625, 0.0625, 0.0625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00026973043658006033, 6.826666503911838e-05, 0.09375, 0.0, 0.0, 0.0625, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 2.0, 2.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00025048277519765423, 6.826666503911838e-05, 0.125, 0.0, 0.0, 0.0625, 0.0625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00023123511381524823, 6.826666503911838e-05, 0.1875, 0.0, 0.0625, 0.0625, 0.0625, 0.0]
+      ]
+    }
+  },
+  "picks": [
+    {
+      "cap_mib": 0.25,
+      "edp": 1.844437720269433e-08,
+      "energy": 0.00027018131312149605,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.0625,
+      "tied_optima": 1,
+      "mapping_id": "f1d9835dbbce4a2b",
+      "reevaluated": {
+        "energy": 0.00027018133504,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8444379138730667e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.30075625902052916,
+      "edp": 1.844437720269433e-08,
+      "energy": 0.00027018131312149605,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.0625,
+      "tied_optima": 1,
+      "mapping_id": "f1d9835dbbce4a2b",
+      "reevaluated": {
+        "energy": 0.00027018133504,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8444379138730667e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8312378961427878,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.36181730936009454,
+      "edp": 1.844437720269433e-08,
+      "energy": 0.00027018131312149605,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.0625,
+      "tied_optima": 1,
+      "mapping_id": "f1d9835dbbce4a2b",
+      "reevaluated": {
+        "energy": 0.00027018133504,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8444379138730667e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.690956439983888,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.43527528164806206,
+      "edp": 1.841359736486614e-08,
+      "energy": 0.00026973043658006033,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.09375,
+      "tied_optima": 1,
+      "mapping_id": "b1dbfa71c1796728",
+      "reevaluated": {
+        "energy": 0.00026973044736,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8413598539776e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0234375,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8615237662477764,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.5236470614103134,
+      "edp": 1.709962371248705e-08,
+      "energy": 0.00025048277519765423,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.125,
+      "tied_optima": 1,
+      "mapping_id": "8abeac954de7b8c4",
+      "reevaluated": {
+        "energy": 0.000250482786304,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.7099624878353066e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9548416039104165,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.6299605249474366,
+      "edp": 1.709962371248705e-08,
+      "energy": 0.00025048277519765423,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.125,
+      "tied_optima": 1,
+      "mapping_id": "8abeac954de7b8c4",
+      "reevaluated": {
+        "energy": 0.000250482786304,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.7099624878353066e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.7937005259840997,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.7578582832551991,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9896309330796706,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.9117224885582168,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8226187347709695,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 1.096824979694626,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.6837918664186626,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 1.3195079107728942,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.5683937124413994,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 1.5874010519681994,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.4724703937105774,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 1.9096832078208328,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.3927352960577351,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 2.29739670999407,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.32645646123604655,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 2.7638257599355525,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.27136298202007086,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 3.324951584571151,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.22556719426539687,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 4.0,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.1875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    }
+  ],
+  "all_picks_valid": true,
+  "numeric_frontier_stable": true,
+  "peak_rss_gb": {
+    "main": 0.3133544921875,
+    "largest_worker": 0.00506591796875
+  }
+}

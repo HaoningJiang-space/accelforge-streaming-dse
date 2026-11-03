@@ -954,6 +954,18 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
     """
     if not capacity_targets:
         return get_tile_shape_choices(objectives, **kwargs), None
+    mode = os.environ.get('AF_TARGET_ENUMERATION', 'independent')
+    if mode not in ('independent', 'events'):
+        raise ValueError('AF_TARGET_ENUMERATION must be independent or events')
+    kwargs['job'].target_enumeration_stats = {}
+    if mode == 'events':
+        import sys
+        from .target_enumeration import enumerate_targets
+        result = enumerate_targets(sys.modules[__name__], objectives, capacity_targets, **kwargs)
+        if result is not None:
+            kwargs['job'].enumeration_stats = {}
+            kwargs['job'].enumeration_pareto_stats = {}
+            return result
     # Compiled functions depend on the expression and symbol order, not capacity.
     # Keep them only for this template so repeated target enumeration shares the
     # preparation without a process-wide cache retaining compiled namespaces.

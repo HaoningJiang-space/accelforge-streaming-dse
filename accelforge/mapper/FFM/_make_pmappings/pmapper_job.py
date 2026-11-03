@@ -96,6 +96,7 @@ class Job:
     These do not measure total process memory or the whole candidate search tree.
     """
     enumeration_pareto_stats: dict[str, int] = field(default_factory=dict)
+    target_enumeration_stats: dict[str, int] = field(default_factory=dict)
 
     _update_compatibility_with_tile_shapes_args: dict[str, Any] | None = None
 

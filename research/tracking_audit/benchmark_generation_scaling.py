@@ -16,6 +16,7 @@ def main():
     p.add_argument('--repeats', type=int, default=3)
     p.add_argument('--phases', action='store_true')
     p.add_argument('--pareto-bytes', type=int, default=0)
+    p.add_argument('--target-mode', choices=('independent', 'events'), default='independent')
     a = p.parse_args()
     counts = [int(k) for k in a.counts.split(',')]
     if a.repeats < 1 or a.pareto_bytes < 0 or any(k < 2 for k in counts):
@@ -39,7 +40,7 @@ def main():
             cmd = [sys.executable, str(benchmark), '--repo', str(a.repo), '--arch', arch,
                    '--params', params, '--caps', ','.join(map(repr, caps)), '--factors', '1',
                    '--repeats', str(a.repeats), '--output', str(output),
-                   '--pareto-bytes', str(a.pareto_bytes)]
+                   '--pareto-bytes', str(a.pareto_bytes), '--target-mode', a.target_mode]
             if a.phases:
                 cmd.append('--phases')
             print('START', arch, count, flush=True)

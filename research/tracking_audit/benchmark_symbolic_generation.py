@@ -29,6 +29,7 @@ def main():
                    help='per-template prefix cache payload budget; 0 is the reference')
     p.add_argument('--pareto-bytes', type=int, default=0,
                    help='per-template exact Pareto cache payload budget; 0 disables reuse')
+    p.add_argument('--target-mode', choices=('independent', 'events'), default='independent')
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--phases', action='store_true', help='serial phase timers (diagnostic)')
     p.add_argument('--cprofile', action='store_true', help='save detailed profiles; times are profiled')
@@ -50,8 +51,10 @@ def main():
     env = {**common.capacity_fractions_env(caps), 'AF_GENERATION_VARIABLE_RESOURCES': 'GlobalBuffer'}
     env['AF_ENUMERATION_PREFIX_BYTES'] = str(a.prefix_bytes)
     env['AF_ENUMERATION_PARETO_BYTES'] = str(a.pareto_bytes)
+    env['AF_TARGET_ENUMERATION'] = a.target_mode
     enumeration_stats = {}
     pareto_stats = {}
+    target_stats = {}
     model_cache_stats = {}
     original_make = common.make_pmappings
 
@@ -72,6 +75,17 @@ def main():
             pareto_stats[key] = sum(s.get(key, 0) for s in pruned)
         pareto_stats['max_template_payload_bytes'] = max(
             (s.get('peak_payload_bytes', 0) for s in pruned), default=0)
+        shared = [getattr(j, 'target_enumeration_stats', {})
+                  for jobs in pm.einsum2jobs.values() for j in jobs]
+        target_stats.clear()
+        target_stats['supported_templates'] = sum(s.get('supported', 0) for s in shared)
+        target_stats['fallback_templates'] = sum(bool(s) and not s.get('supported', 0) for s in shared)
+        for key in ('state_expansions', 'expanded_rows', 'target_expansions', 'target_expanded_rows',
+                    'value_evaluations', 'target_value_evaluations', 'capacity_partitions',
+                    'capacity_masks', 'pareto_calls', 'target_pareto_calls', 'state_merges'):
+            target_stats[key] = sum(s.get(key, 0) for s in shared)
+        for key in ('peak_cohorts', 'peak_state_rows', 'peak_state_bytes'):
+            target_stats['max_template_' + key] = max((s.get(key, 0) for s in shared), default=0)
         import importlib
         model_cache_stats.clear()
         for module, name in (
@@ -92,6 +106,7 @@ def main():
               'phase_timers': a.phases, 'cprofile': a.cprofile,
               'prefix_bytes': a.prefix_bytes,
               'pareto_bytes': a.pareto_bytes,
+              'target_mode': a.target_mode,
               'python': platform.python_version(),
               'pythonhashseed': os.environ.get('PYTHONHASHSEED'),
               'commit': subprocess.check_output(['git', '-C', str(a.repo), 'rev-parse', 'HEAD'], text=True).strip(),
@@ -119,6 +134,7 @@ def main():
         report['runs'].append({'repeat': repeat, **timing, 'search_s': timing['make_s'] + timing['join_s'],
                                'enumeration': dict(enumeration_stats),
                                'enumeration_pareto': dict(pareto_stats),
+                               'target_enumeration': dict(target_stats),
                                'model_caches_cumulative': dict(model_cache_stats),
                                'phases': phases.snapshot() if a.phases else None,
                                'numeric_frontier_sha256': digest})

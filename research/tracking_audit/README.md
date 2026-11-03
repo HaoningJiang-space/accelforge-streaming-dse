@@ -7,6 +7,132 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Capacity-event shared Tile enumeration
+
+`AF_TARGET_ENUMERATION=events` selects a new **finite-target shared enumerator**.
+The default remains `independent` for the reference path. This backend advances
+live partial Tile states jointly; it does not run each target to completion and
+then cache or union its intermediate results. Existing prefix/Pareto request caches
+are not used by the event backend.
+
+At the same symbol/objective position, a cohort holds an ordered candidate array,
+its dtype, the previous Pareto goal sets, and the target IDs it serves. The symbol
+schedule and active objectives are common at that program position. The backend:
+
+1. Expands the next Tile symbol once per cohort and checks fused-loop limits.
+2. Evaluates the original FFM partial resource bound once. Sorted attained values
+   identify capacity thresholds at which the keep mask changes. It materializes
+   one mask per attained event represented among the requested targets.
+3. Splits target IDs by these masks **before** subsequent min-usage constraints.
+   Every fallback sees the complete surviving candidate set of its cohort, never
+   a union of candidates from targets with different histories.
+4. Applies the original goal/coalescing/Pareto rules. Equal ordered arrays may
+   merge only if dtype and Pareto history also agree. Keeping history matters
+   because the original enumerator may skip a later Pareto based on earlier goals.
+5. Builds the final union and the same per-target exclusion columns as before.
+
+The invariant is: projecting the live state onto any requested target gives the
+same ordered partial assignments and pruning history as that target's plain
+enumeration at the same program position. Expansion and target-independent
+constraints preserve it; the capacity partition implements the same comparison;
+each ordered fallback then receives the same full input. Identical-state merging
+preserves future operations. This is a conditional equivalence argument relative
+to FFM's existing rules for a **fixed input template**, not a proof of full Fusion
+Mapspace completeness or of the original pruning rules themselves.
+
+The fast event partition preserves NumPy scalar-promotion semantics, including
+float32 threshold rounding. Unsupported/nonfinite comparison forms use direct
+per-target masks; a deferred comparison for one target does not disable checks for
+others. Imperfect tiling, nonzero Pareto tolerance, fixed templates without symbols,
+the mapspace-counting mode, and heterogeneous capacity formulas use the independent
+backend. Unsupported mode selection raises an error; unexpected search errors are
+not silently caught and rerun.
+
+An implementation regression exposed another numerical contract: when a target
+has no candidates, the reference's empty float64 array still participates in final
+concatenation and promotes the union's Tile dtype. Initially, removing empty cohorts
+lost that promotion. On the 64/128-byte Matmul grid the Tile values and selected
+EDPs matched, but generated/frontier rows changed from 49/11 to 43/12. The backend
+now preserves empty-target dtype promotion; the full numerical frontier is again
+identical. Tests compare dtype as well as per-template Tile values and membership.
+This retains the reference's numerical behavior, not a new byte-exact resource model.
+
+This is **not yet a continuous-parameter solver**: it serves the declared capacity
+targets, does not certify intervals for unseen queries, and retains K membership
+columns in the final candidates. It does not add a Fusion Copy Contract, relax the
+conservative copy filter, or provide a global memory budget. All cohort states are
+currently resident. In the worst case every target has a distinct state; no general
+sublinear-in-K runtime guarantee is claimed.
+
+The controlled three-variable, two-consecutive-fallback experiment fixes symbol
+bounds and the capacity range, checks each target against the plain enumerator,
+and directly instruments the executed helpers (three rotated repetitions):
+
+| K | Expansion calls: per-target / events | Expanded rows: per-target / events | Padding calls: per-target / events |
+| ---: | ---: | ---: | ---: |
+| 2 | 4 / 3 | 228 / 204 | 14 / 10 |
+| 4 | 10 / 4 | 622 / 346 | 34 / 16 |
+| 8 | 22 / 6 | 1,326 / 546 | 74 / 28 |
+| 16 | 46 / 10 | 2,742 / 954 | 154 / 53 |
+| 32 | 92 / 16 | 5,504 / 1,569 | 308 / 90 |
+| 64 | 186 / 24 | 11,102 / 2,358 | 622 / 142 |
+
+Expansion counts match the earlier exact-prefix-cache experiment, but this backend
+also shares the subsequent constraint processing. The old prefix cache did not do
+that. These are batch calls, executed partial-row expansions and padding calls,
+not unique full-mapping nodes. This small template does not invoke numerical Pareto;
+the real GLU tests/searches exercise that path and full output membership instead.
+
+Reproduce with `benchmark_target_scaling.py --output FILE.json`. For full-search
+runs use `benchmark_generation_scaling.py --repo CHECKOUT --output-dir DIR
+--target-mode events`; compare to `--target-mode independent --pareto-bytes 8388608`
+to include the previous strongest execution optimization in the baseline.
+`Job.target_enumeration_stats` records actual cohort work and target-weighted
+equivalents separately. Legacy per-target evaluation counts are not actual shared
+work counts; state-array byte counters exclude scratch, keys, model objects and
+the final membership table.
+
+Corrected end-to-end measurements compare two **shared searches**, using the
+same current code: independent target enumeration with the previous 8 MiB exact
+Pareto cache, versus events with both execution caches disabled. Both include
+the normal symbolic/model preparation improvements. Local arm64, one worker,
+one numerical thread, hash seed 0, no phase timers or profiler, no template count
+limit, conservative Fusion filtering retained. Each method/case runs in a fresh
+process after a tiny Matmul warmup. K=16 has one cold and two warm runs; K=64 has
+one cold and **one warm run only**, so its timing is preliminary. Warm K=16 values
+are means. Search time includes generation and Join, excluding final query
+extraction and Mapping re-evaluation.
+
+| Case | K | Independent-target warm | Events warm | Ratio | Cold: independent / events |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| GLU 64,128,256 / NVDLA | 16 | 6.17 s | 5.25 s | 1.18x | 11.46 / 10.63 s |
+| GLU 64,128,256 / NVDLA | 64 | 9.94 s | 9.85 s | 1.01x | 16.24 / 13.15 s |
+| GLU 256,512,1024 / TPU v4i | 16 | 35.77 s | 19.78 s | 1.81x | 58.59 / 49.39 s |
+| GLU 256,512,1024 / TPU v4i | 64 | 89.03 s | 35.95 s | 2.48x | 111.12 / 54.19 s |
+
+NVDLA K=64 shows essentially no measured end-to-end benefit despite less expansion
+work. TPU's actual expansion calls grow from **2,215 to 2,443** between K=16 and
+K=64, versus **23,844 to 95,556** in the reference. At K=64 its expanded rows fall
+from **18,165,483 to 703,993**. Counters separately record weighted per-target
+equivalents and verify they match the reference. These are executed partial-row
+expansions, not unique Mapping counts. Savings include reduced repeated setup,
+constraint evaluation and diagnostics; times do not isolate just expansion.
+The event path emits one template summary instead of per-target formula logs.
+
+For all four case/K pairs, all repeats match the complete sorted numerical
+frontier, and all **160** selected capacity mappings per method re-evaluate.
+The 64/128-byte Matmul grid adds six capacity/bandwidth picks and matches the
+reference's complete 11-row frontier after the dtype fix. These checks establish
+equivalence in the tested conservative Mapspace, not full Fusion completeness.
+They cannot be multiplied by the historical eight-worker DSE speedup ratios.
+Corrected records supersede all measurements of the pre-dtype-fix event backend.
+
+Validation: **255 research/Streaming tests pass**, including 28 new event tests
+covering ordered fallbacks, all-target Tile/dtype/membership comparisons,
+real templates, float thresholds, empty branches, history-sensitive state merging
+and reference fallbacks. Records, source fingerprints, commands and the rejected
+dtype-regression record: [results/target_enumeration/](results/target_enumeration/).
+
 ### Generation profile: model preparation and repeated numerical Pareto requests
 
 Reference: **6a4f486d**, after the formula-text optimization below. The next profile
@@ -76,11 +202,10 @@ the total timer, but outside the `enumeration_pareto` phase (the actual backend)
 All eight K/case pairs preserve the complete sorted numerical frontier across
 versions and repeats; all 60 selected capacity mappings per version re-evaluate at
 their target. This verifies execution equivalence in the existing conservative
-Fusion Mapspace, not complete original Fusion coverage. It does **not** implement
-event-driven enumeration: constraint processing still grows with K. The next
-algorithm experiment should share target-dependent constraint work, with single
-and consecutive fallback oracles, rather than extrapolate these caches into a
-parametric-search complexity claim.
+Fusion Mapspace, not complete original Fusion coverage. Those cache-only changes
+do **not** implement event-driven enumeration: constraint processing still grows
+with K. The finite-target backend above additionally shares this constraint work;
+neither implementation establishes a general parametric-search complexity bound.
 
 Validation: **226 research/Streaming tests pass**, including exact mask ties/order,
 dtype and tolerance guards, byte-budget eviction, consecutive min-usage fallbacks,

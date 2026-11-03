@@ -1,0 +1,483 @@
+{
+  "case": "matmuls(N_EINSUMS=2,M=4,KN=8)@nvdla",
+  "caps": [6.103515625e-05, 0.0001220703125],
+  "factors": [1.0, 32.0, 256.0],
+  "jobs": 1,
+  "phase_timers": false,
+  "cprofile": false,
+  "prefix_bytes": 0,
+  "pareto_bytes": 0,
+  "target_mode": "events",
+  "python": "3.12.14",
+  "pythonhashseed": "0",
+  "commit": "467333788ebc294eb358b239d0d0f568f20ef3d6",
+  "diff": "diff --git a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\nindex 767d4d1a..0885f373 100755\n--- a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\n+++ b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\n@@ -954,6 +954,18 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):\n     \"\"\"\n     if not capacity_targets:\n         return get_tile_shape_choices(objectives, **kwargs), None\n+    mode = os.environ.get('AF_TARGET_ENUMERATION', 'independent')\n+    if mode not in ('independent', 'events'):\n+        raise ValueError('AF_TARGET_ENUMERATION must be independent or events')\n+    kwargs['job'].target_enumeration_stats = {}\n+    if mode == 'events':\n+        import sys\n+        from .target_enumeration import enumerate_targets\n+        result = enumerate_targets(sys.modules[__name__], objectives, capacity_targets, **kwargs)\n+        if result is not None:\n+            kwargs['job'].enumeration_stats = {}\n+            kwargs['job'].enumeration_pareto_stats = {}\n+            return result\n     # Compiled functions depend on the expression and symbol order, not capacity.\n     # Keep them only for this template so repeated target enumeration shares the\n     # preparation without a process-wide cache retaining compiled namespaces.\ndiff --git a/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py b/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\nindex b5489488..810e90f3 100755\n--- a/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\n+++ b/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\n@@ -96,6 +96,7 @@ class Job:\n     These do not measure total process memory or the whole candidate search tree.\n     \"\"\"\n     enumeration_pareto_stats: dict[str, int] = field(default_factory=dict)\n+    target_enumeration_stats: dict[str, int] = field(default_factory=dict)\n \n     _update_compatibility_with_tile_shapes_args: dict[str, Any] | None = None\n \ndiff --git a/accelforge/mapper/FFM/main.py b/accelforge/mapper/FFM/main.py\nindex 8c92d550..3662103c 100755\n--- a/accelforge/mapper/FFM/main.py\n+++ b/accelforge/mapper/FFM/main.py\n@@ -32,6 +32,7 @@ _GENERATION_CACHE_VERSION = 1\n _GENERATION_ENV_VARS = (\n     \"AF_ENUMERATION_PREFIX_BYTES\",  # Also separates cached work statistics.\n     \"AF_ENUMERATION_PARETO_BYTES\",\n+    \"AF_TARGET_ENUMERATION\",\n     \"AF_LATENCY_SCALES\",\n     \"AF_GENERATION_CAPACITY_FRACTIONS\",\n     \"AF_GENERATION_VARIABLE_RESOURCES\",\n",
+  "runs": [
+    {
+      "repeat": 0,
+      "make_s": 7.1769898750353605,
+      "join_s": 0.02174474997445941,
+      "rows_generated": 49,
+      "rows_front": 11,
+      "search_s": 7.19873462500982,
+      "enumeration": {
+        "templates_with_targets": 0,
+        "requests": 0,
+        "expansions": 0,
+        "hits": 0,
+        "requested_rows": 0,
+        "expanded_rows": 0,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "enumeration_pareto": {
+        "requests": 0,
+        "computations": 0,
+        "hits": 0,
+        "requested_rows": 0,
+        "computed_rows": 0,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "target_enumeration": {
+        "supported_templates": 24,
+        "fallback_templates": 0,
+        "state_expansions": 136,
+        "expanded_rows": 571,
+        "target_expansions": 224,
+        "target_expanded_rows": 953,
+        "value_evaluations": 522,
+        "target_value_evaluations": 914,
+        "capacity_partitions": 132,
+        "capacity_masks": 156,
+        "pareto_calls": 0,
+        "target_pareto_calls": 0,
+        "state_merges": 0,
+        "max_template_peak_cohorts": 2,
+        "max_template_peak_state_rows": 39,
+        "max_template_peak_state_bytes": 1872
+      },
+      "model_caches_cumulative": {
+        "_parse_projection_expr": {
+          "hits": 818,
+          "misses": 4,
+          "maxsize": 1024,
+          "currsize": 4
+        },
+        "_prepare_rank_projection": {
+          "hits": 70,
+          "misses": 2,
+          "maxsize": 512,
+          "currsize": 2
+        },
+        "_maximum_stat": {
+          "hits": 8284,
+          "misses": 256,
+          "maxsize": 4096,
+          "currsize": 256
+        }
+      },
+      "phases": null,
+      "numeric_frontier_sha256": "619775df8a2fe9a99b48b873e8abd27f4db670175bf9db466a33fb1b26f20ce7"
+    },
+    {
+      "repeat": 1,
+      "make_s": 1.2855022500734776,
+      "join_s": 0.022225166903808713,
+      "rows_generated": 49,
+      "rows_front": 11,
+      "search_s": 1.3077274169772863,
+      "enumeration": {
+        "templates_with_targets": 0,
+        "requests": 0,
+        "expansions": 0,
+        "hits": 0,
+        "requested_rows": 0,
+        "expanded_rows": 0,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "enumeration_pareto": {
+        "requests": 0,
+        "computations": 0,
+        "hits": 0,
+        "requested_rows": 0,
+        "computed_rows": 0,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "target_enumeration": {
+        "supported_templates": 24,
+        "fallback_templates": 0,
+        "state_expansions": 136,
+        "expanded_rows": 571,
+        "target_expansions": 224,
+        "target_expanded_rows": 953,
+        "value_evaluations": 522,
+        "target_value_evaluations": 914,
+        "capacity_partitions": 132,
+        "capacity_masks": 156,
+        "pareto_calls": 0,
+        "target_pareto_calls": 0,
+        "state_merges": 0,
+        "max_template_peak_cohorts": 2,
+        "max_template_peak_state_rows": 39,
+        "max_template_peak_state_bytes": 1872
+      },
+      "model_caches_cumulative": {
+        "_parse_projection_expr": {
+          "hits": 1514,
+          "misses": 4,
+          "maxsize": 1024,
+          "currsize": 4
+        },
+        "_prepare_rank_projection": {
+          "hits": 142,
+          "misses": 2,
+          "maxsize": 512,
+          "currsize": 2
+        },
+        "_maximum_stat": {
+          "hits": 15200,
+          "misses": 256,
+          "maxsize": 4096,
+          "currsize": 256
+        }
+      },
+      "phases": null,
+      "numeric_frontier_sha256": "619775df8a2fe9a99b48b873e8abd27f4db670175bf9db466a33fb1b26f20ce7"
+    }
+  ],
+  "frontiers": {
+    "619775df8a2fe9a99b48b873e8abd27f4db670175bf9db466a33fb1b26f20ce7": {
+      "columns": ["Matmul0<SEP>initial<SEP>M<SEP>0", "Matmul0<SEP>initial<SEP>M<SEP>2", "Matmul0<SEP>initial<SEP>M<SEP>3", "Matmul0<SEP>initial<SEP>N1<SEP>1", "Matmul0<SEP>initial<SEP>N1<SEP>2", "Matmul0<SEP>initial<SEP>N1<SEP>3", "Matmul0<SEP>lower_iterations<SEP>0", "Matmul0<SEP>lower_iterations<SEP>1", "Matmul0<SEP>n_iterations<SEP>0", "Matmul0<SEP>n_iterations<SEP>1", "Matmul0<SEP>n_iterations<SEP>2", "Matmul0<SEP>n_iterations<SEP>3", "Matmul0<SEP>stride0", "Matmul0<SEP>stride1", "Matmul0<SEP>stride2", "Matmul0<SEP>stride3", "Matmul0<SEP>stride4", "Matmul0<SEP>stride5", "Matmul1<SEP>initial<SEP>M<SEP>0", "Matmul1<SEP>initial<SEP>M<SEP>2", "Matmul1<SEP>initial<SEP>M<SEP>3", "Matmul1<SEP>initial<SEP>N1<SEP>1", "Matmul1<SEP>initial<SEP>N1<SEP>2", "Matmul1<SEP>initial<SEP>N1<SEP>3", "Matmul1<SEP>lower_iterations<SEP>0", "Matmul1<SEP>lower_iterations<SEP>1", "Matmul1<SEP>n_iterations<SEP>0", "Matmul1<SEP>n_iterations<SEP>1", "Matmul1<SEP>n_iterations<SEP>2", "Matmul1<SEP>n_iterations<SEP>3", "Matmul1<SEP>stride0", "Matmul1<SEP>stride1", "Matmul1<SEP>stride2", "Matmul1<SEP>stride3", "Matmul1<SEP>stride4", "Matmul1<SEP>stride5", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.5", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>1.0", "Total<SEP>energy", "Total<SEP>latency", "Total<SEP>latency_scaled<SEP>GlobalBuffer<SEP>256.0", "Total<SEP>latency_scaled<SEP>GlobalBuffer<SEP>32.0", "reservation<SEP>GlobalBuffer<SEP>0<SEP>right", "tensor<SEP>T1"],
+      "values": [
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 8.0, 4.0, 2.0, 8.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 8.0, 8.0, 4.0, 8.0, 0.0, 1.0, 1.0, 1.949107009124873e-08, 1.1999999216527613e-08, 6.399999392669997e-07, 7.999999240837496e-08, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 8.0, 4.0, 2.0, 8.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 8.0, 1.0, 8.0, 8.0, 0.0, 1.0, 1.0, 1.987353570598316e-08, 1.1999999216527613e-08, 6.399999392669997e-07, 7.999999240837496e-08, 0.625, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 8.0, 4.0, 2.0, 8.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 8.0, 2.0, 8.0, 8.0, 0.0, 1.0, 1.0, 1.9618559221612486e-08, 1.1999999216527613e-08, 6.399999392669997e-07, 7.999999240837496e-08, 0.75, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 8.0, 1.0, 8.0, 8.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 8.0, 1.0, 8.0, 8.0, 0.0, 2.0, 0.0, 1.631539170432461e-08, 7.999999773744548e-09, 5.119999855196511e-07, 6.399999818995639e-08, 0.625, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 8.0, 2.0, 8.0, 8.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 8.0, 2.0, 8.0, 8.0, 0.0, 2.0, 0.0, 1.5805440511940105e-08, 7.999999773744548e-09, 5.119999855196511e-07, 6.399999818995639e-08, 0.75, 0.0],
+        [1.0, 0.0, 0.0, 8.0, 0.0, 0.0, 3.0, 0.0, 4.0, 1.0, 0.0, 0.0, 1.0, 8.0, 4.0, 8.0, 1.0, 8.0, 1.0, 0.0, 0.0, 8.0, 0.0, 0.0, 3.0, 0.0, 4.0, 1.0, 0.0, 0.0, 1.0, 8.0, 1.0, 4.0, 8.0, 0.0, 0.0, 2.0, 3.527603098518739e-08, 1.5999999547489097e-08, 1.2799998785339994e-06, 1.5999998481674993e-07, 0.34375, 0.0625],
+        [2.0, 0.0, 0.0, 8.0, 0.0, 0.0, 2.0, 0.0, 2.0, 1.0, 0.0, 0.0, 2.0, 8.0, 2.0, 4.0, 8.0, 0.0, 2.0, 0.0, 0.0, 8.0, 0.0, 0.0, 2.0, 0.0, 2.0, 1.0, 0.0, 0.0, 2.0, 8.0, 8.0, 4.0, 2.0, 8.0, 0.0, 2.0, 1.9768576109413516e-08, 1.5999999547489097e-08, 7.679999498577672e-07, 9.59999937322209e-08, 0.4375, 0.125],
+        [2.0, 0.0, 0.0, 8.0, 0.0, 0.0, 2.0, 0.0, 2.0, 1.0, 0.0, 0.0, 2.0, 8.0, 4.0, 8.0, 1.0, 8.0, 2.0, 0.0, 0.0, 8.0, 0.0, 0.0, 2.0, 0.0, 2.0, 1.0, 0.0, 0.0, 2.0, 8.0, 8.0, 4.0, 1.0, 8.0, 0.0, 2.0, 2.027852730179802e-08, 1.5999999547489097e-08, 7.679999498577672e-07, 9.59999937322209e-08, 0.40625, 0.125],
+        [4.0, 0.0, 0.0, 8.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 4.0, 8.0, 8.0, 8.0, 1.0, 8.0, 4.0, 0.0, 0.0, 8.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 4.0, 8.0, 8.0, 8.0, 1.0, 8.0, 2.0, 0.0, 1.2577279662195906e-08, 7.999999773744548e-09, 4.4799998022426735e-07, 5.599999752803342e-08, 0.8125, 0.25],
+        [4.0, 0.0, 0.0, 8.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 4.0, 8.0, 8.0, 8.0, 2.0, 8.0, 4.0, 0.0, 0.0, 8.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 4.0, 8.0, 8.0, 8.0, 2.0, 8.0, 2.0, 0.0, 1.20673284698114e-08, 7.999999773744548e-09, 4.4799998022426735e-07, 5.599999752803342e-08, 0.875, 0.25],
+        [4.0, 0.0, 4.0, 8.0, 8.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 4.0, 8.0, 8.0, 4.0, 8.0, 8.0, 4.0, 0.0, 4.0, 8.0, 8.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 4.0, 8.0, 8.0, 4.0, 8.0, 8.0, 2.0, 0.0, 1.1812351985440728e-08, 7.999999773744548e-09, 4.4799998022426735e-07, 5.599999752803342e-08, 1.0, 0.25]
+      ]
+    }
+  },
+  "picks": [
+    {
+      "cap_mib": 6.103515625e-05,
+      "edp": 3.1629720880512e-16,
+      "energy": 1.9768576109413516e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.4375,
+      "tied_optima": 1,
+      "mapping_id": "8da756d42157377b",
+      "reevaluated": {
+        "energy": 1.9768575999999997e-08,
+        "latency": 1.6e-08,
+        "edp": 3.1629721599999996e-16,
+        "reservations": {
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.25,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.020833333333333332,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.041666666666666664,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 6.103515625e-05,
+      "edp": 1.8977831825986294e-15,
+      "energy": 1.9768576109413516e-08,
+      "latency": 9.59999937322209e-08,
+      "reported_gb_mib_fraction": 0.4375,
+      "tied_optima": 1,
+      "mapping_id": "8da756d42157377b",
+      "reevaluated": {
+        "energy": 1.9768575999999997e-08,
+        "latency": 9.600000000000001e-08,
+        "edp": 1.897783296e-15,
+        "reservations": {
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.25,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.020833333333333332,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.041666666666666664,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 32.0
+    },
+    {
+      "cap_mib": 6.103515625e-05,
+      "edp": 1.5182265460789035e-14,
+      "energy": 1.9768576109413516e-08,
+      "latency": 7.679999498577672e-07,
+      "reported_gb_mib_fraction": 0.4375,
+      "tied_optima": 1,
+      "mapping_id": "8da756d42157377b",
+      "reevaluated": {
+        "energy": 1.9768575999999997e-08,
+        "latency": 7.680000000000001e-07,
+        "edp": 1.5182266368e-14,
+        "reservations": {
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.25,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.020833333333333332,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.041666666666666664,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 256.0
+    },
+    {
+      "cap_mib": 0.0001220703125,
+      "edp": 9.449881321091679e-17,
+      "energy": 1.1812351985440728e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 1.0,
+      "tied_optima": 1,
+      "mapping_id": "e3a7c7ef0b5bfc5e",
+      "reevaluated": {
+        "energy": 1.1812352e-08,
+        "latency": 8e-09,
+        "edp": 9.4498816e-17,
+        "reservations": {
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.25,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.041666666666666664,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.25,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.041666666666666664,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.0001220703125,
+      "edp": 6.614916819849414e-16,
+      "energy": 1.1812351985440728e-08,
+      "latency": 5.599999752803342e-08,
+      "reported_gb_mib_fraction": 1.0,
+      "tied_optima": 1,
+      "mapping_id": "e3a7c7ef0b5bfc5e",
+      "reevaluated": {
+        "energy": 1.1812352e-08,
+        "latency": 5.6000000000000005e-08,
+        "edp": 6.614917120000001e-16,
+        "reservations": {
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.25,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.041666666666666664,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.25,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.041666666666666664,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 32.0
+    },
+    {
+      "cap_mib": 0.0001220703125,
+      "edp": 5.291933455879531e-15,
+      "energy": 1.1812351985440728e-08,
+      "latency": 4.4799998022426735e-07,
+      "reported_gb_mib_fraction": 1.0,
+      "tied_optima": 1,
+      "mapping_id": "e3a7c7ef0b5bfc5e",
+      "reevaluated": {
+        "energy": 1.1812352e-08,
+        "latency": 4.4800000000000004e-07,
+        "edp": 5.2919336960000004e-15,
+        "reservations": {
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.25,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul0",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.041666666666666664,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.25,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "Matmul1",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.041666666666666664,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 256.0
+    }
+  ],
+  "all_picks_valid": true,
+  "numeric_frontier_stable": true,
+  "peak_rss_gb": {
+    "main": 0.272369384765625,
+    "largest_worker": 0.0052490234375
+  }
+}
