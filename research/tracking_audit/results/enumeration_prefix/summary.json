@@ -1,0 +1,111 @@
+{
+  "baseline_commit": "66e074e4",
+  "conditions": "Local arm64, Python 3.12.14, single worker and numeric-library threads. Separate processes; tiny Matmul warmup, then one cold and two warm case runs; no profiler. Source diff recorded in each raw file.",
+  "cases": {
+    "nvdla-reference.json": {
+      "cold_s": 22.63037091703154,
+      "warm_mean_s": 8.78632681252202,
+      "numeric_frontier_sha256": "ee9520d1b131e2f586cfcf7950dda6e673d60b0cfd73f99d6ec40a6df445240b",
+      "all_picks_valid": true,
+      "enumeration": {
+        "templates_with_targets": 30,
+        "requests": 456,
+        "expansions": 456,
+        "hits": 0,
+        "requested_rows": 35837,
+        "expanded_rows": 35837,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "peak_rss_gb": {
+        "main": 0.321990966796875,
+        "largest_worker": 0.0053253173828125
+      }
+    },
+    "nvdla-prefix-only.json": {
+      "cold_s": 23.900742416037247,
+      "warm_mean_s": 8.987135271017905,
+      "numeric_frontier_sha256": "ee9520d1b131e2f586cfcf7950dda6e673d60b0cfd73f99d6ec40a6df445240b",
+      "all_picks_valid": true,
+      "enumeration": {
+        "templates_with_targets": 30,
+        "requests": 456,
+        "expansions": 175,
+        "hits": 281,
+        "requested_rows": 35837,
+        "expanded_rows": 16344,
+        "evictions": 0,
+        "max_template_payload_bytes": 184104
+      },
+      "peak_rss_gb": {
+        "main": 0.307952880859375,
+        "largest_worker": 0.0051727294921875
+      }
+    },
+    "nvdla-text-reuse.json": {
+      "cold_s": 21.390729624894448,
+      "warm_mean_s": 7.3978786045336165,
+      "numeric_frontier_sha256": "ee9520d1b131e2f586cfcf7950dda6e673d60b0cfd73f99d6ec40a6df445240b",
+      "all_picks_valid": true,
+      "enumeration": {
+        "templates_with_targets": 30,
+        "requests": 456,
+        "expansions": 456,
+        "hits": 0,
+        "requested_rows": 35837,
+        "expanded_rows": 35837,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "peak_rss_gb": {
+        "main": 0.3179779052734375,
+        "largest_worker": 0.0053253173828125
+      }
+    },
+    "nvdla-k16-off.json": {
+      "cold_s": 12.35115570796188,
+      "warm_mean_s": 7.252581916458439,
+      "numeric_frontier_sha256": "0b694340f44b668b47316f87002fdeffd9846ce13b4c7a123905c9b7b82579f7",
+      "all_picks_valid": true,
+      "enumeration": {
+        "templates_with_targets": 30,
+        "requests": 2432,
+        "expansions": 2432,
+        "hits": 0,
+        "requested_rows": 194998,
+        "expanded_rows": 194998,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "peak_rss_gb": {
+        "main": 0.3297882080078125,
+        "largest_worker": 0.005157470703125
+      }
+    },
+    "nvdla-k16-on.json": {
+      "cold_s": 12.460219874978065,
+      "warm_mean_s": 7.25262931198813,
+      "numeric_frontier_sha256": "0b694340f44b668b47316f87002fdeffd9846ce13b4c7a123905c9b7b82579f7",
+      "all_picks_valid": true,
+      "enumeration": {
+        "templates_with_targets": 30,
+        "requests": 2432,
+        "expansions": 192,
+        "hits": 2240,
+        "requested_rows": 194998,
+        "expanded_rows": 25508,
+        "evictions": 0,
+        "max_template_payload_bytes": 373776
+      },
+      "peak_rss_gb": {
+        "main": 0.3292694091796875,
+        "largest_worker": 0.00518798828125
+      }
+    }
+  },
+  "text_reuse_warm_speedup": 1.1876819399466119,
+  "k16_prefix_warm_speedup": 0.9999934650555471,
+  "prefix_only_has_no_demonstrated_end_to_end_speedup": true,
+  "full_research_regression_tests_passed": 199,
+  "coverage_limits": "Exact prefix cache; target fallback and Pareto still execute separately. No continuous-parameter search, no fusion completeness claim, no global memory bound. Counts cover prefix batches/rows of target-enumerated templates, not all symbolic analysis or candidate generation."
+}

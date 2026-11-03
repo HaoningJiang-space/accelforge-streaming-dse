@@ -1,0 +1,1002 @@
+{
+  "case": "glu(M=64,G=128,C=256)@nvdla",
+  "caps": [
+    0.03125,
+    0.0625,
+    0.25
+  ],
+  "factors": [
+    0.25,
+    1.0,
+    4.0,
+    16.0
+  ],
+  "jobs": 1,
+  "prefix_bytes": 8388608,
+  "python": "3.12.14",
+  "pythonhashseed": "0",
+  "commit": "66e074e4a5267da8349519802fe4403d5561a208",
+  "diff": "diff --git a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\nindex c2ce45b9..c2fe3c9f 100755\n--- a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\n+++ b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\n@@ -1,4 +1,5 @@\n from enum import Enum\n+import os\n from functools import lru_cache\n from math import ceil, log2, prod\n import copy\n@@ -38,6 +39,7 @@ from accelforge.mapper.FFM._join_pmappings.pmapping_dataframe import (\n )\n from accelforge.frontend.mapper.metrics import Metrics\n from accelforge.util._frozenset import fzs\n+from .enumeration_prefix import EnumerationPrefixCache\n import math\n import sympy\n import numpy as np\n@@ -809,6 +811,119 @@ def coalesce_symbols(\n     return symbol2goal\n \n \n+def _expand_symbol_choices(symbol, choices_enumerated, symbols_enumerated,\n+                           what_tiles_symbol, imperfect):\n+    \"\"\"Expand one symbol for a fixed, already-pruned prefix, preserving row order.\n+\n+    Capacity constraints, min-usage fallback and Pareto remain in the caller. This\n+    function reads its input and returns a new array; it never mutates the prefix.\n+    \"\"\"\n+    choices = []\n+    if what_tiles_symbol.is_stride(symbol):\n+        inner_tiles = what_tiles_symbol.get_inner_tiles(symbol, none_if_fail=True)\n+        outer_tiles = what_tiles_symbol.get_outer_tiles(symbol, none_if_fail=True)\n+\n+        # Figure out inner size and outer size\n+        if inner_tiles in symbols_enumerated:\n+            inner_tiles_type = \"enumerated\"\n+            inner_size = None\n+        elif isinstance(inner_tiles, int):\n+            inner_tiles_type = \"set\"\n+            inner_size = inner_tiles\n+        else:\n+            inner_tiles_type = \"unknown\"\n+            inner_size = 1\n+\n+        if outer_tiles in symbols_enumerated:\n+            outer_tiles_type = \"enumerated\"\n+            outer_size = None\n+        elif isinstance(outer_tiles, int):\n+            outer_tiles_type = \"set\"\n+            outer_size = outer_tiles\n+        else:\n+            outer_tiles_type = \"unknown\"\n+            outer_size = what_tiles_symbol.get_max_size(outer_tiles)\n+\n+        if inner_tiles_type == \"enumerated\" and outer_tiles_type == \"enumerated\":\n+            raise RuntimeError(\n+                f\"BUG: both inner, {inner_tiles}, and outer, {outer_tiles},\"\n+                f\"tiles of {symbol} are enumerated (thus far: {symbols_enumerated})\"\n+            )\n+        if inner_tiles_type == \"unknown\" and outer_tiles_type == \"unknown\":\n+            raise RuntimeError(\"BUG: both inner and outer tiles are unknown\")\n+\n+        # Use inner size and outer size to generate choices\n+        if inner_tiles_type in {\"set\", \"unknown\"} and outer_tiles_type in {\n+            \"set\",\n+            \"unknown\",\n+        }:\n+            factorize = math.ceil(outer_size / inner_size)\n+            factors = list(get_possible_factor_sizes(factorize, imperfect))\n+            scaled = np.array(factors) * inner_size\n+            choices.append(append_vector(choices_enumerated, scaled))\n+        elif inner_tiles_type == \"enumerated\":\n+            assert isinstance(outer_size, int)\n+            i = symbols_enumerated.index(inner_tiles)\n+            for inner_choice in np.unique(choices_enumerated[:, i]):\n+                partition = choices_enumerated[\n+                    np.where(choices_enumerated[:, i] == inner_choice)\n+                ]\n+                factorize = math.ceil(outer_size / inner_choice)\n+                factors = list(get_possible_factor_sizes(factorize, imperfect))\n+                scaled = np.array(factors) * inner_choice\n+                choices.append(append_vector(partition, scaled))\n+        else:\n+            assert outer_tiles_type == \"enumerated\"\n+            assert isinstance(inner_size, int)\n+            i = symbols_enumerated.index(outer_tiles)\n+            for outer_choice in np.unique(choices_enumerated[:, i]):\n+                partition = choices_enumerated[\n+                    np.where(choices_enumerated[:, i] == outer_choice)\n+                ]\n+                factorize = math.ceil(outer_choice / inner_size)\n+                factors = list(get_possible_factor_sizes(factorize, imperfect))\n+                scaled = np.array(factors) * inner_size\n+                choices.append(append_vector(partition, scaled))\n+    elif what_tiles_symbol.is_initial_tile_shape(symbol):\n+        stride = what_tiles_symbol.get_stride(symbol)\n+        delta_choices = np.array(list(what_tiles_symbol.get_delta_choices(symbol)))\n+\n+        outer_stride = what_tiles_symbol.get_outer_tiles(stride, none_if_fail=True)\n+        assert outer_stride is None or isinstance(\n+            outer_stride, int\n+        ), f\"outer stride is symbol {outer_stride}\"\n+        if outer_stride is None:\n+            outer_size = what_tiles_symbol.get_max_size(stride)\n+        else:\n+            outer_size = outer_stride\n+\n+        if not stride in symbols_enumerated and not isinstance(stride, int):\n+            raise RuntimeError(\n+                f\"BUG: stride {stride} of initial tile shape \"\n+                f\"{symbol} is neither enumerated nor a specified value\"\n+            )\n+\n+        if isinstance(stride, int):\n+            initial_choices = delta_choices + stride\n+            initial_choices = initial_choices[initial_choices <= outer_size]\n+            choices.append(append_vector(choices_enumerated, initial_choices))\n+        else:\n+            i = symbols_enumerated.index(stride)\n+            for stride_choice in np.unique(choices_enumerated[:, i]):\n+                partition = choices_enumerated[\n+                    np.where(choices_enumerated[:, i] == stride_choice)\n+                ]\n+                initial_choices = delta_choices + stride_choice\n+                initial_choices = initial_choices[initial_choices <= outer_size]\n+                choices.append(append_vector(partition, initial_choices))\n+    else:\n+        raise RuntimeError(\n+            f\"BUG: symbol {symbol} is neither stride nor initial tile shape\"\n+        )\n+\n+    return np.concatenate(choices, axis=0)\n+\n+\n def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):\n     \"\"\"get_tile_shape_choices for a shared capacity search: the union over targets.\n \n@@ -834,7 +949,11 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):\n     # Compiled functions depend on the expression and symbol order, not capacity.\n     # Keep them only for this template so repeated target enumeration shares the\n     # preparation without a process-wide cache retaining compiled namespaces.\n-    kwargs = {**kwargs, \"_compiled_objectives\": {}}\n+    # Sharing is limited to exact, ordered prefix arrays within this template.\n+    # Every target still runs its own fallback history and pruning decisions.\n+    budget = int(os.environ.get(\"AF_ENUMERATION_PREFIX_BYTES\", \"0\"))\n+    cache = EnumerationPrefixCache(budget)\n+    kwargs = {**kwargs, \"_compiled_objectives\": {}, \"_prefix_cache\": cache}\n     job = kwargs[\"job\"]\n     start = (job.n_total_pmappings, job.n_evaluated_pmappings, dict(job.pmapping_keep_rates))\n     first_min = next(\n@@ -856,6 +975,7 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):\n             full_stats = (job.n_total_pmappings, dict(job.pmapping_keep_rates))\n     job.n_total_pmappings, job.pmapping_keep_rates = full_stats\n     job.n_evaluated_pmappings = start[1] + evaluated\n+    job.enumeration_stats = dict(cache.stats)\n     choices = np.unique(np.concatenate(parts, axis=0), axis=0)\n     excluded = np.ones((choices.shape[0], len(parts)), dtype=bool)\n     index = {tuple(row): r for r, row in enumerate(choices.tolist())}\n@@ -873,6 +993,7 @@ def get_tile_shape_choices(\n     keep_symbols: list[Symbol] = (),\n     max_loop_check_groups: list[tuple[Number, list[Symbol]]] = (),\n     _compiled_objectives: dict | None = None,\n+    _prefix_cache: EnumerationPrefixCache | None = None,\n ):\n     # Only the per-enumeration constraint fields are mutated below. SymPy\n     # expressions are immutable; deepcopy needlessly reconstructs their Max/Min\n@@ -1034,115 +1155,18 @@ def get_tile_shape_choices(\n         # ==============================================================================\n         symbol = grab_symbol(last_stride_symbol)\n \n-        choices = []\n         if what_tiles_symbol.is_stride(symbol):\n             last_stride_symbol = symbol\n-            inner_tiles = what_tiles_symbol.get_inner_tiles(symbol, none_if_fail=True)\n-            outer_tiles = what_tiles_symbol.get_outer_tiles(symbol, none_if_fail=True)\n-\n-            # Figure out inner size and outer size\n-            if inner_tiles in symbols_enumerated:\n-                inner_tiles_type = \"enumerated\"\n-                inner_size = None\n-            elif isinstance(inner_tiles, int):\n-                inner_tiles_type = \"set\"\n-                inner_size = inner_tiles\n-            else:\n-                inner_tiles_type = \"unknown\"\n-                inner_size = 1\n-\n-            if outer_tiles in symbols_enumerated:\n-                outer_tiles_type = \"enumerated\"\n-                outer_size = None\n-            elif isinstance(outer_tiles, int):\n-                outer_tiles_type = \"set\"\n-                outer_size = outer_tiles\n-            else:\n-                outer_tiles_type = \"unknown\"\n-                outer_size = what_tiles_symbol.get_max_size(outer_tiles)\n-\n-            if inner_tiles_type == \"enumerated\" and outer_tiles_type == \"enumerated\":\n-                raise RuntimeError(\n-                    f\"BUG: both inner, {inner_tiles}, and outer, {outer_tiles},\"\n-                    f\"tiles of {symbol} are enumerated (thus far: {symbols_enumerated})\"\n-                )\n-            if inner_tiles_type == \"unknown\" and outer_tiles_type == \"unknown\":\n-                raise RuntimeError(\"BUG: both inner and outer tiles are unknown\")\n-\n-            # Use inner size and outer size to generate choices\n-            if inner_tiles_type in {\"set\", \"unknown\"} and outer_tiles_type in {\n-                \"set\",\n-                \"unknown\",\n-            }:\n-                factorize = math.ceil(outer_size / inner_size)\n-                factors = list(get_possible_factor_sizes(factorize, imperfect))\n-                scaled = np.array(factors) * inner_size\n-                choices.append(append_vector(choices_enumerated, scaled))\n-            elif inner_tiles_type == \"enumerated\":\n-                assert isinstance(outer_size, int)\n-                i = symbols_enumerated.index(inner_tiles)\n-                for inner_choice in np.unique(choices_enumerated[:, i]):\n-                    partition = choices_enumerated[\n-                        np.where(choices_enumerated[:, i] == inner_choice)\n-                    ]\n-                    factorize = math.ceil(outer_size / inner_choice)\n-                    factors = list(get_possible_factor_sizes(factorize, imperfect))\n-                    scaled = np.array(factors) * inner_choice\n-                    choices.append(append_vector(partition, scaled))\n-            else:\n-                assert outer_tiles_type == \"enumerated\"\n-                assert isinstance(inner_size, int)\n-                i = symbols_enumerated.index(outer_tiles)\n-                for outer_choice in np.unique(choices_enumerated[:, i]):\n-                    partition = choices_enumerated[\n-                        np.where(choices_enumerated[:, i] == outer_choice)\n-                    ]\n-                    factorize = math.ceil(outer_choice / inner_size)\n-                    factors = list(get_possible_factor_sizes(factorize, imperfect))\n-                    scaled = np.array(factors) * inner_size\n-                    choices.append(append_vector(partition, scaled))\n-        elif what_tiles_symbol.is_initial_tile_shape(symbol):\n-            stride = what_tiles_symbol.get_stride(symbol)\n-            delta_choices = np.array(list(what_tiles_symbol.get_delta_choices(symbol)))\n-\n-            outer_stride = what_tiles_symbol.get_outer_tiles(stride, none_if_fail=True)\n-            assert outer_stride is None or isinstance(\n-                outer_stride, int\n-            ), f\"outer stride is symbol {outer_stride}\"\n-            if outer_stride is None:\n-                outer_size = what_tiles_symbol.get_max_size(stride)\n-            else:\n-                outer_size = outer_stride\n-\n-            if not stride in symbols_enumerated and not isinstance(stride, int):\n-                raise RuntimeError(\n-                    f\"BUG: stride {stride} of initial tile shape \"\n-                    f\"{symbol} is neither enumerated nor a specified value\"\n-                )\n-\n-            if isinstance(stride, int):\n-                initial_choices = delta_choices + stride\n-                initial_choices = initial_choices[initial_choices <= outer_size]\n-                choices.append(append_vector(choices_enumerated, initial_choices))\n-            else:\n-                i = symbols_enumerated.index(stride)\n-                for stride_choice in np.unique(choices_enumerated[:, i]):\n-                    partition = choices_enumerated[\n-                        np.where(choices_enumerated[:, i] == stride_choice)\n-                    ]\n-                    initial_choices = delta_choices + stride_choice\n-                    initial_choices = initial_choices[initial_choices <= outer_size]\n-                    choices.append(append_vector(partition, initial_choices))\n+        prev_size = choices_enumerated.shape[0] if choices_enumerated is not None else 1\n+        expand = lambda: _expand_symbol_choices(\n+            symbol, choices_enumerated, symbols_enumerated, what_tiles_symbol, imperfect\n+        )\n+        if _prefix_cache is None:\n+            choices_enumerated = expand()\n         else:\n-            raise RuntimeError(\n-                f\"BUG: symbol {symbol} is neither stride nor initial tile shape\"\n+            choices_enumerated = _prefix_cache.expand(\n+                symbol, symbols_enumerated, choices_enumerated, expand\n             )\n-\n-        # if not partitions:\n-        #     return np.array([]).reshape(-1, len(symbols))\n-\n-        prev_size = choices_enumerated.shape[0] if choices_enumerated is not None else 1\n-        choices_enumerated = np.concatenate(choices, axis=0)\n         job.n_total_pmappings *= choices_enumerated.shape[0] / max(1, prev_size)\n         symbols_enumerated.append(symbol)\n         log_message(\"enumerate\", f\"{symbol}\", f\"size={choices_enumerated.shape[0]}\")\ndiff --git a/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py b/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\nindex 72025a3d..5fde9268 100755\n--- a/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\n+++ b/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\n@@ -91,6 +91,10 @@ class Job:\n     n_total_pmappings: int = 1\n     n_valid_pmappings: int = 1\n     n_evaluated_pmappings: int = 0\n+    enumeration_stats: dict[str, int] = field(default_factory=dict)\n+    \"\"\"Per-template shared-prefix work counters and retained cache payload bytes.\n+    These do not measure total process memory or the whole candidate search tree.\n+    \"\"\"\n \n     _update_compatibility_with_tile_shapes_args: dict[str, Any] | None = None\n \ndiff --git a/accelforge/mapper/FFM/main.py b/accelforge/mapper/FFM/main.py\nindex 7ae3fff2..a98d35b6 100755\n--- a/accelforge/mapper/FFM/main.py\n+++ b/accelforge/mapper/FFM/main.py\n@@ -30,6 +30,7 @@ _GENERATION_CACHE_VERSION = 1\n # These options affect the generated candidate set, not only Join execution.\n # Keep this list in sync with new generation switches in _make_pmappings.\n _GENERATION_ENV_VARS = (\n+    \"AF_ENUMERATION_PREFIX_BYTES\",  # Also separates cached work statistics.\n     \"AF_LATENCY_SCALES\",\n     \"AF_GENERATION_CAPACITY_FRACTIONS\",\n     \"AF_GENERATION_VARIABLE_RESOURCES\",\n",
+  "runs": [
+    {
+      "repeat": 0,
+      "make_s": 22.056702165980823,
+      "join_s": 1.8440402500564232,
+      "rows_generated": 2965,
+      "rows_front": 104,
+      "search_s": 23.900742416037247,
+      "enumeration": {
+        "templates_with_targets": 30,
+        "requests": 456,
+        "expansions": 175,
+        "hits": 281,
+        "requested_rows": 35837,
+        "expanded_rows": 16344,
+        "evictions": 0,
+        "max_template_payload_bytes": 184104
+      },
+      "numeric_frontier_sha256": "ee9520d1b131e2f586cfcf7950dda6e673d60b0cfd73f99d6ec40a6df445240b"
+    },
+    {
+      "repeat": 1,
+      "make_s": 8.455543417017907,
+      "join_s": 1.0261912080459297,
+      "rows_generated": 2965,
+      "rows_front": 104,
+      "search_s": 9.481734625063837,
+      "enumeration": {
+        "templates_with_targets": 30,
+        "requests": 456,
+        "expansions": 175,
+        "hits": 281,
+        "requested_rows": 35837,
+        "expanded_rows": 16344,
+        "evictions": 0,
+        "max_template_payload_bytes": 184104
+      },
+      "numeric_frontier_sha256": "ee9520d1b131e2f586cfcf7950dda6e673d60b0cfd73f99d6ec40a6df445240b"
+    },
+    {
+      "repeat": 2,
+      "make_s": 7.470701833022758,
+      "join_s": 1.0218340839492157,
+      "rows_generated": 2965,
+      "rows_front": 104,
+      "search_s": 8.492535916971974,
+      "enumeration": {
+        "templates_with_targets": 30,
+        "requests": 456,
+        "expansions": 175,
+        "hits": 281,
+        "requested_rows": 35837,
+        "expanded_rows": 16344,
+        "evictions": 0,
+        "max_template_payload_bytes": 184104
+      },
+      "numeric_frontier_sha256": "ee9520d1b131e2f586cfcf7950dda6e673d60b0cfd73f99d6ec40a6df445240b"
+    }
+  ],
+  "frontiers": {
+    "ee9520d1b131e2f586cfcf7950dda6e673d60b0cfd73f99d6ec40a6df445240b": {
+      "columns": [
+        "FFB<SEP>initial<SEP>B<SEP>0",
+        "FFB<SEP>initial<SEP>B<SEP>3",
+        "FFB<SEP>initial<SEP>B<SEP>4",
+        "FFB<SEP>initial<SEP>C<SEP>1",
+        "FFB<SEP>initial<SEP>C<SEP>3",
+        "FFB<SEP>initial<SEP>C<SEP>5",
+        "FFB<SEP>initial<SEP>M<SEP>2",
+        "FFB<SEP>initial<SEP>M<SEP>4",
+        "FFB<SEP>initial<SEP>M<SEP>5",
+        "FFB<SEP>lower_iterations<SEP>0",
+        "FFB<SEP>lower_iterations<SEP>1",
+        "FFB<SEP>lower_iterations<SEP>2",
+        "FFB<SEP>n_iterations<SEP>0",
+        "FFB<SEP>n_iterations<SEP>1",
+        "FFB<SEP>n_iterations<SEP>2",
+        "FFB<SEP>n_iterations<SEP>3",
+        "FFB<SEP>n_iterations<SEP>4",
+        "FFB<SEP>n_iterations<SEP>5",
+        "FFB<SEP>stride0",
+        "FFB<SEP>stride1",
+        "FFB<SEP>stride2",
+        "FFB<SEP>stride3",
+        "FFB<SEP>stride4",
+        "FFB<SEP>stride5",
+        "FFB<SEP>stride6",
+        "FFB<SEP>stride7",
+        "FFB<SEP>stride8",
+        "FFG<SEP>initial<SEP>B<SEP>0",
+        "FFG<SEP>initial<SEP>B<SEP>3",
+        "FFG<SEP>initial<SEP>C<SEP>1",
+        "FFG<SEP>initial<SEP>M<SEP>2",
+        "FFG<SEP>initial<SEP>M<SEP>4",
+        "FFG<SEP>lower_iterations<SEP>0",
+        "FFG<SEP>lower_iterations<SEP>1",
+        "FFG<SEP>lower_iterations<SEP>2",
+        "FFG<SEP>lower_iterations<SEP>3",
+        "FFG<SEP>n_iterations<SEP>0",
+        "FFG<SEP>n_iterations<SEP>1",
+        "FFG<SEP>n_iterations<SEP>2",
+        "FFG<SEP>n_iterations<SEP>3",
+        "FFG<SEP>n_iterations<SEP>4",
+        "FFG<SEP>stride0",
+        "FFG<SEP>stride1",
+        "FFG<SEP>stride2",
+        "FFG<SEP>stride3",
+        "FFG<SEP>stride4",
+        "FFG<SEP>stride5",
+        "FFG<SEP>stride6",
+        "FFG<SEP>stride7",
+        "FFG<SEP>stride8",
+        "FFH<SEP>initial<SEP>B<SEP>0",
+        "FFH<SEP>initial<SEP>B<SEP>3",
+        "FFH<SEP>initial<SEP>C<SEP>1",
+        "FFH<SEP>initial<SEP>C<SEP>4",
+        "FFH<SEP>initial<SEP>M<SEP>2",
+        "FFH<SEP>initial<SEP>M<SEP>5",
+        "FFH<SEP>lower_iterations<SEP>0",
+        "FFH<SEP>lower_iterations<SEP>1",
+        "FFH<SEP>lower_iterations<SEP>2",
+        "FFH<SEP>lower_iterations<SEP>3",
+        "FFH<SEP>n_iterations<SEP>0",
+        "FFH<SEP>n_iterations<SEP>1",
+        "FFH<SEP>n_iterations<SEP>2",
+        "FFH<SEP>n_iterations<SEP>3",
+        "FFH<SEP>n_iterations<SEP>4",
+        "FFH<SEP>n_iterations<SEP>5",
+        "FFH<SEP>stride1",
+        "FFH<SEP>stride2",
+        "FFH<SEP>stride4",
+        "FFH<SEP>stride5",
+        "FFU<SEP>initial<SEP>B<SEP>0",
+        "FFU<SEP>initial<SEP>B<SEP>3",
+        "FFU<SEP>initial<SEP>C<SEP>1",
+        "FFU<SEP>initial<SEP>M<SEP>2",
+        "FFU<SEP>initial<SEP>M<SEP>4",
+        "FFU<SEP>lower_iterations<SEP>0",
+        "FFU<SEP>lower_iterations<SEP>1",
+        "FFU<SEP>lower_iterations<SEP>2",
+        "FFU<SEP>lower_iterations<SEP>3",
+        "FFU<SEP>n_iterations<SEP>0",
+        "FFU<SEP>n_iterations<SEP>1",
+        "FFU<SEP>n_iterations<SEP>2",
+        "FFU<SEP>n_iterations<SEP>3",
+        "FFU<SEP>n_iterations<SEP>4",
+        "FFU<SEP>stride0",
+        "FFU<SEP>stride1",
+        "FFU<SEP>stride2",
+        "FFU<SEP>stride3",
+        "FFU<SEP>stride4",
+        "FFU<SEP>stride5",
+        "FFU<SEP>stride6",
+        "FFU<SEP>stride7",
+        "FFU<SEP>stride8",
+        "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.125",
+        "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.25",
+        "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>1.0",
+        "Total<SEP>energy",
+        "Total<SEP>latency",
+        "Total<SEP>latency_scaled<SEP>GlobalBuffer<SEP>0.25",
+        "Total<SEP>latency_scaled<SEP>GlobalBuffer<SEP>16.0",
+        "Total<SEP>latency_scaled<SEP>GlobalBuffer<SEP>4.0",
+        "reservation<SEP>GlobalBuffer<SEP>0<SEP>right",
+        "reservation<SEP>MainMemory<SEP>0<SEP>right",
+        "tensor<SEP>FFG",
+        "tensor<SEP>FFH",
+        "tensor<SEP>FFU",
+        "tensor<SEP>Z"
+      ],
+      "values": [
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 1.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 128.0, 0.0, 8.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 8.0, 0.0, 0.0, 224.0, 56.0, 0.0, 1.0, 8.0, 8.0, 0.0, 0.0, 0.0, 32.0, 8.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 8.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 8.0, 0.0, 32.0, 64.0, 0.0, 8.0, 0.0, 128.0, 8.0, 32.0, 0.0, 0.0, 0.0, 2.7000766112475e-05, 2.618666668193508e-05, 2.470400000627886e-05, 0.0001131519989116732, 4.05759997279183e-05, 0.02392578125, 0.0, 0.0, 0.0, 0.0009765625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 1.0, 32.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 64.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 1.0, 0.0, 32.0, 64.0, 0.0, 64.0, 0.0, 128.0, 1.0, 32.0, 1.0, 1.0, 32.0, 32.0, 64.0, 1.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 1.0, 64.0, 32.0, 64.0, 32.0, 1.0, 1.0, 1.0, 32.0, 64.0, 1.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 64.0, 0.0, 32.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 3.239752620833947e-05, 2.908799980057846e-05, 2.4277333304309636e-05, 0.00021964799680925534, 6.719999920231383e-05, 0.0240478515625, 0.0, 0.0078125, 0.0, 0.0001220703125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 2.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 128.0, 0.0, 8.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 8.0, 0.0, 0.0, 224.0, 56.0, 0.0, 1.0, 8.0, 8.0, 0.0, 0.0, 0.0, 32.0, 8.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 8.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 8.0, 0.0, 32.0, 64.0, 0.0, 8.0, 0.0, 128.0, 8.0, 32.0, 0.0, 0.0, 0.0, 2.4912002390489256e-05, 2.470400000627886e-05, 2.470400000627886e-05, 8.038399620043672e-05, 3.238399905010918e-05, 0.0244140625, 0.0, 0.0, 0.0, 0.0009765625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 2.0, 32.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 64.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 1.0, 0.0, 32.0, 64.0, 0.0, 64.0, 0.0, 128.0, 2.0, 32.0, 1.0, 1.0, 32.0, 32.0, 64.0, 1.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 1.0, 64.0, 32.0, 64.0, 32.0, 1.0, 1.0, 1.0, 32.0, 64.0, 1.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 64.0, 0.0, 32.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.8219998764367985e-05, 2.5941333441989614e-05, 2.4277333304309636e-05, 0.00015411199138678236, 5.081599784669559e-05, 0.0244140625, 0.0, 0.0078125, 0.0, 0.0001220703125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 4.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 16.0, 0.0, 0.0, 224.0, 48.0, 0.0, 1.0, 8.0, 4.0, 0.0, 0.0, 0.0, 32.0, 16.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 16.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 4.0, 0.0, 32.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 2.334543050849465e-05, 2.470400000627886e-05, 2.470400000627886e-05, 6.399999666380789e-05, 2.8287999165951974e-05, 0.025390625, 0.0, 0.0, 0.0, 0.001953125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 4.0, 32.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 64.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 1.0, 0.0, 32.0, 64.0, 0.0, 64.0, 0.0, 128.0, 4.0, 32.0, 1.0, 1.0, 32.0, 32.0, 64.0, 1.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 1.0, 64.0, 32.0, 64.0, 32.0, 1.0, 1.0, 1.0, 32.0, 64.0, 1.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 64.0, 0.0, 32.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.6131235042382243e-05, 2.5941333441989614e-05, 2.4277333304309636e-05, 0.00012134399777049292, 4.262399944262323e-05, 0.025390625, 0.0, 0.0078125, 0.0, 0.0001220703125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 8.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 16.0, 0.0, 0.0, 224.0, 48.0, 0.0, 1.0, 8.0, 4.0, 0.0, 0.0, 0.0, 32.0, 16.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 16.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 4.0, 0.0, 32.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 2.2823239123250865e-05, 2.470400000627886e-05, 2.470400000627886e-05, 5.939199810152966e-05, 2.7135999525382417e-05, 0.02734375, 0.0, 0.0, 0.0, 0.001953125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 8.0, 32.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 64.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 1.0, 0.0, 32.0, 64.0, 0.0, 64.0, 0.0, 128.0, 8.0, 32.0, 1.0, 1.0, 32.0, 32.0, 64.0, 1.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 1.0, 64.0, 32.0, 64.0, 32.0, 1.0, 1.0, 1.0, 32.0, 64.0, 1.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 64.0, 0.0, 32.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.5086853636136722e-05, 2.5941333441989614e-05, 2.4277333304309636e-05, 0.00011263999886931013, 4.044799971732753e-05, 0.02734375, 0.0, 0.0078125, 0.0, 0.0001220703125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.942939983932405e-05, 2.7669332448096598e-05, 2.385066660234041e-05, 0.00016691198516990152, 5.4015996292475376e-05, 0.0313720703125, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 16.0, 0.0, 0.0, 224.0, 48.0, 0.0, 1.0, 8.0, 4.0, 0.0, 0.0, 0.0, 32.0, 16.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 16.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 4.0, 0.0, 32.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 2.5038816419988912e-05, 2.5973333103576792e-05, 2.4063999953325024e-05, 0.00011315199345470499, 4.0575998363676246e-05, 0.0313720703125, 0.0, 0.0, 0.0, 0.001953125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.5251872395352565e-05, 2.385066660234041e-05, 2.385066660234041e-05, 0.0001013760015753014, 3.763200039382535e-05, 0.031494140625, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 16.0, 0.0, 0.0, 224.0, 48.0, 0.0, 1.0, 8.0, 4.0, 0.0, 0.0, 0.0, 32.0, 16.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 16.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 4.0, 0.0, 32.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 2.2950051788508468e-05, 2.4063999953325024e-05, 2.4063999953325024e-05, 8.038399801942613e-05, 3.238399950485653e-05, 0.031494140625, 0.0, 0.0, 0.0, 0.001953125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.3163109582861524e-05, 2.385066660234041e-05, 2.385066660234041e-05, 6.860799886406492e-05, 2.9439999716016232e-05, 0.03173828125, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 16.0, 0.0, 0.0, 224.0, 48.0, 0.0, 1.0, 8.0, 4.0, 0.0, 0.0, 0.0, 32.0, 16.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 16.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 4.0, 0.0, 32.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 2.19056708370103e-05, 2.4063999953325024e-05, 2.4063999953325024e-05, 6.399999666380789e-05, 2.8287999165951974e-05, 0.03173828125, 0.0, 0.0, 0.0, 0.001953125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 1.0, 0.0, 0.0, 192.0, 63.0, 0.0, 1.0, 4.0, 64.0, 0.0, 0.0, 0.0, 64.0, 1.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 1.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 64.0, 0.0, 64.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.3902420980017674e-05, 2.572799963625765e-05, 2.3210666549386574e-05, 0.00011724800106956716, 4.160000026739179e-05, 0.031982421875, 0.0, 0.0, 0.0, 0.000244140625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 1.0, 0.0, 0.0, 192.0, 63.0, 0.0, 1.0, 4.0, 64.0, 0.0, 0.0, 0.0, 64.0, 1.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 1.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 64.0, 0.0, 64.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.338023095901594e-05, 2.572799963625765e-05, 2.3210666549386574e-05, 0.0001095679949771529, 3.9679998744288224e-05, 0.0322265625, 0.0, 0.0, 0.0, 0.000244140625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 2.0, 0.0, 0.0, 192.0, 62.0, 0.0, 1.0, 4.0, 32.0, 0.0, 0.0, 0.0, 64.0, 2.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 2.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 32.0, 0.0, 64.0, 64.0, 0.0, 2.0, 0.0, 128.0, 2.0, 32.0, 0.0, 0.0, 0.0, 2.1291467237030197e-05, 2.367999946680537e-05, 2.3210666549386574e-05, 7.679999226591643e-05, 3.1487998066479105e-05, 0.03271484375, 0.0, 0.0, 0.0, 0.00048828125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 16.0, 0.0, 0.0, 224.0, 48.0, 0.0, 1.0, 8.0, 4.0, 0.0, 0.0, 0.0, 32.0, 16.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 16.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 4.0, 0.0, 32.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 2.2562144112749998e-05, 2.470400000627886e-05, 2.470400000627886e-05, 5.939199810152966e-05, 2.7135999525382417e-05, 0.03125, 0.0, 0.0, 0.0, 0.001953125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 1.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 1.0, 0.0, 0.0, 192.0, 63.0, 0.0, 1.0, 4.0, 64.0, 0.0, 0.0, 0.0, 64.0, 1.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 1.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 64.0, 0.0, 64.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.6555646217754152e-05, 2.763733278650942e-05, 2.299733319840196e-05, 0.00016639999058450666, 5.388799764612666e-05, 0.031982421875, 0.0, 0.0, 0.0, 0.000244140625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 64.0, 128.0, 0.0, 16.0, 32.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 64.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 1.0, 0.0, 32.0, 64.0, 0.0, 64.0, 0.0, 128.0, 16.0, 32.0, 1.0, 1.0, 32.0, 32.0, 64.0, 1.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 1.0, 64.0, 32.0, 64.0, 32.0, 1.0, 1.0, 1.0, 32.0, 64.0, 1.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 64.0, 0.0, 32.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.4564662705640287e-05, 2.5941333441989614e-05, 2.4277333304309636e-05, 0.00011263999886931013, 4.044799971732753e-05, 0.03125, 0.0, 0.0078125, 0.0, 0.0001220703125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 4.0, 0.0, 0.0, 192.0, 60.0, 0.0, 1.0, 4.0, 16.0, 0.0, 0.0, 0.0, 64.0, 4.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 4.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 16.0, 0.0, 64.0, 64.0, 0.0, 4.0, 0.0, 128.0, 4.0, 32.0, 0.0, 0.0, 0.0, 1.9983105903089786e-05, 2.3210666549386574e-05, 2.3210666549386574e-05, 5.939199810152966e-05, 2.7135999525382417e-05, 0.0341796875, 0.0, 0.0, 0.0, 0.0009765625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 4.0, 0.0, 0.0, 192.0, 60.0, 0.0, 1.0, 4.0, 16.0, 0.0, 0.0, 0.0, 64.0, 4.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 4.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 16.0, 0.0, 64.0, 64.0, 0.0, 4.0, 0.0, 128.0, 4.0, 32.0, 0.0, 0.0, 0.0, 1.972201043784157e-05, 2.3210666549386574e-05, 2.3210666549386574e-05, 5.939199810152966e-05, 2.7135999525382417e-05, 0.03515625, 0.0, 0.0, 0.0, 0.0009765625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 2.0109066371811828e-05, 2.4693332997669118e-05, 2.1930666670852575e-05, 0.00010700799294634815, 3.9039998236587036e-05, 0.0469970703125, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 1.8020303559320787e-05, 2.264533328296419e-05, 2.1930666670852575e-05, 7.423999751106929e-05, 3.084799937776732e-05, 0.047119140625, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 1.6975921698327916e-05, 2.1930666670852575e-05, 2.1930666670852575e-05, 5.785599797444045e-05, 2.6751999493610115e-05, 0.04736328125, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 1.7632394974067616e-05, 2.2570666496432737e-05, 2.2570666496432737e-05, 4.9151997254268264e-05, 2.4575999313567068e-05, 0.046875, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 2.3193322067096638e-05, 2.661866620608815e-05, 2.150399996888335e-05, 0.00016307199121864138, 5.305599780466035e-05, 0.0469970703125, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 2.0716650669352426e-05, 2.449599970485177e-05, 2.214399979446351e-05, 0.00010521599552656151, 3.8591998881640376e-05, 0.0469970703125, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 1.9015795987367206e-05, 2.2522666549304618e-05, 2.150399996888335e-05, 9.753599671010487e-05, 3.6671999177526215e-05, 0.047119140625, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 1.8627887402114034e-05, 2.2447999762773166e-05, 2.214399979446351e-05, 7.244799645330384e-05, 3.0399999113325962e-05, 0.047119140625, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 1.7583505541121163e-05, 2.214399979446351e-05, 2.214399979446351e-05, 5.606399873566441e-05, 2.6303999683916104e-05, 0.04736328125, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 1.7061314610624727e-05, 2.214399979446351e-05, 2.214399979446351e-05, 4.787199805785529e-05, 2.4255999514463824e-05, 0.0478515625, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 128.0, 0.0, 1.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 1.0, 0.0, 0.0, 224.0, 63.0, 0.0, 1.0, 8.0, 64.0, 0.0, 0.0, 0.0, 32.0, 1.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 1.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 64.0, 0.0, 32.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 3.5268395822210046e-05, 2.9135999292959227e-05, 2.5130666708248086e-05, 0.00022041598868734763, 6.73919971718369e-05, 0.0162353515625, 0.0, 0.0, 0.0, 0.0001220703125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 2.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 128.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 2.0, 0.0, 0.0, 224.0, 62.0, 0.0, 1.0, 8.0, 32.0, 0.0, 0.0, 0.0, 32.0, 2.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 2.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 32.0, 0.0, 32.0, 64.0, 0.0, 2.0, 0.0, 128.0, 2.0, 32.0, 0.0, 0.0, 0.0, 2.900210465625282e-05, 2.5130666708248086e-05, 2.5130666708248086e-05, 0.0001221119914675746, 4.281599786689365e-05, 0.016845703125, 0.0, 0.0, 0.0, 0.000244140625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 4.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 128.0, 0.0, 4.0, 128.0, 32.0, 0.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 4.0, 0.0, 0.0, 224.0, 60.0, 0.0, 1.0, 8.0, 16.0, 0.0, 0.0, 0.0, 32.0, 4.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 4.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 16.0, 0.0, 32.0, 64.0, 0.0, 4.0, 0.0, 128.0, 4.0, 32.0, 0.0, 0.0, 0.0, 2.5868959982768907e-05, 2.5130666708248086e-05, 2.5130666708248086e-05, 7.295999649566691e-05, 3.0527999123916726e-05, 0.01806640625, 0.0, 0.0, 0.0, 0.00048828125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 8.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 128.0, 0.0, 8.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 8.0, 0.0, 0.0, 224.0, 56.0, 0.0, 1.0, 8.0, 8.0, 0.0, 0.0, 0.0, 32.0, 8.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 8.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 8.0, 0.0, 32.0, 64.0, 0.0, 8.0, 0.0, 128.0, 8.0, 32.0, 0.0, 0.0, 0.0, 2.4302386281784898e-05, 2.5130666708248086e-05, 2.5130666708248086e-05, 6.04159981862558e-05, 2.7391999546563952e-05, 0.0205078125, 0.0, 0.0, 0.0, 0.0009765625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 16.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 32.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 32.0, 0.0, 16.0, 0.0, 0.0, 224.0, 48.0, 0.0, 1.0, 8.0, 4.0, 0.0, 0.0, 0.0, 32.0, 16.0, 0.0, 0.0, 1.0, 1.0, 32.0, 64.0, 16.0, 0.0, 224.0, 0.0, 0.0, 1.0, 8.0, 1.0, 1.0, 4.0, 0.0, 32.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 2.3519101250282297e-05, 2.5130666708248086e-05, 2.5130666708248086e-05, 6.04159981862558e-05, 2.7391999546563952e-05, 0.025390625, 0.0, 0.0, 0.0, 0.001953125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 1.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 1.0, 0.0, 0.0, 192.0, 63.0, 0.0, 1.0, 4.0, 64.0, 0.0, 0.0, 0.0, 64.0, 1.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 1.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 64.0, 0.0, 64.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.685612826055735e-05, 2.722666614270746e-05, 2.278399984741735e-05, 0.00017126399917240812, 5.510399979310203e-05, 0.031982421875, 0.0, 0.0, 0.0, 0.000244140625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 1.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 1.0, 0.0, 0.0, 192.0, 63.0, 0.0, 1.0, 4.0, 64.0, 0.0, 0.0, 0.0, 64.0, 1.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 1.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 64.0, 0.0, 64.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.6333938239555615e-05, 2.722666614270746e-05, 2.278399984741735e-05, 0.00016358399307999386, 5.3183998269998466e-05, 0.0322265625, 0.0, 0.0, 0.0, 0.000244140625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 1.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 1.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 1.0, 0.0, 0.0, 192.0, 63.0, 0.0, 1.0, 4.0, 64.0, 0.0, 0.0, 0.0, 64.0, 1.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 1.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 64.0, 0.0, 64.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.9509353498293827e-05, 2.9135999292959227e-05, 2.2570666496432737e-05, 0.00022041598868734763, 6.73919971718369e-05, 0.031982421875, 0.0, 0.0, 0.0, 0.000244140625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 1.0, 0.0, 0.0, 192.0, 63.0, 0.0, 1.0, 4.0, 64.0, 0.0, 0.0, 0.0, 64.0, 1.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 1.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 64.0, 0.0, 64.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.4245174517569872e-05, 2.5301332934288425e-05, 2.278399984741735e-05, 0.0001308159940067362, 4.499199850168405e-05, 0.032470703125, 0.0, 0.0, 0.0, 0.000244140625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 2.0, 0.0, 0.0, 192.0, 62.0, 0.0, 1.0, 4.0, 32.0, 0.0, 0.0, 0.0, 64.0, 2.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 2.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 32.0, 0.0, 64.0, 64.0, 0.0, 2.0, 0.0, 128.0, 2.0, 32.0, 0.0, 0.0, 0.0, 2.215641079558413e-05, 2.3253332764836146e-05, 2.278399984741735e-05, 9.804799129549972e-05, 3.679999782387493e-05, 0.03271484375, 0.0, 0.0, 0.0, 0.00048828125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 2.0, 0.0, 0.0, 192.0, 62.0, 0.0, 1.0, 4.0, 32.0, 0.0, 0.0, 0.0, 64.0, 2.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 2.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 32.0, 0.0, 64.0, 64.0, 0.0, 2.0, 0.0, 128.0, 2.0, 32.0, 0.0, 0.0, 0.0, 2.189531487558856e-05, 2.3253332764836146e-05, 2.278399984741735e-05, 9.804799129549972e-05, 3.679999782387493e-05, 0.033203125, 0.0, 0.0, 0.0, 0.00048828125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 1.0, 0.0, 0.0, 192.0, 63.0, 0.0, 1.0, 4.0, 64.0, 0.0, 0.0, 0.0, 64.0, 1.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 1.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 64.0, 0.0, 64.0, 64.0, 0.0, 1.0, 0.0, 128.0, 1.0, 32.0, 0.0, 0.0, 0.0, 2.5331826054322342e-05, 2.5162666369835265e-05, 2.2570666496432737e-05, 0.00015487999417881107, 5.100799854470277e-05, 0.032470703125, 0.0, 0.0, 0.0, 0.000244140625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 2.0, 0.0, 0.0, 192.0, 62.0, 0.0, 1.0, 4.0, 32.0, 0.0, 0.0, 0.0, 64.0, 2.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 2.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 32.0, 0.0, 64.0, 64.0, 0.0, 2.0, 0.0, 128.0, 2.0, 32.0, 0.0, 0.0, 0.0, 2.32430623323366e-05, 2.3114666200382985e-05, 2.2570666496432737e-05, 0.0001221119914675746, 4.281599786689365e-05, 0.03271484375, 0.0, 0.0, 0.0, 0.00048828125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 4.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 2.0, 0.0, 0.0, 192.0, 62.0, 0.0, 1.0, 4.0, 32.0, 0.0, 0.0, 0.0, 64.0, 2.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 2.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 32.0, 0.0, 64.0, 64.0, 0.0, 2.0, 0.0, 128.0, 2.0, 32.0, 0.0, 0.0, 0.0, 2.085093392409039e-05, 2.3253332764836146e-05, 2.278399984741735e-05, 8.166399175887089e-05, 3.270399793971772e-05, 0.03369140625, 0.0, 0.0, 0.0, 0.00048828125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 4.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 4.0, 0.0, 0.0, 192.0, 60.0, 0.0, 1.0, 4.0, 16.0, 0.0, 0.0, 0.0, 64.0, 4.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 4.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 16.0, 0.0, 64.0, 64.0, 0.0, 4.0, 0.0, 128.0, 4.0, 32.0, 0.0, 0.0, 0.0, 1.980655206309752e-05, 2.278399984741735e-05, 2.278399984741735e-05, 6.527999767921027e-05, 2.8607999419802568e-05, 0.0341796875, 0.0, 0.0, 0.0, 0.0009765625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 4.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 4.0, 0.0, 0.0, 192.0, 60.0, 0.0, 1.0, 4.0, 16.0, 0.0, 0.0, 0.0, 64.0, 4.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 4.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 16.0, 0.0, 64.0, 64.0, 0.0, 4.0, 0.0, 128.0, 4.0, 32.0, 0.0, 0.0, 0.0, 1.9676004103099736e-05, 2.278399984741735e-05, 2.278399984741735e-05, 6.527999767921027e-05, 2.8607999419802568e-05, 0.03515625, 0.0, 0.0, 0.0, 0.0009765625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 4.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 4.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 2.0, 0.0, 0.0, 192.0, 62.0, 0.0, 1.0, 4.0, 32.0, 0.0, 0.0, 0.0, 64.0, 2.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 2.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 32.0, 0.0, 64.0, 64.0, 0.0, 2.0, 0.0, 128.0, 2.0, 32.0, 0.0, 0.0, 0.0, 2.115430042934026e-05, 2.3039999868598884e-05, 2.2570666496432737e-05, 8.934399421330634e-05, 3.4623998553326584e-05, 0.03369140625, 0.0, 0.0, 0.0, 0.00048828125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 4.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 4.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 4.0, 0.0, 0.0, 192.0, 60.0, 0.0, 1.0, 4.0, 16.0, 0.0, 0.0, 0.0, 64.0, 4.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 4.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 16.0, 0.0, 64.0, 64.0, 0.0, 4.0, 0.0, 128.0, 4.0, 32.0, 0.0, 0.0, 0.0, 2.010991856834739e-05, 2.2570666496432737e-05, 2.2570666496432737e-05, 7.295999649566691e-05, 3.0527999123916726e-05, 0.0341796875, 0.0, 0.0, 0.0, 0.0009765625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 8.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 8.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 4.0, 0.0, 0.0, 192.0, 60.0, 0.0, 1.0, 4.0, 16.0, 0.0, 0.0, 0.0, 64.0, 4.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 4.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 16.0, 0.0, 64.0, 64.0, 0.0, 4.0, 0.0, 128.0, 4.0, 32.0, 0.0, 0.0, 0.0, 1.9065536707354518e-05, 2.2570666496432737e-05, 2.2570666496432737e-05, 5.683199970870372e-05, 2.649599992717593e-05, 0.0361328125, 0.0, 0.0, 0.0, 0.0009765625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 8.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 8.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 8.0, 0.0, 0.0, 192.0, 56.0, 0.0, 1.0, 4.0, 8.0, 0.0, 0.0, 0.0, 64.0, 8.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 8.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 8.0, 0.0, 64.0, 64.0, 0.0, 8.0, 0.0, 128.0, 8.0, 32.0, 0.0, 0.0, 0.0, 1.854334486736338e-05, 2.2570666496432737e-05, 2.2570666496432737e-05, 4.86399990308946e-05, 2.444799975772365e-05, 0.037109375, 0.0, 0.0, 0.0, 0.001953125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 2.023673077885764e-05, 2.4693332997669118e-05, 2.1930666670852575e-05, 0.00010598399286162201, 3.87839982154055e-05, 0.0469970703125, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 1.81479679663666e-05, 2.264533328296419e-05, 2.1930666670852575e-05, 7.321599742634315e-05, 3.0591999356585785e-05, 0.047119140625, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 1.710358610537373e-05, 2.1930666670852575e-05, 2.1930666670852575e-05, 5.683199788971431e-05, 2.649599947242858e-05, 0.04736328125, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 8.0, 0.0, 0.0, 192.0, 56.0, 0.0, 1.0, 4.0, 8.0, 0.0, 0.0, 0.0, 64.0, 8.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 8.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 8.0, 0.0, 64.0, 64.0, 0.0, 8.0, 0.0, 128.0, 8.0, 32.0, 0.0, 0.0, 0.0, 1.8021154391614296e-05, 2.2570666496432737e-05, 2.2570666496432737e-05, 4.8127997169542124e-05, 2.4319999292385533e-05, 0.041015625, 0.0, 0.0, 0.0, 0.001953125, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 64.0, 0.0, 16.0, 0.0, 0.0, 192.0, 48.0, 0.0, 1.0, 4.0, 4.0, 0.0, 0.0, 0.0, 64.0, 16.0, 0.0, 0.0, 1.0, 1.0, 64.0, 64.0, 16.0, 0.0, 192.0, 0.0, 0.0, 1.0, 4.0, 1.0, 1.0, 4.0, 0.0, 64.0, 64.0, 0.0, 16.0, 0.0, 128.0, 16.0, 32.0, 0.0, 0.0, 0.0, 1.776005938111343e-05, 2.2570666496432737e-05, 2.2570666496432737e-05, 4.8127997169542124e-05, 2.4319999292385533e-05, 0.04296875, 0.0, 0.0, 0.0, 0.00390625, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.1429034031863726e-05, 2.9167998954546406e-05, 2.3423999900371187e-05, 0.0002209279832727425, 6.751999581818562e-05, 0.0313720703125, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.51627437754012e-05, 2.3423999900371187e-05, 2.3423999900371187e-05, 0.00012262400060488468, 4.294400015122117e-05, 0.031494140625, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.202959910191729e-05, 2.3423999900371187e-05, 2.3423999900371187e-05, 7.347200017600879e-05, 3.0656000044002195e-05, 0.03173828125, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 1.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.468282524914847e-05, 2.5333332595875604e-05, 2.3210666549386574e-05, 0.00012262399696690588, 4.294399924172647e-05, 0.0318603515625, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 1.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 1.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.7336050486884947e-05, 2.7242665746127373e-05, 2.299733319840196e-05, 0.0001717759864818454, 5.523199662046134e-05, 0.0318603515625, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 1.0, 128.0, 32.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.4682823430159065e-05, 2.5333332595875604e-05, 2.3210666549386574e-05, 0.00012262399696690588, 4.294399924172647e-05, 0.031982421875, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.046302631042798e-05, 2.3423999900371187e-05, 2.3423999900371187e-05, 5.0175997338994404e-05, 2.4831999334748603e-05, 0.0322265625, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 1.0, 128.0, 32.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.3638442478660896e-05, 2.5333332595875604e-05, 2.3210666549386574e-05, 0.00010700798930836934, 3.9039997327092334e-05, 0.0322265625, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.1549678756675153e-05, 2.3285333335918026e-05, 2.3210666549386574e-05, 7.423999387309048e-05, 3.084799846827262e-05, 0.032470703125, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.2636331202922325e-05, 2.3146666316717515e-05, 2.299733319840196e-05, 9.830399404516537e-05, 3.686399851129134e-05, 0.032470703125, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.9679739459935977e-05, 2.3423999900371187e-05, 2.3423999900371187e-05, 5.0175997338994404e-05, 2.4831999334748603e-05, 0.033203125, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.1027486916684016e-05, 2.3285333335918026e-05, 2.3210666549386574e-05, 7.423999387309048e-05, 3.084799846827262e-05, 0.033203125, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 2.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.2375235282926756e-05, 2.3146666316717515e-05, 2.299733319840196e-05, 9.830399404516537e-05, 3.686399851129134e-05, 0.033203125, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 4.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.9983105965185846e-05, 2.3210666549386574e-05, 2.3210666549386574e-05, 5.785599797444045e-05, 2.6751999493610115e-05, 0.03369140625, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 4.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 4.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0286472470435715e-05, 2.299733319840196e-05, 2.299733319840196e-05, 6.55359986098865e-05, 2.8671999652471627e-05, 0.03369140625, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.9288096034689975e-05, 2.3423999900371187e-05, 2.3423999900371187e-05, 5.0175997338994404e-05, 2.4831999334748603e-05, 0.03515625, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 1.0, 1.0, 128.0, 128.0, 32.0, 32.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 1.0, 1.0, 1.0, 128.0, 32.0, 128.0, 32.0, 1.0, 0.0, 128.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 128.0, 32.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.9981402461346344e-05, 2.5119999699638343e-05, 2.2357333145448124e-05, 0.00010803199303107429, 3.929599825776857e-05, 0.0469970703125, 0.0, 0.0, 0.015625, 0.015625, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 1.0, 1.0, 128.0, 128.0, 32.0, 32.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 1.0, 1.0, 1.0, 128.0, 32.0, 128.0, 32.0, 1.0, 0.0, 128.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 128.0, 32.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.7892638739360602e-05, 2.3071999984933414e-05, 2.2357333145448124e-05, 7.526400123377423e-05, 3.110400030844356e-05, 0.047119140625, 0.0, 0.0, 0.015625, 0.015625, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 1.0, 1.0, 128.0, 128.0, 32.0, 32.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 1.0, 1.0, 1.0, 128.0, 32.0, 128.0, 32.0, 1.0, 0.0, 128.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 128.0, 32.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.684825687836773e-05, 2.2357333145448124e-05, 2.2357333145448124e-05, 5.8879999878155997e-05, 2.7007999969539e-05, 0.04736328125, 0.0, 0.0, 0.015625, 0.015625, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 4.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.972201049993763e-05, 2.3210666549386574e-05, 2.3210666549386574e-05, 5.785599797444045e-05, 2.6751999493610115e-05, 0.03515625, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 8.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 8.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.911154219469771e-05, 2.299733319840196e-05, 2.299733319840196e-05, 4.915199907325767e-05, 2.457599976831442e-05, 0.0361328125, 0.0, 0.0, 0.015625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 128.0, 32.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 128.0, 32.0, 128.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 1.0, 128.0, 128.0, 32.0, 32.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 1.0, 1.0, 1.0, 128.0, 32.0, 128.0, 32.0, 1.0, 0.0, 128.0, 32.0, 0.0, 0.0, 128.0, 32.0, 0.0, 1.0, 2.0, 2.0, 0.0, 0.0, 0.0, 128.0, 32.0, 0.0, 128.0, 32.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.7504731063602132e-05, 2.299733319840196e-05, 2.299733319840196e-05, 5.0175997338994404e-05, 2.4831999334748603e-05, 0.046875, 0.0, 0.0, 0.015625, 0.015625, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 32.0, 64.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.3333233362392806e-05, 2.086400002961635e-05, 2.086400002961635e-05, 3.788799905076483e-05, 2.175999976269121e-05, 0.0546875, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 32.0, 64.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 128.0, 128.0, 64.0, 64.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 128.0, 64.0, 128.0, 64.0, 1.0, 0.0, 128.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 128.0, 64.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.1899240321801964e-05, 2.0650666678631737e-05, 2.0650666678631737e-05, 3.891199913549097e-05, 2.2015999783872744e-05, 0.078125, 0.0, 0.0, 0.03125, 0.03125, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 32.0, 64.0, 128.0, 0.0, 0.0, 1.0, 0.0, 256.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 256.0, 64.0, 0.0, 128.0, 64.0, 32.0, 0.0, 0.0, 1.0, 1.0, 128.0, 128.0, 64.0, 64.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 128.0, 64.0, 128.0, 64.0, 1.0, 0.0, 128.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 128.0, 64.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.985327390716337e-06, 2.0223999976662512e-05, 2.0223999976662512e-05, 3.891199913549097e-05, 2.2015999783872744e-05, 0.140625, 0.0, 0.0625, 0.03125, 0.03125, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.566999261744221e-05, 2.9167998954546406e-05, 2.086400002961635e-05, 0.0002209279832727425, 6.751999581818562e-05, 0.0469970703125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.3193321219697996e-05, 2.7045332908057376e-05, 2.1503999855196512e-05, 0.00016307199121864138, 5.305599780466035e-05, 0.0469970703125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 1.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0716649821953784e-05, 2.4922666406820995e-05, 2.214399990815035e-05, 0.00010521599552656151, 3.8591998881640376e-05, 0.0469970703125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.9403702815727034e-05, 2.3024000037805295e-05, 2.086400002961635e-05, 0.00012262400060488468, 4.294400015122117e-05, 0.047119140625, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.9015795139968564e-05, 2.2949333251273843e-05, 2.1503999855196512e-05, 9.753599671010487e-05, 3.6671999177526215e-05, 0.047119140625, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 2.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.8627886554715392e-05, 2.287466646474239e-05, 2.214399990815035e-05, 7.244799645330384e-05, 3.0399999113325962e-05, 0.047119140625, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.627055768749577e-05, 2.086400002961635e-05, 2.086400002961635e-05, 7.347200017600879e-05, 3.0656000044002195e-05, 0.04736328125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.6927031872730172e-05, 2.1503999855196512e-05, 2.1503999855196512e-05, 6.47679994558366e-05, 2.847999986395915e-05, 0.04736328125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 4.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.7583505148469872e-05, 2.214399990815035e-05, 2.214399990815035e-05, 5.606399873566441e-05, 2.6303999683916104e-05, 0.04736328125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.4703984896006462e-05, 2.086400002961635e-05, 2.086400002961635e-05, 4.8895999961570834e-05, 2.451199999039271e-05, 0.0478515625, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.58826491022426e-05, 2.1503999855196512e-05, 2.1503999855196512e-05, 4.8383999919207764e-05, 2.4383999979801943e-05, 0.0478515625, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 8.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64.0, 128.0, 0.0, 16.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.7061314217973436e-05, 2.214399990815035e-05, 2.214399990815035e-05, 4.787199805785529e-05, 2.4255999514463824e-05, 0.0478515625, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 16.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.3920698045514458e-05, 2.086400002961635e-05, 2.086400002961635e-05, 3.788799905076483e-05, 2.175999976269121e-05, 0.048828125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 128.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 128.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 0.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.3529055529763158e-05, 2.086400002961635e-05, 2.086400002961635e-05, 3.788799905076483e-05, 2.175999976269121e-05, 0.05078125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 256.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 256.0, 64.0, 256.0, 32.0, 0.0, 64.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 256.0, 0.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 256.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.2376276679607857e-05, 2.0437333327647125e-05, 2.0437333327647125e-05, 3.686399896603869e-05, 2.1503999741509674e-05, 0.1015625, 0.0, 0.0, 0.0625, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 256.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 256.0, 64.0, 256.0, 32.0, 0.0, 64.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 256.0, 256.0, 64.0, 64.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 256.0, 64.0, 256.0, 64.0, 1.0, 0.0, 256.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 256.0, 64.0, 0.0, 128.0, 64.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0462363748522232e-05, 2.00106666256779e-05, 2.00106666256779e-05, 3.686399896603869e-05, 2.1503999741509674e-05, 0.12500381469726562, 0.0, 0.0, 0.0625, 0.0625, 0.0],
+      [1.0, 0.0, 0.0, 256.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 256.0, 64.0, 256.0, 32.0, 0.0, 64.0, 128.0, 0.0, 1.0, 0.0, 256.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 256.0, 64.0, 0.0, 128.0, 64.0, 32.0, 0.0, 0.0, 1.0, 1.0, 256.0, 256.0, 64.0, 64.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 256.0, 64.0, 256.0, 64.0, 1.0, 0.0, 256.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 256.0, 64.0, 0.0, 128.0, 64.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.548450817436604e-06, 1.9583999923708675e-05, 1.9583999923708675e-05, 3.686399896603869e-05, 2.1503999741509674e-05, 0.1875, 0.0, 0.0625, 0.0625, 0.0625, 0.0],
+      [1.0, 0.0, 0.0, 256.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 256.0, 64.0, 256.0, 32.0, 0.0, 64.0, 128.0, 0.0, 1.0, 1.0, 256.0, 64.0, 64.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 256.0, 64.0, 0.0, 64.0, 0.0, 128.0, 64.0, 32.0, 1.0, 1.0, 256.0, 256.0, 64.0, 64.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 256.0, 64.0, 256.0, 64.0, 1.0, 0.0, 256.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 256.0, 64.0, 0.0, 128.0, 64.0, 32.0, 0.0, 0.0, 1.0, 0.0, 0.0, 8.548450362689253e-06, 1.9583999923708675e-05, 1.9583999923708675e-05, 3.686399896603869e-05, 2.1503999741509674e-05, 0.21875, 0.0, 0.0625, 0.0625, 0.0625, 0.0],
+      [1.0, 0.0, 0.0, 256.0, 128.0, 0.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 0.0, 0.0, 0.0, 256.0, 64.0, 128.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 128.0, 0.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.2376276906981533e-05, 2.0437333327647125e-05, 2.0437333327647125e-05, 3.686399896603869e-05, 2.1503999741509674e-05, 0.078125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+      [1.0, 0.0, 0.0, 256.0, 128.0, 0.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 0.0, 0.0, 0.0, 256.0, 64.0, 128.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 128.0, 128.0, 64.0, 64.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 128.0, 64.0, 128.0, 64.0, 1.0, 0.0, 128.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 128.0, 64.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0942283866390691e-05, 2.0223999976662512e-05, 2.0223999976662512e-05, 3.788799905076483e-05, 2.175999976269121e-05, 0.109375, 0.0, 0.0, 0.03125, 0.03125, 0.0],
+      [1.0, 0.0, 0.0, 256.0, 128.0, 0.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 0.0, 0.0, 0.0, 256.0, 64.0, 128.0, 128.0, 32.0, 0.0, 0.0, 0.0, 1.0, 0.0, 256.0, 64.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 256.0, 64.0, 0.0, 128.0, 64.0, 32.0, 0.0, 0.0, 1.0, 1.0, 128.0, 128.0, 64.0, 64.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 128.0, 64.0, 128.0, 64.0, 1.0, 0.0, 128.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 128.0, 64.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.028370935305064e-06, 1.9797333274693288e-05, 1.9797333274693288e-05, 3.788799905076483e-05, 2.175999976269121e-05, 0.171875, 0.0, 0.0625, 0.03125, 0.03125, 0.0],
+      [1.0, 0.0, 1.0, 256.0, 128.0, 0.0, 64.0, 0.0, 64.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 0.0, 256.0, 64.0, 128.0, 0.0, 64.0, 128.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 128.0, 64.0, 32.0, 128.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 128.0, 128.0, 64.0, 64.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 128.0, 64.0, 128.0, 64.0, 1.0, 0.0, 128.0, 64.0, 0.0, 0.0, 128.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 128.0, 64.0, 0.0, 128.0, 64.0, 32.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0942283639017016e-05, 2.0223999976662512e-05, 2.0223999976662512e-05, 3.788799905076483e-05, 2.175999976269121e-05, 0.125, 0.0, 0.0, 0.03125, 0.03125, 0.0]
+    ]
+    }
+  },
+  "picks": [
+    {
+      "cap_mib": 0.03125,
+      "edp": 2.2129674865851992e-10,
+      "energy": 1.0942283866390691e-05,
+      "latency": 2.0223999976662512e-05,
+      "reported_gb_mib_fraction": 0.109375,
+      "tied_optima": 2,
+      "mapping_id": "53e740d4256b1b37",
+      "reevaluated": {
+        "energy": 1.0942283776e-05,
+        "latency": 2.0224e-05,
+        "edp": 2.2129674708582404e-10,
+        "reservations": {
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 0.25
+    },
+    {
+      "cap_mib": 0.03125,
+      "edp": 2.2129674865851992e-10,
+      "energy": 1.0942283866390691e-05,
+      "latency": 2.0223999976662512e-05,
+      "reported_gb_mib_fraction": 0.109375,
+      "tied_optima": 2,
+      "mapping_id": "53e740d4256b1b37",
+      "reevaluated": {
+        "energy": 1.0942283776e-05,
+        "latency": 2.0224e-05,
+        "edp": 2.2129674708582404e-10,
+        "reservations": {
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.03125,
+      "edp": 2.381040943359613e-10,
+      "energy": 1.0942283866390691e-05,
+      "latency": 2.175999976269121e-05,
+      "reported_gb_mib_fraction": 0.109375,
+      "tied_optima": 2,
+      "mapping_id": "53e740d4256b1b37",
+      "reevaluated": {
+        "energy": 1.0942283776e-05,
+        "latency": 2.1760000000000002e-05,
+        "edp": 2.3810409496576e-10,
+        "reservations": {
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 4.0
+    },
+    {
+      "cap_mib": 0.03125,
+      "edp": 4.1458124074300984e-10,
+      "energy": 1.0942283866390691e-05,
+      "latency": 3.788799905076483e-05,
+      "reported_gb_mib_fraction": 0.109375,
+      "tied_optima": 2,
+      "mapping_id": "53e740d4256b1b37",
+      "reevaluated": {
+        "energy": 1.0942283776e-05,
+        "latency": 3.7888e-05,
+        "edp": 4.14581247705088e-10,
+        "reservations": {
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 16.0
+    },
+    {
+      "cap_mib": 0.0625,
+      "edp": 1.6741285125073374e-10,
+      "energy": 8.548450362689253e-06,
+      "latency": 1.9583999923708675e-05,
+      "reported_gb_mib_fraction": 0.21875,
+      "tied_optima": 2,
+      "mapping_id": "b940dcd022b9ce6a",
+      "reevaluated": {
+        "energy": 8.548450304e-06,
+        "latency": 1.9584e-05,
+        "edp": 1.6741285075353602e-10,
+        "reservations": {
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 0.25
+    },
+    {
+      "cap_mib": 0.0625,
+      "edp": 1.6741285125073374e-10,
+      "energy": 8.548450362689253e-06,
+      "latency": 1.9583999923708675e-05,
+      "reported_gb_mib_fraction": 0.21875,
+      "tied_optima": 2,
+      "mapping_id": "b940dcd022b9ce6a",
+      "reevaluated": {
+        "energy": 8.548450304e-06,
+        "latency": 1.9584e-05,
+        "edp": 1.6741285075353602e-10,
+        "reservations": {
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.0625,
+      "edp": 1.8382587438957799e-10,
+      "energy": 8.548450362689253e-06,
+      "latency": 2.1503999741509674e-05,
+      "reported_gb_mib_fraction": 0.21875,
+      "tied_optima": 2,
+      "mapping_id": "b940dcd022b9ce6a",
+      "reevaluated": {
+        "energy": 8.548450304e-06,
+        "latency": 2.1504000000000003e-05,
+        "edp": 1.8382587533721603e-10,
+        "reservations": {
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 4.0
+    },
+    {
+      "cap_mib": 0.0625,
+      "edp": 3.151300653314097e-10,
+      "energy": 8.548450362689253e-06,
+      "latency": 3.686399896603869e-05,
+      "reported_gb_mib_fraction": 0.21875,
+      "tied_optima": 2,
+      "mapping_id": "b940dcd022b9ce6a",
+      "reevaluated": {
+        "energy": 8.548450304e-06,
+        "latency": 3.6864000000000005e-05,
+        "edp": 3.151300720066561e-10,
+        "reservations": {
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 16.0
+    },
+    {
+      "cap_mib": 0.25,
+      "edp": 1.6741285125073374e-10,
+      "energy": 8.548450362689253e-06,
+      "latency": 1.9583999923708675e-05,
+      "reported_gb_mib_fraction": 0.21875,
+      "tied_optima": 2,
+      "mapping_id": "b940dcd022b9ce6a",
+      "reevaluated": {
+        "energy": 8.548450304e-06,
+        "latency": 1.9584e-05,
+        "edp": 1.6741285075353602e-10,
+        "reservations": {
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.21875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 0.25
+    },
+    {
+      "cap_mib": 0.25,
+      "edp": 1.6741285125073374e-10,
+      "energy": 8.548450362689253e-06,
+      "latency": 1.9583999923708675e-05,
+      "reported_gb_mib_fraction": 0.21875,
+      "tied_optima": 2,
+      "mapping_id": "b940dcd022b9ce6a",
+      "reevaluated": {
+        "energy": 8.548450304e-06,
+        "latency": 1.9584e-05,
+        "edp": 1.6741285075353602e-10,
+        "reservations": {
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.21875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.25,
+      "edp": 1.8382587438957799e-10,
+      "energy": 8.548450362689253e-06,
+      "latency": 2.1503999741509674e-05,
+      "reported_gb_mib_fraction": 0.21875,
+      "tied_optima": 2,
+      "mapping_id": "b940dcd022b9ce6a",
+      "reevaluated": {
+        "energy": 8.548450304e-06,
+        "latency": 2.1504000000000003e-05,
+        "edp": 1.8382587533721603e-10,
+        "reservations": {
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.21875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 4.0
+    },
+    {
+      "cap_mib": 0.25,
+      "edp": 3.151300653314097e-10,
+      "energy": 8.548450362689253e-06,
+      "latency": 3.686399896603869e-05,
+      "reported_gb_mib_fraction": 0.21875,
+      "tied_optima": 2,
+      "mapping_id": "b940dcd022b9ce6a",
+      "reevaluated": {
+        "energy": 8.548450304e-06,
+        "latency": 3.6864000000000005e-05,
+        "edp": 3.151300720066561e-10,
+        "reservations": {
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.21875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFG",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFU",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.03125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.005208333333333333,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFB",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.6666666666666666,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 16.0
+    }
+  ],
+  "all_picks_valid": true,
+  "numeric_frontier_stable": true,
+  "peak_rss_gb": {
+    "main": 0.307952880859375,
+    "largest_worker": 0.0051727294921875
+  }
+}

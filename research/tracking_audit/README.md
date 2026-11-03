@@ -7,6 +7,78 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Exact prefix reuse experiment and formula-log overhead
+
+On top of `66e074e4`, tile expansion is isolated as a pure operation. The optional
+`AF_ENUMERATION_PREFIX_BYTES` cache reuses it only for identical ordered prefix
+arrays (including dtype), symbol order and next symbol, within one template.
+Each capacity still runs its own constraints, ordered min-usage fallbacks and
+Pareto history. Cached arrays are read-only; an LRU limits retained key/array
+payload, with oversized entries bypassed. This is **not** a process memory bound
+or a single parametric search. The default is **0 (disabled)**.
+
+The experiment exposed a cheaper-to-fix bottleneck: a warm GLU/NVDLA profile spent
+about 5.14 s of the tile enumerator's 7.65 s formatting symbolic formula diagnostics,
+versus 0.026 s in actual prefix expansion. These are cumulative **profiled** times,
+not ordinary wall-time measurements. `SymbolicText` now renders immutable formulas
+once per template and reuses the text across capacities; mutable Goal values are
+always formatted from their current state. Diagnostic content and search semantics
+are retained, and the two text caches are bounded to 512 entries each and released
+with the template. This optimization is enabled normally.
+
+Unprofiled local arm64 measurements, one worker, numeric threads=1, hash seed=0,
+separate processes, tiny Matmul warmup followed by three full searches. Warm time is
+the mean of runs 2 and 3, including generation and Join, excluding validation:
+
+| GLU 64,128,256 @ NVDLA experiment | Reference warm | Changed warm | Finding |
+| --- | ---: | ---: | --- |
+| 3 capacities x 4 latency factors, prefix reuse only | 8.79 s | 8.99 s | No measured speedup |
+| Same grid, formula-text reuse only | 8.79 s | 7.40 s | Initial 1.19x improvement |
+| 16 capacities, fixed bandwidth, text reuse in both paths | 7.25 s | 7.25 s | Prefix reuse does not improve end-to-end time here |
+
+For the 16-capacity case, actual expansion calls drop **2,432 -> 192**, and expanded
+rows **194,998 -> 25,508**. The 8 MiB cache budget retains at most 373,776 payload
+bytes in any one template. Whole-process peak RSS is 0.330 / 0.329 GiB. All three
+repetitions have identical complete numeric frontiers (49 rows); all 16 selected
+mappings re-evaluate. The 12-point grid similarly preserves its 104-row numeric
+frontier and all picks. These timings are preliminary shared-search measurements,
+not speedups against independent FFM or the server's eight-worker experiments.
+
+The controlled three-symbol, two-fallback K sweep checks every target against plain
+enumeration. It has fixed bounds and log-spaced targets, including infeasible ones:
+
+| K | Reference expansion calls | Reused calls | Reference expanded rows | Reused rows |
+| ---: | ---: | ---: | ---: | ---: |
+| 2 | 4 | 3 | 228 | 204 |
+| 4 | 10 | 4 | 622 | 346 |
+| 8 | 22 | 6 | 1,326 | 546 |
+| 16 | 46 | 10 | 2,742 | 954 |
+| 32 | 92 | 16 | 5,504 | 1,569 |
+| 64 | 186 | 24 | 11,102 | 2,358 |
+
+These count batch expansions and the rows they actually produce, not every symbolic
+analysis operation, distinct search-tree nodes, or the whole Mapper's work. Their
+sublinear growth on this template is not a general complexity guarantee. Capacity
+checks and pruning still repeat with K. Next work must address that remaining work;
+the prefix experiment alone does not complete P1 or establish an algorithmic DSE
+speedup.
+
+199 research/Streaming regression tests pass, including target reordering, empty
+targets, two consecutive fallbacks, eviction/bypass, dtype/order preservation, and
+real GLU templates' complete Tile arrays and membership matrices against cache-off
+enumeration. An additional uncovered bug is fixed: initial Tile Shape expansion
+called nonexistent `SymbolRelations.get_stride`; it now uses `get_tile_shape`, and
+initial symbols receive bounds through their associated stride. A regression checks
+both initial choices and target membership; this does not establish general
+imperfect-tiling coverage.
+
+Records: [results/enumeration_prefix/](results/enumeration_prefix/).
+Use `benchmark_symbolic_generation.py --prefix-bytes 0|8388608 --output FILE.json`
+for full-search comparisons; `--factors 1 --caps ...` selects capacity-only searches.
+Use `PYTHONPATH=. python research/tracking_audit/benchmark_prefix_scaling.py
+--output FILE.json` for the controlled K sweep. Set `PYTHONHASHSEED=0`,
+`OMP_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`, and `NUMBA_NUM_THREADS=1` in both cases.
+
 ### Symbolic preparation optimization
 
 Generation was the main cost in the latest grid runs. This change reuses unchanged
@@ -540,6 +612,7 @@ Memory lists are comma-separated and unknown memory names raise.
 | `AF_VARIABLE_RESOURCES` | Join retains the listed resource tradeoffs; fixed resources are removed only after the sum-of-maxima capacity proof. |
 | `AF_GENERATION_VARIABLE_RESOURCES` | With RESOURCE_USAGE, preserve listed variable memories during generation; fixed memories use the normal elimination rules. |
 | `AF_GENERATION_CAPACITY_FRACTIONS` | `MEMORY:f1,f2,...` (0 < f <= 1, 1 implied): target capacities of a shared search as fractions of the searched one. Templates with min-usage constraints are enumerated once per target and the union is kept; each pmapping gets `Total<SEP>capacity_excluded<SEP>MEMORY<SEP>f`, 0 if it is among target f's candidates. Requires RESOURCE_USAGE. |
+| `AF_ENUMERATION_PREFIX_BYTES` | Nonnegative per-template key/array payload budget for exact prefix reuse across capacity targets. Default 0: disabled. Target-specific fallback/pruning is unchanged. Not a total memory limit; work counters are in `Job.enumeration_stats`. |
 | `AF_LATENCY_SCALES` | `COMPONENT:f1,f2,...`: during generation, add one objective `Total<SEP>latency_scaled<SEP>COMPONENT<SEP>f` per factor. Scale that component's action latencies before evaluating its `total_latency` formula. Summed in the join like `Total<SEP>latency`. Requires LATENCY and zero leak power; other architecture attributes, dynamic energy costs and candidate constraints must remain fixed. |
 | `AF_ABL_SKIP_BIG_ENOUGH` | Exempt listed memories from the full-tensor-size upper-bound elimination. |
 | `AF_ABL_SKIP_PMAPPING_ONLY` | Exempt listed memories from the below-all-backing-holders elimination. |

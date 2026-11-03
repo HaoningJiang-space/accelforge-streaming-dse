@@ -91,6 +91,10 @@ class Job:
     n_total_pmappings: int = 1
     n_valid_pmappings: int = 1
     n_evaluated_pmappings: int = 0
+    enumeration_stats: dict[str, int] = field(default_factory=dict)
+    """Per-template shared-prefix work counters and retained cache payload bytes.
+    These do not measure total process memory or the whole candidate search tree.
+    """
 
     _update_compatibility_with_tile_shapes_args: dict[str, Any] | None = None
 

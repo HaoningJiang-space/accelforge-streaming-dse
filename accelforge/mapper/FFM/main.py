@@ -30,6 +30,7 @@ _GENERATION_CACHE_VERSION = 1
 # These options affect the generated candidate set, not only Join execution.
 # Keep this list in sync with new generation switches in _make_pmappings.
 _GENERATION_ENV_VARS = (
+    "AF_ENUMERATION_PREFIX_BYTES",  # Also separates cached work statistics.
     "AF_LATENCY_SCALES",
     "AF_GENERATION_CAPACITY_FRACTIONS",
     "AF_GENERATION_VARIABLE_RESOURCES",

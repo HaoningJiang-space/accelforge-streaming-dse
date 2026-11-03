@@ -1,4 +1,5 @@
 from enum import Enum
+import os
 from functools import lru_cache
 from math import ceil, log2, prod
 import copy
@@ -38,6 +39,8 @@ from accelforge.mapper.FFM._join_pmappings.pmapping_dataframe import (
 )
 from accelforge.frontend.mapper.metrics import Metrics
 from accelforge.util._frozenset import fzs
+from .enumeration_prefix import EnumerationPrefixCache
+from .symbolic_text import SymbolicText
 import math
 import sympy
 import numpy as np
@@ -653,13 +656,15 @@ def coalesce_symbols(
     symbol2goal: dict[Symbol, Goal],
     log_message: Callable,
     bounds: tuple[tuple[Symbol, int, int], ...],
+    text: SymbolicText | None = None,
 ):
+    text = text or SymbolicText()
     sym_enumerated_set = fzs(symbols_enumerated)
     new_symbol2goal = {}
 
     log_message("coalesce symbols", f"initial")
     for s, g in symbol2goal.items():
-        log_message(f"\t{g.goal}: {s}")
+        log_message(f"\t{g.goal}: {text(s)}")
 
     changed = True
     while changed:
@@ -675,7 +680,7 @@ def coalesce_symbols(
         for formula, goal in list(symbol2goal.items()):
             # Not dependent on any enumerated symbols, so drop it
             if not formula.free_symbols & sym_enumerated_set:
-                log_message("coalesce symbols", f"dropping constant: {formula}")
+                log_message("coalesce symbols", f"dropping constant: {text(formula)}")
                 continue
 
             # It is an enumerated symbol, so just keep it
@@ -688,7 +693,7 @@ def coalesce_symbols(
                 for term in formula.args:
                     if len(term.free_symbols) == 0:
                         formula = formula.subs(term, 0)
-                        log_message("coalesce symbols", f"dropping constant: {term}")
+                        log_message("coalesce symbols", f"dropping constant: {text(term)}")
                         continue
                 if len(formula.args) == 1:
                     formula = formula.args[0]
@@ -700,7 +705,7 @@ def coalesce_symbols(
                         formula = formula.subs(term, 1)
                         if term < 0:
                             goal = ~goal
-                        log_message("coalesce symbols", f"dropping constant: {term}")
+                        log_message("coalesce symbols", f"dropping constant: {text(term)}")
                         continue
                 if len(formula.args) == 1:
                     formula = formula.args[0]
@@ -717,13 +722,13 @@ def coalesce_symbols(
                     formula = formula.subs(s, 1)
                     log_message(
                         "coalesce symbols",
-                        f"dropping non-comparable symbol that does not affect comparison {s}: {formula}",
+                        f"dropping non-comparable symbol that does not affect comparison {text(s)}: {text(formula)}",
                     )
                     continue
                 else:
                     log_message(
                         "coalesce symbols",
-                        f"keeping dropping symbol that affects comparison {s}: {formula}",
+                        f"keeping dropping symbol that affects comparison {text(s)}: {text(formula)}",
                     )
 
             # If there's only one symbol in the formula, we can try to replace it with
@@ -733,7 +738,7 @@ def coalesce_symbols(
                     formula, sym_enumerated_set, bounds
                 )
                 if new_goal is not None:
-                    log_message("coalesce symbols", f"replacing single term: {formula}")
+                    log_message("coalesce symbols", f"replacing single term: {text(formula)}")
                     update_symbol2goal(formula, new_goal, new_symbol2goal)
 
             # If we're a fraction and all of our symbols are in the denominator, replace
@@ -746,7 +751,7 @@ def coalesce_symbols(
                         continue
                     break
                 else:
-                    log_message("coalesce symbols", f"replacing reciprocal: {formula}")
+                    log_message("coalesce symbols", f"replacing reciprocal: {text(formula)}")
                     formula = 1 / formula
                     goal = ~goal
 
@@ -788,12 +793,12 @@ def coalesce_symbols(
                 # remove it.
                 log_message(
                     "coalesce symbols",
-                    f"removing formula that agrees with all other goals: {formula}",
+                    f"removing formula that agrees with all other goals: {text(formula)}",
                 )
                 for s in disagrees:
                     log_message(
                         "coalesce symbols",
-                        f"previous formula disagreed with {s}. Changing goal to diff",
+                        f"previous formula disagreed with {text(s)}. Changing goal to diff",
                     )
                     update_symbol2goal(s, Goal("diff"), new_symbol2goal)
                 continue
@@ -804,9 +809,122 @@ def coalesce_symbols(
 
     log_message("coalesce symbols", f"final")
     for s, g in symbol2goal.items():
-        log_message(f"\t{g.goal}: {s}")
+        log_message(f"\t{g.goal}: {text(s)}")
 
     return symbol2goal
+
+
+def _expand_symbol_choices(symbol, choices_enumerated, symbols_enumerated,
+                           what_tiles_symbol, imperfect):
+    """Expand one symbol for a fixed, already-pruned prefix, preserving row order.
+
+    Capacity constraints, min-usage fallback and Pareto remain in the caller. This
+    function reads its input and returns a new array; it never mutates the prefix.
+    """
+    choices = []
+    if what_tiles_symbol.is_stride(symbol):
+        inner_tiles = what_tiles_symbol.get_inner_tiles(symbol, none_if_fail=True)
+        outer_tiles = what_tiles_symbol.get_outer_tiles(symbol, none_if_fail=True)
+
+        # Figure out inner size and outer size
+        if inner_tiles in symbols_enumerated:
+            inner_tiles_type = "enumerated"
+            inner_size = None
+        elif isinstance(inner_tiles, int):
+            inner_tiles_type = "set"
+            inner_size = inner_tiles
+        else:
+            inner_tiles_type = "unknown"
+            inner_size = 1
+
+        if outer_tiles in symbols_enumerated:
+            outer_tiles_type = "enumerated"
+            outer_size = None
+        elif isinstance(outer_tiles, int):
+            outer_tiles_type = "set"
+            outer_size = outer_tiles
+        else:
+            outer_tiles_type = "unknown"
+            outer_size = what_tiles_symbol.get_max_size(outer_tiles)
+
+        if inner_tiles_type == "enumerated" and outer_tiles_type == "enumerated":
+            raise RuntimeError(
+                f"BUG: both inner, {inner_tiles}, and outer, {outer_tiles},"
+                f"tiles of {symbol} are enumerated (thus far: {symbols_enumerated})"
+            )
+        if inner_tiles_type == "unknown" and outer_tiles_type == "unknown":
+            raise RuntimeError("BUG: both inner and outer tiles are unknown")
+
+        # Use inner size and outer size to generate choices
+        if inner_tiles_type in {"set", "unknown"} and outer_tiles_type in {
+            "set",
+            "unknown",
+        }:
+            factorize = math.ceil(outer_size / inner_size)
+            factors = list(get_possible_factor_sizes(factorize, imperfect))
+            scaled = np.array(factors) * inner_size
+            choices.append(append_vector(choices_enumerated, scaled))
+        elif inner_tiles_type == "enumerated":
+            assert isinstance(outer_size, int)
+            i = symbols_enumerated.index(inner_tiles)
+            for inner_choice in np.unique(choices_enumerated[:, i]):
+                partition = choices_enumerated[
+                    np.where(choices_enumerated[:, i] == inner_choice)
+                ]
+                factorize = math.ceil(outer_size / inner_choice)
+                factors = list(get_possible_factor_sizes(factorize, imperfect))
+                scaled = np.array(factors) * inner_choice
+                choices.append(append_vector(partition, scaled))
+        else:
+            assert outer_tiles_type == "enumerated"
+            assert isinstance(inner_size, int)
+            i = symbols_enumerated.index(outer_tiles)
+            for outer_choice in np.unique(choices_enumerated[:, i]):
+                partition = choices_enumerated[
+                    np.where(choices_enumerated[:, i] == outer_choice)
+                ]
+                factorize = math.ceil(outer_choice / inner_size)
+                factors = list(get_possible_factor_sizes(factorize, imperfect))
+                scaled = np.array(factors) * inner_size
+                choices.append(append_vector(partition, scaled))
+    elif what_tiles_symbol.is_initial_tile_shape(symbol):
+        stride = what_tiles_symbol.get_tile_shape(symbol)
+        delta_choices = np.array(list(what_tiles_symbol.get_delta_choices(symbol)))
+
+        outer_stride = what_tiles_symbol.get_outer_tiles(stride, none_if_fail=True)
+        assert outer_stride is None or isinstance(
+            outer_stride, int
+        ), f"outer stride is symbol {outer_stride}"
+        if outer_stride is None:
+            outer_size = what_tiles_symbol.get_max_size(stride)
+        else:
+            outer_size = outer_stride
+
+        if not stride in symbols_enumerated and not isinstance(stride, int):
+            raise RuntimeError(
+                f"BUG: stride {stride} of initial tile shape "
+                f"{symbol} is neither enumerated nor a specified value"
+            )
+
+        if isinstance(stride, int):
+            initial_choices = delta_choices + stride
+            initial_choices = initial_choices[initial_choices <= outer_size]
+            choices.append(append_vector(choices_enumerated, initial_choices))
+        else:
+            i = symbols_enumerated.index(stride)
+            for stride_choice in np.unique(choices_enumerated[:, i]):
+                partition = choices_enumerated[
+                    np.where(choices_enumerated[:, i] == stride_choice)
+                ]
+                initial_choices = delta_choices + stride_choice
+                initial_choices = initial_choices[initial_choices <= outer_size]
+                choices.append(append_vector(partition, initial_choices))
+    else:
+        raise RuntimeError(
+            f"BUG: symbol {symbol} is neither stride nor initial tile shape"
+        )
+
+    return np.concatenate(choices, axis=0)
 
 
 def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
@@ -823,6 +941,9 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
 
     Job statistics are those of the full-capacity target (bound 1), as in a single
     search; n_evaluated_pmappings counts the work of all targets.
+    enumeration_stats separately records requested versus actually executed prefix
+    expansions. AF_ENUMERATION_PREFIX_BYTES enables a template-local payload cache;
+    zero (the default) retains the reference execution and only counts the work.
 
     Returns (choices, excluded): excluded[r, k] is True if row r is not in target k's
     choices. A row kept for one target may also fit another target whose own fallback
@@ -834,7 +955,12 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
     # Compiled functions depend on the expression and symbol order, not capacity.
     # Keep them only for this template so repeated target enumeration shares the
     # preparation without a process-wide cache retaining compiled namespaces.
-    kwargs = {**kwargs, "_compiled_objectives": {}}
+    # Sharing is limited to exact, ordered prefix arrays within this template.
+    # Every target still runs its own fallback history and pruning decisions.
+    budget = int(os.environ.get("AF_ENUMERATION_PREFIX_BYTES", "0"))
+    cache = EnumerationPrefixCache(budget)
+    kwargs = {**kwargs, "_compiled_objectives": {}, "_prefix_cache": cache,
+              "_symbolic_text": SymbolicText()}
     job = kwargs["job"]
     start = (job.n_total_pmappings, job.n_evaluated_pmappings, dict(job.pmapping_keep_rates))
     first_min = next(
@@ -856,6 +982,7 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
             full_stats = (job.n_total_pmappings, dict(job.pmapping_keep_rates))
     job.n_total_pmappings, job.pmapping_keep_rates = full_stats
     job.n_evaluated_pmappings = start[1] + evaluated
+    job.enumeration_stats = dict(cache.stats)
     choices = np.unique(np.concatenate(parts, axis=0), axis=0)
     excluded = np.ones((choices.shape[0], len(parts)), dtype=bool)
     index = {tuple(row): r for r, row in enumerate(choices.tolist())}
@@ -873,6 +1000,8 @@ def get_tile_shape_choices(
     keep_symbols: list[Symbol] = (),
     max_loop_check_groups: list[tuple[Number, list[Symbol]]] = (),
     _compiled_objectives: dict | None = None,
+    _prefix_cache: EnumerationPrefixCache | None = None,
+    _symbolic_text: SymbolicText | None = None,
 ):
     # Only the per-enumeration constraint fields are mutated below. SymPy
     # expressions are immutable; deepcopy needlessly reconstructs their Max/Min
@@ -881,6 +1010,7 @@ def get_tile_shape_choices(
     if _compiled_objectives is None:
         _compiled_objectives = {}
     symbol_order = tuple(symbols)
+    text = _symbolic_text or SymbolicText()
 
     if not symbols:
         # A fixed template has one assignment of zero variables, not zero
@@ -1034,115 +1164,18 @@ def get_tile_shape_choices(
         # ==============================================================================
         symbol = grab_symbol(last_stride_symbol)
 
-        choices = []
         if what_tiles_symbol.is_stride(symbol):
             last_stride_symbol = symbol
-            inner_tiles = what_tiles_symbol.get_inner_tiles(symbol, none_if_fail=True)
-            outer_tiles = what_tiles_symbol.get_outer_tiles(symbol, none_if_fail=True)
-
-            # Figure out inner size and outer size
-            if inner_tiles in symbols_enumerated:
-                inner_tiles_type = "enumerated"
-                inner_size = None
-            elif isinstance(inner_tiles, int):
-                inner_tiles_type = "set"
-                inner_size = inner_tiles
-            else:
-                inner_tiles_type = "unknown"
-                inner_size = 1
-
-            if outer_tiles in symbols_enumerated:
-                outer_tiles_type = "enumerated"
-                outer_size = None
-            elif isinstance(outer_tiles, int):
-                outer_tiles_type = "set"
-                outer_size = outer_tiles
-            else:
-                outer_tiles_type = "unknown"
-                outer_size = what_tiles_symbol.get_max_size(outer_tiles)
-
-            if inner_tiles_type == "enumerated" and outer_tiles_type == "enumerated":
-                raise RuntimeError(
-                    f"BUG: both inner, {inner_tiles}, and outer, {outer_tiles},"
-                    f"tiles of {symbol} are enumerated (thus far: {symbols_enumerated})"
-                )
-            if inner_tiles_type == "unknown" and outer_tiles_type == "unknown":
-                raise RuntimeError("BUG: both inner and outer tiles are unknown")
-
-            # Use inner size and outer size to generate choices
-            if inner_tiles_type in {"set", "unknown"} and outer_tiles_type in {
-                "set",
-                "unknown",
-            }:
-                factorize = math.ceil(outer_size / inner_size)
-                factors = list(get_possible_factor_sizes(factorize, imperfect))
-                scaled = np.array(factors) * inner_size
-                choices.append(append_vector(choices_enumerated, scaled))
-            elif inner_tiles_type == "enumerated":
-                assert isinstance(outer_size, int)
-                i = symbols_enumerated.index(inner_tiles)
-                for inner_choice in np.unique(choices_enumerated[:, i]):
-                    partition = choices_enumerated[
-                        np.where(choices_enumerated[:, i] == inner_choice)
-                    ]
-                    factorize = math.ceil(outer_size / inner_choice)
-                    factors = list(get_possible_factor_sizes(factorize, imperfect))
-                    scaled = np.array(factors) * inner_choice
-                    choices.append(append_vector(partition, scaled))
-            else:
-                assert outer_tiles_type == "enumerated"
-                assert isinstance(inner_size, int)
-                i = symbols_enumerated.index(outer_tiles)
-                for outer_choice in np.unique(choices_enumerated[:, i]):
-                    partition = choices_enumerated[
-                        np.where(choices_enumerated[:, i] == outer_choice)
-                    ]
-                    factorize = math.ceil(outer_choice / inner_size)
-                    factors = list(get_possible_factor_sizes(factorize, imperfect))
-                    scaled = np.array(factors) * inner_size
-                    choices.append(append_vector(partition, scaled))
-        elif what_tiles_symbol.is_initial_tile_shape(symbol):
-            stride = what_tiles_symbol.get_stride(symbol)
-            delta_choices = np.array(list(what_tiles_symbol.get_delta_choices(symbol)))
-
-            outer_stride = what_tiles_symbol.get_outer_tiles(stride, none_if_fail=True)
-            assert outer_stride is None or isinstance(
-                outer_stride, int
-            ), f"outer stride is symbol {outer_stride}"
-            if outer_stride is None:
-                outer_size = what_tiles_symbol.get_max_size(stride)
-            else:
-                outer_size = outer_stride
-
-            if not stride in symbols_enumerated and not isinstance(stride, int):
-                raise RuntimeError(
-                    f"BUG: stride {stride} of initial tile shape "
-                    f"{symbol} is neither enumerated nor a specified value"
-                )
-
-            if isinstance(stride, int):
-                initial_choices = delta_choices + stride
-                initial_choices = initial_choices[initial_choices <= outer_size]
-                choices.append(append_vector(choices_enumerated, initial_choices))
-            else:
-                i = symbols_enumerated.index(stride)
-                for stride_choice in np.unique(choices_enumerated[:, i]):
-                    partition = choices_enumerated[
-                        np.where(choices_enumerated[:, i] == stride_choice)
-                    ]
-                    initial_choices = delta_choices + stride_choice
-                    initial_choices = initial_choices[initial_choices <= outer_size]
-                    choices.append(append_vector(partition, initial_choices))
-        else:
-            raise RuntimeError(
-                f"BUG: symbol {symbol} is neither stride nor initial tile shape"
-            )
-
-        # if not partitions:
-        #     return np.array([]).reshape(-1, len(symbols))
-
         prev_size = choices_enumerated.shape[0] if choices_enumerated is not None else 1
-        choices_enumerated = np.concatenate(choices, axis=0)
+        expand = lambda: _expand_symbol_choices(
+            symbol, choices_enumerated, symbols_enumerated, what_tiles_symbol, imperfect
+        )
+        if _prefix_cache is None:
+            choices_enumerated = expand()
+        else:
+            choices_enumerated = _prefix_cache.expand(
+                symbol, symbols_enumerated, choices_enumerated, expand
+            )
         job.n_total_pmappings *= choices_enumerated.shape[0] / max(1, prev_size)
         symbols_enumerated.append(symbol)
         log_message("enumerate", f"{symbol}", f"size={choices_enumerated.shape[0]}")
@@ -1306,7 +1339,7 @@ def get_tile_shape_choices(
                     # other objectives and target capacities. Do not mutate it.
                     goals = {}
 
-            log_message(f"formula", f"{objective.formula}", f"{goals}")
+            log_message("formula", text(objective.formula), text.goals(goals))
 
             for symbol, goal in goals.items():
                 update_symbol2goal(symbol, goal)
@@ -1328,9 +1361,10 @@ def get_tile_shape_choices(
             update_symbol2goal=update_symbol2goal,
             log_message=log_message,
             bounds=what_tiles_symbol.bounds,
+            text=text,
         )
 
-        log_message("coalesce symbols", f"{symbol2goal}")
+        log_message("coalesce symbols", text.goals(symbol2goal))
 
         paretoed_by_key = fzs((f, g.goal) for f, g in symbol2goal.items())
         if any(p.issubset(paretoed_by_key) for p in paretoed_by):
@@ -1346,7 +1380,7 @@ def get_tile_shape_choices(
                 formula, choices_enumerated_float
             )
             symbol2goal[formula] = goal
-            log_message("eval", f"{goal.goal}", f"{formula}")
+            log_message("eval", f"{goal.goal}", text(formula))
 
         if not objective_values:
             # Objective values don't depend on tile shapes
@@ -1361,10 +1395,10 @@ def get_tile_shape_choices(
             )
             log_message("Pareto", f"size {to_pareto.shape[0]}", "with objectives:")
             for obj in objectives:
-                log_message(f"\t{obj.name}: {obj.formula}")
+                log_message(f"\t{obj.name}: {text(obj.formula)}")
             log_message("Formulas:")
             for formula, goal in symbol2goal.items():
-                log_message(f"\t{goal.goal}: {formula}")
+                log_message(f"\t{goal.goal}: {text(formula)}")
 
             drop_cols = []
             pareto_goals = []

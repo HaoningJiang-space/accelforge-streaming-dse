@@ -1,0 +1,163 @@
+{
+  "case": "glu(M=64,G=128,C=256)@nvdla",
+  "caps": [
+    0.03125,
+    0.0625,
+    0.25
+  ],
+  "factors": [
+    0.25,
+    1.0,
+    4.0,
+    16.0
+  ],
+  "jobs": 1,
+  "profiled_wall_s": 27.15579470898956,
+  "timing": {
+    "make_s": 24.203404249972664,
+    "join_s": 2.576414124923758,
+    "rows_generated": 2965,
+    "rows_front": 104
+  },
+  "self_time_by_package": {
+    "other": 7.9158561409998995,
+    "accelforge": 2.392750956,
+    "sympy": 11.009241511999996,
+    "pandas": 5.178880659000004,
+    "numba": 0.0021815040000000003,
+    "islpy": 0.0012926320000000002
+  },
+  "functions": [
+    {
+      "file": "accelforge/mapper/FFM/main.py",
+      "line": 109,
+      "function": "make_pmappings",
+      "calls": 1,
+      "self_s": 3.875e-06,
+      "cumulative_s": 24.20334575
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmappings.py",
+      "line": 389,
+      "function": "make_pmappings",
+      "calls": 1,
+      "self_s": 0.0024303460000000003,
+      "cumulative_s": 23.028050542000003
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py",
+      "line": 1776,
+      "function": "make_tile_shapes",
+      "calls": 72,
+      "self_s": 0.0025177700000000003,
+      "cumulative_s": 18.284965247000002
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py",
+      "line": 1534,
+      "function": "_make_tile_shapes",
+      "calls": 72,
+      "self_s": 0.009568866,
+      "cumulative_s": 18.281407375
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py",
+      "line": 927,
+      "function": "get_tile_shape_choices_for_targets",
+      "calls": 72,
+      "self_s": 0.0036944250000000003,
+      "cumulative_s": 7.659492623
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py",
+      "line": 988,
+      "function": "get_tile_shape_choices",
+      "calls": 132,
+      "self_s": 0.06874567100000001,
+      "cumulative_s": 7.646851664000001
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/run_model.py",
+      "line": 37,
+      "function": "run_model",
+      "calls": 72,
+      "self_s": 0.0063027330000000005,
+      "cumulative_s": 7.0213113400000005
+    },
+    {
+      "file": "accelforge/model/_looptree/reuse/symbolic/symbolic.py",
+      "line": 472,
+      "function": "analyze_reuse_and_add_reservations_to_mapping",
+      "calls": 72,
+      "self_s": 0.002571523,
+      "cumulative_s": 4.045280044
+    },
+    {
+      "file": "accelforge/mapper/FFM/_pareto_df/pareto.py",
+      "line": 210,
+      "function": "makepareto",
+      "calls": 502,
+      "self_s": 0.058597670000000004,
+      "cumulative_s": 3.27579843
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py",
+      "line": 652,
+      "function": "coalesce_symbols",
+      "calls": 70,
+      "self_s": 0.0066207850000000006,
+      "cumulative_s": 1.2548291660000002
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmappings.py",
+      "line": 75,
+      "function": "get_jobs",
+      "calls": 1,
+      "self_s": 0.00031499500000000004,
+      "cumulative_s": 1.1613880840000002
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py",
+      "line": 233,
+      "function": "compile_dict",
+      "calls": 72,
+      "self_s": 0.00040789300000000005,
+      "cumulative_s": 0.9061423310000001
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmappings.py",
+      "line": 109,
+      "function": "make_jobs_for_einsum",
+      "calls": 4,
+      "self_s": 0.00041353,
+      "cumulative_s": 0.8126805420000001
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmapping_templates/make_pmapping_templates.py",
+      "line": 423,
+      "function": "make_pmapping_templates",
+      "calls": 4,
+      "self_s": 0.00024345900000000001,
+      "cumulative_s": 0.717863668
+    },
+    {
+      "file": "accelforge/mapper/FFM/_pareto_df/pareto.py",
+      "line": 438,
+      "function": "makepareto_numpy",
+      "calls": 30,
+      "self_s": 0.0006644610000000001,
+      "cumulative_s": 0.231750335
+    },
+    {
+      "file": "accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py",
+      "line": 501,
+      "function": "partition_formula",
+      "calls": 5391,
+      "self_s": 0.013023796,
+      "cumulative_s": 0.158145044
+    }
+  ],
+  "notes": "Diagnostic cProfile run after case-specific warmup, prefix reuse enabled, before SymbolicText. Profiled times must not be compared to unprofiled benchmark times.",
+  "tile_formula_formatting_cumulative_s": 5.136,
+  "tile_actual_expansion_cumulative_s": 0.026
+}

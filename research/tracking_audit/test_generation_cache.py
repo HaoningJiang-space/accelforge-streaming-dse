@@ -8,6 +8,7 @@ mapper = importlib.import_module('accelforge.mapper.FFM.main')
 
 
 @pytest.mark.parametrize('switch,value', [
+    ('AF_ENUMERATION_PREFIX_BYTES', '8388608'),
     ('AF_LATENCY_SCALES', 'GlobalBuffer:2'),
     ('AF_GENERATION_CAPACITY_FRACTIONS', 'GlobalBuffer:0.5,1.0'),
     ('AF_GENERATION_VARIABLE_RESOURCES', 'GlobalBuffer'),

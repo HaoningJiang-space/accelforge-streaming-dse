@@ -62,3 +62,20 @@ def test_targets_share_compilation_but_not_constraint_results(monkeypatch):
     np.testing.assert_array_equal(excluded, [[True, False], [False, True]])
     assert compiled and max(compiled.values()) == 1
     assert objectives[0].max_value == 1  # Target-local state must not leak back.
+
+
+def test_formula_logging_is_reused_but_mutable_goals_are_not():
+    from sympy import Max
+    text = tiles.SymbolicText()
+    x = Symbol('log_x', positive=True)
+    formula = Max(x, 1 / x) + x**2
+    goals = {formula: tiles.Goal('min'), x: tiles.Goal('diff')}
+    assert text(formula) == str(formula)
+    assert text.goals(goals) == repr(goals)
+    misses = text._str.cache_info().misses
+    repr_misses = text._repr.cache_info().misses
+    goals[formula].goal = 'max'
+    assert text(formula) == str(formula)
+    assert text.goals(goals) == repr(goals)
+    assert text._str.cache_info().misses == misses
+    assert text._repr.cache_info().misses == repr_misses

@@ -22,6 +22,8 @@ class SymbolRelations:
         all_symbols = set(
             s for w in self.what_tiles_symbol for s in w if isinstance(s, Symbol)
         )
+        all_symbols.update(initial for _, initial in self.tile_shape_and_initial
+                           if isinstance(initial, Symbol))
         self.bounds = tuple((s, 1, self.get_max_size(s)) for s in all_symbols)
 
     def is_stride(self, symbol: Symbol) -> bool:
@@ -115,6 +117,8 @@ class SymbolRelations:
         raise ValueError(f"Symbol {symbol} not found in {self}")
 
     def get_max_size(self, symbol: Symbol) -> Number:
+        if self.is_initial_tile_shape(symbol):
+            symbol = self.get_tile_shape(symbol)
         while not isinstance(symbol, Number):
             symbol = self.get_outer_tiles(symbol)
         return symbol
