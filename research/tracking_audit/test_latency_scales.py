@@ -61,3 +61,16 @@ def test_bandwidth_scenarios_are_not_monotone():
     assert not invalid
     assert quality['2.0']['best_valid_edp'] == 3.0  # not bounded by the 0.5 scenario
     assert quality['2.0']['suboptimal'] == []
+
+
+def test_grid_best_known_follows_capacity_within_one_scale():
+    rec = lambda edp: {'ok': True, 'edp': edp, 'reevaluated': {'edp': edp}}
+    points = [(0.25, 1.0), (1.0, 1.0), (0.25, 4.0), (1.0, 4.0)]
+    history = {'indep': {(0.25, 1.0): [rec(2.0)], (1.0, 1.0): [rec(2.0)],
+                         (0.25, 4.0): [rec(5.0)], (1.0, 4.0): [rec(9.0)]}}
+    fits = lambda c, key: c[1] == key[1] and c[0] <= key[0]
+    quality, _, _ = common.summarize_quality(history, ['indep'], points, fits=fits)
+    # (0.25, 4) fits at (1, 4), so 9.0 there is suboptimal; scale 1 does not bound scale 4.
+    assert quality[str((1.0, 4.0))]['best_valid_edp'] == 5.0
+    assert quality[str((1.0, 4.0))]['suboptimal'] == ['indep']
+    assert quality[str((0.25, 4.0))]['best_valid_edp'] == 5.0

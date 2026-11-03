@@ -348,7 +348,7 @@ def check_pick(case, cap_mib, row, rel_tol=1e-6, latency_col=LATENCY, gb_latency
     return rec
 
 
-def summarize_quality(history, variants, caps, monotone=True):
+def summarize_quality(history, variants, caps, monotone=True, fits=None):
     """Per-capacity quality over every repeat; see capacity_audit.py for the fields.
 
     history[variant][cap] is the list of check_pick records of all repeats. A variant is
@@ -357,7 +357,9 @@ def summarize_quality(history, variants, caps, monotone=True):
 
     With monotone=True the keys are capacities and the best valid EDP at a capacity
     includes picks at smaller ones (they fit too). With monotone=False (e.g. keys are
-    bandwidth scenarios) it only includes picks at the same key.
+    bandwidth scenarios) it only includes picks at the same key. `fits(c, key)`, when
+    given, overrides both: a valid pick at key c is a valid candidate at `key` (e.g. for
+    (capacity, bandwidth) keys: same bandwidth and capacity c[0] <= key[0]).
 
     EDPs are compared as re-evaluated at the target capacity when available. FFM's own
     reported cost may differ from the model by up to check_pick's rel_tol and from run
@@ -374,9 +376,12 @@ def summarize_quality(history, variants, caps, monotone=True):
         xs = [x for x in xs if x is not None]
         return all(abs(x - xs[0]) <= 1e-9 * abs(xs[0]) for x in xs)
 
+    if fits is None:
+        fits = (lambda c, key: c <= key) if monotone else (lambda c, key: c == key)
+
     quality = {}
     for cap in caps:
-        valid_edps = [true_edp(rec) for v in variants for c in caps if (c <= cap if monotone else c == cap)
+        valid_edps = [true_edp(rec) for v in variants for c in caps if fits(c, cap)
                       for rec in history[v][c] if verified(rec)]
         best = min(valid_edps) if valid_edps else None
         q = {'edp': {}, 'reported_edp': {}, 'consistent_across_repeats': {}, 'invalid': [], 'suboptimal': [],
