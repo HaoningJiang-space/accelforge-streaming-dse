@@ -73,6 +73,10 @@ class Job:
     memories_track_all: list[str] | None = None
     memories_track_pmappings_only: list[str] | None = None
     ignored_resources: set[str] | None = None
+    latency_scales: tuple[tuple[str, float], ...] = ()
+    """(component, factor) pairs: for each, run_model adds the objective
+    scaled_latency2col(component, factor), the Einsum's latency with that component's
+    action latencies multiplied by factor (research switch AF_LATENCY_SCALES)."""
     time_limit: float | int = float("inf")
     memory_limit: float | int = float("inf")
     messages: list[str] = field(default_factory=list)

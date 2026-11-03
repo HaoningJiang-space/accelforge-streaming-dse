@@ -38,7 +38,15 @@ def component_latency(
     flattened_arch: list[Leaf],
     mapping: Mapping,
     spec: Spec,
+    action_latency_scales: dict[str, float] | None = None,
 ):
+    """Evaluate component formulas, optionally scaling action latencies first.
+
+    Scenario factors are relative to the already modeled architecture. Apply them
+    before total_latency: that expression can contain fixed overheads, maxima or
+    action counts, so its result need not be linear in action latency.
+    """
+    action_latency_scales = action_latency_scales or {}
     component_to_actions: dict[str, dict[str, float]] = defaultdict(
         lambda: defaultdict(lambda: 0)
     )
@@ -83,6 +91,13 @@ def component_latency(
     component_to_action_latency = defaultdict(dict)
     for component, actions in component_to_actions.items():
         component_obj = name2component[component]
+        if component in action_latency_scales:
+            factor = action_latency_scales[component]
+            component_obj = component_obj._copy_for_component_modeling()
+            component_obj.latency_scale *= factor
+            for action in component_obj.actions:
+                action.latency *= factor
+            name2component[component] = component_obj
         for action, count in actions.items():
             action_name = action.rsplit("_", 1)[0]
             latency = component_obj.actions[action_name].latency
@@ -105,7 +120,7 @@ def component_latency(
         symbol_table = {
             "action2latency": component_to_action_latency[component],
             **symbol_table_base,
-            **dict(name2component[component]),
+            **dict(component_obj),
             **actions,
             **component_to_action_latency[component],
         }

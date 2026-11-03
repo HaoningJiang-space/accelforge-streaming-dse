@@ -149,6 +149,12 @@ def col2iterations(col: str) -> int | None:
     return x[0]
 
 
+def scaled_latency2col(component: str, factor: float) -> str:
+    """Format: Total latency_scaled component factor. An objective column (summed in the
+    join): the latency with `component`'s action latencies multiplied by `factor`."""
+    return f"Total<SEP>latency_scaled<SEP>{component}<SEP>{factor!r}"
+
+
 @dict_cached
 def firstlatency2col(name: str, nloops: int) -> str:
     """Format: first latency name level"""

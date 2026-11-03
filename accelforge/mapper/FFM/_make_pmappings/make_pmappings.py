@@ -186,6 +186,49 @@ def _memories_from_env(name: str, known: frozenset[str]) -> frozenset[str]:
     return memories
 
 
+def _latency_scales_from_env(
+    einsum2jobs: dict[EinsumName, list[Job]], metrics: Metrics
+) -> tuple[tuple[str, float], ...]:
+    """Parse AF_LATENCY_SCALES="Component:f1,f2,..." into ((component, f1), ...).
+
+    Each factor adds a latency objective in which `component`'s action latencies are
+    multiplied by the factor before evaluating total_latency, e.g. 0.5 for twice
+    its bandwidth. Requires LATENCY and no leak power
+    anywhere, because leakage energy would make energy depend on latency too.
+    """
+    value = os.environ.get("AF_LATENCY_SCALES", "").strip()
+    if not value:
+        return ()
+    component, sep, factors = value.partition(":")
+    component = component.strip()
+    try:
+        factors = tuple(float(f) for f in factors.split(",") if f.strip())
+    except ValueError:
+        factors = ()
+    if not sep or not factors or any(not 0 < f < float("inf") for f in factors):
+        raise ValueError(f"AF_LATENCY_SCALES must be COMPONENT:f1,f2,... with f > 0, got {value!r}")
+    if len(set(factors)) != len(factors):
+        raise ValueError(f"AF_LATENCY_SCALES repeats a factor: {value!r}")
+    if Metrics.LATENCY not in metrics:
+        raise ValueError("AF_LATENCY_SCALES requires the LATENCY metric")
+    jobs = [j for js in einsum2jobs.values() for j in js]
+    if not any(n.name == component for j in jobs for n in j.flattened_arch):
+        raise ValueError(f"AF_LATENCY_SCALES names unknown component {component!r}")
+    for j in jobs:
+        for n in j.flattened_arch:
+            leak_power = getattr(n, "leak_power", 0)
+            try:
+                leaks = float(leak_power) != 0
+            except (TypeError, ValueError):
+                leaks = True  # not a number: cannot show it is zero
+            if leaks:
+                raise ValueError(
+                    f"AF_LATENCY_SCALES requires zero leak power; {n.name} has "
+                    f"{n.leak_power!r}, so energy would depend on latency"
+                )
+    return tuple((component, f) for f in factors)
+
+
 def get_memories_to_track(
     spec: Spec,
     einsum2jobs: dict[EinsumName, list[Job]],
@@ -460,8 +503,10 @@ def _fill_jobs_with_memories_to_track(
             can_combine_multiple_runs,
         )
     )
+    latency_scales = _latency_scales_from_env(einsum2jobs_flattened, metrics)
     for jobs in einsum2jobs_flattened.values():
         for j in jobs:
             j.memories_track_all = memories_track_all
             j.memories_track_pmappings_only = memories_track_pmappings_only
             j.ignored_resources = ignored_resources
+            j.latency_scales = latency_scales

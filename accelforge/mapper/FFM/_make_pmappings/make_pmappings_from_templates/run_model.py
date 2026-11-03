@@ -18,6 +18,7 @@ from accelforge.mapper.FFM._join_pmappings.pmapping_dataframe import (
     action2col,
     energy2col,
 )
+from accelforge.mapper.FFM._pareto_df.df_convention import scaled_latency2col
 from accelforge.frontend.mapper.metrics import Metrics
 import sympy
 from numbers import Number
@@ -141,6 +142,21 @@ def run_model(
 
     if metrics & Metrics.LATENCY:
         df["Total<SEP>latency"] = overall_latency * n_instances
+        # One objective per latency scenario (research switch AF_LATENCY_SCALES). A
+        # component's action latencies are scaled before re-evaluating its formula;
+        # total_latency may contain fixed overheads and need not scale linearly.
+        # The Einsum latency is the max over components. Columns are summed across
+        # Einsums in the join like Total<SEP>latency, so the best mapping of every scenario
+        # stays on the Pareto front. Energy must not depend on latency (checked in
+        # make_pmappings: no leak power).
+        for component, factor in job.latency_scales:
+            scaled = component_latency(
+                reuse, job.flattened_arch, pmapping, spec,
+                action_latency_scales={component: factor},
+            )
+            df[scaled_latency2col(component, factor)] = (
+                Max(*scaled.values()) if scaled else 0
+            ) * n_instances
         # df[f"latency<SEP>compute"] = comp_latency * n_instances
         # For first latency, we'll follow the convention of treating compute
         # as a component, similarly to memory (see below).
