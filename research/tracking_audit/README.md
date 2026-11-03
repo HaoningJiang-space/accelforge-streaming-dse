@@ -7,6 +7,35 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Ordered-fallback policy regions and finite interval membership
+
+The restricted fixed-complete-candidate policy now has a written single-interval
+proof and an integer-bit reference implementation. It does **not** yet prove
+interval structure for FFM's partial symbolic enumeration and history-sensitive
+Pareto. A bounded audit compares 288 partial programs with independent enumeration
+at 32 targets each. All 9,216 projections match, but four programs have two-run
+final membership. A three-capacity reproduction retains Tile (2,1,2), drops it,
+then retains it again; disabling its prefix Pareto removes the re-entry. Thus
+single-interval membership is **not** a general property of the current FFM policy.
+
+`AF_CAPACITY_MEMBERSHIP=interval` adds exact finite-target interval Join/Pareto.
+Two uint32 endpoints replace the membership words only when every row in the
+frame is contiguous in sorted declared-target order. Holes retain Bitsets; mixed
+codecs fall back losslessly after validating target domains. Empty sets, ties,
+provenance, numeric precision and FFM boundary grouping are preserved. Queries at
+undeclared capacities still fail; endpoints are target indices, not physical bits.
+
+This backend still consumes Packed enumeration output and checks all target bits.
+It does not reduce enumeration work or supply continuous capacity queries.
+The default membership mode and late Join filtering remain unchanged. All 5,440
+selections in two workload sweeps re-evaluate. At K=1024 the membership row payload
+shrinks 16x, but timings do not establish a general end-to-end improvement.
+**344 research/Streaming tests pass**, including the actual FFM noncontiguous
+membership regression and mixed-codec fallback.
+
+[Proof, contracts and remaining algorithmic gap](CAPACITY_REGIONS.md).
+[Finite-target measurements and reproduction](results/finite_intervals/).
+
 ### Direct membership output and early target-intersection filtering
 
 Bitset mode now builds allowed-target words directly from final Event cohorts or

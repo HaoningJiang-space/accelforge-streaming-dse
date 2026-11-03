@@ -22,12 +22,17 @@ from benchmark_membership import digest, input_stats, semantic_frontiers
 from accelforge.mapper.FFM._pareto_df.capacity_membership import (
     decode_column, is_membership_col, validate_membership,
 )
+from accelforge.mapper.FFM._pareto_df.interval_membership import (
+    is_interval_col, interval_to_words, LOWER_PREFIX, UPPER_COLUMN,
+)
 
 
 def interval_stats(frames):
     histogram, cardinalities, masks = Counter(), Counter(), set()
     nrows = 0
     for frame in frames:
+        if any(is_interval_col(c) for c in frame):
+            frame = interval_to_words(frame)
         words = validate_membership(frame)
         keys = []
         for column in words:
@@ -62,9 +67,15 @@ def trace_materialized_pairs():
         words = [c for c in frame if is_membership_col(c) and not c.endswith('_RIGHT_MERGE')
                  and c + '_RIGHT_MERGE' in frame]
         if words:
-            live = np.zeros(len(frame), dtype=bool)
-            for column in words:
-                live |= (frame[column].to_numpy() & frame[column + '_RIGHT_MERGE'].to_numpy()) != 0
+            if any(is_interval_col(c) for c in words):
+                lo = next(c for c in words if c.startswith(LOWER_PREFIX))
+                lower = np.maximum(frame[lo], frame[lo+'_RIGHT_MERGE'])
+                upper = np.minimum(frame[UPPER_COLUMN], frame[UPPER_COLUMN+'_RIGHT_MERGE'])
+                live = (lower < upper).to_numpy()
+            else:
+                live = np.zeros(len(frame), dtype=bool)
+                for column in words:
+                    live |= (frame[column].to_numpy() & frame[column + '_RIGHT_MERGE'].to_numpy()) != 0
             records.append(dict(matched_pairs=len(frame), no_common_target=int((~live).sum())))
         return frame
 
@@ -103,6 +114,13 @@ def main():
     report = dict(case=str(case), caps=caps, input=input_stats(pm),
                   input_intervals=interval_stats(frames), generation_s=generation_s,
                   parent_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip())
+    stats = [getattr(job,'target_enumeration_stats',{})
+             for jobs in pm.einsum2jobs.values() for job in jobs]
+    # These are executed event partitions/masks across states, not a count of
+    # globally distinct physical byte thresholds or a continuous-region proof.
+    report['event_work'] = {key:sum(s.get(key,0) for s in stats) for key in (
+        'capacity_partitions','capacity_masks','state_merges','state_expansions','expanded_rows')}
+    report['event_work']['max_live_cohorts_per_template'] = max((s.get('peak_cohorts',0) for s in stats),default=0)
     a.output.parent.mkdir(parents=True, exist_ok=True)
     a.output.write_text(json.dumps(report, indent=2) + '\n')
     if a.generation_only:

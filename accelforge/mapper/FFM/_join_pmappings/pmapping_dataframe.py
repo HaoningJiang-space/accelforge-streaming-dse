@@ -26,6 +26,7 @@ from accelforge.mapper.FFM._pareto_df import pareto as pareto_module
 from accelforge.mapper.FFM._pareto_df.capacity_membership import (
     validate_same_membership, intersect_join_membership,
 )
+from accelforge.mapper.FFM._pareto_df.interval_membership import align_membership_frames
 from accelforge.mapper.FFM._join_pmappings.numeric_join import (
     apply_numpy_program, compile_column_program,
 )
@@ -429,6 +430,11 @@ class PmappingDataframe:
         """
         # Opt-in experiment. Arbitrary row callbacks may depend on the complete
         # dataframe, so leave them on the original path.
+        aligned = align_membership_frames([self.data, right.data])
+        if aligned[0] is not self.data:
+            self = self.update(data=aligned[0], skip_pareto=True)
+        if aligned[1] is not right.data:
+            right = right.update(data=aligned[1], skip_pareto=True)
         membership_columns = validate_same_membership([self.data, right.data])
         membership_join = os.environ.get('AF_MEMBERSHIP_JOIN', 'late')
         if membership_join not in ('late', 'early'):
@@ -982,6 +988,9 @@ class PmappingDataframe:
         if len(paretos) == 1:
             return paretos[0]
 
+        aligned = align_membership_frames([p.data for p in paretos])
+        paretos = [p if frame is p.data else p.update(data=frame, skip_pareto=True)
+                   for p, frame in zip(paretos, aligned)]
         validate_same_membership([p.data for p in paretos])
         required_cols = set.union(*[set(p.data.columns) for p in paretos])
         shared_cols = set.intersection(*[set(p.data.columns) for p in paretos])

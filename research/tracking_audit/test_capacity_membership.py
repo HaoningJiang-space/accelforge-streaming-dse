@@ -162,7 +162,7 @@ def test_real_grid_preserves_each_targets_cost_frontier_and_mapping(monkeypatch)
     case = common.Case('matmuls', 'nvdla', (2, 4, 8))
     caps = [64 / 2**20, 128 / 2**20]
     results = {}
-    for mode in ('counts', 'boolean', 'bitset'):
+    for mode in ('counts', 'boolean', 'bitset', 'interval'):
         env = {**common.capacity_fractions_env(caps), 'AF_GENERATION_VARIABLE_RESOURCES': 'GlobalBuffer',
                'AF_TARGET_ENUMERATION': 'events', 'AF_CAPACITY_MEMBERSHIP': mode,
                'AF_LATENCY_SCALES': 'GlobalBuffer:32,256'}
@@ -188,4 +188,7 @@ def test_real_grid_preserves_each_targets_cost_frontier_and_mapping(monkeypatch)
     a, b = expand_membership(results['bitset']), results['boolean']
     cols = sorted(c for c in b.select_dtypes(include=['number', 'bool']) if col_used_in_pareto(c))
     pd.testing.assert_frame_equal(a[cols].sort_values(cols).reset_index(drop=True),
+                                  b[cols].sort_values(cols).reset_index(drop=True))
+    c = expand_membership(results['interval'])
+    pd.testing.assert_frame_equal(c[cols].sort_values(cols).reset_index(drop=True),
                                   b[cols].sort_values(cols).reset_index(drop=True))

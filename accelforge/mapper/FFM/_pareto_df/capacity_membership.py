@@ -11,6 +11,9 @@ import os
 
 import numpy as np
 from .target_membership import PackedMembership
+from .interval_membership import (
+    is_interval_col, decode_interval, validate_interval, intervalize_columns,
+)
 
 PREFIX = 'capacity_membership<SEP>'
 EXCLUDED_PREFIX = 'Total<SEP>capacity_excluded<SEP>'
@@ -18,13 +21,13 @@ EXCLUDED_PREFIX = 'Total<SEP>capacity_excluded<SEP>'
 
 def membership_mode():
     mode = os.environ.get('AF_CAPACITY_MEMBERSHIP', 'counts')
-    if mode not in ('counts', 'boolean', 'bitset'):
-        raise ValueError('AF_CAPACITY_MEMBERSHIP must be counts, boolean or bitset')
+    if mode not in ('counts', 'boolean', 'bitset', 'interval'):
+        raise ValueError('AF_CAPACITY_MEMBERSHIP must be counts, boolean, bitset or interval')
     return mode
 
 
 def is_membership_col(column):
-    return isinstance(column, str) and column.startswith(PREFIX)
+    return isinstance(column, str) and (column.startswith(PREFIX) or is_interval_col(column))
 
 
 def is_excluded_col(column):
@@ -33,7 +36,7 @@ def is_excluded_col(column):
 
 @lru_cache(maxsize=2048)
 def decode_column(column):
-    if not is_membership_col(column):
+    if not isinstance(column, str) or not column.startswith(PREFIX):
         raise ValueError('not a capacity membership column')
     try:
         memory, labels = json.loads(column[len(PREFIX):])
@@ -69,11 +72,12 @@ def pack_exclusions(memory, fractions, excluded, nrows):
         if excluded.dtype != np.bool_ or excluded.shape != (nrows, len(labels)):
             raise ValueError('exclusions must be a boolean row/target matrix')
     result = {}
+    original_order = order == list(range(len(labels)))
     for start in range(0, len(labels), 64):
         chunk = labels[start:start + 64]
         column = PREFIX + json.dumps([memory, chunk], separators=(',', ':'))
         decode_column(column)
-        if packed is not None and order == list(range(len(labels))):
+        if packed is not None and original_order:
             result[column] = packed.words[:, start // 64]
             continue
         word = np.zeros(nrows, dtype=np.uint64)
@@ -87,12 +91,25 @@ def pack_exclusions(memory, fractions, excluded, nrows):
     return result
 
 
+def encode_membership(memory, fractions, excluded, nrows):
+    words = pack_exclusions(memory, fractions, excluded, nrows)
+    if membership_mode() == 'interval':
+        intervals = intervalize_columns(words)
+        if intervals is not None:
+            return intervals
+    return words
+
+
 def validate_membership(frame):
     if not frame.columns.is_unique:
         raise ValueError('duplicate columns in membership frame')
     columns = sorted(c for c in frame if is_membership_col(c))
     if columns and any(is_excluded_col(c) for c in frame):
         raise ValueError('mixed packed membership and exclusion counts')
+    if any(is_interval_col(c) for c in columns):
+        if any(c.startswith(PREFIX) for c in columns):
+            raise ValueError('mixed interval and bitset columns in one frame')
+        return validate_interval(frame)
     seen = set()
     for column in columns:
         memory, labels = decode_column(column)
@@ -119,7 +136,14 @@ def validate_same_membership(frames):
 def membership_for_target(frame, memory, fraction):
     """Return allowed rows; missing targets fail instead of bypassing membership."""
     label = repr(float(fraction))
-    for column in validate_membership(frame):
+    columns = validate_membership(frame)
+    if any(is_interval_col(c) for c in columns):
+        name, labels = decode_interval(columns[0])
+        if name == memory and label in labels:
+            i = labels.index(label)
+            return (frame[columns[0]].to_numpy() <= i) & (i < frame[columns[1]].to_numpy())
+        raise ValueError(f'shared search lacks membership for {memory}:{label}')
+    for column in columns:
         name, labels = decode_column(column)
         if name == memory and label in labels:
             bit = np.uint64(labels.index(label))
@@ -132,7 +156,12 @@ def expand_membership(frame):
     columns = validate_membership(frame)
     result = frame.drop(columns=list(columns)).copy()
     decoded = {}
-    for column in columns:
+    if any(is_interval_col(c) for c in columns):
+        memory, labels = decode_interval(columns[0])
+        lower, upper = frame[columns[0]].to_numpy(), frame[columns[1]].to_numpy()
+        for i, label in enumerate(labels):
+            decoded[EXCLUDED_PREFIX + memory + '<SEP>' + label] = (~((lower <= i) & (i < upper))).astype(np.float32)
+    for column in (() if any(is_interval_col(c) for c in columns) else columns):
         memory, labels = decode_column(column)
         word = frame[column].to_numpy()
         for bit, label in enumerate(labels):
@@ -168,7 +197,17 @@ def intersect_join_membership(frame, columns, *, filter_empty=False):
     post-materialization filter, not a memory-bounded candidate Join.
     """
     live = np.zeros(len(frame), dtype=bool) if filter_empty else None
-    for column in columns:
+    intervals = any(is_interval_col(c) for c in columns)
+    if intervals:
+        lo, hi = columns
+        lower = np.maximum(frame[lo].to_numpy(), frame[lo + '_RIGHT_MERGE'].to_numpy())
+        upper = np.minimum(frame[hi].to_numpy(), frame[hi + '_RIGHT_MERGE'].to_numpy())
+        nonempty = lower < upper
+        frame[lo] = np.where(nonempty, lower, np.uint32(0))
+        frame[hi] = np.where(nonempty, upper, np.uint32(0))
+        if filter_empty:
+            live = nonempty
+    for column in (() if intervals else columns):
         frame[column] = frame[column].to_numpy() & frame[column + '_RIGHT_MERGE'].to_numpy()
         if filter_empty:
             live |= frame[column].to_numpy() != 0
@@ -177,7 +216,7 @@ def intersect_join_membership(frame, columns, *, filter_empty=False):
     return frame
 
 
-def _frontier_mask(costs, masks):
+def _frontier_mask(costs, masks, intervals=False):
     """Window skyline with stable first-equal provenance; O(n) index storage."""
     n, dimensions = costs.shape
     words = masks.shape[1]
@@ -187,8 +226,9 @@ def _frontier_mask(costs, masks):
         dominated = False
         for k in range(size):
             previous = window[k]
-            no_worse = True
-            for w in range(words):
+            no_worse = (not intervals or masks[candidate, 1] == 0 or
+                        (masks[previous, 0] <= masks[candidate, 0] and masks[previous, 1] >= masks[candidate, 1]))
+            for w in range(0 if intervals else words):
                 if masks[previous, w] & masks[candidate, w] != masks[candidate, w]:
                     no_worse = False
                     break
@@ -205,8 +245,9 @@ def _frontier_mask(costs, masks):
         kept = 0
         for k in range(size):
             previous = window[k]
-            no_worse = True
-            for w in range(words):
+            no_worse = (not intervals or masks[previous, 1] == 0 or
+                        (masks[candidate, 0] <= masks[previous, 0] and masks[candidate, 1] >= masks[previous, 1]))
+            for w in range(0 if intervals else words):
                 if masks[candidate, w] & masks[previous, w] != masks[previous, w]:
                     no_worse = False
                     break
@@ -278,5 +319,5 @@ def make_membership_pareto(frame, columns, split_by_cols, tolerance):
     groups = (frame.groupby(boundaries, sort=False, observed=True, dropna=False).indices.values()
               if boundaries else [np.arange(len(frame))])
     for indices in groups:
-        keep[indices] = frontier_mask(numeric[indices], masks[indices])
+        keep[indices] = frontier_mask(numeric[indices], masks[indices], any(is_interval_col(c) for c in words))
     return frame.iloc[np.flatnonzero(keep)]

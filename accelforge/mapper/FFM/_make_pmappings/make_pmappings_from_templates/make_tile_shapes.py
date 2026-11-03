@@ -1745,10 +1745,10 @@ def _make_tile_shapes(job: "Job"):
         if usage_key in per_memory_usage_df:
             capacity_targets = tuple((per_memory_usage_df[usage_key], f) for f in fractions)
 
-    from accelforge.mapper.FFM._pareto_df.capacity_membership import membership_mode, pack_exclusions
+    from accelforge.mapper.FFM._pareto_df.capacity_membership import membership_mode, encode_membership
     choices_enumerated, excluded = get_tile_shape_choices_for_targets(
         capacity_targets=capacity_targets,
-        membership_format='packed' if membership_mode() == 'bitset' else 'excluded',
+        membership_format='packed' if membership_mode() in ('bitset', 'interval') else 'excluded',
         objectives=objectives,
         symbols=symbols,
         what_tiles_symbol=what_tiles_symbol,
@@ -1780,10 +1780,10 @@ def _make_tile_shapes(job: "Job"):
     # joined row may be returned for a target only where its sum is 0.
     if getattr(job, "capacity_fractions", None) is not None:
         memory, fractions = job.capacity_fractions
-        if membership_mode() == 'bitset':
+        if membership_mode() in ('bitset', 'interval'):
             if pareto_module.TOLERANCE != 0:
                 raise ValueError('packed membership requires zero Pareto tolerance')
-            df.update(pack_exclusions(memory, fractions, excluded, len(choices_enumerated)))
+            df.update(encode_membership(memory, fractions, excluded, len(choices_enumerated)))
         else:
             for k, f in enumerate(fractions):
                 df[capacity_excluded2col(memory, f)] = (

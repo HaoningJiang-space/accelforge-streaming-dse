@@ -21,6 +21,7 @@ from accelforge.mapper.FFM._pareto_df import pareto
 from accelforge.mapper.FFM._pareto_df.capacity_membership import (
     booleanize_exclusions, expand_membership, is_excluded_col, is_membership_col,
 )
+from accelforge.mapper.FFM._pareto_df.interval_membership import is_interval_col
 from accelforge.mapper.FFM._pareto_df.df_convention import col_used_in_pareto
 
 
@@ -52,6 +53,8 @@ def input_stats(pm):
     members = lambda f: [c for c in f if is_membership_col(c) or is_excluded_col(c)]
     jobs = [j for js in pm.einsum2jobs.values() for j in js]
     return dict(groups=len(frames), rows=sum(len(f) for f in frames),
+                interval_groups=sum(any(is_interval_col(c) for c in f) for f in frames),
+                interval_rows=sum(len(f) for f in frames if any(is_interval_col(c) for c in f)),
                 max_membership_columns=max((len(members(f)) for f in frames), default=0),
                 membership_payload_bytes=sum(int(f[members(f)].memory_usage(index=False).sum()) for f in frames),
                 numeric_payload_bytes=sum(int(f.select_dtypes(include=['number', 'bool']).memory_usage(index=False).sum()) for f in frames),
@@ -64,6 +67,9 @@ def main():
     p.add_argument('--arch', choices=('nvdla', 'tpu_v4i'), default='nvdla')
     p.add_argument('--count', type=int, default=64)
     p.add_argument('--repeats', type=int, default=3)
+    p.add_argument('--methods', nargs='+', choices=('counts','boolean','bitset','interval'),
+                   default=['counts','boolean','bitset'])
+    p.add_argument('--case', choices=('glu','counter'), default='glu')
     p.add_argument('--output', type=Path, required=True)
     a = p.parse_args()
     if a.count < 2 or a.repeats < 1:
@@ -71,6 +77,10 @@ def main():
     common.af.set_n_parallel_jobs(1)
     params, low, high = ((64, 128, 256), .03125, .25) if a.arch == 'nvdla' else ((256, 512, 1024), .25, 4.)
     case = common.Case('glu', a.arch, params)
+    if a.case == 'counter':
+        if a.arch != 'nvdla':
+            p.error('historical counterexample uses NVDLA')
+        case, low, high = common.Case('matmuls','nvdla',(2,4,8)), 64/2**20, 128/2**20
     caps = [low * (high / low)**(i / (a.count - 1)) for i in range(a.count)]
     caps[-1] = high
     report = dict(case=str(case), caps=caps, repeats=a.repeats, jobs=1,
@@ -79,16 +89,19 @@ def main():
                   threads={k: os.environ.get(k) for k in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'NUMBA_NUM_THREADS')},
                   commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                   runs=[], full_frontiers={}, query_frontiers={})
+    source_paths = [*Path('accelforge').rglob('*.py'), Path(__file__)]
+    report['python_sources_sha256'] = digest({str(f): hashlib.sha256(f.read_bytes()).hexdigest() for f in source_paths})
+    report['working_tree_dirty'] = bool(subprocess.check_output(['git','status','--porcelain'],text=True).strip())
     a.output.parent.mkdir(parents=True, exist_ok=True)
 
     def save():
         a.output.write_text(json.dumps(report, indent=2) + '\n')
 
-    methods = ['counts', 'boolean', 'bitset']
+    methods = list(dict.fromkeys(a.methods))
     last_results = {}
     expected = None
     for repeat in range(-1, a.repeats):
-        order = methods if repeat < 0 else methods[repeat % 3:] + methods[:repeat % 3]
+        order = methods if repeat < 0 else methods[repeat % len(methods):] + methods[:repeat % len(methods)]
         for mode in order:
             spec = common.build(case, high, common.RU)
             common.clear_switches()
