@@ -23,7 +23,9 @@ from accelforge._accelerated_imports import pd
 from accelforge.mapper.FFM._pareto_df.df_convention import *
 from accelforge.mapper.FFM._pareto_df.pareto import makepareto
 from accelforge.mapper.FFM._pareto_df import pareto as pareto_module
-from accelforge.mapper.FFM._pareto_df.capacity_membership import validate_same_membership
+from accelforge.mapper.FFM._pareto_df.capacity_membership import (
+    validate_same_membership, intersect_join_membership,
+)
 from accelforge.mapper.FFM._join_pmappings.numeric_join import (
     apply_numpy_program, compile_column_program,
 )
@@ -428,6 +430,11 @@ class PmappingDataframe:
         # Opt-in experiment. Arbitrary row callbacks may depend on the complete
         # dataframe, so leave them on the original path.
         membership_columns = validate_same_membership([self.data, right.data])
+        membership_join = os.environ.get('AF_MEMBERSHIP_JOIN', 'late')
+        if membership_join not in ('late', 'early'):
+            raise ValueError('AF_MEMBERSHIP_JOIN must be late or early')
+        if membership_columns and membership_join == 'early' and _pmapping_row_filter_function is not None:
+            raise ValueError('early membership filtering does not support arbitrary row callbacks')
         pair_limit = int(os.environ.get("AF_STREAMING_JOIN_PAIRS", "0"))
         if pair_limit > 0 and pareto_module.TOLERANCE != 0:
             raise ValueError("Streaming join requires zero Pareto tolerance")
@@ -488,6 +495,21 @@ class PmappingDataframe:
         else:
             df = pd.merge(sd, rd, how="cross", suffixes=["", "_RIGHT_MERGE"])
 
+        matched_pairs = len(df)
+        discard_after_composition = False
+        if membership_columns and membership_join == 'early':
+            unfiltered = df
+            df = intersect_join_membership(df, membership_columns, filter_empty=True)
+            if matched_pairs and not len(df):
+                # Empty Pandas reductions can promote int/float32 columns to
+                # float64. Such empty chunks then change concat's dtype and
+                # later numeric arithmetic. Preserve the reference schema by
+                # composing fully target-dead blocks, then discarding them.
+                # Mixed live/dead blocks still avoid dead-row composition.
+                df = unfiltered
+                discard_after_composition = True
+            del unfiltered
+
         # Drop all fused loop columns that are not used anymore
         remaining_symbols = plan["remaining_symbols"]
         dropcols = [
@@ -498,7 +520,9 @@ class PmappingDataframe:
         # Number of combinations
         n_total_pmappings = self.n_total_pmappings * right.n_total_pmappings
         n_valid_pmappings = self.n_valid_pmappings * right.n_valid_pmappings
-        scale_by = len(df) / max(1, len(self.data) * len(right.data))
+        # Keep legacy compatibility-based count estimates separate from actual
+        # policy-live pair work; these estimates are not measured execution counts.
+        scale_by = matched_pairs / max(1, len(self.data) * len(right.data))
         n_total_pmappings *= scale_by
         n_valid_pmappings *= scale_by
 
@@ -519,8 +543,8 @@ class PmappingDataframe:
         if not numeric_done:
             for target, source in plan["column_operations"]:
                 add_to_col(df, target, source)
-        for column in membership_columns:
-            df[column] = df[column].to_numpy() & df[column + '_RIGHT_MERGE'].to_numpy()
+        if membership_columns and membership_join == 'late':
+            df = intersect_join_membership(df, membership_columns)
         df = df.drop(columns=plan["right_dropcols"])
         result = PmappingDataframe(
             df,
@@ -554,6 +578,9 @@ class PmappingDataframe:
         if _pmapping_row_filter_function is not None:
             result = result.filter_rows(_pmapping_row_filter_function)
         result.make_pareto()
+        if discard_after_composition:
+            # An empty view can still retain the dead block's backing arrays.
+            result._data = result.data.iloc[:0].copy()
         result._check_reservations()
 
         return result

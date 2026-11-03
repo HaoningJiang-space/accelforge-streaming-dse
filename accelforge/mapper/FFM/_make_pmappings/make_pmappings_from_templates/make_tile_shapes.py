@@ -929,7 +929,7 @@ def _expand_symbol_choices(symbol, choices_enumerated, symbols_enumerated,
     return np.concatenate(choices, axis=0)
 
 
-def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
+def get_tile_shape_choices_for_targets(objectives, capacity_targets, membership_format='excluded', **kwargs):
     """get_tile_shape_choices for a shared capacity search: the union over targets.
 
     capacity_targets: (usage formula, bound) pairs, one per target capacity of the
@@ -950,8 +950,12 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
     Returns (choices, excluded): excluded[r, k] is True if row r is not in target k's
     choices. A row kept for one target may also fit another target whose own fallback
     removed it; it must not be returned there (see capacity_excluded2col). excluded is
-    None without targets.
+    None without targets. membership_format='packed' instead returns a
+    PackedMembership in original target order, directly from final cohorts/parts;
+    it never constructs the dense row/target exclusion matrix.
     """
+    if membership_format not in ('excluded', 'packed'):
+        raise ValueError('membership_format must be excluded or packed')
     if not capacity_targets:
         return get_tile_shape_choices(objectives, **kwargs), None
     mode = os.environ.get('AF_TARGET_ENUMERATION', 'independent')
@@ -961,7 +965,8 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
     if mode == 'events':
         import sys
         from .target_enumeration import enumerate_targets
-        result = enumerate_targets(sys.modules[__name__], objectives, capacity_targets, **kwargs)
+        result = enumerate_targets(sys.modules[__name__], objectives, capacity_targets,
+                                   membership_format=membership_format, **kwargs)
         if result is not None:
             kwargs['job'].enumeration_stats = {}
             kwargs['job'].enumeration_pareto_stats = {}
@@ -1000,11 +1005,11 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
     job.enumeration_stats = dict(cache.stats)
     job.enumeration_pareto_stats = dict(pareto_cache.stats)
     choices = np.unique(np.concatenate(parts, axis=0), axis=0)
-    excluded = np.ones((choices.shape[0], len(parts)), dtype=bool)
+    from accelforge.mapper.FFM._pareto_df.target_membership import build_target_membership
     index = {tuple(row): r for r, row in enumerate(choices.tolist())}
-    for k, part in enumerate(parts):
-        for row in part.tolist():
-            excluded[index[tuple(row)], k] = False
+    memberships = (([index[tuple(row)] for row in part.tolist()], (k,))
+                   for k, part in enumerate(parts))
+    excluded = build_target_membership(len(choices), len(parts), memberships, membership_format)
     return choices, excluded
 
 
@@ -1740,8 +1745,10 @@ def _make_tile_shapes(job: "Job"):
         if usage_key in per_memory_usage_df:
             capacity_targets = tuple((per_memory_usage_df[usage_key], f) for f in fractions)
 
+    from accelforge.mapper.FFM._pareto_df.capacity_membership import membership_mode, pack_exclusions
     choices_enumerated, excluded = get_tile_shape_choices_for_targets(
         capacity_targets=capacity_targets,
+        membership_format='packed' if membership_mode() == 'bitset' else 'excluded',
         objectives=objectives,
         symbols=symbols,
         what_tiles_symbol=what_tiles_symbol,
@@ -1773,7 +1780,6 @@ def _make_tile_shapes(job: "Job"):
     # joined row may be returned for a target only where its sum is 0.
     if getattr(job, "capacity_fractions", None) is not None:
         memory, fractions = job.capacity_fractions
-        from accelforge.mapper.FFM._pareto_df.capacity_membership import membership_mode, pack_exclusions
         if membership_mode() == 'bitset':
             if pareto_module.TOLERANCE != 0:
                 raise ValueError('packed membership requires zero Pareto tolerance')

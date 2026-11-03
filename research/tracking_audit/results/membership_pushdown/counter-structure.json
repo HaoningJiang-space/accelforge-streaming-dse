@@ -1,0 +1,1422 @@
+{
+  "case": "matmuls(N_EINSUMS=2,M=4,KN=8)@nvdla",
+  "caps": [6.103515625e-05, 6.171039334026462e-05, 6.239310063550753e-05, 6.308336077923753e-05, 6.378125732925555e-05, 6.448687476776954e-05, 6.520029851162122e-05, 6.59216149226261e-05, 6.665091131802772e-05, 6.738827598106764e-05, 6.813379817167244e-05, 6.888756813725875e-05, 6.964967712365802e-05, 7.042021738616204e-05, 7.11992822006907e-05, 7.198696587508327e-05, 7.278336376051459e-05, 7.358857226303762e-05, 7.440268885525362e-05, 7.52258120881115e-05, 7.605804160283761e-05, 7.689947814299763e-05, 7.775022356669179e-05, 7.861038085888513e-05, 7.948005414387401e-05, 8.035934869789073e-05, 8.12483709618474e-05, 8.214722855422096e-05, 8.305603028408062e-05, 8.397488616425957e-05, 8.490390742467221e-05, 8.584320652577893e-05, 8.679289717219964e-05, 8.775309432647813e-05, 8.872391422299848e-05, 8.970547438205559e-05, 9.069789362408132e-05, 9.1701292084028e-05, 9.271579122591109e-05, 9.374151385751273e-05, 9.477858414524789e-05, 9.582712762919511e-05, 9.688727123829342e-05, 9.795914330570743e-05, 9.904287358436239e-05, 0.00010013859326265112, 0.00010124643498031469, 0.0001023665328444989, 0.00010349902244598816, 0.00010464404087561924, 0.00010580172674087637, 0.00010697222018267013, 0.00010815566289230181, 0.00010935219812861554, 0.00011056197073534016, 0.00011178512715862292, 0.00011302181546475712, 0.00011427218535810607, 0.00011553638819922499, 0.00011681457702318379, 0.00011810690655809224, 0.0001194135332438303, 0.00012073461525098551, 0.0001220703125],
+  "input": {"groups": 10, "rows": 75, "max_membership_columns": 1, "membership_payload_bytes": 600, "numeric_payload_bytes": 12004, "state_expansions": 180, "expanded_rows": 753},
+  "input_intervals": {"rows": 75, "sampled_run_histogram": {"1": 75}, "target_cardinality_histogram": {"1": 4, "2": 12, "5": 6, "10": 4, "12": 6, "13": 2, "15": 4, "19": 3, "21": 12, "27": 8, "35": 4, "43": 10}, "unique_masks": 13, "max_sampled_runs": 1},
+  "generation_s": 4.2890827499795705,
+  "parent_commit": "3b1b09b41b83d410ba00e40d124cc6fa47093c9c",
+  "instrumented_join_s": 0.022219332982786,
+  "pair_joins": [{"matched_pairs": 64, "no_common_target": 30}, {"matched_pairs": 112, "no_common_target": 75}, {"matched_pairs": 25, "no_common_target": 12}, {"matched_pairs": 16, "no_common_target": 12}],
+  "matched_pairs": 217,
+  "no_common_target": 129,
+  "rho_zero": 0.5944700460829493,
+  "output_intervals": {"rows": 12, "sampled_run_histogram": {"0": 2, "1": 10}, "target_cardinality_histogram": {"0": 2, "1": 1, "10": 1, "13": 1, "15": 1, "19": 1, "21": 3, "27": 1, "43": 1}, "unique_masks": 9, "max_sampled_runs": 1},
+  "boolean_frontier_digest": "5774b0eb3ffa4206146517b73f1a51ba5ada095749421a370a92d943edff7250",
+  "query_frontier_digest": "7b4d8f52df69174e4fca874dea91643399e45f2acf96ceefa379923430b86521",
+  "picks": [
+    {
+      "cap_mib": 6.103515625e-05,
+      "edp": 3.1629720880512e-16,
+      "energy": 1.9768576109413516e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.4375,
+      "tied_optima": 1,
+      "mapping_id": "8da756d42157377b",
+      "reevaluated": {
+        "energy": 1.9768575999999997e-08,
+        "latency": 1.6e-08,
+        "edp": 3.1629721599999996e-16,
+        "reservations": {"reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0, "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.875}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.171039334026462e-05,
+      "edp": 3.1629720880512e-16,
+      "energy": 1.9768576109413516e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.4375,
+      "tied_optima": 1,
+      "mapping_id": "8da756d42157377b",
+      "reevaluated": {
+        "energy": 1.9768575999999997e-08,
+        "latency": 1.6e-08,
+        "edp": 3.1629721599999996e-16,
+        "reservations": {"reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0, "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8654257221190642}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.239310063550753e-05,
+      "edp": 3.1629720880512e-16,
+      "energy": 1.9768576109413516e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.4375,
+      "tied_optima": 1,
+      "mapping_id": "8da756d42157377b",
+      "reevaluated": {
+        "energy": 1.9768575999999997e-08,
+        "latency": 1.6e-08,
+        "edp": 3.1629721599999996e-16,
+        "reservations": {"reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0, "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8559562062917756}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.308336077923753e-05,
+      "edp": 3.1629720880512e-16,
+      "energy": 1.9768576109413516e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.4375,
+      "tied_optima": 1,
+      "mapping_id": "8da756d42157377b",
+      "reevaluated": {
+        "energy": 1.9768575999999997e-08,
+        "latency": 1.6e-08,
+        "edp": 3.1629721599999996e-16,
+        "reservations": {"reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0, "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8465903062084051}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.378125732925555e-05,
+      "edp": 3.1629720880512e-16,
+      "energy": 1.9768576109413516e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.4375,
+      "tied_optima": 1,
+      "mapping_id": "8da756d42157377b",
+      "reevaluated": {
+        "energy": 1.9768575999999997e-08,
+        "latency": 1.6e-08,
+        "edp": 3.1629721599999996e-16,
+        "reservations": {"reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0, "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8373268881021814}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.448687476776954e-05,
+      "edp": 3.1629720880512e-16,
+      "energy": 1.9768576109413516e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.4375,
+      "tied_optima": 1,
+      "mapping_id": "8da756d42157377b",
+      "reevaluated": {
+        "energy": 1.9768575999999997e-08,
+        "latency": 1.6e-08,
+        "edp": 3.1629721599999996e-16,
+        "reservations": {"reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0, "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8281648306120447}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.520029851162122e-05,
+      "edp": 2.0447640157866566e-16,
+      "energy": 1.2779775460103338e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.53125,
+      "tied_optima": 1,
+      "mapping_id": "b0e9319b17779394",
+      "reevaluated": {
+        "energy": 1.2779776e-08,
+        "latency": 1.6e-08,
+        "edp": 2.0447641600000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9946251013569554, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.59216149226261e-05,
+      "edp": 2.0447640157866566e-16,
+      "energy": 1.2779775460103338e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.53125,
+      "tied_optima": 1,
+      "mapping_id": "b0e9319b17779394",
+      "reevaluated": {
+        "energy": 1.2779776e-08,
+        "latency": 1.6e-08,
+        "edp": 2.0447641600000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9837418818052461, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.665091131802772e-05,
+      "edp": 2.0447640157866566e-16,
+      "energy": 1.2779775460103338e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.53125,
+      "tied_optima": 1,
+      "mapping_id": "b0e9319b17779394",
+      "reevaluated": {
+        "energy": 1.2779776e-08,
+        "latency": 1.6e-08,
+        "edp": 2.0447641600000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9729777467886539, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.738827598106764e-05,
+      "edp": 2.0447640157866566e-16,
+      "energy": 1.2779775460103338e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.53125,
+      "tied_optima": 1,
+      "mapping_id": "b0e9319b17779394",
+      "reevaluated": {
+        "energy": 1.2779776e-08,
+        "latency": 1.6e-08,
+        "edp": 2.0447641600000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9623313932804008, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.813379817167244e-05,
+      "edp": 2.0447640157866566e-16,
+      "energy": 1.2779775460103338e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.53125,
+      "tied_optima": 1,
+      "mapping_id": "b0e9319b17779394",
+      "reevaluated": {
+        "energy": 1.2779776e-08,
+        "latency": 1.6e-08,
+        "edp": 2.0447641600000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9518015325114697, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.888756813725875e-05,
+      "edp": 1.9631718273127205e-16,
+      "energy": 1.2269824267718832e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.5625,
+      "tied_optima": 1,
+      "mapping_id": "1da66c1aa31f5fba",
+      "reevaluated": {
+        "energy": 1.2269824e-08,
+        "latency": 1.6e-08,
+        "edp": 1.9631718400000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9967625892154534, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 6.964967712365802e-05,
+      "edp": 1.9631718273127205e-16,
+      "energy": 1.2269824267718832e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.5625,
+      "tied_optima": 1,
+      "mapping_id": "1da66c1aa31f5fba",
+      "reevaluated": {
+        "energy": 1.2269824e-08,
+        "latency": 1.6e-08,
+        "edp": 1.9631718400000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9858559812034879, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.042021738616204e-05,
+      "edp": 1.9631718273127205e-16,
+      "energy": 1.2269824267718832e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.5625,
+      "tied_optima": 1,
+      "mapping_id": "1da66c1aa31f5fba",
+      "reevaluated": {
+        "energy": 1.2269824e-08,
+        "latency": 1.6e-08,
+        "edp": 1.9631718400000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9750687136439167, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.11992822006907e-05,
+      "edp": 1.9631718273127205e-16,
+      "energy": 1.2269824267718832e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.5625,
+      "tied_optima": 1,
+      "mapping_id": "1da66c1aa31f5fba",
+      "reevaluated": {
+        "energy": 1.2269824e-08,
+        "latency": 1.6e-08,
+        "edp": 1.9631718400000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.964399480709707, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.198696587508327e-05,
+      "edp": 1.9631718273127205e-16,
+      "energy": 1.2269824267718832e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.5625,
+      "tied_optima": 1,
+      "mapping_id": "1da66c1aa31f5fba",
+      "reevaluated": {
+        "energy": 1.2269824e-08,
+        "latency": 1.6e-08,
+        "edp": 1.9631718400000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.953846990862227, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.278336376051459e-05,
+      "edp": 1.9631718273127205e-16,
+      "energy": 1.2269824267718832e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.5625,
+      "tied_optima": 1,
+      "mapping_id": "1da66c1aa31f5fba",
+      "reevaluated": {
+        "energy": 1.2269824e-08,
+        "latency": 1.6e-08,
+        "edp": 1.9631718400000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.943409966694902, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.358857226303762e-05,
+      "edp": 1.9631718273127205e-16,
+      "energy": 1.2269824267718832e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.5625,
+      "tied_optima": 1,
+      "mapping_id": "1da66c1aa31f5fba",
+      "reevaluated": {
+        "energy": 1.2269824e-08,
+        "latency": 1.6e-08,
+        "edp": 1.9631718400000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9330871447785803, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.440268885525362e-05,
+      "edp": 1.9631718273127205e-16,
+      "energy": 1.2269824267718832e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.5625,
+      "tied_optima": 1,
+      "mapping_id": "1da66c1aa31f5fba",
+      "reevaluated": {
+        "energy": 1.2269824e-08,
+        "latency": 1.6e-08,
+        "edp": 1.9631718400000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9228772755085927, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.52258120881115e-05,
+      "edp": 1.9631718273127205e-16,
+      "energy": 1.2269824267718832e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.5625,
+      "tied_optima": 1,
+      "mapping_id": "1da66c1aa31f5fba",
+      "reevaluated": {
+        "energy": 1.2269824e-08,
+        "latency": 1.6e-08,
+        "edp": 1.9631718400000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9127791229534838, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.605804160283761e-05,
+      "edp": 1.9631718273127205e-16,
+      "energy": 1.2269824267718832e-08,
+      "latency": 1.5999999547489097e-08,
+      "reported_gb_mib_fraction": 0.5625,
+      "tied_optima": 1,
+      "mapping_id": "1da66c1aa31f5fba",
+      "reevaluated": {
+        "energy": 1.2269824e-08,
+        "latency": 1.6e-08,
+        "edp": 1.9631718400000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9027914647053998, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.020833333333333332, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.125, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.689947814299763e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9921256574801246, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.775022356669179e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.981269786922958, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.861038085888513e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9705327016473384, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 7.948005414387401e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9599131019009304, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 8.035934869789073e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9494097021533296, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 8.12483709618474e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9390212309404468, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 8.214722855422096e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9287464307105928, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 8.305603028408062e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9185840576722493, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 8.397488616425957e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9085328816435044, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 8.490390742467221e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8985916859031362, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 8.584320652577893e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8887592670433243, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 8.679289717219964e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8790344348239763, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 8.775309432647813e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8694160120286436, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 8.872391422299848e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8599028343220181, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 8.970547438205559e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8504937501089855, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 9.069789362408132e-05,
+      "edp": 1.3052312994315057e-16,
+      "energy": 1.631539170432461e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.625,
+      "tied_optima": 1,
+      "mapping_id": "c6c08ffeb4bb5acc",
+      "reevaluated": {
+        "energy": 1.6315391999999997e-08,
+        "latency": 8e-09,
+        "edp": 1.3052313599999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8411876203952227, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 9.1701292084028e-05,
+      "edp": 1.2644352051945376e-16,
+      "energy": 1.5805440511940105e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.75,
+      "tied_optima": 1,
+      "mapping_id": "cf2051608e630406",
+      "reevaluated": {
+        "energy": 1.5805439999999996e-08,
+        "latency": 8e-09,
+        "edp": 1.2644351999999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9983799823791808, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 9.271579122591109e-05,
+      "edp": 1.2644352051945376e-16,
+      "energy": 1.5805440511940105e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.75,
+      "tied_optima": 1,
+      "mapping_id": "cf2051608e630406",
+      "reevaluated": {
+        "energy": 1.5805439999999996e-08,
+        "latency": 8e-09,
+        "edp": 1.2644351999999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9874556767996814, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 9.374151385751273e-05,
+      "edp": 1.2644352051945376e-16,
+      "energy": 1.5805440511940105e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.75,
+      "tied_optima": 1,
+      "mapping_id": "cf2051608e630406",
+      "reevaluated": {
+        "energy": 1.5805439999999996e-08,
+        "latency": 8e-09,
+        "edp": 1.2644351999999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9766509053199239, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 9.477858414524789e-05,
+      "edp": 1.2644352051945376e-16,
+      "energy": 1.5805440511940105e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.75,
+      "tied_optima": 1,
+      "mapping_id": "cf2051608e630406",
+      "reevaluated": {
+        "energy": 1.5805439999999996e-08,
+        "latency": 8e-09,
+        "edp": 1.2644351999999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9659643599939804, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 9.582712762919511e-05,
+      "edp": 1.2644352051945376e-16,
+      "energy": 1.5805440511940105e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.75,
+      "tied_optima": 1,
+      "mapping_id": "cf2051608e630406",
+      "reevaluated": {
+        "energy": 1.5805439999999996e-08,
+        "latency": 8e-09,
+        "edp": 1.2644351999999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9553947471875087, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 9.688727123829342e-05,
+      "edp": 1.2644352051945376e-16,
+      "energy": 1.5805440511940105e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.75,
+      "tied_optima": 1,
+      "mapping_id": "cf2051608e630406",
+      "reevaluated": {
+        "energy": 1.5805439999999996e-08,
+        "latency": 8e-09,
+        "edp": 1.2644351999999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9449407874211548, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 9.795914330570743e-05,
+      "edp": 1.2644352051945376e-16,
+      "energy": 1.5805440511940105e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.75,
+      "tied_optima": 1,
+      "mapping_id": "cf2051608e630406",
+      "reevaluated": {
+        "energy": 1.5805439999999996e-08,
+        "latency": 8e-09,
+        "edp": 1.2644351999999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9346012152156687, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 9.904287358436239e-05,
+      "edp": 1.2644352051945376e-16,
+      "energy": 1.5805440511940105e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.75,
+      "tied_optima": 1,
+      "mapping_id": "cf2051608e630406",
+      "reevaluated": {
+        "energy": 1.5805439999999996e-08,
+        "latency": 8e-09,
+        "edp": 1.2644351999999997e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9243747789387142, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00010013859326265112,
+      "edp": 1.0061823445188916e-16,
+      "energy": 1.2577279662195906e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.8125,
+      "tied_optima": 1,
+      "mapping_id": "e13a67da3dc205ce",
+      "reevaluated": {
+        "energy": 1.257728e-08,
+        "latency": 8e-09,
+        "edp": 1.0061824000000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9904485940411363, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00010124643498031469,
+      "edp": 1.0061823445188916e-16,
+      "energy": 1.2577279662195906e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.8125,
+      "tied_optima": 1,
+      "mapping_id": "e13a67da3dc205ce",
+      "reevaluated": {
+        "energy": 1.257728e-08,
+        "latency": 8e-09,
+        "edp": 1.0061824000000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9796110739655569, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.0001023665328444989,
+      "edp": 1.0061823445188916e-16,
+      "energy": 1.2577279662195906e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.8125,
+      "tied_optima": 1,
+      "mapping_id": "e13a67da3dc205ce",
+      "reevaluated": {
+        "energy": 1.257728e-08,
+        "latency": 8e-09,
+        "edp": 1.0061824000000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9688921383799703, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00010349902244598816,
+      "edp": 1.0061823445188916e-16,
+      "energy": 1.2577279662195906e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.8125,
+      "tied_optima": 1,
+      "mapping_id": "e13a67da3dc205ce",
+      "reevaluated": {
+        "energy": 1.257728e-08,
+        "latency": 8e-09,
+        "edp": 1.0061824000000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9582904897291087, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00010464404087561924,
+      "edp": 1.0061823445188916e-16,
+      "energy": 1.2577279662195906e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.8125,
+      "tied_optima": 1,
+      "mapping_id": "e13a67da3dc205ce",
+      "reevaluated": {
+        "energy": 1.257728e-08,
+        "latency": 8e-09,
+        "edp": 1.0061824000000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9478048446555947, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00010580172674087637,
+      "edp": 1.0061823445188916e-16,
+      "energy": 1.2577279662195906e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.8125,
+      "tied_optima": 1,
+      "mapping_id": "e13a67da3dc205ce",
+      "reevaluated": {
+        "energy": 1.257728e-08,
+        "latency": 8e-09,
+        "edp": 1.0061824000000002e-16,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9374339338445892, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00010697222018267013,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9984977712447614, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00010815566289230181,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9875721768157414, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00010935219812861554,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9767661305890961, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00011056197073534016,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9660783244645859, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00011178512715862292,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9555074646552454, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00011302181546475712,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9450522715307681, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00011427218535810607,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9347114794626019, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00011553638819922499,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9244838366707441, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00011681457702318379,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9143681050722076, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00011810690655809224,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9043630601311492, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.0001194135332438303,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.894467490710636, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.00012073461525098551,
+      "edp": 9.653862502819235e-17,
+      "energy": 1.20673284698114e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 0.875,
+      "tied_optima": 1,
+      "mapping_id": "33ea24c31eba3145",
+      "reevaluated": {
+        "energy": 1.2067328e-08,
+        "latency": 8e-09,
+        "edp": 9.6538624e-17,
+        "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8846801989260338, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    },
+    {
+      "cap_mib": 0.0001220703125,
+      "edp": 9.449881321091679e-17,
+      "energy": 1.1812351985440728e-08,
+      "latency": 7.999999773744548e-09,
+      "reported_gb_mib_fraction": 1.0,
+      "tied_optima": 1,
+      "mapping_id": "e3a7c7ef0b5bfc5e",
+      "reevaluated": {"energy": 1.1812352e-08, "latency": 8e-09, "edp": 9.4498816e-17, "reservations": {"reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0, "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0, "reservation<SEP>Register<SEP>0<SEP>right": 1.0}},
+      "ok": true,
+      "min_usage_shortfall": [
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul0", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_input", "usage": 0.25, "min_usage": 1.0},
+        {"einsum": "Matmul1", "component": "ArrayFanout", "dimension": "reuse_output", "usage": 0.041666666666666664, "min_usage": 1.0}
+      ]
+    }
+  ],
+  "all_picks_valid": true
+}

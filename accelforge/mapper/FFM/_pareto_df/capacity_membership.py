@@ -10,6 +10,7 @@ import math
 import os
 
 import numpy as np
+from .target_membership import PackedMembership
 
 PREFIX = 'capacity_membership<SEP>'
 EXCLUDED_PREFIX = 'Total<SEP>capacity_excluded<SEP>'
@@ -49,12 +50,21 @@ def decode_column(column):
 
 
 def pack_exclusions(memory, fractions, excluded, nrows):
-    """Build word columns directly from the enumerator's boolean exclusion mask."""
+    """Label packed output, or pack the reference Boolean exclusion matrix.
+
+    Packed input uses original target order. The usual sorted-target case shares
+    word views without decoding them; arbitrary target order is permuted by bits.
+    """
     order = sorted(range(len(fractions)), key=lambda i: float(fractions[i]))
     labels = [repr(float(fractions[i])) for i in order]
     if len(set(labels)) != len(labels):
         raise ValueError('duplicate capacity targets')
-    if excluded is not None:
+    packed = excluded if isinstance(excluded, PackedMembership) else None
+    if packed is not None:
+        if packed.n_targets != len(labels) or packed.words.shape[0] != nrows:
+            raise ValueError('packed output does not match target/row count')
+        packed.__post_init__()
+    elif excluded is not None:
         excluded = np.asarray(excluded)
         if excluded.dtype != np.bool_ or excluded.shape != (nrows, len(labels)):
             raise ValueError('exclusions must be a boolean row/target matrix')
@@ -63,9 +73,15 @@ def pack_exclusions(memory, fractions, excluded, nrows):
         chunk = labels[start:start + 64]
         column = PREFIX + json.dumps([memory, chunk], separators=(',', ':'))
         decode_column(column)
+        if packed is not None and order == list(range(len(labels))):
+            result[column] = packed.words[:, start // 64]
+            continue
         word = np.zeros(nrows, dtype=np.uint64)
         for bit, source in enumerate(order[start:start + 64]):
-            allowed = np.ones(nrows, dtype=np.uint64) if excluded is None else (~excluded[:, source]).astype(np.uint64)
+            if packed is not None:
+                allowed = (packed.words[:, source // 64] >> np.uint64(source % 64)) & np.uint64(1)
+            else:
+                allowed = np.ones(nrows, dtype=np.uint64) if excluded is None else (~excluded[:, source]).astype(np.uint64)
             word |= allowed << np.uint64(bit)
         result[column] = word
     return result
@@ -142,6 +158,23 @@ def booleanize_exclusions(frame):
     for column in columns:
         result[column] = (frame[column] != 0).astype(frame[column].dtype)
     return result
+
+
+def intersect_join_membership(frame, columns, *, filter_empty=False):
+    """Compose validated Join words, optionally discard target-dead pairs early.
+
+    Input schemas/dtypes are checked on both sides before pd.merge. Capacity and
+    Reservation composition still run normally for surviving rows. This is a
+    post-materialization filter, not a memory-bounded candidate Join.
+    """
+    live = np.zeros(len(frame), dtype=bool) if filter_empty else None
+    for column in columns:
+        frame[column] = frame[column].to_numpy() & frame[column + '_RIGHT_MERGE'].to_numpy()
+        if filter_empty:
+            live |= frame[column].to_numpy() != 0
+    if filter_empty and columns and not live.all():
+        return frame.iloc[np.flatnonzero(live)].copy()
+    return frame
 
 
 def _frontier_mask(costs, masks):

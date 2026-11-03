@@ -14,6 +14,7 @@ import copy
 
 import numpy as np
 import sympy
+from accelforge.mapper.FFM._pareto_df.target_membership import build_target_membership
 
 
 @dataclass
@@ -114,11 +115,12 @@ def _symbol_order(symbols, relations):
 
 class TargetEnumerator:
     def __init__(self, api, objectives, targets, symbols, what_tiles_symbol, job,
-                 keep_symbols=(), max_loop_check_groups=()):
+                 keep_symbols=(), max_loop_check_groups=(), membership_format='excluded'):
         self.api, self.job, self.relations = api, job, what_tiles_symbol
         self.symbols, self.keep = tuple(symbols), set(keep_symbols)
         self.loop_groups = max_loop_check_groups
         self.bounds = [bound for _, bound in targets]
+        self.membership_format = membership_format
         self.full_target = next((i for i, b in reversed(list(enumerate(self.bounds))) if b == 1), None)
         first_min = next((i for i, o in enumerate(objectives) if o.try_best_if_none_reaches_min), len(objectives))
         # The target's name and threshold are metadata; the formula/position are
@@ -299,7 +301,8 @@ class TargetEnumerator:
         self.job.target_enumeration_stats = dict(self.stats)
         self.job.log_message(f'Capacity-event enumeration: {self.stats}')
         if not states:
-            return np.empty((0, len(self.symbols))), np.ones((0, len(self.bounds)), dtype=bool)
+            return np.empty((0, len(self.symbols))), build_target_membership(
+                0, len(self.bounds), (), self.membership_format)
         columns = [self.done.index(s) for s in self.symbols]
         parts = [s.choices[:, columns] for s in states]
         # The oracle returns a float64 empty array when a target is exhausted.
@@ -309,11 +312,11 @@ class TargetEnumerator:
         if sum(len(s.targets) for s in states) < len(self.bounds):
             parts.append(np.empty((0, len(self.symbols)), dtype=np.float64))
         choices = np.unique(np.concatenate(parts), axis=0)
-        excluded = np.ones((len(choices), len(self.bounds)), dtype=bool)
         index = {tuple(row): i for i, row in enumerate(choices.tolist())}
-        for state, part in zip(states, parts):
-            rows = [index[tuple(row)] for row in part.tolist()]
-            excluded[np.ix_(rows, state.targets)] = False
+        memberships = (([index[tuple(row)] for row in part.tolist()], state.targets)
+                       for state, part in zip(states, parts))
+        excluded = build_target_membership(len(choices), len(self.bounds), memberships,
+                                           self.membership_format)
         return choices, excluded
 
 

@@ -7,6 +7,51 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Direct membership output and early target-intersection filtering
+
+Bitset mode now builds allowed-target words directly from final Event cohorts or
+independent-reference parts. It no longer creates the NxK Boolean exclusion matrix
+before packing. The original enumerator API still defaults to Boolean exclusions;
+`membership_format='packed'` is an explicit output choice. Candidate enumeration,
+ordered fallback, empty-target dtype promotion and target membership are unchanged.
+Both original target order and sorted column-label order are covered, including
+multiple words and duplicate target IDs inside the enumeration API.
+
+`AF_MEMBERSHIP_JOIN=early` is an opt-in post-`pd.merge` filter. It intersects target
+words before numeric/resource composition and removes rows with no allowed target.
+The default remains `late`. It does **not** avoid the initial Pair materialization.
+Fully target-dead blocks take the reference composition path before being emptied:
+directly reducing an empty Pandas frame can change dtype and subsequent concat
+arithmetic. Arbitrary row callbacks are rejected by the early mode. Actual row
+work is measured separately from legacy Mapping-count estimates.
+
+The initial 64-target measurements show why a complex pre-Join index is deferred:
+
+| Input | Compatibility-matched pairs | Empty intersections | Fraction |
+| --- | ---: | ---: | ---: |
+| GLU / NVDLA | 20,527 | 0 | 0% |
+| MatMul chain / NVDLA | 4,790 | 0 | 0% |
+| MobileNet / NVDLA | 2,310,624 | 1,504 | 0.0651% |
+| GLU / TPU v4i | 4,302 | 24 | 0.5579% |
+| Historical 64–128-byte Matmul case | 217 | 129 | 59.45% |
+
+These count actual materialized compatible rows over a complete late-filter Join,
+not hypothetical Cartesian products. In the small counterexample, early filtering
+reduces rows entering Reservation composition from 217 to 88, but Join is only
+about 20 ms and shows no meaningful speedup. The larger cases have little empty
+intersection work to eliminate. All initial generated candidates have one
+contiguous run of allowed sampled targets; this is evidence about a finite grid,
+not a certificate for capacities between those targets.
+
+K=16/64/256/1024 sweeps on GLU and the small counterexample still show one sampled
+interval per generated row. The constructor microbenchmark at K=1024 improves
+176.8 -> 2.95 ms and 36.64 -> 4.14 MiB peak traced allocation (synthetic 32,768 rows).
+This is not RSS or whole-search memory. The warm full-search ablations show no
+consistent speedup; MobileNet Join replay is slower with early filtering. The
+default therefore remains late filtering. All 704 ablation selections re-evaluate.
+
+**325 research/Streaming tests pass.** [Measurements, limitations and reproduction](results/membership_pushdown/).
+
 ### Packed target membership (finite targets, opt-in)
 
 `AF_CAPACITY_MEMBERSHIP=bitset` replaces K exclusion-count objective columns with
@@ -42,8 +87,9 @@ are not claimed identical. The 64-target membership array payload shrinks 32x;
 this is not an RSS reduction claim. Tests cover 65/129-target multiword dominance,
 bit 63, provenance, real Join/Streaming and a capacity/bandwidth grid.
 
-The enumerator still builds an NxK exclusion matrix, and target labels occupy
-O(K) schema space. This does not make the whole search independent of K, add
+At `3b1b09b4`, the enumerator still built an NxK exclusion matrix; the direct-output
+follow-up above removes it for bitset mode. Target labels still occupy O(K) schema
+space. This does not make the whole search independent of K, add
 continuous parameter regions, fix the conservative Fusion filter, or impose a
 global memory budget. The window skyline is CPU-only and quadratic in the worst
 case. [Algorithm contract, raw measurements and reproduction](results/packed_membership/).
@@ -154,8 +200,8 @@ This retains the reference's numerical behavior, not a new byte-exact resource m
 
 This is **not yet a continuous-parameter solver**: it serves the declared capacity
 targets and does not certify intervals for unseen queries. Its default output
-retains K membership columns; the opt-in packed follow-up above compresses the
-output words, not the enumerator's NxK mask. It does not add a Fusion Copy Contract, relax the
+retains K membership columns; bitset mode now constructs words directly from the
+final cohorts without the NxK output mask. It does not add a Fusion Copy Contract, relax the
 conservative copy filter, or provide a global memory budget. All cohort states are
 currently resident. In the worst case every target has a distinct state; no general
 sublinear-in-K runtime guarantee is claimed.
