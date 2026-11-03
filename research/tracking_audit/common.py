@@ -87,6 +87,7 @@ import accelforge as af  # noqa: E402
 from accelforge.mapper.FFM.main import make_pmappings, join_pmappings  # noqa: E402
 from accelforge.model.main import evaluate_mapping  # noqa: E402
 from accelforge.frontend.mapping import Compute, Loop, Nested, Spatial, Split  # noqa: E402
+from accelforge.mapper.FFM._pareto_df.df_convention import capacity_excluded2col  # noqa: E402
 from accelforge.mapper.FFM._make_pmappings.make_pmappings import (  # noqa: E402
     get_rank_variable_bounds_for_all_einsums,
 )
@@ -195,6 +196,23 @@ def search(spec, gen_env=None, join_env=None, ablations=None):
                  'rows_front': len(res.data)}
 
 
+def capacity_fractions_env(caps):
+    """Generation switch telling a search at max(caps) its target capacities, so the
+    min-usage fallback is applied per target (see AF_GENERATION_CAPACITY_FRACTIONS)."""
+    maxcap = max(caps)
+    return {'AF_GENERATION_CAPACITY_FRACTIONS': 'GlobalBuffer:' + ','.join(repr(c / maxcap) for c in caps)}
+
+
+def rows_for_capacity(data, cap, maxcap):
+    """Rows of a shared search at maxcap that belong to the search at `cap`: they fit
+    its GlobalBuffer and every pmapping was kept by that target's enumeration."""
+    rows = data[data[GB] <= cap / maxcap * (1 + 1e-12)]
+    excluded = capacity_excluded2col('GlobalBuffer', cap / maxcap)
+    if excluded in rows:
+        rows = rows[rows[excluded] == 0]
+    return rows
+
+
 def run_variant(variant, case, caps, ablations=None):
     """Yield (cap, data, stats) per capacity; shared variants search once at max(caps)."""
     maxcap = max(caps)
@@ -203,11 +221,13 @@ def run_variant(variant, case, caps, ablations=None):
             res, st = search(build(case, cap, EL), ablations=ablations)
             yield cap, res.data, st
     elif variant in ('var', 'push'):
-        gen_env = {'AF_GENERATION_VARIABLE_RESOURCES': 'GlobalBuffer'} if variant == 'push' else None
+        gen_env = capacity_fractions_env(caps)
+        if variant == 'push':
+            gen_env['AF_GENERATION_VARIABLE_RESOURCES'] = 'GlobalBuffer'
         res, st = search(build(case, maxcap, RU), gen_env, {'AF_VARIABLE_RESOURCES': 'GlobalBuffer'},
                          ablations=ablations)
         for cap in caps:
-            yield cap, res.data[res.data[GB] <= cap / maxcap * (1 + 1e-12)], st
+            yield cap, rows_for_capacity(res.data, cap, maxcap), st
     else:
         raise ValueError(f'unknown variant {variant}')
 

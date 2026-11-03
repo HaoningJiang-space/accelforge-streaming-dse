@@ -75,7 +75,7 @@ def run(a):
         # Do not charge first-use compilation to whichever variant runs first.
         t0 = time.perf_counter()
         common.search(common.build(case, max(caps), common.RU),
-                      {'AF_GENERATION_VARIABLE_RESOURCES': 'GlobalBuffer'},
+                      {'AF_GENERATION_VARIABLE_RESOURCES': 'GlobalBuffer', **common.capacity_fractions_env(caps)},
                       {'AF_VARIABLE_RESOURCES': 'GlobalBuffer'}, ablations=ablations)
         print('WARMUP', json.dumps({'seconds': time.perf_counter() - t0}), flush=True)
 

@@ -68,14 +68,14 @@ def run_variant(variant, case, caps, factors):
             yield (cap, f), res.data, common.LATENCY, st
     elif variant == 'shared':
         maxcap = max(caps)
-        gen_env = {'AF_GENERATION_VARIABLE_RESOURCES': 'GlobalBuffer'}
+        gen_env = {'AF_GENERATION_VARIABLE_RESOURCES': 'GlobalBuffer', **common.capacity_fractions_env(caps)}
         scaled = [f for f in factors if f != 1]
         if scaled:
             gen_env['AF_LATENCY_SCALES'] = 'GlobalBuffer:' + ','.join(map(repr, scaled))
         res, st = common.search(common.build(case, maxcap, common.RU), gen_env,
                                 {'AF_VARIABLE_RESOURCES': 'GlobalBuffer'})
         for cap in caps:
-            fits = res.data[res.data[common.GB] <= cap / maxcap * (1 + 1e-12)]
+            fits = common.rows_for_capacity(res.data, cap, maxcap)
             for f in factors:
                 yield (cap, f), fits, latency_column(f), st
     else:
