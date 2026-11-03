@@ -1288,7 +1288,9 @@ def get_tile_shape_choices(
                 if objective.only_care_if_valid:
                     objectives.remove(objective)
                     log_message(f"Removed {objective.name} because it is always valid")
-                    goals.clear()
+                    # partition_formula returns a cached dictionary shared by
+                    # other objectives and target capacities. Do not mutate it.
+                    goals = {}
 
             log_message(f"formula", f"{objective.formula}", f"{goals}")
 
