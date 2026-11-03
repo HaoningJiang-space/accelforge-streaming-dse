@@ -23,6 +23,10 @@ from accelforge.mapper.FFM._pareto_df import pareto as pareto_module
 
 logger = logging.getLogger(__name__)
 
+# Invalidate candidates produced before the shared formula-goal cache fix.
+# Bump when generation semantics change outside the cached wrapper's source.
+_GENERATION_CACHE_VERSION = 1
+
 # These options affect the generated candidate set, not only Join execution.
 # Keep this list in sync with new generation switches in _make_pmappings.
 _GENERATION_ENV_VARS = (
@@ -151,6 +155,7 @@ def make_pmappings(
             name: os.environ.get(name) for name in _GENERATION_ENV_VARS
         }
         generation_options["pareto_tolerance"] = pareto_module.TOLERANCE
+        generation_options["generation_cache_version"] = _GENERATION_CACHE_VERSION
         result = _make_pmappings_cached(generation_options, **kwargs)
 
     if print_number_of_pmappings:

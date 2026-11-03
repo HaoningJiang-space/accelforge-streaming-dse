@@ -423,7 +423,9 @@ def _partition_formula(
         # Grab the terms that we can evaluate directly first
         chosen = []
         if can_evaluate:
-            chosen.append(type(f)(*can_evaluate))
+            # Reconstructing the same Max/Min repeats SymPy's expensive symbolic
+            # ordering proofs. Reuse the immutable expression when unchanged.
+            chosen.append(f if tuple(can_evaluate) == f.args else type(f)(*can_evaluate))
         # Ignore no relation
         chosen.extend([x for v in others.values() for x in v])
 
@@ -829,6 +831,10 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
     """
     if not capacity_targets:
         return get_tile_shape_choices(objectives, **kwargs), None
+    # Compiled functions depend on the expression and symbol order, not capacity.
+    # Keep them only for this template so repeated target enumeration shares the
+    # preparation without a process-wide cache retaining compiled namespaces.
+    kwargs = {**kwargs, "_compiled_objectives": {}}
     job = kwargs["job"]
     start = (job.n_total_pmappings, job.n_evaluated_pmappings, dict(job.pmapping_keep_rates))
     first_min = next(
@@ -866,8 +872,15 @@ def get_tile_shape_choices(
     job: "Job",
     keep_symbols: list[Symbol] = (),
     max_loop_check_groups: list[tuple[Number, list[Symbol]]] = (),
+    _compiled_objectives: dict | None = None,
 ):
-    objectives = [copy.deepcopy(o) for o in objectives]
+    # Only the per-enumeration constraint fields are mutated below. SymPy
+    # expressions are immutable; deepcopy needlessly reconstructs their Max/Min
+    # nodes (including symbolic ordering proofs) for every target capacity.
+    objectives = [copy.copy(o) for o in objectives]
+    if _compiled_objectives is None:
+        _compiled_objectives = {}
+    symbol_order = tuple(symbols)
 
     if not symbols:
         # A fixed template has one assignment of zero variables, not zero
@@ -889,8 +902,6 @@ def get_tile_shape_choices(
         return np.empty((1, 0), dtype=np.int64)
 
     import time
-
-    objectives = objectives.copy()
 
     symbols_enumerated: list[Symbol] = []
     choices_enumerated: np.ndarray = None
@@ -955,7 +966,10 @@ def get_tile_shape_choices(
             minimize_formula=minimize_formula,
             maximize_formula=maximize_formula,
         )
-        return util._lambdify_type_check(symbols, formula)(
+        key = (symbol_order, formula)
+        if key not in _compiled_objectives:
+            _compiled_objectives[key] = util._lambdify_type_check(symbols, formula)
+        return _compiled_objectives[key](
             **{str(k): v for k, v in padded_choices.items()},
         )
 
@@ -1672,8 +1686,6 @@ def _make_tile_shapes(job: "Job"):
 
     try:
         compiled_df = compile_dict(symbols, symbolic_df)
-        compiled_per_memory_usage_df = compile_dict(symbols, per_memory_usage_df)
-        compiled_usage_df = compile_dict(symbols, usage_df)
     except Exception as e:
         print("Compilation failed for this mapping:")
         for node in pmapping.nodes:

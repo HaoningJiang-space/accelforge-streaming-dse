@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from sympy import Symbol
 import accelforge.frontend.arch as arch
 from accelforge.frontend.mapping import TensorHolder
@@ -25,6 +27,13 @@ from numbers import Number
 from accelforge.util._sympy.broadcast_max import Max
 
 
+@lru_cache(maxsize=512)
+def _maximum_latency(latencies: tuple):
+    # SymPy expressions are immutable. Identical component costs occur across
+    # templates; rebuilding their Max repeats expensive ordering proofs.
+    return Max(*latencies) if latencies else 0
+
+
 def run_model(
     job: Job,
 ) -> tuple[list[Symbol], dict[str, float], dict[str, float], dict[str, float]]:
@@ -40,7 +49,7 @@ def run_model(
 
     latency = component_latency(reuse, job.flattened_arch, pmapping, spec)
     try:
-        overall_latency = Max(*latency.values()) if latency else 0
+        overall_latency = _maximum_latency(tuple(latency.values()))
     except Exception as e:
         for k, v in latency.items():
             if not isinstance(v, (Number, sympy.Symbol, sympy.Expr)):
@@ -155,8 +164,8 @@ def run_model(
                 action_latency_scales={component: factor},
             )
             df[scaled_latency2col(component, factor)] = (
-                Max(*scaled.values()) if scaled else 0
-            ) * n_instances
+                _maximum_latency(tuple(scaled.values())) * n_instances
+            )
         # df[f"latency<SEP>compute"] = comp_latency * n_instances
         # For first latency, we'll follow the convention of treating compute
         # as a component, similarly to memory (see below).

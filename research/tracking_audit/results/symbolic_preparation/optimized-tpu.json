@@ -1,0 +1,793 @@
+{
+  "case": "glu(M=256,G=512,C=1024)@tpu_v4i",
+  "caps": [
+    0.25,
+    0.375,
+    1.0,
+    4.0
+  ],
+  "factors": [
+    0.25,
+    1.0,
+    4.0,
+    16.0
+  ],
+  "jobs": 1,
+  "python": "3.12.14",
+  "pythonhashseed": "0",
+  "commit": "7e60a804bb71183b8409ad65662fa3a25b2d863b",
+  "diff": "diff --git a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\nindex 54a1a032..c2ce45b9 100755\n--- a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\n+++ b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\n@@ -423,7 +423,9 @@ def _partition_formula(\n         # Grab the terms that we can evaluate directly first\n         chosen = []\n         if can_evaluate:\n-            chosen.append(type(f)(*can_evaluate))\n+            # Reconstructing the same Max/Min repeats SymPy's expensive symbolic\n+            # ordering proofs. Reuse the immutable expression when unchanged.\n+            chosen.append(f if tuple(can_evaluate) == f.args else type(f)(*can_evaluate))\n         # Ignore no relation\n         chosen.extend([x for v in others.values() for x in v])\n \n@@ -829,6 +831,10 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):\n     \"\"\"\n     if not capacity_targets:\n         return get_tile_shape_choices(objectives, **kwargs), None\n+    # Compiled functions depend on the expression and symbol order, not capacity.\n+    # Keep them only for this template so repeated target enumeration shares the\n+    # preparation without a process-wide cache retaining compiled namespaces.\n+    kwargs = {**kwargs, \"_compiled_objectives\": {}}\n     job = kwargs[\"job\"]\n     start = (job.n_total_pmappings, job.n_evaluated_pmappings, dict(job.pmapping_keep_rates))\n     first_min = next(\n@@ -866,8 +872,15 @@ def get_tile_shape_choices(\n     job: \"Job\",\n     keep_symbols: list[Symbol] = (),\n     max_loop_check_groups: list[tuple[Number, list[Symbol]]] = (),\n+    _compiled_objectives: dict | None = None,\n ):\n-    objectives = [copy.deepcopy(o) for o in objectives]\n+    # Only the per-enumeration constraint fields are mutated below. SymPy\n+    # expressions are immutable; deepcopy needlessly reconstructs their Max/Min\n+    # nodes (including symbolic ordering proofs) for every target capacity.\n+    objectives = [copy.copy(o) for o in objectives]\n+    if _compiled_objectives is None:\n+        _compiled_objectives = {}\n+    symbol_order = tuple(symbols)\n \n     if not symbols:\n         # A fixed template has one assignment of zero variables, not zero\n@@ -890,8 +903,6 @@ def get_tile_shape_choices(\n \n     import time\n \n-    objectives = objectives.copy()\n-\n     symbols_enumerated: list[Symbol] = []\n     choices_enumerated: np.ndarray = None\n \n@@ -955,7 +966,10 @@ def get_tile_shape_choices(\n             minimize_formula=minimize_formula,\n             maximize_formula=maximize_formula,\n         )\n-        return util._lambdify_type_check(symbols, formula)(\n+        key = (symbol_order, formula)\n+        if key not in _compiled_objectives:\n+            _compiled_objectives[key] = util._lambdify_type_check(symbols, formula)\n+        return _compiled_objectives[key](\n             **{str(k): v for k, v in padded_choices.items()},\n         )\n \n@@ -1672,8 +1686,6 @@ def _make_tile_shapes(job: \"Job\"):\n \n     try:\n         compiled_df = compile_dict(symbols, symbolic_df)\n-        compiled_per_memory_usage_df = compile_dict(symbols, per_memory_usage_df)\n-        compiled_usage_df = compile_dict(symbols, usage_df)\n     except Exception as e:\n         print(\"Compilation failed for this mapping:\")\n         for node in pmapping.nodes:\ndiff --git a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/run_model.py b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/run_model.py\nindex fd4424b3..c5a080da 100644\n--- a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/run_model.py\n+++ b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/run_model.py\n@@ -1,3 +1,5 @@\n+from functools import lru_cache\n+\n from sympy import Symbol\n import accelforge.frontend.arch as arch\n from accelforge.frontend.mapping import TensorHolder\n@@ -25,6 +27,13 @@ from numbers import Number\n from accelforge.util._sympy.broadcast_max import Max\n \n \n+@lru_cache(maxsize=512)\n+def _maximum_latency(latencies: tuple):\n+    # SymPy expressions are immutable. Identical component costs occur across\n+    # templates; rebuilding their Max repeats expensive ordering proofs.\n+    return Max(*latencies) if latencies else 0\n+\n+\n def run_model(\n     job: Job,\n ) -> tuple[list[Symbol], dict[str, float], dict[str, float], dict[str, float]]:\n@@ -40,7 +49,7 @@ def run_model(\n \n     latency = component_latency(reuse, job.flattened_arch, pmapping, spec)\n     try:\n-        overall_latency = Max(*latency.values()) if latency else 0\n+        overall_latency = _maximum_latency(tuple(latency.values()))\n     except Exception as e:\n         for k, v in latency.items():\n             if not isinstance(v, (Number, sympy.Symbol, sympy.Expr)):\n@@ -155,8 +164,8 @@ def run_model(\n                 action_latency_scales={component: factor},\n             )\n             df[scaled_latency2col(component, factor)] = (\n-                Max(*scaled.values()) if scaled else 0\n-            ) * n_instances\n+                _maximum_latency(tuple(scaled.values())) * n_instances\n+            )\n         # df[f\"latency<SEP>compute\"] = comp_latency * n_instances\n         # For first latency, we'll follow the convention of treating compute\n         # as a component, similarly to memory (see below).\n",
+  "runs": [
+    {
+      "repeat": 0,
+      "make_s": 129.73324366600718,
+      "join_s": 1.2288155839778483,
+      "rows_generated": 7827,
+      "rows_front": 24,
+      "search_s": 130.96205924998503,
+      "numeric_frontier_sha256": "b18ca46ddd79eb42ef8e470cba5ff7f019998b80e5a30996a69bbe1d50c6512c"
+    },
+    {
+      "repeat": 1,
+      "make_s": 56.6387473330833,
+      "join_s": 1.239498334005475,
+      "rows_generated": 7827,
+      "rows_front": 24,
+      "search_s": 57.87824566708878,
+      "numeric_frontier_sha256": "b18ca46ddd79eb42ef8e470cba5ff7f019998b80e5a30996a69bbe1d50c6512c"
+    },
+    {
+      "repeat": 2,
+      "make_s": 57.339778666966595,
+      "join_s": 1.0142583750421181,
+      "rows_generated": 7827,
+      "rows_front": 24,
+      "search_s": 58.35403704200871,
+      "numeric_frontier_sha256": "b18ca46ddd79eb42ef8e470cba5ff7f019998b80e5a30996a69bbe1d50c6512c"
+    }
+  ],
+  "picks": [
+    {
+      "cap_mib": 0.25,
+      "edp": 1.844437720269433e-08,
+      "energy": 0.00027018131312149605,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.0625,
+      "reevaluated": {
+        "energy": 0.00027018133504,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8444379138730667e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 0.25
+    },
+    {
+      "cap_mib": 0.25,
+      "edp": 1.844437720269433e-08,
+      "energy": 0.00027018131312149605,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.0625,
+      "reevaluated": {
+        "energy": 0.00027018133504,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8444379138730667e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.25,
+      "edp": 1.844437720269433e-08,
+      "energy": 0.00027018131312149605,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.0625,
+      "reevaluated": {
+        "energy": 0.00027018133504,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8444379138730667e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 4.0
+    },
+    {
+      "cap_mib": 0.25,
+      "edp": 2.018341922882007e-08,
+      "energy": 0.00027018131312149605,
+      "latency": 7.470323907909915e-05,
+      "reported_gb_mib_fraction": 0.0625,
+      "reevaluated": {
+        "energy": 0.00027018133504,
+        "latency": 7.47032380952381e-05,
+        "edp": 2.0183420600382417e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 16.0
+    },
+    {
+      "cap_mib": 0.375,
+      "edp": 1.841359736486614e-08,
+      "energy": 0.00026973043658006033,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.09375,
+      "reevaluated": {
+        "energy": 0.00026973044736,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8413598539776e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0234375,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 0.25
+    },
+    {
+      "cap_mib": 0.375,
+      "edp": 1.841359736486614e-08,
+      "energy": 0.00026973043658006033,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.09375,
+      "reevaluated": {
+        "energy": 0.00026973044736,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8413598539776e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0234375,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.375,
+      "edp": 1.841359736486614e-08,
+      "energy": 0.00026973043658006033,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.09375,
+      "reevaluated": {
+        "energy": 0.00026973044736,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8413598539776e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0234375,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 4.0
+    },
+    {
+      "cap_mib": 0.375,
+      "edp": 2.018341922882007e-08,
+      "energy": 0.00027018131312149605,
+      "latency": 7.470323907909915e-05,
+      "reported_gb_mib_fraction": 0.0625,
+      "reevaluated": {
+        "energy": 0.00027018133504,
+        "latency": 7.47032380952381e-05,
+        "edp": 2.0183420600382417e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.6666666666666666,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 16.0
+    },
+    {
+      "cap_mib": 1.0,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.75,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 0.25
+    },
+    {
+      "cap_mib": 1.0,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.75,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 1.0,
+      "edp": 1.5830751681878597e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.84617116348818e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.846171428571428e-05,
+        "edp": 1.5830753077549935e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.75,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 4.0
+    },
+    {
+      "cap_mib": 1.0,
+      "edp": 1.9205665718934053e-08,
+      "energy": 0.00023168599035668395,
+      "latency": 8.289523975690827e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "reevaluated": {
+        "energy": 0.000231686012928,
+        "latency": 8.289523809523809e-05,
+        "edp": 1.920566720500297e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.75,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 16.0
+    },
+    {
+      "cap_mib": 4.0,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.1875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 0.25
+    },
+    {
+      "cap_mib": 4.0,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.1875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 4.0,
+      "edp": 1.5830751681878597e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.84617116348818e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.846171428571428e-05,
+        "edp": 1.5830753077549935e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.1875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 4.0
+    },
+    {
+      "cap_mib": 4.0,
+      "edp": 1.9205665718934053e-08,
+      "energy": 0.00023168599035668395,
+      "latency": 8.289523975690827e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "reevaluated": {
+        "energy": 0.000231686012928,
+        "latency": 8.289523809523809e-05,
+        "edp": 1.920566720500297e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.1875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 16.0
+    }
+  ],
+  "all_picks_valid": true,
+  "numeric_frontier_stable": true,
+  "peak_rss_gb": {
+    "main": 0.3893890380859375,
+    "largest_worker": 0.0055999755859375
+  },
+  "frontiers": {
+    "b18ca46ddd79eb42ef8e470cba5ff7f019998b80e5a30996a69bbe1d50c6512c": {
+      "columns": [
+        "FFB<SEP>initial<SEP>B<SEP>0",
+        "FFB<SEP>initial<SEP>B<SEP>3",
+        "FFB<SEP>initial<SEP>B<SEP>4",
+        "FFB<SEP>initial<SEP>C<SEP>1",
+        "FFB<SEP>initial<SEP>C<SEP>3",
+        "FFB<SEP>initial<SEP>C<SEP>5",
+        "FFB<SEP>initial<SEP>M<SEP>2",
+        "FFB<SEP>initial<SEP>M<SEP>4",
+        "FFB<SEP>initial<SEP>M<SEP>5",
+        "FFB<SEP>lower_iterations<SEP>0",
+        "FFB<SEP>lower_iterations<SEP>1",
+        "FFB<SEP>lower_iterations<SEP>2",
+        "FFB<SEP>n_iterations<SEP>0",
+        "FFB<SEP>n_iterations<SEP>1",
+        "FFB<SEP>n_iterations<SEP>2",
+        "FFB<SEP>n_iterations<SEP>3",
+        "FFB<SEP>n_iterations<SEP>4",
+        "FFB<SEP>n_iterations<SEP>5",
+        "FFB<SEP>stride0",
+        "FFB<SEP>stride1",
+        "FFB<SEP>stride10",
+        "FFB<SEP>stride11",
+        "FFB<SEP>stride12",
+        "FFB<SEP>stride13",
+        "FFB<SEP>stride14",
+        "FFB<SEP>stride2",
+        "FFB<SEP>stride3",
+        "FFB<SEP>stride4",
+        "FFB<SEP>stride5",
+        "FFB<SEP>stride6",
+        "FFB<SEP>stride7",
+        "FFB<SEP>stride8",
+        "FFB<SEP>stride9",
+        "FFG<SEP>initial<SEP>B<SEP>0",
+        "FFG<SEP>initial<SEP>B<SEP>3",
+        "FFG<SEP>initial<SEP>C<SEP>1",
+        "FFG<SEP>initial<SEP>M<SEP>2",
+        "FFG<SEP>initial<SEP>M<SEP>4",
+        "FFG<SEP>lower_iterations<SEP>0",
+        "FFG<SEP>lower_iterations<SEP>1",
+        "FFG<SEP>lower_iterations<SEP>2",
+        "FFG<SEP>lower_iterations<SEP>3",
+        "FFG<SEP>n_iterations<SEP>0",
+        "FFG<SEP>n_iterations<SEP>1",
+        "FFG<SEP>n_iterations<SEP>2",
+        "FFG<SEP>n_iterations<SEP>3",
+        "FFG<SEP>n_iterations<SEP>4",
+        "FFG<SEP>stride0",
+        "FFG<SEP>stride1",
+        "FFG<SEP>stride10",
+        "FFG<SEP>stride11",
+        "FFG<SEP>stride12",
+        "FFG<SEP>stride13",
+        "FFG<SEP>stride14",
+        "FFG<SEP>stride2",
+        "FFG<SEP>stride3",
+        "FFG<SEP>stride4",
+        "FFG<SEP>stride5",
+        "FFG<SEP>stride6",
+        "FFG<SEP>stride7",
+        "FFG<SEP>stride8",
+        "FFG<SEP>stride9",
+        "FFH<SEP>initial<SEP>B<SEP>0",
+        "FFH<SEP>initial<SEP>B<SEP>3",
+        "FFH<SEP>initial<SEP>C<SEP>1",
+        "FFH<SEP>initial<SEP>C<SEP>4",
+        "FFH<SEP>initial<SEP>M<SEP>2",
+        "FFH<SEP>initial<SEP>M<SEP>5",
+        "FFH<SEP>lower_iterations<SEP>0",
+        "FFH<SEP>lower_iterations<SEP>1",
+        "FFH<SEP>lower_iterations<SEP>2",
+        "FFH<SEP>lower_iterations<SEP>3",
+        "FFH<SEP>n_iterations<SEP>0",
+        "FFH<SEP>n_iterations<SEP>1",
+        "FFH<SEP>n_iterations<SEP>2",
+        "FFH<SEP>n_iterations<SEP>3",
+        "FFH<SEP>n_iterations<SEP>4",
+        "FFH<SEP>n_iterations<SEP>5",
+        "FFH<SEP>stride1",
+        "FFH<SEP>stride2",
+        "FFH<SEP>stride4",
+        "FFH<SEP>stride5",
+        "FFH<SEP>stride7",
+        "FFH<SEP>stride8",
+        "FFU<SEP>initial<SEP>B<SEP>0",
+        "FFU<SEP>initial<SEP>B<SEP>3",
+        "FFU<SEP>initial<SEP>C<SEP>1",
+        "FFU<SEP>initial<SEP>M<SEP>2",
+        "FFU<SEP>initial<SEP>M<SEP>4",
+        "FFU<SEP>lower_iterations<SEP>0",
+        "FFU<SEP>lower_iterations<SEP>1",
+        "FFU<SEP>lower_iterations<SEP>2",
+        "FFU<SEP>lower_iterations<SEP>3",
+        "FFU<SEP>n_iterations<SEP>0",
+        "FFU<SEP>n_iterations<SEP>1",
+        "FFU<SEP>n_iterations<SEP>2",
+        "FFU<SEP>n_iterations<SEP>3",
+        "FFU<SEP>n_iterations<SEP>4",
+        "FFU<SEP>stride0",
+        "FFU<SEP>stride1",
+        "FFU<SEP>stride10",
+        "FFU<SEP>stride11",
+        "FFU<SEP>stride12",
+        "FFU<SEP>stride13",
+        "FFU<SEP>stride14",
+        "FFU<SEP>stride2",
+        "FFU<SEP>stride3",
+        "FFU<SEP>stride4",
+        "FFU<SEP>stride5",
+        "FFU<SEP>stride6",
+        "FFU<SEP>stride7",
+        "FFU<SEP>stride8",
+        "FFU<SEP>stride9",
+        "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.0625",
+        "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.09375",
+        "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.25",
+        "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>1.0",
+        "Total<SEP>energy",
+        "Total<SEP>latency",
+        "Total<SEP>latency_scaled<SEP>GlobalBuffer<SEP>0.25",
+        "Total<SEP>latency_scaled<SEP>GlobalBuffer<SEP>16.0",
+        "Total<SEP>latency_scaled<SEP>GlobalBuffer<SEP>4.0",
+        "reservation<SEP>GlobalBuffer<SEP>0<SEP>right",
+        "reservation<SEP>MainMemory<SEP>0<SEP>right",
+        "tensor<SEP>FFG",
+        "tensor<SEP>FFH",
+        "tensor<SEP>FFU",
+        "tensor<SEP>Z"
+      ],
+      "values": [
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 256.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0003283542230182331, 6.86351559124887e-05, 6.86351559124887e-05, 7.487668335670605e-05, 6.873268284834921e-05, 0.015625, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 256.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 256.0, 0.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 256.0, 1.0, 4.0, 0.0, 0.0, 1.0, 0.0, 256.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 512.0, 256.0, 0.0, 128.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0003232224869320368, 6.845090683782473e-05, 6.845090683782473e-05, 8.912596240406856e-05, 7.069396087899804e-05, 0.015625, 0.0, 0.0, 0.0, 0.015625, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 512.0, 0.0, 256.0, 0.0, 0.0, 512.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 512.0, 256.0, 1.0, 4.0, 0.0, 0.0, 1.0, 0.0, 512.0, 256.0, 0.0, 0.0, 512.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 512.0, 256.0, 0.0, 128.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.00028136753348048904, 6.826666503911838e-05, 6.826666503911838e-05, 9.108724043471739e-05, 7.050971180433407e-05, 0.03125, 0.0, 0.0, 0.0, 0.03125, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0003009612175791528, 6.845091411378235e-05, 6.845091411378235e-05, 7.274196104845032e-05, 6.845091411378235e-05, 0.03125, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.00031210129076307677, 6.86351559124887e-05, 6.86351559124887e-05, 7.07806830178015e-05, 6.86351559124887e-05, 0.03125, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.00032324136394700073, 6.881940498715267e-05, 6.881940498715267e-05, 6.881940498715267e-05, 6.881940498715267e-05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 256.0, 0.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 256.0, 1.0, 4.0, 0.0, 0.0, 1.0, 0.0, 256.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 512.0, 256.0, 0.0, 128.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.00031810962786080443, 6.86351559124887e-05, 6.86351559124887e-05, 8.306868403451517e-05, 7.07806830178015e-05, 0.015625, 0.0, 0.0, 0.0, 0.015625, 0.0],
+        [1.0, 0.0, 0.0, 512.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 512.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 512.0, 256.0, 0.0, 128.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 512.0, 0.0, 256.0, 0.0, 0.0, 512.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 512.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.00028723535013784683, 6.826666503911838e-05, 6.826666503911838e-05, 7.879923941800371e-05, 6.83641919749789e-05, 0.03125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 512.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 512.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 512.0, 256.0, 0.0, 128.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 512.0, 0.0, 256.0, 0.0, 0.0, 512.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 512.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0002983754233217708, 6.845090683782473e-05, 6.845090683782473e-05, 7.683796138735488e-05, 6.854843377368525e-05, 0.03125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 128.0, 0.0, 0.0, 0.0, 0.0, 128.0, 1.0, 1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1024.0, 128.0, 0.0, 256.0, 128.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 128.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 1.0, 2.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.00029966726959616905, 6.845091411378235e-05, 6.845091411378235e-05, 7.470323907909915e-05, 6.845091411378235e-05, 0.03125, 0.0, 0.0, 0.03125, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.00027018131312149605, 6.826666503911838e-05, 6.826666503911838e-05, 7.470323907909915e-05, 6.826666503911838e-05, 0.0625, 0.0, 0.0, 0.0625, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 0.0, 0.0, 0.00025093365173908995, 6.826666503911838e-05, 6.826666503911838e-05, 7.879923941800371e-05, 6.836418469902128e-05, 0.125, 0.0, 0.0, 0.0625, 0.0625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.00028132138630542, 6.845090683782473e-05, 6.845090683782473e-05, 7.274196104845032e-05, 6.845090683782473e-05, 0.0625, 0.0, 0.0, 0.0625, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.00029246145948934397, 6.86351559124887e-05, 6.86351559124887e-05, 7.07806830178015e-05, 6.86351559124887e-05, 0.0625, 0.0, 0.0, 0.0625, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 0.0, 0.0, 0.0002620737249230139, 6.845090683782473e-05, 6.845090683782473e-05, 7.683796138735488e-05, 6.854843377368525e-05, 0.125, 0.0, 0.0, 0.0625, 0.0625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 0.0, 0.0, 0.00023168599035668395, 6.826666503911838e-05, 6.826666503911838e-05, 8.289523975690827e-05, 6.84617116348818e-05, 0.1875, 0.0, 0.0625, 0.0625, 0.0625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 128.0, 0.0, 0.0, 0.0, 0.0, 128.0, 1.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 128.0, 1024.0, 0.0, 512.0, 128.0, 0.0, 256.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 128.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 1.0, 2.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0002992163785028181, 6.826666503911838e-05, 6.826666503911838e-05, 7.572723552584648e-05, 6.826666503911838e-05, 0.046875, 0.0, 0.0, 0.03125, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 128.0, 0.0, 0.0, 0.0, 0.0, 128.0, 1.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 128.0, 1024.0, 0.0, 512.0, 128.0, 0.0, 256.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 128.0, 0.0, 0.0, 0.0, 128.0, 0.0, 1.0, 1.0, 2.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.00031035645168674207, 6.845090683782473e-05, 6.845090683782473e-05, 7.376595749519765e-05, 6.845090683782473e-05, 0.046875, 0.0, 0.0, 0.03125, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 0.0, 0.0, 0.00026973043658006033, 6.826666503911838e-05, 6.826666503911838e-05, 7.572723552584648e-05, 6.826666503911838e-05, 0.09375, 0.0, 0.0, 0.0625, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 2.0, 1.0, 0.0, 0.0, 0.00025048277519765423, 6.826666503911838e-05, 6.826666503911838e-05, 7.982323586475104e-05, 6.836418469902128e-05, 0.125, 0.0, 0.0, 0.0625, 0.0625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 0.0, 0.0, 0.0002808705097639843, 6.845090683782473e-05, 6.845090683782473e-05, 7.376595749519765e-05, 6.845090683782473e-05, 0.09375, 0.0, 0.0, 0.0625, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 0.0, 0.0, 0.00029201058294790825, 6.86351559124887e-05, 6.86351559124887e-05, 7.180467946454883e-05, 6.86351559124887e-05, 0.09375, 0.0, 0.0, 0.0625, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 2.0, 1.0, 0.0, 0.0, 0.0002616228483815782, 6.845090683782473e-05, 6.845090683782473e-05, 7.786195783410221e-05, 6.854843377368525e-05, 0.125, 0.0, 0.0, 0.0625, 0.0625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 2.0, 1.0, 0.0, 0.0, 0.00023123511381524823, 6.826666503911838e-05, 6.826666503911838e-05, 8.39192362036556e-05, 6.84617116348818e-05, 0.1875, 0.0, 0.0625, 0.0625, 0.0625, 0.0]
+      ]
+    }
+  }
+}

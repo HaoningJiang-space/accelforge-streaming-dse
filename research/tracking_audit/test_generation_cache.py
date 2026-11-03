@@ -9,6 +9,7 @@ mapper = importlib.import_module('accelforge.mapper.FFM.main')
 
 @pytest.mark.parametrize('switch,value', [
     ('AF_LATENCY_SCALES', 'GlobalBuffer:2'),
+    ('AF_GENERATION_CAPACITY_FRACTIONS', 'GlobalBuffer:0.5,1.0'),
     ('AF_GENERATION_VARIABLE_RESOURCES', 'GlobalBuffer'),
     ('AF_ABL_ALLOW_UNREPRESENTABLE', '1'),
     ('AF_ABL_SKIP_BIG_ENOUGH', 'GlobalBuffer'),
@@ -52,3 +53,20 @@ def test_exact_search_cannot_reuse_an_approximate_frontier(monkeypatch, tmp_path
     assert mapper.make_pmappings(**kwargs) == 0.
     assert mapper.make_pmappings(**kwargs) == 0.
     assert calls == [.1, 0.]
+
+
+def test_generation_semantics_version_invalidates_old_candidates(monkeypatch, tmp_path):
+    calls = []
+
+    def generate(spec, einsum_names=None, can_combine_multiple_runs=False):
+        calls.append(mapper._GENERATION_CACHE_VERSION)
+        return calls[-1]
+
+    monkeypatch.setattr(mapper, '_make_pmappings', generate)
+    kwargs = dict(spec='fixed-spec', cache_dir=str(tmp_path), print_number_of_pmappings=False)
+    monkeypatch.setattr(mapper, '_GENERATION_CACHE_VERSION', 0)
+    assert mapper.make_pmappings(**kwargs) == 0
+    monkeypatch.setattr(mapper, '_GENERATION_CACHE_VERSION', 1)
+    assert mapper.make_pmappings(**kwargs) == 1
+    assert mapper.make_pmappings(**kwargs) == 1
+    assert calls == [0, 1]

@@ -7,6 +7,50 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Symbolic preparation optimization
+
+Generation was the main cost in the latest grid runs. This change reuses unchanged
+symbolic expressions instead of reconstructing their `Max`/`Min` nodes, shallow-copies
+only mutable Objective state, compiles each objective once per template (shared by
+that template's capacity targets), and removes two unused compiled dictionaries.
+An LRU capped at 512 entries reuses identical component-latency maxima across
+templates. Compiled-function dictionaries are released after each template. Target
+enumeration, capacity membership, Pareto tolerance and numeric precision are unchanged.
+
+The reference is **7e60a804**, which first fixes a correctness issue: completing a
+constraint used to clear the dictionary returned by cached `partition_formula`,
+changing later objectives/runs. A regression test reproduces the mutation; completed
+constraints now discard only their local reference. The candidate disk-cache version
+is bumped so candidates from before this correction are not reused.
+
+Local arm64 measurements, Python 3.12.14, NumPy 2.3.5, Pandas 3.1.0, SymPy 1.14.0,
+one worker, `PYTHONHASHSEED=0`, numerical-library threads limited to one. Each version
+runs in a separate process after a tiny MatMul warmup, then performs the same full
+shared search three times. Cold means the first case-specific search; warm is the
+mean of the following two. No profiler is active. Times include generation and Join,
+excluding query extraction, serialization and Mapping validation.
+
+| Case | Grid points | Cold before / after | Warm before / after | Warm speedup |
+| --- | ---: | ---: | ---: | ---: |
+| GLU 64,128,256 @ nvdla | 12 | 29.74 / 23.35 s | 14.71 / 8.72 s | 1.69x |
+| GLU 256,512,1024 @ tpu_v4i | 16 | 163.87 / 130.96 s | 92.25 / 58.12 s | 1.59x |
+
+Both versions and all three repetitions have identical complete numeric frontiers
+(SHA-256 checked, 104 rows on NVDLA and 24 on TPU). All 28 selected grid mappings
+re-evaluate successfully, with identical EDPs before/after. Whole-process peak RSS
+is 0.309 / 0.312 GiB on NVDLA and 0.394 / 0.389 GiB on TPU; these peaks include
+validation. These are initial local results for shared search itself, not new
+speedups versus independent FFM or measurements of the server's eight-worker setup.
+The complete audit/Streaming regression suite passes: 171 tests.
+
+Reproduce using [benchmark_symbolic_generation.py](benchmark_symbolic_generation.py),
+with `--repo` selecting a checkout of 7e60a804 for the reference; omit it for the
+current checkout. Set `PYTHONHASHSEED=0 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+NUMBA_NUM_THREADS=1` in both processes. Defaults reproduce NVDLA; TPU arguments are
+`--arch tpu_v4i --params 256,512,1024 --caps 0.25,0.375,1,4`. Pass a separate
+`--output FILE.json` to each run. Numeric frontiers, timings and re-evaluated picks:
+[results/symbolic_preparation/](results/symbolic_preparation/).
+
 ### Capacity x bandwidth grid, commit `9be3f809`
 
 `grid_audit.py`: one search per grid point (`indep`) against one shared search at the
@@ -23,8 +67,8 @@ warmup, eight workers, two cases at a time under `run_capped.sh 24 7200`. Record
 
 All three exit 0: every pick re-evaluates exactly at its capacity and scale, repeats
 agree, both variants have the same EDP at every point. "Distinct best EDPs" counts
-different optimal costs across the grid, a lower bound on the number of different
-optimal mappings (mapping identities were not recorded). The shared search spends
+different optimal costs, not different optimal mappings: one mapping's cost can
+change with bandwidth. Mapping identities were not recorded. The shared search spends
 84.3 s of 86.2 s generating on GLU@tpu_v4i: per-target enumeration repeats the
 min-usage templates once per capacity. These runs predate `d7c86825`, which changes
 only fixed (symbol-free) templates, absent here, and narrows the audit reference to
