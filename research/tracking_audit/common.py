@@ -375,18 +375,18 @@ def check_pick(case, cap_mib, row, rel_tol=1e-6, latency_col=LATENCY, gb_latency
     return rec
 
 
-def summarize_quality(history, variants, caps, monotone=True, fits=None):
+def summarize_quality(history, variants, caps, monotone=False, fits=None):
     """Per-capacity quality over every repeat; see capacity_audit.py for the fields.
 
     history[variant][cap] is the list of check_pick records of all repeats. A variant is
     invalid at a capacity if any repeat's pick was invalid, so a later success never
     hides an earlier failure. Returns (quality, any_invalid, all_consistent).
 
-    With monotone=True the keys are capacities and the best valid EDP at a capacity
-    includes picks at smaller ones (they fit too). With monotone=False (e.g. keys are
-    bandwidth scenarios) it only includes picks at the same key. `fits(c, key)`, when
-    given, overrides both: a valid pick at key c is a valid candidate at `key` (e.g. for
-    (capacity, bandwidth) keys: same bandwidth and capacity c[0] <= key[0]).
+    By default compare picks only at the same configuration. Capacity-dependent
+    min_usage fallback makes the enumerated Mapspaces non-nested: fitting a larger
+    memory does not prove membership in that target's search. monotone=True or an
+    explicit fits(c, key) is only valid when the caller has established candidate
+    membership and unchanged cost across those configurations.
 
     EDPs are compared as re-evaluated at the target capacity when available. FFM's own
     reported cost may differ from the model by up to check_pick's rel_tol and from run

@@ -33,12 +33,27 @@ class SummarizeQualityTest(unittest.TestCase):
         self.assertFalse(consistent)
         self.assertFalse(quality['0.25']['consistent_across_repeats']['var'])
 
-    def test_valid_pick_at_smaller_capacity_bounds_larger_capacity(self):
+    def test_variants_are_compared_at_each_capacity(self):
         history = {'a': {0.25: [rec(1.0)], 0.5: [rec(2.0)]}, 'b': {0.25: [rec(3.0)], 0.5: [rec(1.0)]}}
         quality, _, _ = self.summarize(history)
         self.assertEqual(quality['0.5']['best_valid_edp'], 1.0)
         self.assertEqual(quality['0.5']['suboptimal'], ['a'])
         self.assertEqual(quality['0.25']['suboptimal'], ['b'])
+
+    def test_smaller_capacity_pick_is_not_implicitly_in_larger_mapspace(self):
+        # min_usage fallback may keep tile 2 only at the small capacity and tile 1
+        # only at the large one. Physical feasibility alone cannot transfer a pick.
+        history = {v: {0.25: [rec(1.)], 0.5: [rec(2.)]} for v in ('indep', 'var')}
+        quality, invalid, consistent = self.summarize(history)
+        self.assertFalse(invalid)
+        self.assertTrue(consistent)
+        self.assertEqual(quality['0.5']['best_valid_edp'], 2.)
+        self.assertEqual(quality['0.5']['suboptimal'], [])
+
+    def test_proven_nested_mapspace_can_explicitly_use_monotone_bound(self):
+        history = {'a': {0.25: [rec(1.)], 0.5: [rec(2.)]}}
+        quality, _, _ = common.summarize_quality(history, ['a'], self.caps, monotone=True)
+        self.assertEqual(quality['0.5']['suboptimal'], ['a'])
 
     def test_checker_error_is_not_a_valid_reference(self):
         bad = dict(rec(0.1), min_usage_shortfall_error='checker failed')

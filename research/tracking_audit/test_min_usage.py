@@ -124,6 +124,53 @@ def test_single_full_target_matches_the_plain_search():
     assert union == per_target[0] == enumerate_with_memory(4)
 
 
+@pytest.mark.parametrize('usage, minimum, fallback, expected_rows', [
+    (0.75, 1., True, 1),
+    (0.75, 1., False, 0),
+    (1., 1., False, 1),
+    (1.25, 1., True, 0),
+])
+def test_fixed_template_checks_constraints_without_tile_variables(usage, minimum, fallback, expected_rows):
+    job = SimpleNamespace(n_evaluated_pmappings=0, log_porp_pmappings_kept=lambda *a: None)
+    choices = get_tile_shape_choices([
+        Objective('memory', usage, max_value=1),
+        Objective('min_usage', usage, min_value=minimum, try_best_if_none_reaches_min=fallback),
+    ], [], SymbolRelations(), job)
+    assert choices.shape == (expected_rows, 0)
+
+
+def test_fixed_template_capacity_membership_includes_only_feasible_targets():
+    from accelforge.mapper.FFM._make_pmappings.make_pmappings_from_templates.make_tile_shapes import (
+        get_tile_shape_choices_for_targets,
+    )
+    job = SimpleNamespace(n_total_pmappings=1, n_evaluated_pmappings=0,
+                          pmapping_keep_rates={}, log_porp_pmappings_kept=lambda *a: None)
+    choices, excluded = get_tile_shape_choices_for_targets(
+        [Objective('memory', .75, max_value=1)], ((.75, .5), (.75, 1.)),
+        symbols=[], what_tiles_symbol=SymbolRelations(), job=job,
+    )
+    assert choices.shape == (1, 0)
+    np.testing.assert_array_equal(excluded, [[True, False]])
+
+
+def test_real_fixed_template_survives_shared_capacity_search():
+    import common
+    common.af.set_n_parallel_jobs(1)
+    case = common.Case('matmuls', 'nvdla', (1, 1, 1))
+    caps = [64 / 2**20, 128 / 2**20]
+    expected = {}
+    for variant in ('indep', 'var', 'push'):
+        for cap, data, _ in common.run_variant(variant, case, caps):
+            assert len(data) == 1
+            pick = common.check_pick(case, cap, common.best_row(data))
+            assert pick['ok'], pick
+            edp = pick['reevaluated']['edp']
+            if variant == 'indep':
+                expected[cap] = edp
+            else:
+                assert edp == expected[cap]
+
+
 def capacity_fractions(monkeypatch, value, metrics):
     from accelforge.frontend import arch
     from accelforge.mapper.FFM._make_pmappings.make_pmappings import _capacity_fractions_from_env

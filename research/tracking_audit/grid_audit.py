@@ -15,8 +15,8 @@ Variants:
           energy times that factor's latency among rows that fit its capacity
 
 Every pick is re-evaluated at its capacity and scale (common.check_pick). The best
-known EDP at a grid point includes valid picks at the same scale and any capacity not
-larger (they fit too); a different scale is not comparable.
+known EDP at a grid point includes only picks at that same point: min_usage fallback
+can exclude a smaller capacity's mapping from the larger capacity's Mapspace.
 
 Exit status as capacity_audit.py: 2 invalid pick, 5 suboptimal, 3 inconsistent, 0 ok.
 """
@@ -116,7 +116,7 @@ def run(a):
                                      'picks': records}), flush=True)
 
     quality, any_invalid, all_consistent = common.summarize_quality(
-        history, VARIANTS, points, fits=lambda c, key: c[1] == key[1] and c[0] <= key[0])
+        history, VARIANTS, points)
     any_suboptimal = any(q['suboptimal'] for q in quality.values())
     median = {v: statistics.median(t) for v, t in times.items()}
     summary = {'case': str(case), 'caps': caps, 'factors': factors, 'repeats': a.repeats, 'jobs': a.jobs,

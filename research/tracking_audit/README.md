@@ -7,6 +7,31 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Fixed templates and capacity-local audit comparisons
+
+Review of `9be3f809` found a new shared-search regression on
+`matmuls(1,1,1)@nvdla`, GlobalBuffer 64/128 bytes. Independent search returned one
+valid mapping at each capacity, but shared search raised "Einsum Matmul0 has no
+pmappings". A template with no symbolic tiles was represented as zero choices; the
+new capacity-membership arrays consequently made its DataFrame empty. It now has one
+assignment of zero variables, with constant capacity and hard minimum constraints
+checked explicitly. DataFrame construction uses the actual assignment count, so an
+infeasible constant template cannot be resurrected by scalar broadcasting.
+
+The audit also no longer assumes that a pick at a smaller capacity belongs to the
+larger capacity's search. Physical capacity feasibility is monotone, but the
+capacity-dependent `min_usage` fallback makes the enumerated Mapspaces non-nested.
+Default quality comparisons now use the same target configuration only; callers may
+explicitly use cross-capacity bounds after proving membership and cost invariance.
+This changes the audit's reference set, not search pruning or numeric tolerance.
+
+Validation: 167 audit/Streaming tests pass. The fixed-template case matches across
+`indep`, `var` and `push` at both capacities (re-evaluated EDP 1.81812e-19), and the
+`matmuls(2,4,8)@nvdla` 64/128-byte by 1/32/256 latency-scale grid matches independent
+search at all six points with every pick valid. Local serial runs, one repeat,
+without warmup; these are correctness checks, not speedup measurements. Structured
+before/after records: [results/fixed_template_review/](results/fixed_template_review/).
+
 ### Capacity-dependent min_usage fallback: counterexample and fix
 
 **Problem (found in review of `610a2b10`).** When a spatial `min_usage` is unreachable,

@@ -17,8 +17,8 @@ across repeats; search time excludes validation), then a `SUMMARY`.
 
 Every pick of every repeat is validated with common.check_pick and kept. The summary
 reports, per capacity: each variant's EDP, whether it was the same in every repeat, the
-best valid EDP known at that capacity (any valid pick at a capacity <= it, since a
-mapping that fits a smaller GlobalBuffer fits a larger one), and which variants were
+best valid EDP known at that same capacity (min_usage fallback can exclude a smaller
+capacity's mapping from a larger capacity's Mapspace), and which variants were
 invalid in any repeat, suboptimal, or short of a spatial min_usage.
 
 Exit status, most severe first: 2 if any pick was invalid (including a min_usage check

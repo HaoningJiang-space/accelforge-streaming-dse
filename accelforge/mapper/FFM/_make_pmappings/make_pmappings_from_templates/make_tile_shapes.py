@@ -869,6 +869,25 @@ def get_tile_shape_choices(
 ):
     objectives = [copy.deepcopy(o) for o in objectives]
 
+    if not symbols:
+        # A fixed template has one assignment of zero variables, not zero
+        # assignments. Check constant constraints too: a target capacity can
+        # exclude this template even though there is nothing to enumerate.
+        job.n_evaluated_pmappings += 1
+        for objective in objectives:
+            value = objective.formula
+            valid = True
+            if objective.max_value is not None:
+                valid = bool(value <= objective.max_value if objective.inclusive
+                             else value < objective.max_value)
+            if objective.min_value is not None and not objective.try_best_if_none_reaches_min:
+                valid &= bool(value >= objective.min_value if objective.inclusive
+                              else value > objective.min_value)
+            job.log_porp_pmappings_kept(objective.name, float(valid))
+            if not valid:
+                return np.empty((0, 0), dtype=np.int64)
+        return np.empty((1, 0), dtype=np.int64)
+
     import time
 
     objectives = objectives.copy()
@@ -1360,8 +1379,6 @@ def get_tile_shape_choices(
         print("\n\t" + f"\n\t".join(a + job.messages))
 
     # Rearrange in tile shape order
-    if choices_enumerated is None:
-        return np.array([])
     return choices_enumerated[:, [symbols_enumerated.index(s) for s in symbols]]
 
 
@@ -1696,10 +1713,9 @@ def _make_tile_shapes(job: "Job"):
 
     _calculate_iterations_and_rank_columns(pmapping.nodes, job, df, shape)
 
-    try:
-        df = pd.DataFrame(df, columns=df.keys())
-    except ValueError as e:
-        df = pd.DataFrame(df, columns=df.keys(), index=[0])
+    # Scalar model columns must broadcast over the actual assignments. In
+    # particular, an infeasible fixed template must stay empty.
+    df = pd.DataFrame(df, columns=df.keys(), index=range(choices_enumerated.shape[0]))
     assert not df.isna().any().any()
 
     energy_cols = [c for c in df.columns if "Total<SEP>energy" in c]

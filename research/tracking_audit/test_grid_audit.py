@@ -68,3 +68,20 @@ def test_main_records_selected_case_and_cleans_up(monkeypatch):
     assert grid_audit.main(['2,4,8', '1,2', '1,2', '--workload', 'matmuls', '--arch', 'nvdla']) == 0
     assert cases == [args().case]
     assert cleaned == [True]
+
+
+def test_grid_does_not_transfer_picks_between_non_nested_capacity_mapspaces(monkeypatch):
+    def variant(_variant, _case, caps, factors):
+        for cap in caps:
+            for factor in factors:
+                yield ((cap, factor), pd.DataFrame({'Total<SEP>energy': [cap],
+                                                    grid_audit.common.LATENCY: [factor]}),
+                       grid_audit.common.LATENCY, {})
+
+    monkeypatch.setattr(grid_audit, 'run_variant', variant)
+    monkeypatch.setattr(grid_audit.common, 'check_pick', lambda _case, cap, _row, **kw: {
+        'ok': True, 'edp': cap * kw['gb_latency_scale'], 'min_usage_shortfall': [],
+    })
+    summary, status = grid_audit.run(args('--no-warmup'))
+    assert status == 0
+    assert summary['all_picks_best_known']
