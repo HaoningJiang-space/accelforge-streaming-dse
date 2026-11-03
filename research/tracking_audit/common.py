@@ -92,6 +92,7 @@ from accelforge.mapper.FFM._make_pmappings.make_pmappings import (  # noqa: E402
 )
 
 EL = af.Metrics.ENERGY | af.Metrics.LATENCY
+LATENCY = 'Total<SEP>latency'
 RU = EL | af.Metrics.RESOURCE_USAGE
 MAX_JOBS = 16  # hard ceiling: the default (os.cpu_count() = 256) exhausted the shared server
 
@@ -153,12 +154,18 @@ def effective_config(case=DEFAULT_CASE, **extra):
             **extra}
 
 
-def build(case, cap_mib, metrics):
-    """Spec of `case` with exactly cap_mib MiB of GlobalBuffer, searching for `metrics`."""
+def build(case, cap_mib, metrics, gb_latency_scale=1.0):
+    """Spec of `case` with exactly cap_mib MiB of GlobalBuffer, searching for `metrics`.
+
+    gb_latency_scale multiplies every GlobalBuffer action latency (0.5 = twice the
+    bandwidth); it is the per-component latency_scale of the architecture.
+    """
     path, names = WORKLOADS[case.workload]
     spec = af.Spec.from_yaml(ROOT/f'examples/arches/{case.arch}.yaml', ROOT/path,
                              jinja_parse_data=dict(zip(names, case.params)))
     spec.arch.find('GlobalBuffer').size = cap_mib * 1024 * 1024 * 8
+    if gb_latency_scale != 1:
+        spec.arch.find('GlobalBuffer').latency_scale = gb_latency_scale
     spec.mapper.ffm.metrics = metrics
     return spec
 
@@ -205,27 +212,27 @@ def run_variant(variant, case, caps, ablations=None):
         raise ValueError(f'unknown variant {variant}')
 
 
-def best_row(data):
-    """Row with the lowest EDP, or None if no row fits."""
+def best_row(data, latency_col=LATENCY):
+    """Row with the lowest EDP (energy times `latency_col`), or None if no row fits."""
     if data.empty:
         return None
     # Match capacity_breakpoints: multiply in float64, not the input's float32 or
     # fixed-width integer dtype. Use positions because joined indices may repeat.
     energy = data['Total<SEP>energy'].to_numpy(dtype=np.float64)
-    latency = data['Total<SEP>latency'].to_numpy(dtype=np.float64)
+    latency = data[latency_col].to_numpy(dtype=np.float64)
     edp = energy * latency
     if any(not np.isfinite(a).all() or (a < 0).any() for a in (energy, latency, edp)):
         raise ValueError('candidate costs must be finite and nonnegative')
     return data.iloc[int(edp.argmin())]
 
 
-def strict_evaluate(case, cap_mib, mapping):
+def strict_evaluate(case, cap_mib, mapping, gb_latency_scale=1.0):
     """Re-evaluate `mapping` on the architecture with exactly `cap_mib` of GlobalBuffer.
 
     Returns energy, latency, edp and every reservation column, or raises if the mapping
     does not fit or the evaluation does not produce exactly one row.
     """
-    spec = build(case, cap_mib, RU)
+    spec = build(case, cap_mib, RU, gb_latency_scale)
     spec.model.metrics = RU
     spec.mapping = copy.deepcopy(mapping)
     clear_switches()
@@ -299,7 +306,7 @@ def _finite_nonnegative(*xs):
     return all(isinstance(x, numbers.Number) and math.isfinite(x) and x >= 0 for x in xs)
 
 
-def check_pick(case, cap_mib, row, rel_tol=1e-6):
+def check_pick(case, cap_mib, row, rel_tol=1e-6, latency_col=LATENCY, gb_latency_scale=1.0):
     """Strictly validate a picked row. Returns a record with 'ok' set.
 
     ok requires finite nonnegative reported and re-evaluated costs, a successful
@@ -307,8 +314,11 @@ def check_pick(case, cap_mib, row, rel_tol=1e-6):
     Spatial min_usage shortfalls are reported in 'min_usage_shortfall' but do not
     affect ok (see module docstring). A checker error does invalidate the audit:
     an unavailable check must not be mistaken for a completed check.
+
+    The reported latency is read from `latency_col` and compared with a re-evaluation
+    on the architecture whose GlobalBuffer latency is scaled by gb_latency_scale.
     """
-    energy, latency = float(row['Total<SEP>energy']), float(row['Total<SEP>latency'])
+    energy, latency = float(row['Total<SEP>energy']), float(row[latency_col])
     rec = {'cap_mib': cap_mib, 'edp': energy * latency,
            'energy': energy, 'latency': latency}
     if GB in row.index:
@@ -318,7 +328,7 @@ def check_pick(case, cap_mib, row, rel_tol=1e-6):
         return rec
     try:
         mapping = row['Total<SEP>mapping']()
-        ev = strict_evaluate(case, cap_mib, mapping)
+        ev = strict_evaluate(case, cap_mib, mapping, gb_latency_scale)
     except Exception as e:
         rec.update(ok=False, error=f'{type(e).__name__}: {str(e)[:200]}')
         return rec
@@ -338,12 +348,16 @@ def check_pick(case, cap_mib, row, rel_tol=1e-6):
     return rec
 
 
-def summarize_quality(history, variants, caps):
+def summarize_quality(history, variants, caps, monotone=True):
     """Per-capacity quality over every repeat; see capacity_audit.py for the fields.
 
     history[variant][cap] is the list of check_pick records of all repeats. A variant is
     invalid at a capacity if any repeat's pick was invalid, so a later success never
     hides an earlier failure. Returns (quality, any_invalid, all_consistent).
+
+    With monotone=True the keys are capacities and the best valid EDP at a capacity
+    includes picks at smaller ones (they fit too). With monotone=False (e.g. keys are
+    bandwidth scenarios) it only includes picks at the same key.
 
     EDPs are compared as re-evaluated at the target capacity when available. FFM's own
     reported cost may differ from the model by up to check_pick's rel_tol and from run
@@ -362,7 +376,7 @@ def summarize_quality(history, variants, caps):
 
     quality = {}
     for cap in caps:
-        valid_edps = [true_edp(rec) for v in variants for c in caps if c <= cap
+        valid_edps = [true_edp(rec) for v in variants for c in caps if (c <= cap if monotone else c == cap)
                       for rec in history[v][c] if verified(rec)]
         best = min(valid_edps) if valid_edps else None
         q = {'edp': {}, 'reported_edp': {}, 'consistent_across_repeats': {}, 'invalid': [], 'suboptimal': [],
