@@ -155,6 +155,14 @@ def scaled_latency2col(component: str, factor: float) -> str:
     return f"Total<SEP>latency_scaled<SEP>{component}<SEP>{factor!r}"
 
 
+def capacity_excluded2col(memory: str, fraction: float) -> str:
+    """Format: Total capacity_excluded memory fraction. An objective column (summed in
+    the join): the number of Einsums whose pmapping is not among the candidates of the
+    target capacity `fraction` of `memory` (AF_GENERATION_CAPACITY_FRACTIONS). A joined
+    row belongs to that target's search only where it is 0."""
+    return f"Total<SEP>capacity_excluded<SEP>{memory}<SEP>{fraction!r}"
+
+
 @dict_cached
 def firstlatency2col(name: str, nloops: int) -> str:
     """Format: first latency name level"""

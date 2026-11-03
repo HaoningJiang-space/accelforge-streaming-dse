@@ -24,6 +24,7 @@ from accelforge.frontend.mapping import (
 )
 from accelforge.mapper.FFM._make_pmappings.pmapper_job import Job
 from accelforge.mapper.FFM._pareto_df.df_convention import (
+    capacity_excluded2col,
     stride2col,
     initial2col,
     iterations2col,
@@ -806,6 +807,58 @@ def coalesce_symbols(
     return symbol2goal
 
 
+def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
+    """get_tile_shape_choices for a shared capacity search: the union over targets.
+
+    capacity_targets: (usage formula, bound) pairs, one per target capacity of the
+    searched memory (bound = target / searched capacity). The min-usage fallback keeps
+    the highest attainable usage among the candidates that fit, so it depends on the
+    capacity and on earlier fallbacks; a single enumeration at the largest capacity
+    does not cover the smaller targets. Each target is therefore enumerated as an
+    independent search at that capacity would: the plain objectives plus `usage <=
+    bound`, placed before the first min-usage objective, i.e. after the memory checks
+    as in an independent search. The result is the union of the targets' choices.
+
+    Job statistics are those of the full-capacity target (bound 1), as in a single
+    search; n_evaluated_pmappings counts the work of all targets.
+
+    Returns (choices, excluded): excluded[r, k] is True if row r is not in target k's
+    choices. A row kept for one target may also fit another target whose own fallback
+    removed it; it must not be returned there (see capacity_excluded2col). excluded is
+    None without targets.
+    """
+    if not capacity_targets:
+        return get_tile_shape_choices(objectives, **kwargs), None
+    job = kwargs["job"]
+    start = (job.n_total_pmappings, job.n_evaluated_pmappings, dict(job.pmapping_keep_rates))
+    first_min = next(
+        (i for i, o in enumerate(objectives) if o.try_best_if_none_reaches_min), len(objectives)
+    )
+    parts, full_stats, evaluated = [], None, 0
+    for formula, bound in capacity_targets:
+        job.n_total_pmappings, job.n_evaluated_pmappings = start[0], start[1]
+        job.pmapping_keep_rates = dict(start[2])
+        target = Objective(
+            name=f"capacity_target_{bound!r}", formula=formula, symbols=kwargs["symbols"],
+            only_care_if_valid=True, max_value=bound,
+        )
+        parts.append(get_tile_shape_choices(
+            objectives[:first_min] + [target] + objectives[first_min:], **kwargs
+        ))
+        evaluated += job.n_evaluated_pmappings - start[1]
+        if bound == 1:
+            full_stats = (job.n_total_pmappings, dict(job.pmapping_keep_rates))
+    job.n_total_pmappings, job.pmapping_keep_rates = full_stats
+    job.n_evaluated_pmappings = start[1] + evaluated
+    choices = np.unique(np.concatenate(parts, axis=0), axis=0)
+    excluded = np.ones((choices.shape[0], len(parts)), dtype=bool)
+    index = {tuple(row): r for r, row in enumerate(choices.tolist())}
+    for k, part in enumerate(parts):
+        for row in part.tolist():
+            excluded[index[tuple(row)], k] = False
+    return choices, excluded
+
+
 def get_tile_shape_choices(
     objectives: list[Objective],
     symbols: list[Symbol],
@@ -1579,7 +1632,17 @@ def _make_tile_shapes(job: "Job"):
 
     max_loop_check_groups = [g for g in max_loop_check_groups if g[1]]
 
-    choices_enumerated = get_tile_shape_choices(
+    # Shared capacity search (AF_GENERATION_CAPACITY_FRACTIONS): enumerate per target
+    # capacity when a min-usage fallback could make the result capacity-dependent.
+    capacity_targets = ()
+    if getattr(job, "capacity_fractions", None) is not None and job.constraints.min_usage_constraints:
+        memory, fractions = job.capacity_fractions
+        usage_key = f"usage<SEP>memory<SEP>{memory}"
+        if usage_key in per_memory_usage_df:
+            capacity_targets = tuple((per_memory_usage_df[usage_key], f) for f in fractions)
+
+    choices_enumerated, excluded = get_tile_shape_choices_for_targets(
+        capacity_targets=capacity_targets,
         objectives=objectives,
         symbols=symbols,
         what_tiles_symbol=what_tiles_symbol,
@@ -1608,6 +1671,16 @@ def _make_tile_shapes(job: "Job"):
     df = {}
     for i, symbol in enumerate(symbols):
         df[symbol.name] = choices_enumerated[:, i]
+    # One summed objective per target capacity: 1 where this pmapping is not in the
+    # target's choices. Every pmapping gets the columns so the join can add them; a
+    # joined row may be returned for a target only where its sum is 0.
+    if getattr(job, "capacity_fractions", None) is not None:
+        memory, fractions = job.capacity_fractions
+        for k, f in enumerate(fractions):
+            df[capacity_excluded2col(memory, f)] = (
+                excluded[:, k].astype(util.NUMPY_FLOAT_TYPE) if excluded is not None
+                else np.zeros(choices_enumerated.shape[0], dtype=util.NUMPY_FLOAT_TYPE)
+            )
 
     t0 = time.time()
     for key in compiled_df:

@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 # Keep this list in sync with new generation switches in _make_pmappings.
 _GENERATION_ENV_VARS = (
     "AF_LATENCY_SCALES",
+    "AF_GENERATION_CAPACITY_FRACTIONS",
     "AF_GENERATION_VARIABLE_RESOURCES",
     "AF_ABL_ALLOW_UNREPRESENTABLE",
     "AF_ABL_SKIP_BIG_ENOUGH",

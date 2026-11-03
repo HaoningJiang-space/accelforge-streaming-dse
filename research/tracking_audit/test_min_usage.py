@@ -69,3 +69,83 @@ def test_min_usage_fallback_is_capacity_dependent():
     # The larger search's retained candidate needs four units and cannot serve
     # capacity two, where the independent search kept a different candidate.
     assert not (4 / results[4] <= 2).any()
+
+
+def enumerate_with_memory(capacity_units, targets=(), usages=((1, 2),)):
+    """Tiles kept for memory 4/tile units, normalized by capacity_units, and min-usage
+    objectives usage = a / (b * tile) or tile / 8 (b == 0), each with fallback."""
+    from accelforge.mapper.FFM._make_pmappings.make_pmappings_from_templates.make_tile_shapes import (
+        get_tile_shape_choices_for_targets,
+    )
+    tile = Symbol('tile', positive=True, integer=True)
+    relations = SymbolRelations()
+    relations.what_tiles_symbol = [(4, tile), (tile, 1)]
+    relations.make_bounds()
+    job = SimpleNamespace(
+        spec=SimpleNamespace(mapper=SimpleNamespace(ffm=SimpleNamespace(
+            _count_option_for_mapsapce_size_evaluation=(),
+        ))),
+        n_total_pmappings=1, n_evaluated_pmappings=0, pmapping_keep_rates={},
+        log_message=lambda *a: None, log_porp_pmappings_kept=lambda *a: None,
+    )
+    memory = (4 / tile) / capacity_units
+    objectives = [Objective('memory', memory, max_value=1)]
+    for i, (a, b) in enumerate(usages):
+        objectives.append(Objective(f'usage{i}', a / (b * tile) if b else tile / 8, min_value=1.,
+                                    only_care_if_valid=True, try_best_if_none_reaches_min=True))
+    choices, excluded = get_tile_shape_choices_for_targets(
+        objectives, tuple((memory, f) for f in targets), symbols=[tile],
+        what_tiles_symbol=relations, job=job, keep_symbols=[tile],
+    )
+    tiles = choices.ravel().tolist()
+    if excluded is None:
+        return set(tiles)
+    # Per target: the rows that target's enumeration kept.
+    return set(tiles), [{t for t, out in zip(tiles, excluded[:, k]) if not out}
+                        for k in range(len(targets))]
+
+
+@pytest.mark.parametrize('usages', [((1, 2),), ((1, 2), (1, 0))])
+def test_capacity_targets_cover_every_target_capacity(usages):
+    # Independent searches at 2 and 4 units against one search at 4 units with targets
+    # 0.5 and 1. The second case chains two fallbacks: applying the second one to the
+    # union of the first one's survivors lost tile 1 (found in review).
+    small, large = enumerate_with_memory(2, usages=usages), enumerate_with_memory(4, usages=usages)
+    assert (small, large) == ({2}, {1})
+    union, per_target = enumerate_with_memory(4, targets=(0.5, 1.0), usages=usages)
+    assert union == small | large
+    # Membership is exact per target, so tile 2 (kept for 0.5, fits 1.0 too) is not
+    # returned for the full capacity, where the independent search removed it.
+    assert per_target == [small, large]
+
+
+def test_single_full_target_matches_the_plain_search():
+    union, per_target = enumerate_with_memory(4, targets=(1.0,))
+    assert union == per_target[0] == enumerate_with_memory(4)
+
+
+def capacity_fractions(monkeypatch, value, metrics):
+    from accelforge.frontend import arch
+    from accelforge.mapper.FFM._make_pmappings.make_pmappings import _capacity_fractions_from_env
+    monkeypatch.setenv('AF_GENERATION_CAPACITY_FRACTIONS', value)
+    gb = arch.Memory(name='GlobalBuffer', size=8)
+    return _capacity_fractions_from_env({'E': [SimpleNamespace(flattened_arch=[gb])]}, metrics)
+
+
+def test_capacity_fractions_are_parsed_and_include_one(monkeypatch):
+    from accelforge.frontend.mapper.metrics import Metrics
+    ru = Metrics.ENERGY | Metrics.LATENCY | Metrics.RESOURCE_USAGE
+    assert capacity_fractions(monkeypatch, 'GlobalBuffer:0.25, 0.5', ru) == ('GlobalBuffer', (0.25, 0.5, 1.0))
+
+
+@pytest.mark.parametrize('value', ['GlobalBuffer', 'GlobalBuffer:0', 'GlobalBuffer:1.5', 'GlobalBuffer:x', 'Nope:0.5'])
+def test_bad_capacity_fractions_are_rejected(monkeypatch, value):
+    from accelforge.frontend.mapper.metrics import Metrics
+    with pytest.raises(ValueError):
+        capacity_fractions(monkeypatch, value, Metrics.ENERGY | Metrics.LATENCY | Metrics.RESOURCE_USAGE)
+
+
+def test_capacity_fractions_require_resource_usage(monkeypatch):
+    from accelforge.frontend.mapper.metrics import Metrics
+    with pytest.raises(ValueError, match='RESOURCE_USAGE'):
+        capacity_fractions(monkeypatch, 'GlobalBuffer:0.5', Metrics.ENERGY | Metrics.LATENCY)

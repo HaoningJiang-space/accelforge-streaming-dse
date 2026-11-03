@@ -229,6 +229,36 @@ def _latency_scales_from_env(
     return tuple((component, f) for f in factors)
 
 
+def _capacity_fractions_from_env(
+    einsum2jobs: dict[EinsumName, list[Job]], metrics: Metrics
+) -> tuple[str, tuple[float, ...]] | None:
+    """Parse AF_GENERATION_CAPACITY_FRACTIONS="Memory:f1,f2,..." (0 < f <= 1).
+
+    The fractions are the target capacities of a shared capacity search relative to the
+    searched (largest) capacity; 1 is always included. Requires RESOURCE_USAGE, since
+    the memory's usage must be retained to filter for the targets afterwards.
+    """
+    value = os.environ.get("AF_GENERATION_CAPACITY_FRACTIONS", "").strip()
+    if not value:
+        return None
+    memory, sep, fractions = value.partition(":")
+    memory = memory.strip()
+    try:
+        fractions = {float(f) for f in fractions.split(",") if f.strip()}
+    except ValueError:
+        fractions = set()
+    if not sep or not fractions or any(not 0 < f <= 1 for f in fractions):
+        raise ValueError(
+            f"AF_GENERATION_CAPACITY_FRACTIONS must be MEMORY:f1,f2,... with 0 < f <= 1, got {value!r}"
+        )
+    if Metrics.RESOURCE_USAGE not in metrics:
+        raise ValueError("AF_GENERATION_CAPACITY_FRACTIONS requires RESOURCE_USAGE")
+    jobs = [j for js in einsum2jobs.values() for j in js]
+    if not any(isinstance(n, arch.Memory) and n.name == memory for j in jobs for n in j.flattened_arch):
+        raise ValueError(f"AF_GENERATION_CAPACITY_FRACTIONS names unknown memory {memory!r}")
+    return memory, tuple(sorted(fractions | {1.0}))
+
+
 def get_memories_to_track(
     spec: Spec,
     einsum2jobs: dict[EinsumName, list[Job]],
@@ -504,9 +534,11 @@ def _fill_jobs_with_memories_to_track(
         )
     )
     latency_scales = _latency_scales_from_env(einsum2jobs_flattened, metrics)
+    capacity_fractions = _capacity_fractions_from_env(einsum2jobs_flattened, metrics)
     for jobs in einsum2jobs_flattened.values():
         for j in jobs:
             j.memories_track_all = memories_track_all
             j.memories_track_pmappings_only = memories_track_pmappings_only
             j.ignored_resources = ignored_resources
             j.latency_scales = latency_scales
+            j.capacity_fractions = capacity_fractions
