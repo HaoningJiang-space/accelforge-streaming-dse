@@ -7,6 +7,29 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Capacity x bandwidth grid, commit `9be3f809`
+
+`grid_audit.py`: one search per grid point (`indep`) against one shared search at the
+largest capacity with GlobalBuffer kept variable, per-target capacity enumeration and
+one latency objective per scale (`shared`). Two repeats in rotated order after a
+warmup, eight workers, two cases at a time under `run_capped.sh 24 7200`. Records:
+[results/grid_9be3f809/](results/grid_9be3f809/).
+
+| Case | Capacities (MiB) x latency scales | Median s indep / shared | Speedup | Final front | Distinct best EDPs |
+| --- | --- | --- | --- | --- | --- |
+| glu 64,128,256 @ nvdla | 1/32, 1/16, 1/4 x 0.25, 1, 4, 16 | 94.4 / 11.8 | 8.03x | 101 | 6 of 12 points |
+| glu 256,512,1024 @ tpu_v4i | 1/4, 3/8, 1, 4 x 0.25, 1, 4, 16 | 502.8 / 86.2 | 5.83x | 24 | 6 of 16 |
+| matmuls 3,256,256 @ nvdla | 1/32, 1/16, 1/4 x 0.25, 1, 4, 16 | 48.2 / 13.3 | 3.63x | 245 | 9 of 12 |
+
+All three exit 0: every pick re-evaluates exactly at its capacity and scale, repeats
+agree, both variants have the same EDP at every point. "Distinct best EDPs" counts
+different optimal costs across the grid, a lower bound on the number of different
+optimal mappings (mapping identities were not recorded). The shared search spends
+84.3 s of 86.2 s generating on GLU@tpu_v4i: per-target enumeration repeats the
+min-usage templates once per capacity. These runs predate `d7c86825`, which changes
+only fixed (symbol-free) templates, absent here, and narrows the audit reference to
+the same point; all picks were already best known at their own point.
+
 ### Fixed templates and capacity-local audit comparisons
 
 Review of `9be3f809` found a new shared-search regression on
