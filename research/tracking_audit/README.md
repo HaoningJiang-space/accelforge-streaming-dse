@@ -7,6 +7,34 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Speedup versus the number of capacities, commit `70df4847`
+
+`sweep_capacity_count.sh` with K = 2, 4, 6, 16 GlobalBuffer capacities spaced evenly in
+log2 (nested sets; nvdla 1/32-1 MiB, tpu_v4i 1/4-4 MiB), two repeats each, eight
+workers. Records: [results/sweepK_70df4847/](results/sweepK_70df4847/). Median search
+seconds and speedup over per-capacity search:
+
+| Case | K | indep s | var s | push s | var | push |
+| --- | --- | --- | --- | --- | --- | --- |
+| glu 256,512,1024 @ tpu_v4i | 2 | 61.0 | 38.3 | 30.7 | 1.59x | 1.99x |
+| | 4 | 136.7 | 40.9 | 33.7 | 3.34x | 4.06x |
+| | 6 | 195.1 | 42.1 | 35.3 | 4.64x | 5.52x |
+| | 16 | 524.4 | 32.8 | 31.4 | 15.96x | 16.69x |
+| glu 64,128,256 @ nvdla | 2 | 15.3 | 8.9 | 7.7 | 1.72x | 2.00x |
+| | 4 | 29.1 | 8.0 | 6.7 | 3.63x | 4.33x |
+| | 6 | 45.1 | 7.2 | 7.1 | 6.26x | 6.32x |
+| | 16 | 114.9 | 7.8 | 7.9 | 14.80x | 14.48x |
+| matmuls 3,256,256 @ nvdla | 2 | 9.2 | 6.2 | 4.7 | 1.48x | 1.96x |
+| | 4 | 17.8 | 5.3 | 5.3 | 3.39x | 3.35x |
+| | 6 | 24.2 | 5.1 | 4.5 | 4.76x | 5.34x |
+| | 16 | 68.5 | 5.3 | 6.0 | 12.95x | 11.46x |
+
+All twelve runs exit 0: every pick valid, repeats consistent, no variant below the best
+known EDP. The shared search costs about one per-capacity search (GLU@tpu_v4i: 31-42 s
+against 524.4/16 = 32.8 s per capacity), and selecting a capacity's pick from its
+result is negligible, so the speedup grows about linearly with K. push is not reliably
+faster than var at this scale; their difference is within the run-to-run noise.
+
 ### Multi-workload validation, commit `3e6a8502`
 
 Five cases, each with indep/var/push, three repeats in rotated order after an untimed
