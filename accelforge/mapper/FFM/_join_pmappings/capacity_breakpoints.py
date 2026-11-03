@@ -80,6 +80,9 @@ def build_capacity_breakpoints(data, reservation, capacity_scale, *, mode='ffm_c
     query values. Rounded normalized fractions cannot recover that information.
     This function does not certify that the supplied candidates cover the space.
     """
+    from accelforge.mapper.FFM._pareto_df.capacity_membership import is_membership_col, is_excluded_col
+    if any(is_membership_col(c) or is_excluded_col(c) for c in data):
+        raise ValueError('target-specific membership requires declared-target queries, not resource-only breakpoints')
     if mode not in ('ffm_compatible', 'exact_integer'):
         raise ValueError('unknown capacity comparison mode')
     if mode == 'exact_integer':

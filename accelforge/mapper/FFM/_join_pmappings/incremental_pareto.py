@@ -7,11 +7,16 @@ from accelforge.mapper.FFM._pareto_df.df_convention import (
     col_used_in_pareto, is_fused_loop_col, is_n_iterations_col, is_objective_col,
 )
 from accelforge.mapper.FFM._pareto_df import pareto as pareto_module
+from accelforge.mapper.FFM._pareto_df.capacity_membership import is_membership_col, membership_mode
 
 
 def prepare_frontier_schema(frame):
     """Derive static column roles and dtypes; return None for unsupported schema."""
     if pareto_module.TOLERANCE != 0 or not frame.columns.is_unique:
+        return None
+    # These reducers compare scalar minima. Fall back to the general frontier
+    # path, which dispatches to membership superset dominance, never uint64 min.
+    if any(is_membership_col(c) for c in frame) or membership_mode() == 'boolean':
         return None
     try:
         columns = list(frame.columns)

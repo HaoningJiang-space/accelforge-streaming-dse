@@ -10,6 +10,9 @@ from sympy import factorint
 
 from accelforge._accelerated_imports import np
 from accelforge.util.parallel import parallel
+from .capacity_membership import (
+    is_membership_col, membership_mode, booleanize_exclusions, make_membership_pareto,
+)
 
 from accelforge.mapper.FFM._pareto_df.df_convention import (
     col_used_in_pareto,
@@ -216,6 +219,13 @@ def makepareto(
     # return makepareto_time_compare(mappings)
     if columns is None:
         columns = [c for c in mappings.columns if col_used_in_pareto(c)]
+
+    if any(is_membership_col(c) for c in mappings):
+        return make_membership_pareto(mappings, columns, split_by_cols, TOLERANCE)
+    if membership_mode() == 'boolean':
+        if TOLERANCE != 0:
+            raise ValueError('Boolean membership requires zero Pareto tolerance')
+        mappings = booleanize_exclusions(mappings)
 
     # Number of iterations is derived from the tile shapes, so we don't need to use it,
     # since any row with the same tile shapes will have the same number of iterations.

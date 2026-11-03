@@ -1773,11 +1773,17 @@ def _make_tile_shapes(job: "Job"):
     # joined row may be returned for a target only where its sum is 0.
     if getattr(job, "capacity_fractions", None) is not None:
         memory, fractions = job.capacity_fractions
-        for k, f in enumerate(fractions):
-            df[capacity_excluded2col(memory, f)] = (
-                excluded[:, k].astype(util.NUMPY_FLOAT_TYPE) if excluded is not None
-                else np.zeros(choices_enumerated.shape[0], dtype=util.NUMPY_FLOAT_TYPE)
-            )
+        from accelforge.mapper.FFM._pareto_df.capacity_membership import membership_mode, pack_exclusions
+        if membership_mode() == 'bitset':
+            if pareto_module.TOLERANCE != 0:
+                raise ValueError('packed membership requires zero Pareto tolerance')
+            df.update(pack_exclusions(memory, fractions, excluded, len(choices_enumerated)))
+        else:
+            for k, f in enumerate(fractions):
+                df[capacity_excluded2col(memory, f)] = (
+                    excluded[:, k].astype(util.NUMPY_FLOAT_TYPE) if excluded is not None
+                    else np.zeros(choices_enumerated.shape[0], dtype=util.NUMPY_FLOAT_TYPE)
+                )
 
     t0 = time.time()
     for key in compiled_df:

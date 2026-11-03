@@ -23,6 +23,7 @@ from accelforge._accelerated_imports import pd
 from accelforge.mapper.FFM._pareto_df.df_convention import *
 from accelforge.mapper.FFM._pareto_df.pareto import makepareto
 from accelforge.mapper.FFM._pareto_df import pareto as pareto_module
+from accelforge.mapper.FFM._pareto_df.capacity_membership import validate_same_membership
 from accelforge.mapper.FFM._join_pmappings.numeric_join import (
     apply_numpy_program, compile_column_program,
 )
@@ -426,6 +427,7 @@ class PmappingDataframe:
         """
         # Opt-in experiment. Arbitrary row callbacks may depend on the complete
         # dataframe, so leave them on the original path.
+        membership_columns = validate_same_membership([self.data, right.data])
         pair_limit = int(os.environ.get("AF_STREAMING_JOIN_PAIRS", "0"))
         if pair_limit > 0 and pareto_module.TOLERANCE != 0:
             raise ValueError("Streaming join requires zero Pareto tolerance")
@@ -517,6 +519,8 @@ class PmappingDataframe:
         if not numeric_done:
             for target, source in plan["column_operations"]:
                 add_to_col(df, target, source)
+        for column in membership_columns:
+            df[column] = df[column].to_numpy() & df[column + '_RIGHT_MERGE'].to_numpy()
         df = df.drop(columns=plan["right_dropcols"])
         result = PmappingDataframe(
             df,
@@ -660,7 +664,7 @@ class PmappingDataframe:
         dropcols = [c for c in df.columns if c.endswith("_RIGHT_MERGE")]
         for source in dropcols:
             target = source[:-len("_RIGHT_MERGE")]
-            if is_tensor_col(target):
+            if is_tensor_col(target) or is_membership_col(target):
                 continue
             if not col_used_in_pareto(target):
                 raise ValueError(f"{target} is not used in pareto")
@@ -951,6 +955,7 @@ class PmappingDataframe:
         if len(paretos) == 1:
             return paretos[0]
 
+        validate_same_membership([p.data for p in paretos])
         required_cols = set.union(*[set(p.data.columns) for p in paretos])
         shared_cols = set.intersection(*[set(p.data.columns) for p in paretos])
         fill_cols = required_cols - shared_cols

@@ -7,6 +7,47 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Packed target membership (finite targets, opt-in)
+
+`AF_CAPACITY_MEMBERSHIP=bitset` replaces K exclusion-count objective columns with
+`ceil(K/64)` uint64 words. Join intersects allowed-target bits. Within the same
+FFM output boundary, a candidate can dominate another only if its allowed targets
+are a superset and its numeric cost/resource components are no worse. Words never
+enter scalar-min Pareto or floating-point cost arrays. Target membership and
+physical capacity feasibility remain separate checks.
+
+The reference `counts` mode remains the default. A `boolean` ablation clamps
+positive exclusion counts to one but retains K scalar columns and the old Pareto
+backend. This separates dropping irrelevant positive-count distinctions from the
+packed representation and CPU kernel. Both new modes require zero tolerance.
+Packed schemas carry their target labels; missing/mixed schemas fail, and the
+scalar incremental/partitioned Streaming reducers fall back to membership-aware
+Pareto. The resource-only breakpoint builder now rejects target-policy columns:
+it cannot certify non-nested candidate membership at arbitrary capacities.
+
+Three rotated warm repetitions per method, one local worker, fixed bandwidth:
+
+| Case | Count search | Boolean search | Bitset search | Count / bitset |
+| --- | ---: | ---: | ---: | ---: |
+| NVDLA GLU, K=16 | 4.822 s | 5.207 s | 3.999 s | 1.21x |
+| NVDLA GLU, K=64 | 6.058 s | 6.316 s | 4.084 s | 1.48x |
+| TPU v4i GLU, K=64 | 23.554 s | 23.537 s | 18.983 s | 1.24x |
+
+Every method already uses the Event enumerator; these are **additional shared-search
+improvements**, not comparisons to per-architecture FFM. All 36 runs match the
+Boolean-projected numerical frontier and every target's cost/resource frontier.
+All 432 final selected mappings re-evaluate at their target capacities. TPU's raw
+frontier has 10 rows in counts and 8 in Boolean/bitset; the count tables themselves
+are not claimed identical. The 64-target membership array payload shrinks 32x;
+this is not an RSS reduction claim. Tests cover 65/129-target multiword dominance,
+bit 63, provenance, real Join/Streaming and a capacity/bandwidth grid.
+
+The enumerator still builds an NxK exclusion matrix, and target labels occupy
+O(K) schema space. This does not make the whole search independent of K, add
+continuous parameter regions, fix the conservative Fusion filter, or impose a
+global memory budget. The window skyline is CPU-only and quadratic in the worst
+case. [Algorithm contract, raw measurements and reproduction](results/packed_membership/).
+
 ### Event audit: keep-rate fixes and repeated NVDLA Join measurements
 
 The review of `326999a6` correctly identified a Pareto accounting error in both
@@ -57,9 +98,9 @@ three random seeds, shuffled target/symbol/constraint orders, duplicates and emp
 targets; each ordered program is checked against its own oracle. Nine synthetic
 cases also pass separately under each of `PYTHONHASHSEED=17` and `71`. Real-template
 checks compare keep rates and count estimates in addition to Tile dtype, values
-and target membership. This completes the finite-target P0 audit; membership
-bitsets/continuous parameter regions and the Fusion Copy Contract remain separate
-work. [Records and reproduction](results/event_join_audit/).
+and target membership. This completed the finite-target P0 audit; the packed
+membership follow-up is reported above. Continuous parameter regions and the
+Fusion Copy Contract remain separate work. [Records and reproduction](results/event_join_audit/).
 
 ### Capacity-event shared Tile enumeration
 
@@ -112,8 +153,9 @@ identical. Tests compare dtype as well as per-template Tile values and membershi
 This retains the reference's numerical behavior, not a new byte-exact resource model.
 
 This is **not yet a continuous-parameter solver**: it serves the declared capacity
-targets, does not certify intervals for unseen queries, and retains K membership
-columns in the final candidates. It does not add a Fusion Copy Contract, relax the
+targets and does not certify intervals for unseen queries. Its default output
+retains K membership columns; the opt-in packed follow-up above compresses the
+output words, not the enumerator's NxK mask. It does not add a Fusion Copy Contract, relax the
 conservative copy filter, or provide a global memory budget. All cohort states are
 currently resident. In the worst case every target has a distinct state; no general
 sublinear-in-K runtime guarantee is claimed.

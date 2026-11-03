@@ -4,6 +4,7 @@ import re
 from accelforge.util._frozenset import fzs
 from accelforge.frontend.workload import Rank
 from accelforge.util._base_analysis_types import ActionKey, VerboseActionKey
+from .capacity_membership import is_membership_col
 
 
 MAPPING_COLUMN = "mapping"
@@ -245,7 +246,7 @@ def is_objective_col(c):
 
 
 def col_used_in_pareto(c):
-    return col2nameloop(c) is not None or is_objective_col(c)
+    return col2nameloop(c) is not None or is_objective_col(c) or is_membership_col(c)
 
 
 def col_used_in_joining(c):

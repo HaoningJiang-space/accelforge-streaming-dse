@@ -207,6 +207,9 @@ def rows_for_capacity(data, cap, maxcap):
     """Rows of a shared search at maxcap that belong to the search at `cap`: they fit
     its GlobalBuffer and every pmapping was kept by that target's enumeration."""
     rows = data[data[GB] <= cap / maxcap * (1 + 1e-12)]
+    from accelforge.mapper.FFM._pareto_df.capacity_membership import is_membership_col, membership_for_target
+    if any(is_membership_col(c) for c in rows):
+        return rows[membership_for_target(rows, 'GlobalBuffer', cap / maxcap)]
     excluded = capacity_excluded2col('GlobalBuffer', cap / maxcap)
     if excluded not in data:
         # Shared searches always run with AF_GENERATION_CAPACITY_FRACTIONS. Filtering
