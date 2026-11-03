@@ -7,36 +7,48 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
-### Capacity reuse has a confirmed coverage counterexample
+### Capacity-dependent min_usage fallback: counterexample and fix
 
-Review of `610a2b10`, with the cache/audit fixes below, found a failure on
-`matmuls(2,4,8)@nvdla`, GlobalBuffer **64/128 bytes** (not KiB), latency scales
-1/32/256, one worker, one repeat without warmup. Independent search returns valid,
-re-evaluated mappings at all six points. Shared search at 128 bytes returns no
-candidate fitting 64 bytes at any scale; its 128-byte answers match. The grid audit
-correctly exits **2**. Its runtime ratio is **not** an accepted speedup result.
-Records: [results/review_grid_coverage.txt](results/review_grid_coverage.txt).
+**Problem (found in review of `610a2b10`).** When a spatial `min_usage` is unreachable,
+tile enumeration keeps the highest attainable usage *among the candidates that fit*.
+That set depends on the capacity, so a search at the largest capacity can drop
+candidates an independent search at a smaller capacity keeps. On
+`matmuls(2,4,8)@nvdla` with GlobalBuffer 64/128 **bytes**, the shared search found
+nothing fitting 64 bytes while independent search did (grid audit exit 2; records:
+[results/review_grid_coverage.txt](results/review_grid_coverage.txt),
+[results/review_grid_min_usage.json](results/review_grid_min_usage.json)). It affects
+capacity-only reuse too.
 
-The cause is capacity-dependent `min_usage` fallback in tile enumeration: when a
-minimum is unreachable, FFM keeps the highest attainable usage *among candidates
-feasible at that capacity*. Increasing capacity can change that maximum and remove
-the lower-usage candidates needed by a smaller capacity. Thus the retained candidate
-set at maximum capacity need not cover the smaller search, even with RESOURCE_USAGE
-and protected GlobalBuffer reservations. This also affects capacity-only reuse.
+**Rejected fixes.** (1) Applying the fallback per capacity group but keeping a whole
+group while its usage formula was not yet enumerated: the min-usage objective is
+removed once complete, so the fallback never ran and the shared search returned a
+mapping outside the independent Mapspace (Matmul0 reuse_input 0.125 where 0.25 is
+attainable; it looked *better* than independent search, exit 5). (2) Per-group
+fallback with optimistic membership: two chained min-usage fallbacks were applied to
+the union of the first one's survivors and lost candidates (independent {2} and {1},
+shared {2}; found in review, now a test).
 
-A capacity-only diagnostic at 128 bytes confirms the issue: with the original
-min_usage, the smallest retained GLB requirement is 80 bytes and no row fits 64;
-setting spatial min_usage to zero produces 74 rows fitting 64 bytes. This ablation
-changes the Mapspace and is **not a fix** or an equivalent baseline. Evidence:
-[results/review_grid_min_usage.json](results/review_grid_min_usage.json).
-`test_min_usage_fallback_is_capacity_dependent` provides a small real-enumerator
-counterexample without an FFM workload search.
+**Fix.** `AF_GENERATION_CAPACITY_FRACTIONS=GlobalBuffer:f1,...` (set by the audits for
+`var`, `push` and the grid's `shared`) tells generation its target capacities as
+fractions of the searched one. For templates with min-usage constraints, tile
+enumeration runs once per target with the plain rules plus `GlobalBuffer usage <= f`
+(`get_tile_shape_choices_for_targets`), so each target's candidates are by
+construction those of an independent search at that capacity; the union is kept.
+Each pmapping carries one summed objective per target,
+`Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>f`, 1 where it was not among that
+target's candidates. A joined row is returned for a target only where the sum is 0
+(`common.rows_for_capacity`), so a candidate kept for one target is never returned
+for another whose own fallback removed it. As a minimized objective this is safe for
+Pareto pruning: a row dominating one with sum 0 has sum 0 too.
 
-Resolving this requires retaining and applying the fallback policy per target
-capacity, or explicitly running separate searches for affected capacity groups.
-The current shared implementation remains experimental and must pass the independent
-comparison at every target point. The successful larger-capacity measurements below
-do not establish general candidate coverage.
+**Validation** (temporary worktree on f6752402 plus this change; records:
+[results/coverage_fix/](results/coverage_fix/)). 158 tests pass, including exact
+per-target membership for single and chained fallbacks. The 64/128-byte case now
+matches independent search at all six grid points and in the capacity audit (exit 0
+for both). GLU 64,128,256@nvdla on a 3x4 grid gives the same EDPs as before the fix
+(7.19x). Half-scale GLU@tpu_v4i, four capacities, one repeat: same EDPs, var 2.46x,
+push 3.43x; generation per shared search rose from about 33 s to 41 s because
+templates with min-usage constraints are enumerated once per target.
 
 ### Cache and audit fixes after 610a2b10
 
@@ -376,6 +388,7 @@ Memory lists are comma-separated and unknown memory names raise.
 | --- | --- |
 | `AF_VARIABLE_RESOURCES` | Join retains the listed resource tradeoffs; fixed resources are removed only after the sum-of-maxima capacity proof. |
 | `AF_GENERATION_VARIABLE_RESOURCES` | With RESOURCE_USAGE, preserve listed variable memories during generation; fixed memories use the normal elimination rules. |
+| `AF_GENERATION_CAPACITY_FRACTIONS` | `MEMORY:f1,f2,...` (0 < f <= 1, 1 implied): target capacities of a shared search as fractions of the searched one. Templates with min-usage constraints are enumerated once per target and the union is kept; each pmapping gets `Total<SEP>capacity_excluded<SEP>MEMORY<SEP>f`, 0 if it is among target f's candidates. Requires RESOURCE_USAGE. |
 | `AF_LATENCY_SCALES` | `COMPONENT:f1,f2,...`: during generation, add one objective `Total<SEP>latency_scaled<SEP>COMPONENT<SEP>f` per factor. Scale that component's action latencies before evaluating its `total_latency` formula. Summed in the join like `Total<SEP>latency`. Requires LATENCY and zero leak power; other architecture attributes, dynamic energy costs and candidate constraints must remain fixed. |
 | `AF_ABL_SKIP_BIG_ENOUGH` | Exempt listed memories from the full-tensor-size upper-bound elimination. |
 | `AF_ABL_SKIP_PMAPPING_ONLY` | Exempt listed memories from the below-all-backing-holders elimination. |
