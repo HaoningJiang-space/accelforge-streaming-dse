@@ -7,6 +7,27 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Capacity re-validation after the reservation fixes, commit `52953a43`
+
+71591f38 changed reservation accounting, so the five multi-workload cases below were
+rerun unchanged (three repeats, two lanes, eight workers each). Records:
+[results/multi_52953a43/](results/multi_52953a43/). All five exit 0 with every flag
+true. Medians indep / var / push and speedups:
+
+| Case | Median s | var | push |
+| --- | --- | --- | --- |
+| glu 256,512,1024 @ tpu_v4i | 130.1 / 38.1 / 33.5 | 3.41x | 3.88x |
+| matmuls 3,256,256 @ tpu_v4i | 59.2 / 21.6 / 20.5 | 2.75x | 2.88x |
+| glu 64,128,256 @ nvdla | 24.5 / 7.6 / 8.3 | 3.24x | 2.97x |
+| matmuls 3,256,256 @ nvdla | 10.8 / 6.2 / 4.1 | 1.74x | 2.61x |
+| mobilenet 1 @ nvdla | 138.3 / 79.9 / 51.0 | 1.73x | 2.71x |
+
+The best valid EDPs differ from the `3e6a8502` run by at most 1.1e-7 relative, in both
+directions. AccelForge evaluates costs in float32 (`util.NUMPY_FLOAT_TYPE`; relative
+precision about 1.2e-7), so the two runs agree to the model's precision; the
+reservation fixes did not change any conclusion here. Comparisons across commits should
+use a tolerance of a few 1e-7, not the 1e-9 used within one run.
+
 ### Bandwidth reuse (`AF_LATENCY_SCALES`), validated before commit
 
 One search carries one latency objective per GlobalBuffer latency scale f (f = 4 is a
