@@ -40,6 +40,8 @@ from accelforge.mapper.FFM._join_pmappings.pmapping_dataframe import (
 from accelforge.frontend.mapper.metrics import Metrics
 from accelforge.util._frozenset import fzs
 from .enumeration_prefix import EnumerationPrefixCache
+from .enumeration_pareto import EnumerationParetoCache
+from accelforge.mapper.FFM._pareto_df import pareto as pareto_module
 from .symbolic_text import SymbolicText
 import math
 import sympy
@@ -959,8 +961,9 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
     # Every target still runs its own fallback history and pruning decisions.
     budget = int(os.environ.get("AF_ENUMERATION_PREFIX_BYTES", "0"))
     cache = EnumerationPrefixCache(budget)
+    pareto_cache = EnumerationParetoCache(int(os.environ.get('AF_ENUMERATION_PARETO_BYTES', '0')))
     kwargs = {**kwargs, "_compiled_objectives": {}, "_prefix_cache": cache,
-              "_symbolic_text": SymbolicText()}
+              "_symbolic_text": SymbolicText(), "_pareto_cache": pareto_cache}
     job = kwargs["job"]
     start = (job.n_total_pmappings, job.n_evaluated_pmappings, dict(job.pmapping_keep_rates))
     first_min = next(
@@ -983,6 +986,7 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):
     job.n_total_pmappings, job.pmapping_keep_rates = full_stats
     job.n_evaluated_pmappings = start[1] + evaluated
     job.enumeration_stats = dict(cache.stats)
+    job.enumeration_pareto_stats = dict(pareto_cache.stats)
     choices = np.unique(np.concatenate(parts, axis=0), axis=0)
     excluded = np.ones((choices.shape[0], len(parts)), dtype=bool)
     index = {tuple(row): r for r, row in enumerate(choices.tolist())}
@@ -1002,6 +1006,7 @@ def get_tile_shape_choices(
     _compiled_objectives: dict | None = None,
     _prefix_cache: EnumerationPrefixCache | None = None,
     _symbolic_text: SymbolicText | None = None,
+    _pareto_cache: EnumerationParetoCache | None = None,
 ):
     # Only the per-enumeration constraint fields are mutated below. SymPy
     # expressions are immutable; deepcopy needlessly reconstructs their Max/Min
@@ -1409,7 +1414,12 @@ def get_tile_shape_choices(
             to_pareto = to_pareto[
                 :, [i for i in range(to_pareto.shape[1]) if i not in drop_cols]
             ]
-            keep = makepareto_numpy(to_pareto, pareto_goals, dirty=True)
+            if _pareto_cache is None:
+                keep = makepareto_numpy(to_pareto, pareto_goals, dirty=True)
+            else:
+                keep = _pareto_cache.prune(
+                    to_pareto, pareto_goals, pareto_module.TOLERANCE,
+                    lambda: makepareto_numpy(to_pareto, pareto_goals, dirty=True))
             prev_size = choices_enumerated.shape[0]
             choices_enumerated = choices_enumerated[keep]
             job.log_porp_pmappings_kept(
@@ -1477,10 +1487,24 @@ def call_compiled_objective(f, *args):
     return f(*args)
 
 
+@lru_cache(maxsize=512)
+def _prepare_rank_projection(expr: Expr):
+    """Compile only immutable projection structure; evaluate fresh tile data later.
+
+    Preserve the parser's symbol order and the original coefficient semantics.
+    No mapping, workload object, candidate array or evaluated result is cached.
+    """
+    symbols = tuple(expr.free_symbols)
+    names = tuple(s.name for s in symbols)
+    coefficients = tuple(expr.coeff(name) for name in names)
+    return symbols, names, coefficients, lambdify(symbols, expr)
+
+
 def _calculate_iterations_and_rank_columns(
     pmapping: list[MappingNode], job: "Job", df: pd.DataFrame, shape: dict[str, int]
 ):
     loops = [n for n in pmapping if isinstance(n, Loop)]
+    projections = None
     # Some initial tile shapes are invalid
     for nloops, n in enumerate(loops):
         if not n._fused:
@@ -1517,28 +1541,23 @@ def _calculate_iterations_and_rank_columns(
         df[f"lower_iterations<SEP>{nloops}"] = outer_stride - rank_var_initial
 
         # Generate rank columns
-        einsum: Einsum = job.spec.workload.einsums[job.einsum_name]
-        for tensor_access in einsum.tensor_accesses:
-            tensor = tensor_access.name
-            projections = get_projection_expr(einsum, tensor)
-            for rank, expr in projections.items():
-                free_symbols = tuple(expr.free_symbols)
-                free_symbols_str = tuple(symbol.name for symbol in free_symbols)
-                if n.rank_variable not in free_symbols_str:
-                    continue
+        if projections is None:
+            einsum: Einsum = job.spec.workload.einsums[job.einsum_name]
+            projections = [item for tensor in einsum.tensor_accesses
+                           for item in get_projection_expr(einsum, tensor.name).items()]
+        # Preserve tensor/rank order, including repeated rank names: later writes
+        # must replace earlier ones exactly as in the original loop.
+        for rank, expr in projections:
+            if not any(s.name == n.rank_variable for s in expr.free_symbols):
+                continue
+            free_symbols, names, coefficients, evaluate = _prepare_rank_projection(expr)
+            rank_stride = coefficients[names.index(n.rank_variable)] * rank_var_stride
+            args = [rank_var_initial if s.name == n.rank_variable else shape[s.name]
+                    for s in free_symbols]
+            rank_initial = evaluate(*args)
 
-                rank_stride = expr.coeff(n.rank_variable) * rank_var_stride
-
-                args = []
-                for free_rank_var in free_symbols:
-                    if free_rank_var.name == n.rank_variable:
-                        args.append(rank_var_initial)
-                    else:
-                        args.append(shape[free_rank_var.name])
-                rank_initial = lambdify(free_symbols, expr)(*args)
-
-                df[stride2col(rank, nloops)] = rank_stride
-                df[initial2col(rank, nloops)] = rank_initial
+            df[stride2col(rank, nloops)] = rank_stride
+            df[initial2col(rank, nloops)] = rank_initial
 
 
 def _make_tile_shapes(job: "Job"):

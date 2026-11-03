@@ -1,0 +1,949 @@
+{
+  "case": "glu(M=256,G=512,C=1024)@tpu_v4i",
+  "caps": [0.25, 0.30075625902052916, 0.36181730936009454, 0.43527528164806206, 0.5236470614103134, 0.6299605249474366, 0.7578582832551991, 0.9117224885582168, 1.096824979694626, 1.3195079107728942, 1.5874010519681994, 1.9096832078208328, 2.29739670999407, 2.7638257599355525, 3.324951584571151, 4.0],
+  "factors": [1.0],
+  "jobs": 1,
+  "phase_timers": true,
+  "cprofile": false,
+  "prefix_bytes": 0,
+  "pareto_bytes": 8388608,
+  "python": "3.12.14",
+  "pythonhashseed": "0",
+  "commit": "6a4f486d901a5d1b2662d63b29aa16645a859a2a",
+  "diff": "diff --git a/accelforge/frontend/_workload_isl/_symbolic.py b/accelforge/frontend/_workload_isl/_symbolic.py\nindex 75957eeb..25e2bc3e 100755\n--- a/accelforge/frontend/_workload_isl/_symbolic.py\n+++ b/accelforge/frontend/_workload_isl/_symbolic.py\n@@ -1,6 +1,6 @@\n from dataclasses import dataclass\n from typing import Any\n-from functools import reduce\n+from functools import lru_cache, reduce\n from operator import mul\n \n import sympy\n@@ -16,10 +16,16 @@ from accelforge.frontend.workload import (\n from ._isl import get_rank_variable_bounds\n \n \n+@lru_cache(maxsize=1024)\n+def _parse_projection_expr(projection: str) -> sympy.Expr:\n+    \"\"\"Reuse immutable index expressions by value, never by mutable workload ID.\"\"\"\n+    return sympy.parsing.sympy_parser.parse_expr(projection)\n+\n+\n def get_projection_expr(einsum: Einsum, tensor: TensorName) -> dict[Rank, sympy.Expr]:\n     projection = einsum.tensor_accesses[tensor].projection\n     return {\n-        rank_name: sympy.parsing.sympy_parser.parse_expr(proj_str)\n+        rank_name: _parse_projection_expr(proj_str)\n         for rank_name, proj_str in projection.items()\n     }\n \n@@ -40,11 +46,12 @@ class PartiallyRelevant:\n \n def get_rank_variable_relevancy(einsum: Einsum, tensor: TensorName):\n     relevancy = {}\n-    projection = einsum.tensor_accesses[tensor].projection\n+    # Parse each rank once, rather than once per rank variable. The dictionary\n+    # and relevancy objects remain fresh so callers may mutate their own result.\n+    projection = get_projection_expr(einsum, tensor)\n     for rank_variable in einsum.rank_variables:\n         relevancy[rank_variable] = Irrelevant()\n-        for rank_name, projection_str in projection.items():\n-            projection_expr = sympy.parsing.sympy_parser.parse_expr(projection_str)\n+        for rank_name, projection_expr in projection.items():\n             is_simple = len(sympy.Add.make_args(projection_expr)) == 1\n             is_relevant = (\n                 sympy.symbols(f\"{rank_variable}\") in projection_expr.free_symbols\ndiff --git a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\nindex c5ca1db2..767d4d1a 100755\n--- a/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\n+++ b/accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py\n@@ -40,6 +40,8 @@ from accelforge.mapper.FFM._join_pmappings.pmapping_dataframe import (\n from accelforge.frontend.mapper.metrics import Metrics\n from accelforge.util._frozenset import fzs\n from .enumeration_prefix import EnumerationPrefixCache\n+from .enumeration_pareto import EnumerationParetoCache\n+from accelforge.mapper.FFM._pareto_df import pareto as pareto_module\n from .symbolic_text import SymbolicText\n import math\n import sympy\n@@ -959,8 +961,9 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):\n     # Every target still runs its own fallback history and pruning decisions.\n     budget = int(os.environ.get(\"AF_ENUMERATION_PREFIX_BYTES\", \"0\"))\n     cache = EnumerationPrefixCache(budget)\n+    pareto_cache = EnumerationParetoCache(int(os.environ.get('AF_ENUMERATION_PARETO_BYTES', '0')))\n     kwargs = {**kwargs, \"_compiled_objectives\": {}, \"_prefix_cache\": cache,\n-              \"_symbolic_text\": SymbolicText()}\n+              \"_symbolic_text\": SymbolicText(), \"_pareto_cache\": pareto_cache}\n     job = kwargs[\"job\"]\n     start = (job.n_total_pmappings, job.n_evaluated_pmappings, dict(job.pmapping_keep_rates))\n     first_min = next(\n@@ -983,6 +986,7 @@ def get_tile_shape_choices_for_targets(objectives, capacity_targets, **kwargs):\n     job.n_total_pmappings, job.pmapping_keep_rates = full_stats\n     job.n_evaluated_pmappings = start[1] + evaluated\n     job.enumeration_stats = dict(cache.stats)\n+    job.enumeration_pareto_stats = dict(pareto_cache.stats)\n     choices = np.unique(np.concatenate(parts, axis=0), axis=0)\n     excluded = np.ones((choices.shape[0], len(parts)), dtype=bool)\n     index = {tuple(row): r for r, row in enumerate(choices.tolist())}\n@@ -1002,6 +1006,7 @@ def get_tile_shape_choices(\n     _compiled_objectives: dict | None = None,\n     _prefix_cache: EnumerationPrefixCache | None = None,\n     _symbolic_text: SymbolicText | None = None,\n+    _pareto_cache: EnumerationParetoCache | None = None,\n ):\n     # Only the per-enumeration constraint fields are mutated below. SymPy\n     # expressions are immutable; deepcopy needlessly reconstructs their Max/Min\n@@ -1409,7 +1414,12 @@ def get_tile_shape_choices(\n             to_pareto = to_pareto[\n                 :, [i for i in range(to_pareto.shape[1]) if i not in drop_cols]\n             ]\n-            keep = makepareto_numpy(to_pareto, pareto_goals, dirty=True)\n+            if _pareto_cache is None:\n+                keep = makepareto_numpy(to_pareto, pareto_goals, dirty=True)\n+            else:\n+                keep = _pareto_cache.prune(\n+                    to_pareto, pareto_goals, pareto_module.TOLERANCE,\n+                    lambda: makepareto_numpy(to_pareto, pareto_goals, dirty=True))\n             prev_size = choices_enumerated.shape[0]\n             choices_enumerated = choices_enumerated[keep]\n             job.log_porp_pmappings_kept(\n@@ -1477,10 +1487,24 @@ def call_compiled_objective(f, *args):\n     return f(*args)\n \n \n+@lru_cache(maxsize=512)\n+def _prepare_rank_projection(expr: Expr):\n+    \"\"\"Compile only immutable projection structure; evaluate fresh tile data later.\n+\n+    Preserve the parser's symbol order and the original coefficient semantics.\n+    No mapping, workload object, candidate array or evaluated result is cached.\n+    \"\"\"\n+    symbols = tuple(expr.free_symbols)\n+    names = tuple(s.name for s in symbols)\n+    coefficients = tuple(expr.coeff(name) for name in names)\n+    return symbols, names, coefficients, lambdify(symbols, expr)\n+\n+\n def _calculate_iterations_and_rank_columns(\n     pmapping: list[MappingNode], job: \"Job\", df: pd.DataFrame, shape: dict[str, int]\n ):\n     loops = [n for n in pmapping if isinstance(n, Loop)]\n+    projections = None\n     # Some initial tile shapes are invalid\n     for nloops, n in enumerate(loops):\n         if not n._fused:\n@@ -1517,28 +1541,23 @@ def _calculate_iterations_and_rank_columns(\n         df[f\"lower_iterations<SEP>{nloops}\"] = outer_stride - rank_var_initial\n \n         # Generate rank columns\n-        einsum: Einsum = job.spec.workload.einsums[job.einsum_name]\n-        for tensor_access in einsum.tensor_accesses:\n-            tensor = tensor_access.name\n-            projections = get_projection_expr(einsum, tensor)\n-            for rank, expr in projections.items():\n-                free_symbols = tuple(expr.free_symbols)\n-                free_symbols_str = tuple(symbol.name for symbol in free_symbols)\n-                if n.rank_variable not in free_symbols_str:\n-                    continue\n-\n-                rank_stride = expr.coeff(n.rank_variable) * rank_var_stride\n-\n-                args = []\n-                for free_rank_var in free_symbols:\n-                    if free_rank_var.name == n.rank_variable:\n-                        args.append(rank_var_initial)\n-                    else:\n-                        args.append(shape[free_rank_var.name])\n-                rank_initial = lambdify(free_symbols, expr)(*args)\n-\n-                df[stride2col(rank, nloops)] = rank_stride\n-                df[initial2col(rank, nloops)] = rank_initial\n+        if projections is None:\n+            einsum: Einsum = job.spec.workload.einsums[job.einsum_name]\n+            projections = [item for tensor in einsum.tensor_accesses\n+                           for item in get_projection_expr(einsum, tensor.name).items()]\n+        # Preserve tensor/rank order, including repeated rank names: later writes\n+        # must replace earlier ones exactly as in the original loop.\n+        for rank, expr in projections:\n+            if not any(s.name == n.rank_variable for s in expr.free_symbols):\n+                continue\n+            free_symbols, names, coefficients, evaluate = _prepare_rank_projection(expr)\n+            rank_stride = coefficients[names.index(n.rank_variable)] * rank_var_stride\n+            args = [rank_var_initial if s.name == n.rank_variable else shape[s.name]\n+                    for s in free_symbols]\n+            rank_initial = evaluate(*args)\n+\n+            df[stride2col(rank, nloops)] = rank_stride\n+            df[initial2col(rank, nloops)] = rank_initial\n \n \n def _make_tile_shapes(job: \"Job\"):\ndiff --git a/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py b/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\nindex 5fde9268..b5489488 100755\n--- a/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\n+++ b/accelforge/mapper/FFM/_make_pmappings/pmapper_job.py\n@@ -95,6 +95,7 @@ class Job:\n     \"\"\"Per-template shared-prefix work counters and retained cache payload bytes.\n     These do not measure total process memory or the whole candidate search tree.\n     \"\"\"\n+    enumeration_pareto_stats: dict[str, int] = field(default_factory=dict)\n \n     _update_compatibility_with_tile_shapes_args: dict[str, Any] | None = None\n \ndiff --git a/accelforge/mapper/FFM/main.py b/accelforge/mapper/FFM/main.py\nindex a98d35b6..8c92d550 100755\n--- a/accelforge/mapper/FFM/main.py\n+++ b/accelforge/mapper/FFM/main.py\n@@ -31,6 +31,7 @@ _GENERATION_CACHE_VERSION = 1\n # Keep this list in sync with new generation switches in _make_pmappings.\n _GENERATION_ENV_VARS = (\n     \"AF_ENUMERATION_PREFIX_BYTES\",  # Also separates cached work statistics.\n+    \"AF_ENUMERATION_PARETO_BYTES\",\n     \"AF_LATENCY_SCALES\",\n     \"AF_GENERATION_CAPACITY_FRACTIONS\",\n     \"AF_GENERATION_VARIABLE_RESOURCES\",\ndiff --git a/accelforge/model/_looptree/reuse/symbolic/symbolic.py b/accelforge/model/_looptree/reuse/symbolic/symbolic.py\nindex 10db9ae7..78fc18bd 100755\n--- a/accelforge/model/_looptree/reuse/symbolic/symbolic.py\n+++ b/accelforge/model/_looptree/reuse/symbolic/symbolic.py\n@@ -1,4 +1,5 @@\n import copy\n+from functools import lru_cache\n from dataclasses import dataclass, field\n import itertools\n from accelforge.frontend.mapping import (\n@@ -106,6 +107,16 @@ def max_dict(a: dict[Any, Any], b: dict[Any, Any]) -> dict[Any, Any]:\n     return new\n \n \n+@lru_cache(maxsize=4096, typed=True)\n+def _maximum_stat(left, right):\n+    \"\"\"Reuse identical immutable statistics, including numeric type/assumptions.\n+\n+    Do not assume nonnegativity or remove the zero clamp. SymPy must still decide\n+    the exact maximum, once per retained argument pair.\n+    \"\"\"\n+    return Max(left, right)\n+\n+\n @dataclass\n class BuffetStats:\n     total_reads_to_parent: Any = field(default=0)\n@@ -203,7 +214,14 @@ class BuffetStats:\n                     new, attr, min_nonzero(getattr(self, attr), getattr(other, attr))\n                 )\n             elif attr.startswith(\"max_\"):\n-                setattr(new, attr, Max(getattr(self, attr), getattr(other, attr)))\n+                left, right = getattr(self, attr), getattr(other, attr)\n+                # The cache is only for immutable scalar expressions. Preserve\n+                # SymPy's behavior for other objects accepted by this Any API.\n+                immutable = (int, float, sympy.Expr)\n+                maximum = (_maximum_stat(left, right)\n+                           if isinstance(left, immutable) and isinstance(right, immutable)\n+                           else Max(left, right))\n+                setattr(new, attr, maximum)\n             elif attr.startswith(\"total_\"):\n                 setattr(new, attr, getattr(self, attr) + getattr(other, attr))\n             elif getattr(self, attr) is None:\n",
+  "runs": [
+    {
+      "repeat": 0,
+      "make_s": 63.28251950000413,
+      "join_s": 1.347600750043057,
+      "rows_generated": 7673,
+      "rows_front": 10,
+      "search_s": 64.63012025004718,
+      "enumeration": {
+        "templates_with_targets": 219,
+        "requests": 23844,
+        "expansions": 23844,
+        "hits": 0,
+        "requested_rows": 4514936,
+        "expanded_rows": 4514936,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "enumeration_pareto": {
+        "requests": 4713,
+        "computations": 1010,
+        "hits": 3703,
+        "requested_rows": 1356632,
+        "computed_rows": 284034,
+        "evictions": 0,
+        "max_template_payload_bytes": 107854
+      },
+      "model_caches_cumulative": {
+        "_parse_projection_expr": {
+          "hits": 13088,
+          "misses": 7,
+          "maxsize": 1024,
+          "currsize": 7
+        },
+        "_prepare_rank_projection": {
+          "hits": 1589,
+          "misses": 3,
+          "maxsize": 512,
+          "currsize": 3
+        },
+        "_maximum_stat": {
+          "hits": 126002,
+          "misses": 2119,
+          "maxsize": 4096,
+          "currsize": 2119
+        }
+      },
+      "phases": {
+        "template_generation": {
+          "calls": 1,
+          "inclusive_s": 1.8451039999490604,
+          "exclusive_s": 1.8451039999490604
+        },
+        "reuse_analysis": {
+          "calls": 227,
+          "inclusive_s": 3.8076986161759123,
+          "exclusive_s": 3.8076986161759123
+        },
+        "latency_model": {
+          "calls": 227,
+          "inclusive_s": 0.9684319562511519,
+          "exclusive_s": 0.9684319562511519
+        },
+        "latency_maximum": {
+          "calls": 227,
+          "inclusive_s": 1.5341640486149117,
+          "exclusive_s": 1.5341640486149117
+        },
+        "gather_actions": {
+          "calls": 227,
+          "inclusive_s": 0.042897369363345206,
+          "exclusive_s": 0.042897369363345206
+        },
+        "energy_model": {
+          "calls": 227,
+          "inclusive_s": 0.1472694689873606,
+          "exclusive_s": 0.1472694689873606
+        },
+        "symbolic_model": {
+          "calls": 227,
+          "inclusive_s": 6.661283043096773,
+          "exclusive_s": 0.1608215837040916
+        },
+        "objective_preparation": {
+          "calls": 5526,
+          "inclusive_s": 8.396342877997085,
+          "exclusive_s": 8.396342877997085
+        },
+        "prefix_expansion": {
+          "calls": 23896,
+          "inclusive_s": 1.1520766181638464,
+          "exclusive_s": 1.1520766181638464
+        },
+        "formula_goals": {
+          "calls": 181408,
+          "inclusive_s": 8.42670991527848,
+          "exclusive_s": 8.42670991527848
+        },
+        "constraint_padding": {
+          "calls": 124166,
+          "inclusive_s": 2.5881082453997806,
+          "exclusive_s": 2.5881082453997806
+        },
+        "coalesce_goals": {
+          "calls": 5591,
+          "inclusive_s": 10.190412473166361,
+          "exclusive_s": 10.190412473166361
+        },
+        "enumeration_pareto": {
+          "calls": 1016,
+          "inclusive_s": 4.0617250258801505,
+          "exclusive_s": 4.0617250258801505
+        },
+        "target_enumeration": {
+          "calls": 3512,
+          "inclusive_s": 38.362368718138896,
+          "exclusive_s": 11.943336440250278
+        },
+        "target_dispatch": {
+          "calls": 227,
+          "inclusive_s": 38.834292885498144,
+          "exclusive_s": 0.46187673369422555
+        },
+        "output_compilation": {
+          "calls": 227,
+          "inclusive_s": 0.6622574998764321,
+          "exclusive_s": 0.6622574998764321
+        },
+        "iteration_columns": {
+          "calls": 227,
+          "inclusive_s": 0.6987141235731542,
+          "exclusive_s": 0.6987141235731542
+        },
+        "template_evaluation": {
+          "calls": 227,
+          "inclusive_s": 56.853410792537034,
+          "exclusive_s": 1.610567796160467
+        },
+        "generation": {
+          "calls": 1,
+          "inclusive_s": 63.28251208306756,
+          "exclusive_s": 4.583997290581465
+        },
+        "join": {
+          "calls": 1,
+          "inclusive_s": 1.3470664999913424,
+          "exclusive_s": 1.3470664999913424
+        }
+      },
+      "numeric_frontier_sha256": "6ec172e79149e6306aa4c397da7dce992a02dbd6d4ed1063370b88fc5e31dbd6"
+    },
+    {
+      "repeat": 1,
+      "make_s": 35.723784292000346,
+      "join_s": 1.3657089999178424,
+      "rows_generated": 7673,
+      "rows_front": 10,
+      "search_s": 37.08949329191819,
+      "enumeration": {
+        "templates_with_targets": 219,
+        "requests": 23844,
+        "expansions": 23844,
+        "hits": 0,
+        "requested_rows": 4514936,
+        "expanded_rows": 4514936,
+        "evictions": 0,
+        "max_template_payload_bytes": 0
+      },
+      "enumeration_pareto": {
+        "requests": 4713,
+        "computations": 1010,
+        "hits": 3703,
+        "requested_rows": 1356632,
+        "computed_rows": 284034,
+        "evictions": 0,
+        "max_template_payload_bytes": 107854
+      },
+      "model_caches_cumulative": {
+        "_parse_projection_expr": {
+          "hits": 26057,
+          "misses": 7,
+          "maxsize": 1024,
+          "currsize": 7
+        },
+        "_prepare_rank_projection": {
+          "hits": 3181,
+          "misses": 3,
+          "maxsize": 512,
+          "currsize": 3
+        },
+        "_maximum_stat": {
+          "hits": 252499,
+          "misses": 2119,
+          "maxsize": 4096,
+          "currsize": 2119
+        }
+      },
+      "phases": {
+        "template_generation": {
+          "calls": 1,
+          "inclusive_s": 1.9159210830694064,
+          "exclusive_s": 1.9159210830694064
+        },
+        "reuse_analysis": {
+          "calls": 227,
+          "inclusive_s": 3.4179245467530563,
+          "exclusive_s": 3.4179245467530563
+        },
+        "latency_model": {
+          "calls": 227,
+          "inclusive_s": 0.7800155841978267,
+          "exclusive_s": 0.7800155841978267
+        },
+        "latency_maximum": {
+          "calls": 227,
+          "inclusive_s": 0.0023428811691701412,
+          "exclusive_s": 0.0023428811691701412
+        },
+        "gather_actions": {
+          "calls": 227,
+          "inclusive_s": 0.03862832474987954,
+          "exclusive_s": 0.03862832474987954
+        },
+        "energy_model": {
+          "calls": 227,
+          "inclusive_s": 0.11196658201515675,
+          "exclusive_s": 0.11196658201515675
+        },
+        "symbolic_model": {
+          "calls": 227,
+          "inclusive_s": 4.455258539877832,
+          "exclusive_s": 0.10438062099274248
+        },
+        "objective_preparation": {
+          "calls": 5526,
+          "inclusive_s": 0.022368545178323984,
+          "exclusive_s": 0.022368545178323984
+        },
+        "prefix_expansion": {
+          "calls": 23896,
+          "inclusive_s": 1.1297099640360102,
+          "exclusive_s": 1.1297099640360102
+        },
+        "formula_goals": {
+          "calls": 181408,
+          "inclusive_s": 1.3605761145008728,
+          "exclusive_s": 1.3605761145008728
+        },
+        "constraint_padding": {
+          "calls": 124166,
+          "inclusive_s": 2.55679019971285,
+          "exclusive_s": 2.55679019971285
+        },
+        "coalesce_goals": {
+          "calls": 5591,
+          "inclusive_s": 2.4614523833151907,
+          "exclusive_s": 2.4614523833151907
+        },
+        "enumeration_pareto": {
+          "calls": 1016,
+          "inclusive_s": 2.9440284605370834,
+          "exclusive_s": 2.9440284605370834
+        },
+        "target_enumeration": {
+          "calls": 3512,
+          "inclusive_s": 22.906221797922626,
+          "exclusive_s": 12.453664675820619
+        },
+        "target_dispatch": {
+          "calls": 227,
+          "inclusive_s": 23.36280628235545,
+          "exclusive_s": 0.4420459467219189
+        },
+        "output_compilation": {
+          "calls": 227,
+          "inclusive_s": 0.641609339392744,
+          "exclusive_s": 0.641609339392744
+        },
+        "iteration_columns": {
+          "calls": 227,
+          "inclusive_s": 0.4931372966384515,
+          "exclusive_s": 0.4931372966384515
+        },
+        "template_evaluation": {
+          "calls": 227,
+          "inclusive_s": 30.506960038095713,
+          "exclusive_s": 1.5463185723638162
+        },
+        "generation": {
+          "calls": 1,
+          "inclusive_s": 35.72378150001168,
+          "exclusive_s": 3.3009003788465634
+        },
+        "join": {
+          "calls": 1,
+          "inclusive_s": 1.3654614170081913,
+          "exclusive_s": 1.3654614170081913
+        }
+      },
+      "numeric_frontier_sha256": "6ec172e79149e6306aa4c397da7dce992a02dbd6d4ed1063370b88fc5e31dbd6"
+    }
+  ],
+  "frontiers": {
+    "6ec172e79149e6306aa4c397da7dce992a02dbd6d4ed1063370b88fc5e31dbd6": {
+      "columns": ["FFB<SEP>initial<SEP>B<SEP>0", "FFB<SEP>initial<SEP>B<SEP>3", "FFB<SEP>initial<SEP>B<SEP>4", "FFB<SEP>initial<SEP>C<SEP>1", "FFB<SEP>initial<SEP>C<SEP>3", "FFB<SEP>initial<SEP>C<SEP>5", "FFB<SEP>initial<SEP>M<SEP>2", "FFB<SEP>initial<SEP>M<SEP>4", "FFB<SEP>initial<SEP>M<SEP>5", "FFB<SEP>lower_iterations<SEP>0", "FFB<SEP>lower_iterations<SEP>1", "FFB<SEP>lower_iterations<SEP>2", "FFB<SEP>n_iterations<SEP>0", "FFB<SEP>n_iterations<SEP>1", "FFB<SEP>n_iterations<SEP>2", "FFB<SEP>n_iterations<SEP>3", "FFB<SEP>n_iterations<SEP>4", "FFB<SEP>n_iterations<SEP>5", "FFB<SEP>stride0", "FFB<SEP>stride1", "FFB<SEP>stride10", "FFB<SEP>stride11", "FFB<SEP>stride12", "FFB<SEP>stride13", "FFB<SEP>stride14", "FFB<SEP>stride2", "FFB<SEP>stride3", "FFB<SEP>stride4", "FFB<SEP>stride5", "FFB<SEP>stride6", "FFB<SEP>stride7", "FFB<SEP>stride8", "FFB<SEP>stride9", "FFG<SEP>initial<SEP>B<SEP>0", "FFG<SEP>initial<SEP>B<SEP>3", "FFG<SEP>initial<SEP>C<SEP>1", "FFG<SEP>initial<SEP>M<SEP>2", "FFG<SEP>initial<SEP>M<SEP>4", "FFG<SEP>lower_iterations<SEP>0", "FFG<SEP>lower_iterations<SEP>1", "FFG<SEP>lower_iterations<SEP>2", "FFG<SEP>lower_iterations<SEP>3", "FFG<SEP>n_iterations<SEP>0", "FFG<SEP>n_iterations<SEP>1", "FFG<SEP>n_iterations<SEP>2", "FFG<SEP>n_iterations<SEP>3", "FFG<SEP>n_iterations<SEP>4", "FFG<SEP>stride0", "FFG<SEP>stride1", "FFG<SEP>stride10", "FFG<SEP>stride11", "FFG<SEP>stride12", "FFG<SEP>stride13", "FFG<SEP>stride14", "FFG<SEP>stride2", "FFG<SEP>stride3", "FFG<SEP>stride4", "FFG<SEP>stride5", "FFG<SEP>stride6", "FFG<SEP>stride7", "FFG<SEP>stride8", "FFG<SEP>stride9", "FFH<SEP>initial<SEP>B<SEP>0", "FFH<SEP>initial<SEP>B<SEP>3", "FFH<SEP>initial<SEP>C<SEP>1", "FFH<SEP>initial<SEP>C<SEP>4", "FFH<SEP>initial<SEP>M<SEP>2", "FFH<SEP>initial<SEP>M<SEP>5", "FFH<SEP>lower_iterations<SEP>0", "FFH<SEP>lower_iterations<SEP>1", "FFH<SEP>lower_iterations<SEP>2", "FFH<SEP>lower_iterations<SEP>3", "FFH<SEP>n_iterations<SEP>0", "FFH<SEP>n_iterations<SEP>1", "FFH<SEP>n_iterations<SEP>2", "FFH<SEP>n_iterations<SEP>3", "FFH<SEP>n_iterations<SEP>4", "FFH<SEP>n_iterations<SEP>5", "FFH<SEP>stride1", "FFH<SEP>stride2", "FFH<SEP>stride4", "FFH<SEP>stride5", "FFH<SEP>stride7", "FFH<SEP>stride8", "FFU<SEP>initial<SEP>B<SEP>0", "FFU<SEP>initial<SEP>B<SEP>3", "FFU<SEP>initial<SEP>C<SEP>1", "FFU<SEP>initial<SEP>M<SEP>2", "FFU<SEP>initial<SEP>M<SEP>4", "FFU<SEP>lower_iterations<SEP>0", "FFU<SEP>lower_iterations<SEP>1", "FFU<SEP>lower_iterations<SEP>2", "FFU<SEP>lower_iterations<SEP>3", "FFU<SEP>n_iterations<SEP>0", "FFU<SEP>n_iterations<SEP>1", "FFU<SEP>n_iterations<SEP>2", "FFU<SEP>n_iterations<SEP>3", "FFU<SEP>n_iterations<SEP>4", "FFU<SEP>stride0", "FFU<SEP>stride1", "FFU<SEP>stride10", "FFU<SEP>stride11", "FFU<SEP>stride12", "FFU<SEP>stride13", "FFU<SEP>stride14", "FFU<SEP>stride2", "FFU<SEP>stride3", "FFU<SEP>stride4", "FFU<SEP>stride5", "FFU<SEP>stride6", "FFU<SEP>stride7", "FFU<SEP>stride8", "FFU<SEP>stride9", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.0625", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.07518906475513229", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.09045432734002364", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.10881882041201552", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.13091176535257834", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.15749013123685915", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.18946457081379978", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.2279306221395542", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.2742062449236565", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.32987697769322355", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.39685026299204984", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.4774208019552082", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.5743491774985175", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.6909564399838881", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>0.8312378961427878", "Total<SEP>capacity_excluded<SEP>GlobalBuffer<SEP>1.0", "Total<SEP>energy", "Total<SEP>latency", "reservation<SEP>GlobalBuffer<SEP>0<SEP>right", "reservation<SEP>MainMemory<SEP>0<SEP>right", "tensor<SEP>FFG", "tensor<SEP>FFH", "tensor<SEP>FFU", "tensor<SEP>Z"],
+      "values": [
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 256.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 256.0, 0.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 256.0, 1.0, 4.0, 0.0, 0.0, 1.0, 0.0, 256.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 512.0, 256.0, 0.0, 128.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0003232224869320368, 6.845090683782473e-05, 0.015625, 0.0, 0.0, 0.0, 0.015625, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 512.0, 0.0, 256.0, 0.0, 0.0, 512.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 512.0, 256.0, 1.0, 4.0, 0.0, 0.0, 1.0, 0.0, 512.0, 256.0, 0.0, 0.0, 512.0, 0.0, 0.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 512.0, 256.0, 0.0, 128.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00028136753348048904, 6.826666503911838e-05, 0.03125, 0.0, 0.0, 0.0, 0.03125, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00032324136394700073, 6.881940498715267e-05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 512.0, 128.0, 128.0, 1.0, 0.0, 256.0, 0.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 256.0, 1.0, 4.0, 0.0, 0.0, 1.0, 0.0, 256.0, 256.0, 0.0, 0.0, 768.0, 0.0, 0.0, 1.0, 4.0, 1.0, 0.0, 0.0, 0.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 512.0, 256.0, 0.0, 128.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00031810962786080443, 6.86351559124887e-05, 0.015625, 0.0, 0.0, 0.0, 0.015625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00027018131312149605, 6.826666503911838e-05, 0.0625, 0.0, 0.0, 0.0625, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00025093365173908995, 6.826666503911838e-05, 0.125, 0.0, 0.0, 0.0625, 0.0625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00023168599035668395, 6.826666503911838e-05, 0.1875, 0.0, 0.0625, 0.0625, 0.0625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 0.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 256.0, 1.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00026973043658006033, 6.826666503911838e-05, 0.09375, 0.0, 0.0, 0.0625, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 512.0, 0.0, 0.0, 0.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 256.0, 128.0, 128.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 2.0, 2.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00025048277519765423, 6.826666503911838e-05, 0.125, 0.0, 0.0, 0.0625, 0.0625, 0.0],
+        [1.0, 0.0, 0.0, 1024.0, 1024.0, 0.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 512.0, 128.0, 128.0, 0.0, 0.0, 256.0, 1024.0, 0.0, 512.0, 256.0, 0.0, 256.0, 256.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 1.0, 1.0, 1024.0, 1024.0, 256.0, 256.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1024.0, 256.0, 1024.0, 256.0, 1.0, 4.0, 1.0, 0.0, 1024.0, 256.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1024.0, 128.0, 128.0, 0.0, 0.0, 0.0, 256.0, 0.0, 1024.0, 256.0, 0.0, 256.0, 256.0, 512.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00023123511381524823, 6.826666503911838e-05, 0.1875, 0.0, 0.0625, 0.0625, 0.0625, 0.0]
+      ]
+    }
+  },
+  "picks": [
+    {
+      "cap_mib": 0.25,
+      "edp": 1.844437720269433e-08,
+      "energy": 0.00027018131312149605,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.0625,
+      "tied_optima": 1,
+      "mapping_id": "f1d9835dbbce4a2b",
+      "reevaluated": {
+        "energy": 0.00027018133504,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8444379138730667e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 1.0,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.30075625902052916,
+      "edp": 1.844437720269433e-08,
+      "energy": 0.00027018131312149605,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.0625,
+      "tied_optima": 1,
+      "mapping_id": "f1d9835dbbce4a2b",
+      "reevaluated": {
+        "energy": 0.00027018133504,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8444379138730667e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8312378961427878,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.36181730936009454,
+      "edp": 1.844437720269433e-08,
+      "energy": 0.00027018131312149605,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.0625,
+      "tied_optima": 1,
+      "mapping_id": "f1d9835dbbce4a2b",
+      "reevaluated": {
+        "energy": 0.00027018133504,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8444379138730667e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.690956439983888,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.43527528164806206,
+      "edp": 1.841359736486614e-08,
+      "energy": 0.00026973043658006033,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.09375,
+      "tied_optima": 1,
+      "mapping_id": "b1dbfa71c1796728",
+      "reevaluated": {
+        "energy": 0.00026973044736,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.8413598539776e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0234375,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8615237662477764,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.5236470614103134,
+      "edp": 1.709962371248705e-08,
+      "energy": 0.00025048277519765423,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.125,
+      "tied_optima": 1,
+      "mapping_id": "8abeac954de7b8c4",
+      "reevaluated": {
+        "energy": 0.000250482786304,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.7099624878353066e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9548416039104165,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.6299605249474366,
+      "edp": 1.709962371248705e-08,
+      "energy": 0.00025048277519765423,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.125,
+      "tied_optima": 1,
+      "mapping_id": "8abeac954de7b8c4",
+      "reevaluated": {
+        "energy": 0.000250482786304,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.7099624878353066e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.7937005259840997,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.7578582832551991,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.9896309330796706,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 0.9117224885582168,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.8226187347709695,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 1.096824979694626,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.6837918664186626,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 1.3195079107728942,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.5683937124413994,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 1.5874010519681994,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.4724703937105774,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 1.9096832078208328,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.3927352960577351,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 2.29739670999407,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.32645646123604655,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 2.7638257599355525,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.27136298202007086,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 3.324951584571151,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.22556719426539687,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    },
+    {
+      "cap_mib": 4.0,
+      "edp": 1.5785650060107967e-08,
+      "energy": 0.00023123511381524823,
+      "latency": 6.826666503911838e-05,
+      "reported_gb_mib_fraction": 0.1875,
+      "tied_optima": 1,
+      "mapping_id": "f70e64ca979e583a",
+      "reevaluated": {
+        "energy": 0.000231235125248,
+        "latency": 6.826666666666667e-05,
+        "edp": 1.5785651216930135e-08,
+        "reservations": {
+          "reservation<SEP>LocalBuffer<SEP>0<SEP>right": 0.0390625,
+          "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 0.1875,
+          "reservation<SEP>MainMemory<SEP>0<SEP>right": 0.0,
+          "reservation<SEP>Register<SEP>0<SEP>right": 1.0
+        }
+      },
+      "ok": true,
+      "min_usage_shortfall": [
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_input",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        },
+        {
+          "einsum": "FFH",
+          "component": "ArrayFanout",
+          "dimension": "reuse_output",
+          "usage": 0.0078125,
+          "min_usage": 1.0
+        }
+      ],
+      "factor": 1.0
+    }
+  ],
+  "all_picks_valid": true,
+  "numeric_frontier_stable": true,
+  "peak_rss_gb": {
+    "main": 0.4001312255859375,
+    "largest_worker": 0.00567626953125
+  }
+}

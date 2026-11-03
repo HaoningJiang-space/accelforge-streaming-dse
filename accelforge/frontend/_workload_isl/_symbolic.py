@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
-from functools import reduce
+from functools import lru_cache, reduce
 from operator import mul
 
 import sympy
@@ -16,10 +16,16 @@ from accelforge.frontend.workload import (
 from ._isl import get_rank_variable_bounds
 
 
+@lru_cache(maxsize=1024)
+def _parse_projection_expr(projection: str) -> sympy.Expr:
+    """Reuse immutable index expressions by value, never by mutable workload ID."""
+    return sympy.parsing.sympy_parser.parse_expr(projection)
+
+
 def get_projection_expr(einsum: Einsum, tensor: TensorName) -> dict[Rank, sympy.Expr]:
     projection = einsum.tensor_accesses[tensor].projection
     return {
-        rank_name: sympy.parsing.sympy_parser.parse_expr(proj_str)
+        rank_name: _parse_projection_expr(proj_str)
         for rank_name, proj_str in projection.items()
     }
 
@@ -40,11 +46,12 @@ class PartiallyRelevant:
 
 def get_rank_variable_relevancy(einsum: Einsum, tensor: TensorName):
     relevancy = {}
-    projection = einsum.tensor_accesses[tensor].projection
+    # Parse each rank once, rather than once per rank variable. The dictionary
+    # and relevancy objects remain fresh so callers may mutate their own result.
+    projection = get_projection_expr(einsum, tensor)
     for rank_variable in einsum.rank_variables:
         relevancy[rank_variable] = Irrelevant()
-        for rank_name, projection_str in projection.items():
-            projection_expr = sympy.parsing.sympy_parser.parse_expr(projection_str)
+        for rank_name, projection_expr in projection.items():
             is_simple = len(sympy.Add.make_args(projection_expr)) == 1
             is_relevant = (
                 sympy.symbols(f"{rank_variable}") in projection_expr.free_symbols

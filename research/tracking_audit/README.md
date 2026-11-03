@@ -7,6 +7,94 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Generation profile: model preparation and repeated numerical Pareto requests
+
+Reference: **6a4f486d**, after the formula-text optimization below. The next profile
+finds two separate costs: repeated symbolic model preparation, and K-dependent
+Pareto calls inside Tile enumeration. Join is a small part of the TPU case. The
+new optional `--phases` instrumentation separates these costs; inclusive times
+nest, while exclusive times subtract instrumented children and still include
+uninstrumented helpers. cProfile records are diagnostic, not speed measurements.
+
+Normally enabled changes reuse immutable projection parsing, projection evaluators
+and identical `BuffetStats` maxima. Caches are keyed by expression content, not
+mutable workloads, mappings or evaluated Tile arrays. Fresh relevance containers
+and current Tile/shape arguments preserve ownership and numeric behavior. Entry
+limits are 1,024 / 512 / 4,096 respectively; these are not global byte budgets.
+
+An opt-in **`AF_ENUMERATION_PARETO_BYTES=8388608`** cache, local to each template,
+reuses the original Pareto backend's positional keep mask only for identical
+numeric bytes, dtype, shape, row/column order and goals, with zero tolerance.
+It does not cache candidates or target membership. Each target still performs its
+own ordered constraints and min-usage fallbacks. Approximate, nonfinite, unsupported
+or oversized requests use the original path. The default is **0 (disabled)**;
+prefix reuse also remains disabled. LRU eviction and a 1,024-entry limit bound
+retained key/mask payload, not Python overhead, temporary allocations, Frontier
+storage or whole-process RSS. Template completion releases the cache.
+
+Local single-worker, single numerical thread, hash seed 0, fresh processes for each
+case/K/version. Capacities are log-spaced over 1/32--1/4 MiB for GLU 64,128,256 @
+NVDLA and 1/4--4 MiB for GLU 256,512,1024 @ TPU v4i; bandwidth is fixed. These are
+**shared-search versus shared-search** comparisons, not independent FFM speedups.
+The K curve has phase timers enabled, one cold and one warm run per case:
+
+| K | NVDLA reference / changed warm | TPU reference / changed warm |
+| ---: | ---: | ---: |
+| 2 | 5.94 / 4.56 s | 23.83 / 18.44 s |
+| 4 | 6.05 / 4.71 s | 29.23 / 22.69 s |
+| 8 | 6.49 / 5.27 s | 37.07 / 27.07 s |
+| 16 | 7.32 / 6.12 s | 49.38 / 37.09 s |
+
+Separate **unprofiled** K=16 ablations use one cold and two warm searches in each
+fresh process. Warm values below are means of the two warm runs, including
+generation and Join, excluding query extraction and re-evaluation:
+
+| Case | Reference | Model preparation only (normal path) | Model + opt-in Pareto reuse | Combined speedup |
+| --- | ---: | ---: | ---: | ---: |
+| NVDLA | 7.53 s | 5.96 s | 5.66 s | 1.33x |
+| TPU v4i | 50.64 s | 45.69 s | 33.12 s | 1.53x |
+
+Cold reference/model/combined times are 12.76 / 11.43 / 10.87 s for NVDLA and
+83.70 / 67.67 / 56.79 s for TPU. Pareto reuse contributes a further 1.05x / 1.38x
+over model preparation alone in these cases. All three methods and all repeats
+have identical numeric frontiers, and all 32 final capacity picks per method
+re-evaluate. Combined whole-process peak RSS, including validation, is 0.334 GiB
+for NVDLA and 0.430 GiB for TPU. These are initial local measurements, not a memory
+reduction claim or a repeated-process/server scaling result. Model preparation
+also benefits independent FFM, so these gains cannot be multiplied by historical
+DSE speedup ratios.
+
+At TPU K=16, warm reuse analysis falls 6.96 -> 3.42 s, numerical enumeration
+Pareto 12.89 -> 2.94 s, and iteration/rank columns 1.24 -> 0.49 s. Actual
+target-template Pareto computations fall **4,713 -> 1,010**, and rows passed to
+those computations **1,356,632 -> 284,034**. The maximum retained payload in one
+template is 107,854 bytes. NVDLA computations fall 160 -> 26 with a maximum
+40,157-byte payload. These count requests and input rows, not distinct search-tree
+nodes or dominance comparisons. Key construction and lookup costs are included in
+the total timer, but outside the `enumeration_pareto` phase (the actual backend).
+
+All eight K/case pairs preserve the complete sorted numerical frontier across
+versions and repeats; all 60 selected capacity mappings per version re-evaluate at
+their target. This verifies execution equivalence in the existing conservative
+Fusion Mapspace, not complete original Fusion coverage. It does **not** implement
+event-driven enumeration: constraint processing still grows with K. The next
+algorithm experiment should share target-dependent constraint work, with single
+and consecutive fallback oracles, rather than extrapolate these caches into a
+parametric-search complexity claim.
+
+Validation: **226 research/Streaming tests pass**, including exact mask ties/order,
+dtype and tolerance guards, byte-budget eviction, consecutive min-usage fallbacks,
+real GLU template Tile/membership equality, and projection mutation/precision checks.
+The Fusion audit now has an additional regression requiring identical Pareto
+metrics on its conservative and restored paths; historical mixed-metrics results
+are qualified below rather than treated as a newly measured filter-only effect.
+
+Records and reproduction: [results/generation_scaling/](results/generation_scaling/).
+`benchmark_generation_scaling.py --repo CHECKOUT --output-dir DIR --phases
+--pareto-bytes 0|8388608` runs the K curve sequentially in fresh processes.
+`summarize_generation_scaling.py --reference DIR --changed DIR --output FILE.json`
+rejects mismatched numeric frontiers, failed Mapping validation and cProfile timings.
+
 ### Exact prefix reuse experiment and formula-log overhead
 
 On top of `66e074e4`, tile expansion is isolated as a pure operation. The optional
@@ -146,9 +234,12 @@ updated to d3f2fee9 (symbolic-preparation reuse, identical fronts) while it ran.
 
 ### Cost of the unrepresentable-template filter
 
-`unrepresentable_gain.py` runs the default search and the same search with
-`AF_ABL_ALLOW_UNREPRESENTABLE=1` (RESOURCE_USAGE fronts), and re-evaluates every row of
-the latter as the mapping it rebuilds into. Records:
+The saved `unrepresentable_gain.py --metrics ru` experiment compared conservative
+ENERGY | LATENCY with restored RESOURCE_USAGE, and re-evaluated every row of the
+latter as the mapping it rebuilds into. **This changes both the template filter and
+the Pareto metrics**, so it does not isolate the filter's quality or runtime effect.
+The script now applies `--metrics` to both searches and records both objective sets;
+the equal-metrics large experiment has not been rerun. Historical records:
 [results/unrepresentable_gain/](results/unrepresentable_gain/).
 
 | Case | Skipped / templates | Restored front rows | Scored differently | Do not fit | Best rebuilt vs default |
@@ -163,10 +254,13 @@ the latter as the mapping it rebuilds into. Records:
 At 4 MiB the better mapping (EDP 1.56018e-8 against 1.57857e-8) is scored exactly as
 it rebuilds (`matches: true`), fits, and has only the usual FFH reuse shortfalls
 ([results/unrepresentable_gain/glu_tpu_4_best_row.txt](results/unrepresentable_gain/glu_tpu_4_best_row.txt)):
-the conservative filter discards a representable, better mapping. At 3/8 MiB the
-restored search is worse because it prunes with some wrong scores, so the ablation is
-not a superset of the default. A boundary contract that admits matching copies on both
-sides, instead of skipping every such template, would keep the 4 MiB mapping.
+this establishes the existence of a feasible mapping better than the recorded
+default pick. The 1.18% difference cannot yet be attributed solely to template
+filtering because the metrics also changed. At 3/8 MiB the restored search prunes
+with some wrong scores, so the ablation is not a valid superset reference. The next
+Fusion experiment must compare equal metrics, retain the winning template/copy
+provenance, and verify whether a matching-copy boundary contract admits the better
+mapping while rejecting the historical invalid combinations.
 
 ### Mapping identity is not stable across runs
 

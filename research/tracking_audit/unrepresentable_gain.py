@@ -17,7 +17,9 @@ best re-evaluated EDP against the conservative pick.
 
 This is an estimate, not a bound: the restored search pruned with possibly wrong
 scores, so a correctly represented fusion could also reach mappings that are not on
-its front. --metrics ru keeps resource tradeoffs on the front (more rows to check).
+its front. --metrics applies to both searches; ru keeps resource tradeoffs on both
+fronts (more rows to check). Older ru records compared conservative EL with restored
+RU and therefore cannot isolate the effect of the template filter.
 """
 import argparse
 import json
@@ -70,7 +72,7 @@ def main(argv=None):
     print('CONFIG', json.dumps(common.effective_config(a.case, args=vars(a)), default=str), flush=True)
     common.set_jobs(a.jobs)
     try:
-        cons, cons_stats = common.search(common.build(a.case, a.cap, common.EL))
+        cons, cons_stats = common.search(common.build(a.case, a.cap, metrics))
         cons_pick = common.check_pick(a.case, a.cap, common.best_row(cons.data))
         rest, rest_stats = common.search(common.build(a.case, a.cap, metrics),
                                          ablations={'AF_ABL_ALLOW_UNREPRESENTABLE': '1'})
@@ -83,8 +85,8 @@ def main(argv=None):
     cons_edp = cons_pick['reevaluated']['edp'] if cons_pick.get('ok') else None
     summary = {
         'case': str(a.case), 'cap_mib': a.cap, 'metrics': a.metrics,
-        'conservative': {'stats': cons_stats, 'ok': cons_pick['ok'], 'edp': cons_edp},
-        'restored': {'stats': rest_stats, 'rows': len(rows),
+        'conservative': {'metrics': a.metrics, 'stats': cons_stats, 'ok': cons_pick['ok'], 'edp': cons_edp},
+        'restored': {'metrics': a.metrics, 'stats': rest_stats, 'rows': len(rows),
                      'scored_as_rebuilt': sum(bool(r.get('matches')) for r in rows),
                      'scored_differently': sum(r.get('matches') is False for r in rows),
                      'rebuild_or_fit_failed': sum('error' in r for r in rows),

@@ -1,4 +1,5 @@
 import copy
+from functools import lru_cache
 from dataclasses import dataclass, field
 import itertools
 from accelforge.frontend.mapping import (
@@ -106,6 +107,16 @@ def max_dict(a: dict[Any, Any], b: dict[Any, Any]) -> dict[Any, Any]:
     return new
 
 
+@lru_cache(maxsize=4096, typed=True)
+def _maximum_stat(left, right):
+    """Reuse identical immutable statistics, including numeric type/assumptions.
+
+    Do not assume nonnegativity or remove the zero clamp. SymPy must still decide
+    the exact maximum, once per retained argument pair.
+    """
+    return Max(left, right)
+
+
 @dataclass
 class BuffetStats:
     total_reads_to_parent: Any = field(default=0)
@@ -203,7 +214,14 @@ class BuffetStats:
                     new, attr, min_nonzero(getattr(self, attr), getattr(other, attr))
                 )
             elif attr.startswith("max_"):
-                setattr(new, attr, Max(getattr(self, attr), getattr(other, attr)))
+                left, right = getattr(self, attr), getattr(other, attr)
+                # The cache is only for immutable scalar expressions. Preserve
+                # SymPy's behavior for other objects accepted by this Any API.
+                immutable = (int, float, sympy.Expr)
+                maximum = (_maximum_stat(left, right)
+                           if isinstance(left, immutable) and isinstance(right, immutable)
+                           else Max(left, right))
+                setattr(new, attr, maximum)
             elif attr.startswith("total_"):
                 setattr(new, attr, getattr(self, attr) + getattr(other, attr))
             elif getattr(self, attr) is None:
