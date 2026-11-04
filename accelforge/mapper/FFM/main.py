@@ -188,6 +188,7 @@ def join_pmappings(
     pmappings: MultiEinsumPmappings,
     require_all_einsums: bool = True,
     _pmapping_row_filter_function: Callable[[pd.Series], bool] | None = None,
+    _terminal_branch_observer: Callable | None = None,
 ) -> Mappings:
     """
     Joins pmappings into a full mappings for the entire workload. Pmappings can
@@ -211,7 +212,8 @@ def join_pmappings(
         A Mappings object containing all valid, optimal mappings for the workload.
     """
     return clean_compress_and_join_pmappings(
-        pmappings, require_all_einsums, _pmapping_row_filter_function
+        pmappings, require_all_einsums, _pmapping_row_filter_function,
+        _terminal_branch_observer,
     )
 
 

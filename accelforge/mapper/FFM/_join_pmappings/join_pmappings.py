@@ -79,6 +79,7 @@ def clean_compress_and_join_pmappings(
     pmappings: MultiEinsumPmappings,
     require_all_einsums: bool = True,
     _pmapping_row_filter_function: Callable[[pd.Series], bool] | None = None,
+    _terminal_branch_observer: Callable | None = None,
 ) -> Mappings:
     einsum2pmappings = pmappings.einsum2pmappings
     if not require_all_einsums:
@@ -94,6 +95,7 @@ def clean_compress_and_join_pmappings(
         compressed,
         pmappings.spec,
         _pmapping_row_filter_function=_pmapping_row_filter_function,
+        _terminal_branch_observer=_terminal_branch_observer,
     )
     joined = decompress_pmappings(joined, decompress_data)
 
@@ -256,6 +258,7 @@ def join_pmappings(
     lookahead_filter: bool = True,
     metrics: Metrics = None,
     _pmapping_row_filter_function: Callable[[pd.Series], bool] | None = None,
+    _terminal_branch_observer: Callable | None = None,
 ):
     """
     CONTRACT FOR MAPPINGS GETTING TO THIS POINT:
@@ -519,6 +522,23 @@ def join_pmappings(
                     # if DO_PRINT:
                     #     print(f"\tIncompatible: {e}")
                     continue
+
+                if _terminal_branch_observer is not None and total_iterations == 2 and not pmgroups:
+                    # Read-only opt-in research hook. This does not discard a
+                    # group, alter an incumbent, or expose mutable frames.
+                    from accelforge.mapper.FFM._join_pmappings.branch_summary import BranchSummary
+                    try:
+                        pair_plan = a.mappings._matching_pair_plan(b.mappings, compatibility_a, compatibility_b)
+                        matched_pairs = (sum(len(left)*len(right) for left,right in pair_plan)
+                                         if pair_plan is not None else None)
+                    except (KeyError, TypeError, ValueError):
+                        matched_pairs = None
+                    summary = BranchSummary.from_frames(
+                        a.mappings.data, b.mappings.data,
+                        compatibility_a.tensor_names & compatibility_b.tensor_names,
+                        matched_pairs=matched_pairs,
+                    )
+                    _terminal_branch_observer(summary)
 
                 t0 = time.time()
 

@@ -7,6 +7,15 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Real anchor and finite-capacity Join summaries
+
+The [anchor-family audit](results/anchor_family/README.md) collects immutable,
+read-only terminal `BranchSummary` objects without monkeypatching FFM, validates
+a 68 B anchor at sampled capacities, and audits 61 finite target memberships
+in one shared search. Its cost-bound exclusion is post hoc: no groups are
+skipped, the matched-pair count is unknown, and the graph working-set bound
+remains unproved. It is not a continuous-family or speedup result.
+
 ### Architecture-family certificate: first bounded experiments
 
 The [architecture-family audit](results/architecture_family/README.md) tests
