@@ -166,7 +166,7 @@ class TargetEnumerator:
             from accelforge.mapper.FFM._pareto_df import exact_resources
             return exact_resources.evaluate(formula,padded)
         if formula not in self.compiled:
-            self.compiled[formula] = self.api.util._lambdify_type_check(self.symbols, formula)
+            self.compiled[formula] = self.api.compile_objective(self.symbols, formula)
         return self.compiled[formula](**{str(k): v for k, v in padded.items()})
 
     @staticmethod

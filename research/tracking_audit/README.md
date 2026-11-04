@@ -7,6 +7,16 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Array shape × SRAM is the current research experiment
+
+The [shape/capacity audit](results/shape_capacity/README.md) reproduces the three-MatMul
+array-ranking change at 128/132 KiB and compares full-grid time to one maximum-capacity
+resource-frontier search per shape. An opt-in serial prefix/compilation reuse context
+preserves the full numeric frontiers, but its extra cross-shape benefit is small and
+Attention can be slower. Low-capacity Attention additionally reveals an **unfixed**
+score/reconstruction mismatch, independently reproduced on clean `e76e66bf`; its
+failing grid is explicitly excluded from performance/architecture-quality claims.
+
 ### Integer resource accounting fixes the 68-byte coverage regression
 
 The reported failure is reproduced on `07e2f4c8`: a physical 68 B NVDLA

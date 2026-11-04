@@ -1,0 +1,43 @@
+{
+  "config": {
+    "commit": "e76e66bffc7f80cb2b8e547a55148d4079c087b5",
+    "dirty": true,
+    "max_pmapping_templates_per_einsum": "inf",
+    "inherited_switches": [],
+    "workload": "attention(N_TOKENS=128,N_HEADS=1,D_HEAD=64)@nvdla",
+    "shapes": [
+      [
+        16,
+        384
+      ],
+      [
+        32,
+        192
+      ],
+      [
+        64,
+        96
+      ]
+    ],
+    "capacities_bytes": [
+      8192,
+      16384,
+      24576,
+      32768,
+      131072
+    ],
+    "workers": 1,
+    "platform": "macOS-15.1-arm64-arm-64bit",
+    "python": "3.12.14",
+    "register_bits": 8
+  },
+  "runs": [],
+  "failure": {
+    "repeat": 0,
+    "method": "max_frontier",
+    "error": "{\"error\": \"reconstruction_cost_mismatch\", \"column\": \"Total<SEP>energy\", \"shape\": [64, 96], \"capacity_bytes\": 8192, \"reported\": 5.805113092188608e-06, \"reconstructed\": 7.277510655999999e-06, \"mapping_id\": \"bb135c78a6e90448\", \"mapping\": \"[QK_softmax in MainMemory] Split\"}"
+  },
+  "validation": {
+    "all_picks_valid": false
+  }
+}

@@ -41,6 +41,7 @@ from accelforge.frontend.mapper.metrics import Metrics
 from accelforge.util._frozenset import fzs
 from .enumeration_prefix import EnumerationPrefixCache
 from .enumeration_pareto import EnumerationParetoCache
+from .enumeration_reuse import current as current_enumeration_reuse
 from accelforge.mapper.FFM._pareto_df import pareto as pareto_module
 from .symbolic_text import SymbolicText
 import math
@@ -233,9 +234,17 @@ def geq_leq_zero(
     return ComparisonResult.ALWAYS_EQUAL_TO_ZERO
 
 
+def compile_objective(symbols, formula):
+    reuse = current_enumeration_reuse()
+    if reuse is None:
+        return util._lambdify_type_check(symbols, formula)
+    return reuse.compile(symbols, formula, util.NUMPY_FLOAT_TYPE,
+                         lambda: util._lambdify_type_check(symbols, formula))
+
+
 def compile_dict(symbols, dictionary):
     def lambdify(key, value):
-        x = util._lambdify_type_check(symbols, value)
+        x = compile_objective(symbols, value)
         return x
 
     return {k: lambdify(symbols, v) for k, v in dictionary.items()}
@@ -820,6 +829,17 @@ def coalesce_symbols(
 
 def _expand_symbol_choices(symbol, choices_enumerated, symbols_enumerated,
                            what_tiles_symbol, imperfect):
+    reuse = current_enumeration_reuse()
+    compute = lambda: _compute_symbol_choices(symbol, choices_enumerated,
+        symbols_enumerated, what_tiles_symbol, imperfect)
+    if reuse is None:
+        return compute()
+    return reuse.expand(symbol, choices_enumerated, symbols_enumerated,
+                        what_tiles_symbol, imperfect, compute)
+
+
+def _compute_symbol_choices(symbol, choices_enumerated, symbols_enumerated,
+                            what_tiles_symbol, imperfect):
     """Expand one symbol for a fixed, already-pruned prefix, preserving row order.
 
     Capacity constraints, min-usage fallback and Pareto remain in the caller. This
@@ -1129,7 +1149,7 @@ def get_tile_shape_choices(
             return exact_resources.evaluate(formula,padded_choices)
         key = (symbol_order, formula)
         if key not in _compiled_objectives:
-            _compiled_objectives[key] = util._lambdify_type_check(symbols, formula)
+            _compiled_objectives[key] = compile_objective(symbols, formula)
         return _compiled_objectives[key](
             **{str(k): v for k, v in padded_choices.items()},
         )

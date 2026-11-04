@@ -1,0 +1,36 @@
+# The three tensor equations from examples/workloads/gpt3_6.7B.yaml.
+# QK_softmax is the repository's elementwise proxy, not a full softmax reduction.
+workload:
+  rank_sizes:
+    B: 1
+    M: {{N_TOKENS}}
+    P: {{N_TOKENS}}
+    H: {{N_HEADS}}
+    E: {{D_HEAD}}
+    F: {{D_HEAD}}
+  bits_per_value: {All: 8}
+  einsums:
+  - name: QK
+    tensor_accesses:
+    - {name: Q, projection: [b, m, h, e]}
+    - {name: K, projection: {B: b, M: p, H: h, E: e}}
+    - {name: QK, projection: [b, m, p, h], output: True}
+    renames: {weight: K, input: Q, output: QK}
+  - name: QK_softmax
+    tensor_accesses:
+    - {name: QK, projection: [b, m, p, h]}
+    - {name: QK_softmax, projection: [b, m, p, h], output: True}
+    renames: {weight: Nothing}
+  - name: AV
+    tensor_accesses:
+    - {name: QK_softmax, projection: [b, m, p, h]}
+    - {name: V, projection: {B: b, M: p, H: h, E: f}}
+    - {name: AV, projection: [b, m, h, f], output: True}
+    renames: {weight: V, input: QK_softmax}
+renames:
+  einsums:
+  - name: default
+    tensor_accesses:
+    - {name: input, source: Inputs & Intermediates, expected_count: 1}
+    - {name: output, source: Outputs, expected_count: 1}
+    - {name: weight, source: '~(input | output)', expected_count: 1}

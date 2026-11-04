@@ -40,6 +40,7 @@ WORKLOADS = {
     'glu': ('research/streaming_join/glu_tag1.yaml', ('M', 'G', 'C')),  # branch and merge
     'matmuls': ('examples/workloads/matmuls.yaml', ('N_EINSUMS', 'M', 'KN')),  # chain
     'mobilenet': ('research/workloads/mobilenet_28_tag1.yaml', ('BATCH_SIZE',)),  # convolutions
+    'attention': ('research/workloads/attention_qk_av.yaml', ('N_TOKENS', 'N_HEADS', 'D_HEAD')),
 }
 ARCHES = ('tpu_v4i', 'nvdla')  # examples/arches/<name>.yaml, each with a GlobalBuffer
 # eyeriss is left out: its energy comes from a component-model plugin whose installed
@@ -165,6 +166,11 @@ def build(case, cap_mib, metrics, gb_latency_scale=1.0):
     spec = af.Spec.from_yaml(ROOT/f'examples/arches/{case.arch}.yaml', ROOT/path,
                              jinja_parse_data=dict(zip(names, case.params)))
     spec.arch.find('GlobalBuffer').size = cap_mib * 1024 * 1024 * 8
+    if case.workload == 'attention' and case.arch == 'nvdla':
+        # One physical 8-bit Register throughout this extracted graph. The stock
+        # NVDLA expression otherwise substitutes a dummy 1 bit at weightless
+        # QK_softmax, which conflicts with exact capacity metadata at Join.
+        spec.arch.find('Register').size = 8
     if gb_latency_scale != 1:
         spec.arch.find('GlobalBuffer').latency_scale = gb_latency_scale
     spec.mapper.ffm.metrics = metrics
