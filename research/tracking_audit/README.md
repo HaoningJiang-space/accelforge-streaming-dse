@@ -7,6 +7,15 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Shared prefix pool: reduced work, cache remains faster
+
+The [factorized-prefix experiment](results/prefix_dag/README.md) shares numeric
+prefix expansion across parameter regions while retaining ordered per-region
+IDs, Guards and Pareto history. Both heavy templates match their original
+region results, with substantially less expanded-row work and region payload.
+At 256 queries the existing FFM cache remains faster; this is a restricted
+single-template prototype, not a persistent general Fusion search DAG.
+
 ### Real anchor and finite-capacity Join summaries
 
 The [anchor-family audit](results/anchor_family/README.md) collects immutable,
