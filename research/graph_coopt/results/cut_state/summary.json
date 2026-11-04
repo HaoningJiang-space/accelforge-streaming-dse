@@ -1,0 +1,173 @@
+{
+  "base_git_revision": "e398532c58960bea4794e740154cde7ad891871f",
+  "scope": "Four independently prepared fixed-architecture cut/one-Einsum-continuation audits; not a proof for a family of architectures.",
+  "cases": [
+    {
+      "file": "2mm_4x8_96B.json",
+      "shape": [
+        4,
+        8
+      ],
+      "capacity_bytes": 96,
+      "cut_rows": 30,
+      "original_ffm_groups": 11,
+      "groups_by_level": {
+        "legacy_compatibility": 11,
+        "numeric_compatibility": 15,
+        "observed_copy_declarations": 19,
+        "boundary_loops": 27,
+        "resource_state": 30,
+        "execution_contract": 30,
+        "cost_state": 30
+      },
+      "suffix_counterexample_pairs_by_level": {
+        "legacy_compatibility": 8,
+        "numeric_compatibility": 3,
+        "observed_copy_declarations": 1,
+        "boundary_loops": 0,
+        "resource_state": 0,
+        "execution_contract": 0,
+        "cost_state": 0
+      },
+      "re_evaluated_completion_responses": 39,
+      "native_materialized_pairs": 48,
+      "oracle_materialized_pairs": 48,
+      "oracle_removed_rows": 0,
+      "oracle_removed_rows_reaching_numeric_join": 0,
+      "oracle_full_frontier_equal": null,
+      "oracle_mapping_sources_equal": null,
+      "observer_full_frontier_equal": true,
+      "observer_mapping_sources_equal": true,
+      "oracle_ablation_executed": false
+    },
+    {
+      "file": "2mm_8x4_96B.json",
+      "shape": [
+        8,
+        4
+      ],
+      "capacity_bytes": 96,
+      "cut_rows": 14,
+      "original_ffm_groups": 4,
+      "groups_by_level": {
+        "legacy_compatibility": 4,
+        "numeric_compatibility": 5,
+        "observed_copy_declarations": 8,
+        "boundary_loops": 9,
+        "resource_state": 14,
+        "execution_contract": 14,
+        "cost_state": 14
+      },
+      "suffix_counterexample_pairs_by_level": {
+        "legacy_compatibility": 8,
+        "numeric_compatibility": 3,
+        "observed_copy_declarations": 0,
+        "boundary_loops": 0,
+        "resource_state": 0,
+        "execution_contract": 0,
+        "cost_state": 0
+      },
+      "re_evaluated_completion_responses": 40,
+      "native_materialized_pairs": 50,
+      "oracle_materialized_pairs": 44,
+      "oracle_removed_rows": 2,
+      "oracle_removed_rows_reaching_numeric_join": 2,
+      "oracle_full_frontier_equal": true,
+      "oracle_mapping_sources_equal": true,
+      "observer_full_frontier_equal": true,
+      "observer_mapping_sources_equal": true,
+      "oracle_ablation_executed": true
+    },
+    {
+      "file": "3mm_4x8_128B.json",
+      "shape": [
+        4,
+        8
+      ],
+      "capacity_bytes": 128,
+      "cut_rows": 67,
+      "original_ffm_groups": 14,
+      "groups_by_level": {
+        "legacy_compatibility": 4,
+        "numeric_compatibility": 5,
+        "observed_copy_declarations": 21,
+        "boundary_loops": 35,
+        "resource_state": 67,
+        "execution_contract": 67,
+        "cost_state": 67
+      },
+      "suffix_counterexample_pairs_by_level": {
+        "legacy_compatibility": 558,
+        "numeric_compatibility": 198,
+        "observed_copy_declarations": 24,
+        "boundary_loops": 20,
+        "resource_state": 0,
+        "execution_contract": 0,
+        "cost_state": 0
+      },
+      "re_evaluated_completion_responses": 159,
+      "native_materialized_pairs": 130,
+      "oracle_materialized_pairs": 107,
+      "oracle_removed_rows": 11,
+      "oracle_removed_rows_reaching_numeric_join": 9,
+      "oracle_full_frontier_equal": true,
+      "oracle_mapping_sources_equal": true,
+      "observer_full_frontier_equal": true,
+      "observer_mapping_sources_equal": true,
+      "oracle_ablation_executed": true
+    },
+    {
+      "file": "3mm_8x4_128B.json",
+      "shape": [
+        8,
+        4
+      ],
+      "capacity_bytes": 128,
+      "cut_rows": 63,
+      "original_ffm_groups": 14,
+      "groups_by_level": {
+        "legacy_compatibility": 4,
+        "numeric_compatibility": 5,
+        "observed_copy_declarations": 22,
+        "boundary_loops": 30,
+        "resource_state": 63,
+        "execution_contract": 63,
+        "cost_state": 63
+      },
+      "suffix_counterexample_pairs_by_level": {
+        "legacy_compatibility": 499,
+        "numeric_compatibility": 193,
+        "observed_copy_declarations": 4,
+        "boundary_loops": 0,
+        "resource_state": 0,
+        "execution_contract": 0,
+        "cost_state": 0
+      },
+      "re_evaluated_completion_responses": 172,
+      "native_materialized_pairs": 180,
+      "oracle_materialized_pairs": 132,
+      "oracle_removed_rows": 14,
+      "oracle_removed_rows_reaching_numeric_join": 14,
+      "oracle_full_frontier_equal": true,
+      "oracle_mapping_sources_equal": true,
+      "observer_full_frontier_equal": true,
+      "observer_mapping_sources_equal": true,
+      "oracle_ablation_executed": true
+    }
+  ],
+  "total_cut_rows": 174,
+  "total_completion_cost_resource_responses_re_evaluated": 410,
+  "reusable_substitution_theorem": false,
+  "practical_pruner_implemented": false,
+  "oracle_uses_complete_target_suffix_enumeration": true,
+  "end_to_end_speedup_measured": false,
+  "source_hashes_match_saved_files": true,
+  "regression": {
+    "command": "python -m pytest -q research/tracking_audit research/streaming_join research/graph_coopt --disable-warnings --maxfail=1",
+    "passed": 636,
+    "new_tests_included": 9,
+    "seconds": 207.04,
+    "log": "regression.txt",
+    "all_repository_tests": false
+  }
+}

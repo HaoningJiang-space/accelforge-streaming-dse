@@ -13,6 +13,10 @@ The [template support audit](TEMPLATE_SUPPORT_AUDIT.md) adds tolerance checks,
 generation provenance, cached prefix metadata and a read-only pre-enumeration
 experiment. The initial abstraction certifies no avoidable template work in the
 measured 2mm/3mm cases.
+The [cut-state sufficiency experiment](CUT_STATE_ANALYSIS.md) now probes actual
+saved prefixes against the same prepared continuation, separates capacity-checked
+support from Pareto, and records counterexamples plus an explicitly post-hoc
+dominance ceiling. It establishes no new substitution rule or search speedup.
 
 This research scaffold checks that original FFM per-Einsum candidate groups,
 their provenance, exact resource columns, architecture and source mapping objects
