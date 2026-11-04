@@ -7,6 +7,13 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Conditional Fusion reservation-scope ledger
+
+The [lifetime audit](results/fusion_lifetime/README.md) records representative
+per-phase GlobalBuffer reservation scopes for a restricted two-MatMul model,
+checks actual model inputs and compares phase peaks with reconstructed FFM rows.
+It records cross-phase occupancy as unknown and cannot certify a cut or prune.
+
 ### Real two-MatMul Fusion cut inspection
 
 The [two-MatMul audit](results/fusion_cut/README.md) inspects reconstructed FFM
