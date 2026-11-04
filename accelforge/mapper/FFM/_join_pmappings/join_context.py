@@ -3,6 +3,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 import os
 from uuid import uuid4
+from ..generation_contract import effective_pareto_tolerance
 
 
 def _switches():
@@ -19,6 +20,8 @@ class JoinContext:
     _spec: object = field(repr=False, compare=False)
     token: str = field(default_factory=lambda: uuid4().hex)
     switches: tuple = field(default_factory=_switches)
+    pareto_tolerance: float = field(default_factory=effective_pareto_tolerance)
+    generation_contracts: tuple = ()
     skip_invalid: bool = True
     combine_reservations: bool = True
     lookahead_filter: bool = True
@@ -38,6 +41,8 @@ class JoinContext:
         return self
 
     def check_environment(self):
+        if self.pareto_tolerance != effective_pareto_tolerance():
+            raise ValueError('Pareto tolerance changed since JoinContext creation')
         if self.switches != _switches():
             raise ValueError('FFM search switches changed since JoinContext creation')
 

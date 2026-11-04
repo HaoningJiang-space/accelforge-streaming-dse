@@ -96,6 +96,7 @@ def clean_compress_and_join_pmappings(
         pmappings.spec,
         _pmapping_row_filter_function=_pmapping_row_filter_function,
         _terminal_branch_observer=_terminal_branch_observer,
+        _generation_contracts=getattr(pmappings, 'generation_contracts', ()),
     )
     return restore_mappings(pmappings, joined, decompress_data, tuple(einsum2pmappings))
 
@@ -264,6 +265,7 @@ def join_pmappings(
     metrics: Metrics = None,
     _pmapping_row_filter_function: Callable[[pd.Series], bool] | None = None,
     _terminal_branch_observer: Callable | None = None,
+    _generation_contracts: tuple = (),
 ):
     """Run the original reference-order kernel to completion on owned inputs.
 
@@ -274,7 +276,9 @@ def join_pmappings(
     from .join_engine import _start_owned, _advance_owned, _finalize_owned
     context = JoinContext.from_spec(spec, skip_invalid=skip_invalid,
         combine_reservations=combine_reservations, lookahead_filter=lookahead_filter,
-        row_filter=_pmapping_row_filter_function, terminal_observer=_terminal_branch_observer)
+        row_filter=_pmapping_row_filter_function, terminal_observer=_terminal_branch_observer,
+        generation_contracts=tuple(_generation_contracts))
+    # Candidate provenance is historical; it is not required to match Join settings.
     state = _start_owned(pmapping_groups, context)
     while state.remaining:
         state = _advance_owned(state)

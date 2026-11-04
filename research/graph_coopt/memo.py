@@ -40,6 +40,7 @@ class GraphMemo:
         self._pmappings = copy_candidate_payload(pmappings)
         self._store = None
         self._partials = {}
+        self._partial_metadata = {}
         self.groups = tuple(
             CandidateGroup(str(name), i, PhysicalInterface(group.compatibility),
                            len(group.mappings.data), tuple(group.mappings.data.columns))
@@ -56,10 +57,7 @@ class GraphMemo:
             return tuple(group for group in self.groups if group.einsum == nodes[0])
         if nodes not in self._partials:
             raise ValueError("no saved intermediate state for this subgraph")
-        state = self.resume_partial(nodes)
-        return tuple(IntermediateGroup(nodes, i, PhysicalInterface(g.compatibility),
-                                      len(g.mappings.data), tuple(g.mappings.data.columns))
-                     for i, g in enumerate(state.left))
+        return self._partial_metadata[nodes]
 
     def _candidate_store(self):
         if self._store is None:
@@ -81,7 +79,12 @@ class GraphMemo:
         self._candidate_store().context.require_same(state.context)
         if state.processed not in self.dag.prefixes():
             raise ValueError('only reference-order prefixes can be saved')
-        self._partials[state.processed] = snapshot(state)
+        checkpoint = snapshot(state)
+        metadata = tuple(IntermediateGroup(state.processed, i, PhysicalInterface(g.compatibility),
+                                          len(g.mappings.data), tuple(g.mappings.data.columns))
+                         for i, g in enumerate(checkpoint._state.left))
+        self._partials[state.processed] = checkpoint
+        self._partial_metadata[state.processed] = metadata
 
     def resume_partial(self, subgraph):
         from accelforge.mapper.FFM._join_pmappings.partial_state import resume

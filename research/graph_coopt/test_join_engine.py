@@ -1,6 +1,7 @@
 """Controller differential tests and proof that resume performs no prefix work."""
 from copy import deepcopy
 from unittest.mock import patch
+import importlib
 
 import pytest
 from pandas.testing import assert_frame_equal
@@ -133,3 +134,49 @@ def test_full_wrapper_matches_frozen_controller(candidates, el_only):
     expected = reference(pm)
     actual = common.join_pmappings(deepcopy(pm))
     assert_same(expected, actual)
+
+
+def test_real_prefix_rejects_changed_pareto_tolerance_at_every_execution_boundary(candidates, monkeypatch):
+    _, _, pm = candidates
+    memo = GraphMemo(WorkloadDAG.from_workload(pm.spec.workload), pm)
+    state = memo.start()
+    checkpoint = join_engine.snapshot(state)
+    complete = state
+    while complete.remaining:
+        complete = memo.advance(complete)
+    pareto = importlib.import_module('accelforge.mapper.FFM._pareto_df.pareto')
+    monkeypatch.setattr(pareto, 'TOLERANCE', .1)
+    for operation in (lambda: join_engine.snapshot(state),
+                      lambda: join_engine.resume(checkpoint, state.context),
+                      lambda: memo.start(), lambda: memo.advance(state), lambda: memo.finalize(complete)):
+        with pytest.raises(ValueError, match='Pareto tolerance changed'):
+            operation()
+    monkeypatch.setattr(pareto, 'TOLERANCE', 0.)
+    assert join_engine.resume(checkpoint, state.context).processed == state.processed
+
+
+def test_saved_group_metadata_does_not_restore_or_copy_full_state(candidates):
+    _, _, pm = candidates
+    memo = GraphMemo(WorkloadDAG.from_workload(pm.spec.workload), pm)
+    middle = memo.advance(memo.start())
+    memo.save_partial(middle)
+    with patch.object(memo, 'resume_partial', side_effect=AssertionError('metadata restored state')), \
+         patch('accelforge.mapper.FFM._join_pmappings.partial_state.copy_partial_state',
+               side_effect=AssertionError('metadata copied state')):
+        first = memo.groups_for(middle.processed)
+        assert first is memo.groups_for(middle.processed)
+    assert sum(g.row_count for g in first) == sum(len(g.mappings.data) for g in middle.left)
+
+
+def test_generation_contract_is_provenance_not_a_join_equality_constraint(candidates, monkeypatch):
+    _, _, pm = candidates
+    assert len(pm.generation_contracts) == 1
+    assert pm.generation_contracts[0].pareto_tolerance == 0.
+    before = pm.generation_contracts
+    # Generation-only settings may intentionally differ at the Join boundary.
+    monkeypatch.setenv('AF_TARGET_ENUMERATION', 'independent')
+    memo = GraphMemo(WorkloadDAG.from_workload(pm.spec.workload), pm)
+    state = memo.start()
+    assert state.context.generation_contracts == before
+    assert dict(state.context.switches)['AF_TARGET_ENUMERATION'] == 'independent'
+    assert ('AF_TARGET_ENUMERATION', 'independent') not in before[0].switches

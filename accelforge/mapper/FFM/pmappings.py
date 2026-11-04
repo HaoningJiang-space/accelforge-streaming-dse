@@ -49,8 +49,10 @@ class MultiEinsumPmappings:
         einsums_with_pmappings_generated: set[EinsumName],
         flattened_arches: dict[EinsumName, list[arch.Leaf]],
         evaluated_specs: dict[EinsumName, Spec],
+        generation_contracts: tuple = (),
     ):
         self.spec: Spec = spec
+        self.generation_contracts = tuple(generation_contracts)
         self.einsum2pmappings: dict[EinsumName, list[PmappingGroup]] = einsum2pmappings
         self.pmapping_objects: dict[EinsumName, dict[UUID, Mapping]] = pmapping_objects
         self.einsum2jobs: dict[EinsumName, list[Job]] = einsum2jobs
@@ -70,6 +72,9 @@ class MultiEinsumPmappings:
                 "from multiple runs."
             )
         self = copy.copy(self)
+        left_contracts = getattr(self, 'generation_contracts', ()) or (None,)
+        right_contracts = getattr(other, 'generation_contracts', ()) or (None,)
+        self.generation_contracts = tuple(dict.fromkeys((*left_contracts, *right_contracts)))
         for einsum_name, pmappings in other.einsum2pmappings.items():
             self.einsum2pmappings.setdefault(einsum_name, []).extend(pmappings)
         for einsum_name, jobs in other.einsum2jobs.items():
@@ -104,6 +109,7 @@ class MultiEinsumPmappings:
             einsums_with_pmappings_generated=self.einsums_with_pmappings_generated,
             flattened_arches=self.flattened_arches,
             evaluated_specs=self.evaluated_specs,
+            generation_contracts=getattr(self, 'generation_contracts', ()),
         )
 
     def drop_einsums(self, *einsums_with_pmappings_generated: EinsumName):

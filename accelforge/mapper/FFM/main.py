@@ -19,13 +19,14 @@ from accelforge.mapper.FFM._join_pmappings.join_pmappings import (
 )
 from accelforge._accelerated_imports import pd
 from accelforge.mapper.FFM._pareto_df import pareto as pareto_module
+from accelforge.mapper.FFM.generation_contract import GenerationContract
 
 
 logger = logging.getLogger(__name__)
 
 # Invalidate candidates produced before the shared formula-goal cache fix.
 # Bump when generation semantics change outside the cached wrapper's source.
-_GENERATION_CACHE_VERSION = 2
+_GENERATION_CACHE_VERSION = 3  # Persist generation provenance in new cache entries.
 
 # These options affect the generated candidate set, not only Join execution.
 # Keep this list in sync with new generation switches in _make_pmappings.
@@ -222,6 +223,7 @@ def _make_pmappings(
     einsum_names: list[EinsumName] | None = None,
     can_combine_multiple_runs: bool = False,
 ) -> MultiEinsumPmappings:
+    generation_contract = GenerationContract.capture(spec.mapper.ffm.metrics)
     if einsum_names is None:
         einsum_names = [e.name for e in spec.workload.einsums]
 
@@ -251,6 +253,7 @@ def _make_pmappings(
         ),
         flattened_arches=flattened_arches,
         evaluated_specs=evaluated_specs,
+        generation_contracts=(generation_contract,),
     )
 
     return m

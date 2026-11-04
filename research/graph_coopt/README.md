@@ -9,6 +9,10 @@ state pause/resume; see [RESUMABLE_JOIN.md](RESUMABLE_JOIN.md). This is a refere
 equivalence interface, without new pruning or cross-architecture search.
 The follow-up [state snapshot audit](STATE_SNAPSHOT_AUDIT.md) covers extended
 ledgers, release cursors, object-valued source isolation and shared external inputs.
+The [template support audit](TEMPLATE_SUPPORT_AUDIT.md) adds tolerance checks,
+generation provenance, cached prefix metadata and a read-only pre-enumeration
+experiment. The initial abstraction certifies no avoidable template work in the
+measured 2mm/3mm cases.
 
 This research scaffold checks that original FFM per-Einsum candidate groups,
 their provenance, exact resource columns, architecture and source mapping objects

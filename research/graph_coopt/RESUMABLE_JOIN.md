@@ -7,11 +7,13 @@ The current negative/compression findings in MEMO_STATE_ANALYSIS.md still apply.
 
 ## Core contract
 
-`JoinContext.from_spec(spec, ...)` captures a private Spec copy, all `AF_*`
-switches, the original Join flags and optional callbacks. Checkpoints are bound
+`JoinContext.from_spec(spec, ...)` captures a private Spec copy, Join-stage `AF_*`
+switches, effective Pareto tolerance, original Join flags and optional callbacks.
+Generation provenance is retained separately and need not match Join settings.
+Checkpoints are bound
 to the **same context object**, not equality of Compatibility or a subset of
 the graph. A new context, even from the same Spec, cannot resume them. Changed
-switches, another architecture, another continuation workload, or a different
+switches or tolerance, another architecture, another continuation workload, or a different
 Join contract require a fresh start. Callbacks, when supplied, must remain
 deterministic; capturing a callback does not freeze its external Python globals.
 

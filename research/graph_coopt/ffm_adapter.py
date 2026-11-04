@@ -24,7 +24,8 @@ class CandidateStore:
         self._source = copy_candidate_payload(pmappings)
         _check_einsum2pmappings_not_empty(self._source.einsum2pmappings, self._source)
         self._groups, self._decompress = compress_einsum2pmappings(self._source.einsum2pmappings)
-        self.context = JoinContext.from_spec(self._source.spec)
+        self.context = JoinContext.from_spec(self._source.spec,
+            generation_contracts=getattr(self._source, 'generation_contracts', ()))
 
     def start(self):
         return join_engine.start(self._groups, self.context)
