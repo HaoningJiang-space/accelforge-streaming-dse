@@ -1,0 +1,2936 @@
+{
+  "scope": "synthetic restricted cost model, not FFM",
+  "model": {
+    "macs": 4096,
+    "base_dram_bytes": 192,
+    "mac_energy": 1,
+    "byte_energy": 4
+  },
+  "branches": [
+    {
+      "name": "stream4",
+      "live_bytes": 4,
+      "reserved_bytes": 2,
+      "repeated_input_bytes": 64,
+      "can_spill": false
+    },
+    {
+      "name": "stream8",
+      "live_bytes": 8,
+      "reserved_bytes": 2,
+      "repeated_input_bytes": 40,
+      "can_spill": false
+    },
+    {
+      "name": "stream16",
+      "live_bytes": 16,
+      "reserved_bytes": 2,
+      "repeated_input_bytes": 24,
+      "can_spill": false
+    },
+    {
+      "name": "barrier-small-reservation",
+      "live_bytes": 64,
+      "reserved_bytes": 2,
+      "repeated_input_bytes": 0,
+      "can_spill": true
+    },
+    {
+      "name": "barrier-large-reservation",
+      "live_bytes": 64,
+      "reserved_bytes": 24,
+      "repeated_input_bytes": 0,
+      "can_spill": true
+    },
+    {
+      "name": "barrier-extra-reservation",
+      "live_bytes": 64,
+      "reserved_bytes": 40,
+      "repeated_input_bytes": 0,
+      "can_spill": true
+    }
+  ],
+  "extras": [
+    32,
+    16,
+    8,
+    0
+  ],
+  "cases": [
+    {
+      "k": 16,
+      "timings_s": {
+        "False": 0.00035099999513477087,
+        "True": 0.000281207961961627
+      },
+      "baseline": {
+        "certificates": 0,
+        "pruned_arch_branches": 0,
+        "completed_pairs": 384,
+        "infeasible_arch_branches": 0,
+        "bound_s": 1.2511154636740685e-06,
+        "completion_s": 0.00023899797815829515,
+        "covered_per_branch": [],
+        "witnesses": []
+      },
+      "bounded": {
+        "certificates": 1,
+        "pruned_arch_branches": 16,
+        "completed_pairs": 96,
+        "infeasible_arch_branches": 56,
+        "bound_s": 5.516724195331335e-05,
+        "completion_s": 0.00012313213665038347,
+        "covered_per_branch": [
+          16
+        ],
+        "witnesses": [
+          {
+            "branch": 3,
+            "architecture": 0,
+            "incumbent": "2621440",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "2727936"
+          },
+          {
+            "branch": 3,
+            "architecture": 1,
+            "incumbent": "2621440",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "2727936"
+          },
+          {
+            "branch": 3,
+            "architecture": 2,
+            "incumbent": "1310720",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "1363968"
+          },
+          {
+            "branch": 3,
+            "architecture": 3,
+            "incumbent": "1310720",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "1363968"
+          },
+          {
+            "branch": 3,
+            "architecture": 4,
+            "incumbent": "655360",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "820512"
+          },
+          {
+            "branch": 3,
+            "architecture": 5,
+            "incumbent": "327680",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "340992"
+          },
+          {
+            "branch": 3,
+            "architecture": 6,
+            "incumbent": "655360",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "820512"
+          },
+          {
+            "branch": 3,
+            "architecture": 7,
+            "incumbent": "163840",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "205128"
+          },
+          {
+            "branch": 3,
+            "architecture": 8,
+            "incumbent": "2572288",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "2695168"
+          },
+          {
+            "branch": 3,
+            "architecture": 9,
+            "incumbent": "2572288",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "2695168"
+          },
+          {
+            "branch": 3,
+            "architecture": 10,
+            "incumbent": "1286144",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "1347584"
+          },
+          {
+            "branch": 3,
+            "architecture": 11,
+            "incumbent": "1286144",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "1347584"
+          },
+          {
+            "branch": 3,
+            "architecture": 12,
+            "incumbent": "582784",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "768544"
+          },
+          {
+            "branch": 3,
+            "architecture": 13,
+            "incumbent": "321536",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "336896"
+          },
+          {
+            "branch": 3,
+            "architecture": 14,
+            "incumbent": "582784",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "768544"
+          },
+          {
+            "branch": 3,
+            "architecture": 15,
+            "incumbent": "160768",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "192136"
+          }
+        ]
+      },
+      "mismatched_best_costs": 0,
+      "winners": [
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "2621440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "2621440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "1310720",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "1310720",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "655360",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "327680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "655360",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "163840",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "2572288",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "2572288",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "1286144",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "1286144",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "582784",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "321536",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "582784",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "160768",
+          "extra": 0
+        }
+      ]
+    },
+    {
+      "k": 32,
+      "timings_s": {
+        "False": 0.0008848749566823244,
+        "True": 0.0008243749616667628
+      },
+      "baseline": {
+        "certificates": 0,
+        "pruned_arch_branches": 0,
+        "completed_pairs": 768,
+        "infeasible_arch_branches": 0,
+        "bound_s": 1.0398216545581818e-06,
+        "completion_s": 0.0006715364288538694,
+        "covered_per_branch": [],
+        "witnesses": []
+      },
+      "bounded": {
+        "certificates": 2,
+        "pruned_arch_branches": 48,
+        "completed_pairs": 288,
+        "infeasible_arch_branches": 72,
+        "bound_s": 0.00016549811698496342,
+        "completion_s": 0.00038500537630170584,
+        "covered_per_branch": [
+          32,
+          16
+        ],
+        "witnesses": [
+          {
+            "branch": 3,
+            "architecture": 0,
+            "incumbent": "2621440",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "2727936"
+          },
+          {
+            "branch": 3,
+            "architecture": 1,
+            "incumbent": "2621440",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "2727936"
+          },
+          {
+            "branch": 3,
+            "architecture": 2,
+            "incumbent": "1310720",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "1363968"
+          },
+          {
+            "branch": 3,
+            "architecture": 3,
+            "incumbent": "1310720",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "1363968"
+          },
+          {
+            "branch": 3,
+            "architecture": 4,
+            "incumbent": "655360",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "820512"
+          },
+          {
+            "branch": 3,
+            "architecture": 5,
+            "incumbent": "327680",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "340992"
+          },
+          {
+            "branch": 3,
+            "architecture": 6,
+            "incumbent": "655360",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "820512"
+          },
+          {
+            "branch": 3,
+            "architecture": 7,
+            "incumbent": "163840",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "205128"
+          },
+          {
+            "branch": 3,
+            "architecture": 8,
+            "incumbent": "2572288",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "2695168"
+          },
+          {
+            "branch": 3,
+            "architecture": 9,
+            "incumbent": "2572288",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "2695168"
+          },
+          {
+            "branch": 3,
+            "architecture": 10,
+            "incumbent": "1286144",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "1347584"
+          },
+          {
+            "branch": 3,
+            "architecture": 11,
+            "incumbent": "1286144",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "1347584"
+          },
+          {
+            "branch": 3,
+            "architecture": 12,
+            "incumbent": "582784",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "768544"
+          },
+          {
+            "branch": 3,
+            "architecture": 13,
+            "incumbent": "321536",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "336896"
+          },
+          {
+            "branch": 3,
+            "architecture": 14,
+            "incumbent": "582784",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "768544"
+          },
+          {
+            "branch": 3,
+            "architecture": 15,
+            "incumbent": "160768",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "192136"
+          },
+          {
+            "branch": 3,
+            "architecture": 16,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2662400"
+          },
+          {
+            "branch": 3,
+            "architecture": 17,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2662400"
+          },
+          {
+            "branch": 3,
+            "architecture": 18,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1331200"
+          },
+          {
+            "branch": 3,
+            "architecture": 19,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1331200"
+          },
+          {
+            "branch": 3,
+            "architecture": 20,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "717600"
+          },
+          {
+            "branch": 3,
+            "architecture": 21,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "332800"
+          },
+          {
+            "branch": 3,
+            "architecture": 22,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "717600"
+          },
+          {
+            "branch": 3,
+            "architecture": 23,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "179400"
+          },
+          {
+            "branch": 3,
+            "architecture": 24,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2629632"
+          },
+          {
+            "branch": 3,
+            "architecture": 25,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2629632"
+          },
+          {
+            "branch": 3,
+            "architecture": 26,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1314816"
+          },
+          {
+            "branch": 3,
+            "architecture": 27,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1314816"
+          },
+          {
+            "branch": 3,
+            "architecture": 28,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "667680"
+          },
+          {
+            "branch": 3,
+            "architecture": 29,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "328704"
+          },
+          {
+            "branch": 3,
+            "architecture": 30,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "667680"
+          },
+          {
+            "branch": 3,
+            "architecture": 31,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "166920"
+          },
+          {
+            "branch": 4,
+            "architecture": 16,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2752512"
+          },
+          {
+            "branch": 4,
+            "architecture": 17,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2752512"
+          },
+          {
+            "branch": 4,
+            "architecture": 18,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1376256"
+          },
+          {
+            "branch": 4,
+            "architecture": 19,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1376256"
+          },
+          {
+            "branch": 4,
+            "architecture": 20,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "860160"
+          },
+          {
+            "branch": 4,
+            "architecture": 21,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "344064"
+          },
+          {
+            "branch": 4,
+            "architecture": 22,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "860160"
+          },
+          {
+            "branch": 4,
+            "architecture": 23,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "215040"
+          },
+          {
+            "branch": 4,
+            "architecture": 24,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2719744"
+          },
+          {
+            "branch": 4,
+            "architecture": 25,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2719744"
+          },
+          {
+            "branch": 4,
+            "architecture": 26,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1359872"
+          },
+          {
+            "branch": 4,
+            "architecture": 27,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1359872"
+          },
+          {
+            "branch": 4,
+            "architecture": 28,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "807424"
+          },
+          {
+            "branch": 4,
+            "architecture": 29,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "339968"
+          },
+          {
+            "branch": 4,
+            "architecture": 30,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "807424"
+          },
+          {
+            "branch": 4,
+            "architecture": 31,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "201856"
+          }
+        ]
+      },
+      "mismatched_best_costs": 0,
+      "winners": [
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "2621440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "2621440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "1310720",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "1310720",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "655360",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "327680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "655360",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "163840",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "2572288",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "2572288",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "1286144",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "1286144",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "582784",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "321536",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "582784",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "160768",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 24,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 24,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 24,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 24,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 24,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 24,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "317440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 24,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 24,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "158720",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 32,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 32,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 32,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 32,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 32,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 32,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "317440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 32,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 32,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "158720",
+          "extra": 0
+        }
+      ]
+    },
+    {
+      "k": 64,
+      "timings_s": {
+        "False": 0.0023297499865293503,
+        "True": 0.002196167013607919
+      },
+      "baseline": {
+        "certificates": 0,
+        "pruned_arch_branches": 0,
+        "completed_pairs": 1536,
+        "infeasible_arch_branches": 0,
+        "bound_s": 1.8330756574869156e-06,
+        "completion_s": 0.0017602879088371992,
+        "covered_per_branch": [],
+        "witnesses": []
+      },
+      "bounded": {
+        "certificates": 3,
+        "pruned_arch_branches": 128,
+        "completed_pairs": 736,
+        "infeasible_arch_branches": 72,
+        "bound_s": 0.00042337505146861076,
+        "completion_s": 0.0010711662471294403,
+        "covered_per_branch": [
+          48,
+          48,
+          32
+        ],
+        "witnesses": [
+          {
+            "branch": 3,
+            "architecture": 0,
+            "incumbent": "2621440",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "2727936"
+          },
+          {
+            "branch": 3,
+            "architecture": 1,
+            "incumbent": "2621440",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "2727936"
+          },
+          {
+            "branch": 3,
+            "architecture": 2,
+            "incumbent": "1310720",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "1363968"
+          },
+          {
+            "branch": 3,
+            "architecture": 3,
+            "incumbent": "1310720",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "1363968"
+          },
+          {
+            "branch": 3,
+            "architecture": 4,
+            "incumbent": "655360",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "820512"
+          },
+          {
+            "branch": 3,
+            "architecture": 5,
+            "incumbent": "327680",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "340992"
+          },
+          {
+            "branch": 3,
+            "architecture": 6,
+            "incumbent": "655360",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "820512"
+          },
+          {
+            "branch": 3,
+            "architecture": 7,
+            "incumbent": "163840",
+            "incumbent_branch": 0,
+            "incumbent_extra": 0,
+            "lower_bound": "205128"
+          },
+          {
+            "branch": 3,
+            "architecture": 8,
+            "incumbent": "2572288",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "2695168"
+          },
+          {
+            "branch": 3,
+            "architecture": 9,
+            "incumbent": "2572288",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "2695168"
+          },
+          {
+            "branch": 3,
+            "architecture": 10,
+            "incumbent": "1286144",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "1347584"
+          },
+          {
+            "branch": 3,
+            "architecture": 11,
+            "incumbent": "1286144",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "1347584"
+          },
+          {
+            "branch": 3,
+            "architecture": 12,
+            "incumbent": "582784",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "768544"
+          },
+          {
+            "branch": 3,
+            "architecture": 13,
+            "incumbent": "321536",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "336896"
+          },
+          {
+            "branch": 3,
+            "architecture": 14,
+            "incumbent": "582784",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "768544"
+          },
+          {
+            "branch": 3,
+            "architecture": 15,
+            "incumbent": "160768",
+            "incumbent_branch": 1,
+            "incumbent_extra": 0,
+            "lower_bound": "192136"
+          },
+          {
+            "branch": 3,
+            "architecture": 16,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2662400"
+          },
+          {
+            "branch": 3,
+            "architecture": 17,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2662400"
+          },
+          {
+            "branch": 3,
+            "architecture": 18,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1331200"
+          },
+          {
+            "branch": 3,
+            "architecture": 19,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1331200"
+          },
+          {
+            "branch": 3,
+            "architecture": 20,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "717600"
+          },
+          {
+            "branch": 3,
+            "architecture": 21,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "332800"
+          },
+          {
+            "branch": 3,
+            "architecture": 22,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "717600"
+          },
+          {
+            "branch": 3,
+            "architecture": 23,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "179400"
+          },
+          {
+            "branch": 3,
+            "architecture": 24,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2629632"
+          },
+          {
+            "branch": 3,
+            "architecture": 25,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2629632"
+          },
+          {
+            "branch": 3,
+            "architecture": 26,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1314816"
+          },
+          {
+            "branch": 3,
+            "architecture": 27,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1314816"
+          },
+          {
+            "branch": 3,
+            "architecture": 28,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "667680"
+          },
+          {
+            "branch": 3,
+            "architecture": 29,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "328704"
+          },
+          {
+            "branch": 3,
+            "architecture": 30,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "667680"
+          },
+          {
+            "branch": 3,
+            "architecture": 31,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "166920"
+          },
+          {
+            "branch": 3,
+            "architecture": 32,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2596864"
+          },
+          {
+            "branch": 3,
+            "architecture": 33,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2596864"
+          },
+          {
+            "branch": 3,
+            "architecture": 34,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1298432"
+          },
+          {
+            "branch": 3,
+            "architecture": 35,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1298432"
+          },
+          {
+            "branch": 3,
+            "architecture": 36,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "618784"
+          },
+          {
+            "branch": 3,
+            "architecture": 37,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "324608"
+          },
+          {
+            "branch": 3,
+            "architecture": 38,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "618784"
+          },
+          {
+            "branch": 3,
+            "architecture": 39,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "162304"
+          },
+          {
+            "branch": 3,
+            "architecture": 40,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2564096"
+          },
+          {
+            "branch": 3,
+            "architecture": 41,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2564096"
+          },
+          {
+            "branch": 3,
+            "architecture": 42,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1282048"
+          },
+          {
+            "branch": 3,
+            "architecture": 43,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1282048"
+          },
+          {
+            "branch": 3,
+            "architecture": 44,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "570912"
+          },
+          {
+            "branch": 3,
+            "architecture": 45,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "320512"
+          },
+          {
+            "branch": 3,
+            "architecture": 46,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "570912"
+          },
+          {
+            "branch": 3,
+            "architecture": 47,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "160256"
+          },
+          {
+            "branch": 4,
+            "architecture": 16,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2752512"
+          },
+          {
+            "branch": 4,
+            "architecture": 17,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2752512"
+          },
+          {
+            "branch": 4,
+            "architecture": 18,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1376256"
+          },
+          {
+            "branch": 4,
+            "architecture": 19,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1376256"
+          },
+          {
+            "branch": 4,
+            "architecture": 20,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "860160"
+          },
+          {
+            "branch": 4,
+            "architecture": 21,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "344064"
+          },
+          {
+            "branch": 4,
+            "architecture": 22,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "860160"
+          },
+          {
+            "branch": 4,
+            "architecture": 23,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "215040"
+          },
+          {
+            "branch": 4,
+            "architecture": 24,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2719744"
+          },
+          {
+            "branch": 4,
+            "architecture": 25,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2719744"
+          },
+          {
+            "branch": 4,
+            "architecture": 26,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1359872"
+          },
+          {
+            "branch": 4,
+            "architecture": 27,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1359872"
+          },
+          {
+            "branch": 4,
+            "architecture": 28,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "807424"
+          },
+          {
+            "branch": 4,
+            "architecture": 29,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "339968"
+          },
+          {
+            "branch": 4,
+            "architecture": 30,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "807424"
+          },
+          {
+            "branch": 4,
+            "architecture": 31,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "201856"
+          },
+          {
+            "branch": 4,
+            "architecture": 32,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2686976"
+          },
+          {
+            "branch": 4,
+            "architecture": 33,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2686976"
+          },
+          {
+            "branch": 4,
+            "architecture": 34,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1343488"
+          },
+          {
+            "branch": 4,
+            "architecture": 35,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1343488"
+          },
+          {
+            "branch": 4,
+            "architecture": 36,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "755712"
+          },
+          {
+            "branch": 4,
+            "architecture": 37,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "335872"
+          },
+          {
+            "branch": 4,
+            "architecture": 38,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "755712"
+          },
+          {
+            "branch": 4,
+            "architecture": 39,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "188928"
+          },
+          {
+            "branch": 4,
+            "architecture": 40,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2654208"
+          },
+          {
+            "branch": 4,
+            "architecture": 41,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2654208"
+          },
+          {
+            "branch": 4,
+            "architecture": 42,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1327104"
+          },
+          {
+            "branch": 4,
+            "architecture": 43,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1327104"
+          },
+          {
+            "branch": 4,
+            "architecture": 44,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "705024"
+          },
+          {
+            "branch": 4,
+            "architecture": 45,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "331776"
+          },
+          {
+            "branch": 4,
+            "architecture": 46,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "705024"
+          },
+          {
+            "branch": 4,
+            "architecture": 47,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "176256"
+          },
+          {
+            "branch": 4,
+            "architecture": 48,
+            "incumbent": "2498560",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "2588672"
+          },
+          {
+            "branch": 4,
+            "architecture": 49,
+            "incumbent": "2498560",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "2588672"
+          },
+          {
+            "branch": 4,
+            "architecture": 50,
+            "incumbent": "1249280",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "1294336"
+          },
+          {
+            "branch": 4,
+            "architecture": 51,
+            "incumbent": "1249280",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "1294336"
+          },
+          {
+            "branch": 4,
+            "architecture": 52,
+            "incumbent": "478240",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "606720"
+          },
+          {
+            "branch": 4,
+            "architecture": 53,
+            "incumbent": "312320",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "323584"
+          },
+          {
+            "branch": 4,
+            "architecture": 54,
+            "incumbent": "478240",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "606720"
+          },
+          {
+            "branch": 4,
+            "architecture": 55,
+            "incumbent": "156160",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "161792"
+          },
+          {
+            "branch": 4,
+            "architecture": 56,
+            "incumbent": "2490368",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "2523136"
+          },
+          {
+            "branch": 4,
+            "architecture": 57,
+            "incumbent": "2490368",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "2523136"
+          },
+          {
+            "branch": 4,
+            "architecture": 58,
+            "incumbent": "1245184",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "1261568"
+          },
+          {
+            "branch": 4,
+            "architecture": 59,
+            "incumbent": "1245184",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "1261568"
+          },
+          {
+            "branch": 4,
+            "architecture": 60,
+            "incumbent": "466944",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "512512"
+          },
+          {
+            "branch": 4,
+            "architecture": 61,
+            "incumbent": "311296",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "315392"
+          },
+          {
+            "branch": 4,
+            "architecture": 62,
+            "incumbent": "466944",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "512512"
+          },
+          {
+            "branch": 4,
+            "architecture": 63,
+            "incumbent": "155648",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "157696"
+          },
+          {
+            "branch": 5,
+            "architecture": 32,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2752512"
+          },
+          {
+            "branch": 5,
+            "architecture": 33,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2752512"
+          },
+          {
+            "branch": 5,
+            "architecture": 34,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1376256"
+          },
+          {
+            "branch": 5,
+            "architecture": 35,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1376256"
+          },
+          {
+            "branch": 5,
+            "architecture": 36,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "860160"
+          },
+          {
+            "branch": 5,
+            "architecture": 37,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "344064"
+          },
+          {
+            "branch": 5,
+            "architecture": 38,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "860160"
+          },
+          {
+            "branch": 5,
+            "architecture": 39,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "215040"
+          },
+          {
+            "branch": 5,
+            "architecture": 40,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2719744"
+          },
+          {
+            "branch": 5,
+            "architecture": 41,
+            "incumbent": "2539520",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "2719744"
+          },
+          {
+            "branch": 5,
+            "architecture": 42,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1359872"
+          },
+          {
+            "branch": 5,
+            "architecture": 43,
+            "incumbent": "1269760",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "1359872"
+          },
+          {
+            "branch": 5,
+            "architecture": 44,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "807424"
+          },
+          {
+            "branch": 5,
+            "architecture": 45,
+            "incumbent": "317440",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "339968"
+          },
+          {
+            "branch": 5,
+            "architecture": 46,
+            "incumbent": "535680",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "807424"
+          },
+          {
+            "branch": 5,
+            "architecture": 47,
+            "incumbent": "158720",
+            "incumbent_branch": 2,
+            "incumbent_extra": 0,
+            "lower_bound": "201856"
+          },
+          {
+            "branch": 5,
+            "architecture": 48,
+            "incumbent": "2498560",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "2654208"
+          },
+          {
+            "branch": 5,
+            "architecture": 49,
+            "incumbent": "2498560",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "2654208"
+          },
+          {
+            "branch": 5,
+            "architecture": 50,
+            "incumbent": "1249280",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "1327104"
+          },
+          {
+            "branch": 5,
+            "architecture": 51,
+            "incumbent": "1249280",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "1327104"
+          },
+          {
+            "branch": 5,
+            "architecture": 52,
+            "incumbent": "478240",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "705024"
+          },
+          {
+            "branch": 5,
+            "architecture": 53,
+            "incumbent": "312320",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "331776"
+          },
+          {
+            "branch": 5,
+            "architecture": 54,
+            "incumbent": "478240",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "705024"
+          },
+          {
+            "branch": 5,
+            "architecture": 55,
+            "incumbent": "156160",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "176256"
+          },
+          {
+            "branch": 5,
+            "architecture": 56,
+            "incumbent": "2490368",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "2588672"
+          },
+          {
+            "branch": 5,
+            "architecture": 57,
+            "incumbent": "2490368",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "2588672"
+          },
+          {
+            "branch": 5,
+            "architecture": 58,
+            "incumbent": "1245184",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "1294336"
+          },
+          {
+            "branch": 5,
+            "architecture": 59,
+            "incumbent": "1245184",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "1294336"
+          },
+          {
+            "branch": 5,
+            "architecture": 60,
+            "incumbent": "466944",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "606720"
+          },
+          {
+            "branch": 5,
+            "architecture": 61,
+            "incumbent": "311296",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "323584"
+          },
+          {
+            "branch": 5,
+            "architecture": 62,
+            "incumbent": "466944",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "606720"
+          },
+          {
+            "branch": 5,
+            "architecture": 63,
+            "incumbent": "155648",
+            "incumbent_branch": 3,
+            "incumbent_extra": 0,
+            "lower_bound": "161792"
+          }
+        ]
+      },
+      "mismatched_best_costs": 0,
+      "winners": [
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "2621440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "2621440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "1310720",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "1310720",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "655360",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "327680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 2
+          },
+          "branch": "stream4",
+          "edp": "655360",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 8,
+            "bandwidth": 8
+          },
+          "branch": "stream4",
+          "edp": "163840",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "2572288",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "2572288",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "1286144",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "1286144",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "582784",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "321536",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 2
+          },
+          "branch": "stream8",
+          "edp": "582784",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 16,
+            "bandwidth": 8
+          },
+          "branch": "stream8",
+          "edp": "160768",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 24,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 24,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 24,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 24,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 24,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 24,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "317440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 24,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 24,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "158720",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 32,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 32,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 32,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 32,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 32,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 32,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "317440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 32,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 32,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "158720",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 40,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 40,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 40,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 40,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 40,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 40,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "317440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 40,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 40,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "158720",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 48,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 48,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "2539520",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 48,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 48,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "1269760",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 48,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 48,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "317440",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 48,
+            "bandwidth": 2
+          },
+          "branch": "stream16",
+          "edp": "535680",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 48,
+            "bandwidth": 8
+          },
+          "branch": "stream16",
+          "edp": "158720",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 64,
+            "bandwidth": 2
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "2498560",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 64,
+            "bandwidth": 8
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "2498560",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 64,
+            "bandwidth": 2
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "1249280",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 64,
+            "bandwidth": 8
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "1249280",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 64,
+            "bandwidth": 2
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "478240",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 64,
+            "bandwidth": 8
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "312320",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 64,
+            "bandwidth": 2
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "478240",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 64,
+            "bandwidth": 8
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "156160",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 80,
+            "bandwidth": 2
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "2490368",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 2,
+            "py": 4,
+            "capacity": 80,
+            "bandwidth": 8
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "2490368",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 80,
+            "bandwidth": 2
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "1245184",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 4,
+            "py": 4,
+            "capacity": 80,
+            "bandwidth": 8
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "1245184",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 80,
+            "bandwidth": 2
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "466944",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 8,
+            "py": 8,
+            "capacity": 80,
+            "bandwidth": 8
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "311296",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 80,
+            "bandwidth": 2
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "466944",
+          "extra": 0
+        },
+        {
+          "architecture": {
+            "px": 16,
+            "py": 8,
+            "capacity": 80,
+            "bandwidth": 8
+          },
+          "branch": "barrier-small-reservation",
+          "edp": "155648",
+          "extra": 0
+        }
+      ]
+    }
+  ],
+  "source_sha256": {
+    "audit_graph_cut_bound.py": "763e57e7aebb2fcf8ee45091d0dc7d46e079958fa52174d751e5f51e4dd1ca57",
+    "graph_cut_bound.py": "2b9025269441a3f309aa04c44c7e0e8cc2532d175f0f053bc38dc75669e68509",
+    "test_graph_cut_bound.py": "6839db0305abec93a53817e929bb2bdf996fcd5131be7343fb800f738d0a8c67"
+  }
+}

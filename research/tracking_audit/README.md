@@ -7,6 +7,13 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Graph-cut bound: restricted synthetic validation
+
+The [graph-cut experiment](results/graph_cut_bound/README.md) checks an exact
+single-cut spill lower bound and EDP branch pruning against a tiny synthetic
+two-stage catalog. It is not integrated with FFM, has no derived Fusion lifetime
+contract and does not establish an FFM speedup or continuous-region certificate.
+
 ### Prefix sharing experiment: substantial duplication, slower prototype
 
 An [intrusive profile and isolated backend experiment](results/factorized_region/README.md)
