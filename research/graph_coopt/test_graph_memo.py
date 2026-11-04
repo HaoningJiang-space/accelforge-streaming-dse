@@ -61,7 +61,7 @@ def test_memo_preserves_real_ffm_frontier_and_reconstructs(n, capacity):
         for frame, group in zip(before[name], groups):
             assert_frame_equal(frame, group.mappings.data)
     assert sum(len(memo.groups_for((node,))) for node in memo.dag.nodes) == len(memo.groups)
-    with pytest.raises(ValueError, match='single-Einsum'):
+    with pytest.raises(ValueError, match='no saved intermediate'):
         memo.groups_for(memo.dag.nodes)
     # FFM mutates its input; compare independent snapshots from the same source.
     reference = join_pmappings(memo.materialize())

@@ -14,6 +14,15 @@ class CandidateGroup:
     columns: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class IntermediateGroup:
+    subgraph: tuple[str, ...]
+    group_index: int
+    interface: PhysicalInterface
+    row_count: int
+    columns: tuple[str, ...]
+
+
 class GraphMemo:
     """Snapshot groups without interpreting equality as a safe merge.
 
@@ -29,6 +38,8 @@ class GraphMemo:
             raise ValueError("all Einsums must have generated candidate groups")
         self.dag = dag
         self._pmappings = deepcopy(pmappings)
+        self._store = None
+        self._partials = {}
         self.groups = tuple(
             CandidateGroup(str(name), i, PhysicalInterface(group.compatibility),
                            len(group.mappings.data), tuple(group.mappings.data.columns))
@@ -39,11 +50,46 @@ class GraphMemo:
             raise ValueError("all Einsums must have at least one candidate group")
 
     def groups_for(self, subgraph):
-        """Expose single-operator entries only; no intermediate joins are cached."""
+        """Read metadata for source operators or explicitly saved prefixes."""
         nodes = tuple(subgraph)
-        if len(nodes) != 1 or nodes[0] not in self.dag.nodes:
-            raise ValueError("only single-Einsum subgraphs have memo entries")
-        return tuple(group for group in self.groups if group.einsum == nodes[0])
+        if len(nodes) == 1 and nodes[0] in self.dag.nodes:
+            return tuple(group for group in self.groups if group.einsum == nodes[0])
+        if nodes not in self._partials:
+            raise ValueError("no saved intermediate state for this subgraph")
+        state = self.resume_partial(nodes)
+        return tuple(IntermediateGroup(nodes, i, PhysicalInterface(g.compatibility),
+                                      len(g.mappings.data), tuple(g.mappings.data.columns))
+                     for i, g in enumerate(state.left))
+
+    def _candidate_store(self):
+        if self._store is None:
+            from .ffm_adapter import prepare_candidates
+            self._store = prepare_candidates(self._pmappings)
+        return self._store
+
+    def start(self):
+        return self._candidate_store().start()
+
+    def advance(self, state, next_einsum=None):
+        return self._candidate_store().advance(state, next_einsum)
+
+    def finalize(self, state):
+        return self._candidate_store().finalize(state)
+
+    def save_partial(self, state):
+        from accelforge.mapper.FFM._join_pmappings.partial_state import snapshot
+        self._candidate_store().context.require_same(state.context)
+        if state.processed not in self.dag.prefixes():
+            raise ValueError('only reference-order prefixes can be saved')
+        self._partials[state.processed] = snapshot(state)
+
+    def resume_partial(self, subgraph):
+        from accelforge.mapper.FFM._join_pmappings.partial_state import resume
+        return resume(self._partials[tuple(subgraph)], self._candidate_store().context)
+
+    @property
+    def saved_prefixes(self):
+        return tuple(self._partials)
 
     def materialize(self):
         """Give the mutating FFM join its own complete snapshot."""

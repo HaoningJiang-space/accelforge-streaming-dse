@@ -1,10 +1,12 @@
 # Graph memo feasibility gates
 
-The active experiment is now **state analysis before optimizer development**.
+The research gate remains **state analysis before optimizer development**.
 See [MEMO_STATE_ANALYSIS.md](MEMO_STATE_ANALYSIS.md) for G1/G2/G3 definitions,
 signature limitations and the twelve independently generated 2mm/3mm catalogs.
 There is no evidence here that introducing a graph memo beats existing FFM or
-its cache. The snapshot gate below is retained as a transport correctness check.
+its cache. A separate engineering refactor now supports actual intermediate
+state pause/resume; see [RESUMABLE_JOIN.md](RESUMABLE_JOIN.md). This is a reference
+equivalence interface, without new pruning or cross-architecture search.
 
 This research scaffold checks that original FFM per-Einsum candidate groups,
 their provenance, exact resource columns, architecture and source mapping objects
@@ -18,13 +20,12 @@ The graph extractor accepts an acyclic, topologically ordered workload with a
 single producer for each tensor. The present gate further restricts execution to
 sequential chains without skip edges. It deliberately rejects branching and
 ambiguous producers rather than treating graph connectivity as Fusion legality.
-Memo entries exist only for individual Einsums. Prefix subgraphs are identified,
-but their intermediate mappings are **not** stored, shared, or optimized. All
-grouping, permutations, reservations, Pareto, join order, and mapping reconstruction
-remain FFM's own; this validates a transport boundary, not a new graph DP or an
-independent Fusion correctness proof. No new `GroupJoinAdapter` is exposed yet:
-the current FFM join's context and mutating preparation need a separate semantic
-gate before intermediate states can be safely reused.
+Source entries exist for individual Einsums. Explicitly saved prefixes now store
+real intermediate groups with their entire original continuation and Join
+context. The original grouping, permutations, reservations, Pareto, join order
+and mapping reconstruction remain in the shared FFM kernel. Resume is restricted
+to the same context; it does not establish a new graph DP or a general physical
+interface replacement rule.
 
 Run from the repository root:
 
