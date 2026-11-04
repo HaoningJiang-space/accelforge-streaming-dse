@@ -7,6 +7,23 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### One-template architecture regions, without declared query points
+
+The new [parametric template interpreter](PARAMETRIC_TEMPLATE.md) compiles one
+fixed NVDLA MatMul template over integer `Px`, `Py` and GlobalBuffer capacity.
+It splits regions at attained constraint events, preserves ordered fallback and
+prefix Pareto history, and permits disconnected regions. Future query points
+are not supplied during compilation. Queries use stored Tile provenance and
+costs, with no enumeration or cost-model evaluation.
+
+The [experiment record](results/parametric_template/README.md) compares both
+prepared independent FFM and its existing cross-query prefix/compilation cache,
+includes preprocessing and best-Mapping reconstruction, and reports break-even
+query counts. Independent physical architectures validate unseen queries and
+region boundaries; the known noncontiguous-membership example is also preserved.
+This is one unfused template, not the optimum over all templates, a Fusion-safe
+Memo, or an end-to-end multi-workload DSE speedup.
+
 ### Array shape × SRAM is the current research experiment
 
 The [shape/capacity audit](results/shape_capacity/README.md) reproduces the three-MatMul
