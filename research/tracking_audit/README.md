@@ -7,6 +7,24 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### All six MatMul templates: complete terminal union, limited amortization
+
+The [whole-operator compiler](PARAMETRIC_OPERATOR.md) now prepares all six
+templates before any concrete query points, overlays their parameter regions,
+and computes source-preserving cross-template terminal Pareto frontiers. The
+1,382-cell common refinement reduces to 255 final boxes. Queries perform no
+enumeration, cost evaluation or Pareto.
+
+The [six-template experiment](results/parametric_operator/README.md) matches
+complete candidates/frontiers at 1,382 prepared-oracle projections and 128 normal
+physical full-FFM searches, with 3,967 all-frontier Mapping re-evaluations.
+409 research/Streaming tests pass. The performance limit is material: at 256
+new queries, median totals are 8.69 s (regions), 9.97 s (prepared independent)
+and 8.50 s (existing cache). Regions have not repaid their preprocessing against
+the cache within that range; at 64 queries they are substantially slower.
+This establishes complete single-operator coverage under the configured FFM
+policy, not Fusion composition or a general cross-architecture speedup.
+
 ### One-template architecture regions, without declared query points
 
 The new [parametric template interpreter](PARAMETRIC_TEMPLATE.md) compiles one
