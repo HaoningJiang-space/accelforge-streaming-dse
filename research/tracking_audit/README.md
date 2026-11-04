@@ -7,6 +7,14 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Real two-MatMul Fusion cut inspection
+
+The [two-MatMul audit](results/fusion_cut/README.md) inspects reconstructed FFM
+Mappings and re-evaluates every returned row. A root Sequential split can hold
+the intermediate across the cut in either MainMemory or GlobalBuffer; the
+latter need not incur MainMemory actions. The inspector conservatively reports
+unproved lifetime conditions and cannot issue a pruning certificate.
+
 ### Graph-cut bound: restricted synthetic validation
 
 The [graph-cut experiment](results/graph_cut_bound/README.md) checks an exact
