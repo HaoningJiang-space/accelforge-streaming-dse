@@ -1,0 +1,999 @@
+{
+  "scope": "Post-generation diagnostic overlap only; no safe merging, no candidate removal, no new search speed.",
+  "results": [
+    {
+      "workload": "matmuls(N_EINSUMS=2,M=32,KN=32)@nvdla",
+      "runs": [
+        {
+          "architecture": "8x32:2048B",
+          "candidate_rows": 217,
+          "analyzed_rows": 217,
+          "unsupported_rows": 0,
+          "ffm_groups": 21,
+          "observed_unique": {
+            "template": 15,
+            "resolved_compatibility": 105,
+            "observed_boundary": 156,
+            "full_local_mapping": 217,
+            "row_payload": 217
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 21
+        },
+        {
+          "architecture": "8x32:4096B",
+          "candidate_rows": 220,
+          "analyzed_rows": 220,
+          "unsupported_rows": 0,
+          "ffm_groups": 21,
+          "observed_unique": {
+            "template": 15,
+            "resolved_compatibility": 105,
+            "observed_boundary": 157,
+            "full_local_mapping": 220,
+            "row_payload": 220
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 22
+        },
+        {
+          "architecture": "16x16:2048B",
+          "candidate_rows": 232,
+          "analyzed_rows": 232,
+          "unsupported_rows": 0,
+          "ffm_groups": 22,
+          "observed_unique": {
+            "template": 22,
+            "resolved_compatibility": 102,
+            "observed_boundary": 157,
+            "full_local_mapping": 232,
+            "row_payload": 232
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 23
+        },
+        {
+          "architecture": "16x16:4096B",
+          "candidate_rows": 232,
+          "analyzed_rows": 232,
+          "unsupported_rows": 0,
+          "ffm_groups": 22,
+          "observed_unique": {
+            "template": 22,
+            "resolved_compatibility": 102,
+            "observed_boundary": 157,
+            "full_local_mapping": 232,
+            "row_payload": 232
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 23
+        },
+        {
+          "architecture": "32x8:2048B",
+          "candidate_rows": 234,
+          "analyzed_rows": 234,
+          "unsupported_rows": 0,
+          "ffm_groups": 21,
+          "observed_unique": {
+            "template": 17,
+            "resolved_compatibility": 105,
+            "observed_boundary": 163,
+            "full_local_mapping": 234,
+            "row_payload": 234
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 26
+        },
+        {
+          "architecture": "32x8:4096B",
+          "candidate_rows": 239,
+          "analyzed_rows": 239,
+          "unsupported_rows": 0,
+          "ffm_groups": 21,
+          "observed_unique": {
+            "template": 17,
+            "resolved_compatibility": 105,
+            "observed_boundary": 165,
+            "full_local_mapping": 239,
+            "row_payload": 239
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 27
+        }
+      ],
+      "row_occurrences_across_architectures": 1374,
+      "union_observed_unique": {
+        "template": 24,
+        "resolved_compatibility": 202,
+        "observed_boundary": 360,
+        "full_local_mapping": 691,
+        "row_payload": 1374
+      },
+      "overlaps": [
+        {
+          "source": "8x32:2048B",
+          "target": "8x32:4096B",
+          "target_rows": 220,
+          "covered_rows": {
+            "template": 220,
+            "resolved_compatibility": 220,
+            "observed_boundary": 218,
+            "full_local_mapping": 217,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 217
+          }
+        },
+        {
+          "source": "8x32:2048B",
+          "target": "16x16:2048B",
+          "target_rows": 232,
+          "covered_rows": {
+            "template": 167,
+            "resolved_compatibility": 155,
+            "observed_boundary": 116,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:2048B",
+          "target": "16x16:4096B",
+          "target_rows": 232,
+          "covered_rows": {
+            "template": 167,
+            "resolved_compatibility": 155,
+            "observed_boundary": 116,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:2048B",
+          "target": "32x8:2048B",
+          "target_rows": 234,
+          "covered_rows": {
+            "template": 170,
+            "resolved_compatibility": 116,
+            "observed_boundary": 67,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:2048B",
+          "target": "32x8:4096B",
+          "target_rows": 239,
+          "covered_rows": {
+            "template": 174,
+            "resolved_compatibility": 120,
+            "observed_boundary": 69,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:4096B",
+          "target": "8x32:2048B",
+          "target_rows": 217,
+          "covered_rows": {
+            "template": 217,
+            "resolved_compatibility": 217,
+            "observed_boundary": 217,
+            "full_local_mapping": 217,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 217
+          }
+        },
+        {
+          "source": "8x32:4096B",
+          "target": "16x16:2048B",
+          "target_rows": 232,
+          "covered_rows": {
+            "template": 167,
+            "resolved_compatibility": 155,
+            "observed_boundary": 116,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:4096B",
+          "target": "16x16:4096B",
+          "target_rows": 232,
+          "covered_rows": {
+            "template": 167,
+            "resolved_compatibility": 155,
+            "observed_boundary": 116,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:4096B",
+          "target": "32x8:2048B",
+          "target_rows": 234,
+          "covered_rows": {
+            "template": 170,
+            "resolved_compatibility": 116,
+            "observed_boundary": 67,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:4096B",
+          "target": "32x8:4096B",
+          "target_rows": 239,
+          "covered_rows": {
+            "template": 174,
+            "resolved_compatibility": 120,
+            "observed_boundary": 69,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:2048B",
+          "target": "8x32:2048B",
+          "target_rows": 217,
+          "covered_rows": {
+            "template": 217,
+            "resolved_compatibility": 149,
+            "observed_boundary": 99,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:2048B",
+          "target": "8x32:4096B",
+          "target_rows": 220,
+          "covered_rows": {
+            "template": 220,
+            "resolved_compatibility": 152,
+            "observed_boundary": 100,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:2048B",
+          "target": "16x16:4096B",
+          "target_rows": 232,
+          "covered_rows": {
+            "template": 232,
+            "resolved_compatibility": 232,
+            "observed_boundary": 232,
+            "full_local_mapping": 232,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 232
+          }
+        },
+        {
+          "source": "16x16:2048B",
+          "target": "32x8:2048B",
+          "target_rows": 234,
+          "covered_rows": {
+            "template": 232,
+            "resolved_compatibility": 163,
+            "observed_boundary": 110,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:2048B",
+          "target": "32x8:4096B",
+          "target_rows": 239,
+          "covered_rows": {
+            "template": 237,
+            "resolved_compatibility": 167,
+            "observed_boundary": 112,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:4096B",
+          "target": "8x32:2048B",
+          "target_rows": 217,
+          "covered_rows": {
+            "template": 217,
+            "resolved_compatibility": 149,
+            "observed_boundary": 99,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:4096B",
+          "target": "8x32:4096B",
+          "target_rows": 220,
+          "covered_rows": {
+            "template": 220,
+            "resolved_compatibility": 152,
+            "observed_boundary": 100,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:4096B",
+          "target": "16x16:2048B",
+          "target_rows": 232,
+          "covered_rows": {
+            "template": 232,
+            "resolved_compatibility": 232,
+            "observed_boundary": 232,
+            "full_local_mapping": 232,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 232
+          }
+        },
+        {
+          "source": "16x16:4096B",
+          "target": "32x8:2048B",
+          "target_rows": 234,
+          "covered_rows": {
+            "template": 232,
+            "resolved_compatibility": 163,
+            "observed_boundary": 110,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:4096B",
+          "target": "32x8:4096B",
+          "target_rows": 239,
+          "covered_rows": {
+            "template": 237,
+            "resolved_compatibility": 167,
+            "observed_boundary": 112,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:2048B",
+          "target": "8x32:2048B",
+          "target_rows": 217,
+          "covered_rows": {
+            "template": 145,
+            "resolved_compatibility": 103,
+            "observed_boundary": 65,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:2048B",
+          "target": "8x32:4096B",
+          "target_rows": 220,
+          "covered_rows": {
+            "template": 148,
+            "resolved_compatibility": 106,
+            "observed_boundary": 66,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:2048B",
+          "target": "16x16:2048B",
+          "target_rows": 232,
+          "covered_rows": {
+            "template": 207,
+            "resolved_compatibility": 157,
+            "observed_boundary": 122,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:2048B",
+          "target": "16x16:4096B",
+          "target_rows": 232,
+          "covered_rows": {
+            "template": 207,
+            "resolved_compatibility": 157,
+            "observed_boundary": 122,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:2048B",
+          "target": "32x8:4096B",
+          "target_rows": 239,
+          "covered_rows": {
+            "template": 239,
+            "resolved_compatibility": 239,
+            "observed_boundary": 236,
+            "full_local_mapping": 234,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 234
+          }
+        },
+        {
+          "source": "32x8:4096B",
+          "target": "8x32:2048B",
+          "target_rows": 217,
+          "covered_rows": {
+            "template": 145,
+            "resolved_compatibility": 103,
+            "observed_boundary": 65,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:4096B",
+          "target": "8x32:4096B",
+          "target_rows": 220,
+          "covered_rows": {
+            "template": 148,
+            "resolved_compatibility": 106,
+            "observed_boundary": 66,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:4096B",
+          "target": "16x16:2048B",
+          "target_rows": 232,
+          "covered_rows": {
+            "template": 207,
+            "resolved_compatibility": 157,
+            "observed_boundary": 122,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:4096B",
+          "target": "16x16:4096B",
+          "target_rows": 232,
+          "covered_rows": {
+            "template": 207,
+            "resolved_compatibility": 157,
+            "observed_boundary": 122,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:4096B",
+          "target": "32x8:2048B",
+          "target_rows": 234,
+          "covered_rows": {
+            "template": 234,
+            "resolved_compatibility": 234,
+            "observed_boundary": 234,
+            "full_local_mapping": 234,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 234
+          }
+        }
+      ],
+      "certified_semantic_merges": 0,
+      "avoided_search_work": 0
+    },
+    {
+      "workload": "matmuls(N_EINSUMS=3,M=32,KN=32)@nvdla",
+      "runs": [
+        {
+          "architecture": "8x32:2048B",
+          "candidate_rows": 485,
+          "analyzed_rows": 485,
+          "unsupported_rows": 0,
+          "ffm_groups": 45,
+          "observed_unique": {
+            "template": 29,
+            "resolved_compatibility": 239,
+            "observed_boundary": 424,
+            "full_local_mapping": 485,
+            "row_payload": 485
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 21
+        },
+        {
+          "architecture": "8x32:4096B",
+          "candidate_rows": 499,
+          "analyzed_rows": 499,
+          "unsupported_rows": 0,
+          "ffm_groups": 46,
+          "observed_unique": {
+            "template": 29,
+            "resolved_compatibility": 240,
+            "observed_boundary": 436,
+            "full_local_mapping": 499,
+            "row_payload": 499
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 22
+        },
+        {
+          "architecture": "16x16:2048B",
+          "candidate_rows": 487,
+          "analyzed_rows": 487,
+          "unsupported_rows": 0,
+          "ffm_groups": 57,
+          "observed_unique": {
+            "template": 39,
+            "resolved_compatibility": 236,
+            "observed_boundary": 412,
+            "full_local_mapping": 487,
+            "row_payload": 487
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 23
+        },
+        {
+          "architecture": "16x16:4096B",
+          "candidate_rows": 492,
+          "analyzed_rows": 492,
+          "unsupported_rows": 0,
+          "ffm_groups": 58,
+          "observed_unique": {
+            "template": 39,
+            "resolved_compatibility": 237,
+            "observed_boundary": 417,
+            "full_local_mapping": 492,
+            "row_payload": 492
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 23
+        },
+        {
+          "architecture": "32x8:2048B",
+          "candidate_rows": 494,
+          "analyzed_rows": 494,
+          "unsupported_rows": 0,
+          "ffm_groups": 45,
+          "observed_unique": {
+            "template": 33,
+            "resolved_compatibility": 239,
+            "observed_boundary": 423,
+            "full_local_mapping": 494,
+            "row_payload": 494
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 26
+        },
+        {
+          "architecture": "32x8:4096B",
+          "candidate_rows": 509,
+          "analyzed_rows": 509,
+          "unsupported_rows": 0,
+          "ffm_groups": 46,
+          "observed_unique": {
+            "template": 33,
+            "resolved_compatibility": 240,
+            "observed_boundary": 435,
+            "full_local_mapping": 509,
+            "row_payload": 509
+          },
+          "boundary_groups_with_distinct_cost_or_resource": 27
+        }
+      ],
+      "row_occurrences_across_architectures": 2966,
+      "union_observed_unique": {
+        "template": 42,
+        "resolved_compatibility": 419,
+        "observed_boundary": 1050,
+        "full_local_mapping": 1500,
+        "row_payload": 2966
+      },
+      "overlaps": [
+        {
+          "source": "8x32:2048B",
+          "target": "8x32:4096B",
+          "target_rows": 499,
+          "covered_rows": {
+            "template": 499,
+            "resolved_compatibility": 497,
+            "observed_boundary": 486,
+            "full_local_mapping": 485,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 485
+          }
+        },
+        {
+          "source": "8x32:2048B",
+          "target": "16x16:2048B",
+          "target_rows": 487,
+          "covered_rows": {
+            "template": 407,
+            "resolved_compatibility": 348,
+            "observed_boundary": 171,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:2048B",
+          "target": "16x16:4096B",
+          "target_rows": 492,
+          "covered_rows": {
+            "template": 411,
+            "resolved_compatibility": 351,
+            "observed_boundary": 171,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:2048B",
+          "target": "32x8:2048B",
+          "target_rows": 494,
+          "covered_rows": {
+            "template": 396,
+            "resolved_compatibility": 241,
+            "observed_boundary": 96,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:2048B",
+          "target": "32x8:4096B",
+          "target_rows": 509,
+          "covered_rows": {
+            "template": 408,
+            "resolved_compatibility": 251,
+            "observed_boundary": 98,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:4096B",
+          "target": "8x32:2048B",
+          "target_rows": 485,
+          "covered_rows": {
+            "template": 485,
+            "resolved_compatibility": 485,
+            "observed_boundary": 485,
+            "full_local_mapping": 485,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 485
+          }
+        },
+        {
+          "source": "8x32:4096B",
+          "target": "16x16:2048B",
+          "target_rows": 487,
+          "covered_rows": {
+            "template": 407,
+            "resolved_compatibility": 348,
+            "observed_boundary": 171,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:4096B",
+          "target": "16x16:4096B",
+          "target_rows": 492,
+          "covered_rows": {
+            "template": 411,
+            "resolved_compatibility": 352,
+            "observed_boundary": 175,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:4096B",
+          "target": "32x8:2048B",
+          "target_rows": 494,
+          "covered_rows": {
+            "template": 396,
+            "resolved_compatibility": 241,
+            "observed_boundary": 96,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "8x32:4096B",
+          "target": "32x8:4096B",
+          "target_rows": 509,
+          "covered_rows": {
+            "template": 408,
+            "resolved_compatibility": 253,
+            "observed_boundary": 102,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:2048B",
+          "target": "8x32:2048B",
+          "target_rows": 485,
+          "covered_rows": {
+            "template": 485,
+            "resolved_compatibility": 356,
+            "observed_boundary": 154,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:2048B",
+          "target": "8x32:4096B",
+          "target_rows": 499,
+          "covered_rows": {
+            "template": 499,
+            "resolved_compatibility": 367,
+            "observed_boundary": 155,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:2048B",
+          "target": "16x16:4096B",
+          "target_rows": 492,
+          "covered_rows": {
+            "template": 492,
+            "resolved_compatibility": 491,
+            "observed_boundary": 487,
+            "full_local_mapping": 487,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 487
+          }
+        },
+        {
+          "source": "16x16:2048B",
+          "target": "32x8:2048B",
+          "target_rows": 494,
+          "covered_rows": {
+            "template": 491,
+            "resolved_compatibility": 362,
+            "observed_boundary": 165,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:2048B",
+          "target": "32x8:4096B",
+          "target_rows": 509,
+          "covered_rows": {
+            "template": 506,
+            "resolved_compatibility": 373,
+            "observed_boundary": 167,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:4096B",
+          "target": "8x32:2048B",
+          "target_rows": 485,
+          "covered_rows": {
+            "template": 485,
+            "resolved_compatibility": 356,
+            "observed_boundary": 154,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:4096B",
+          "target": "8x32:4096B",
+          "target_rows": 499,
+          "covered_rows": {
+            "template": 499,
+            "resolved_compatibility": 369,
+            "observed_boundary": 159,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:4096B",
+          "target": "16x16:2048B",
+          "target_rows": 487,
+          "covered_rows": {
+            "template": 487,
+            "resolved_compatibility": 487,
+            "observed_boundary": 487,
+            "full_local_mapping": 487,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 487
+          }
+        },
+        {
+          "source": "16x16:4096B",
+          "target": "32x8:2048B",
+          "target_rows": 494,
+          "covered_rows": {
+            "template": 491,
+            "resolved_compatibility": 362,
+            "observed_boundary": 165,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "16x16:4096B",
+          "target": "32x8:4096B",
+          "target_rows": 509,
+          "covered_rows": {
+            "template": 506,
+            "resolved_compatibility": 375,
+            "observed_boundary": 171,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:2048B",
+          "target": "8x32:2048B",
+          "target_rows": 485,
+          "covered_rows": {
+            "template": 407,
+            "resolved_compatibility": 230,
+            "observed_boundary": 94,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:2048B",
+          "target": "8x32:4096B",
+          "target_rows": 499,
+          "covered_rows": {
+            "template": 421,
+            "resolved_compatibility": 240,
+            "observed_boundary": 95,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:2048B",
+          "target": "16x16:2048B",
+          "target_rows": 487,
+          "covered_rows": {
+            "template": 460,
+            "resolved_compatibility": 350,
+            "observed_boundary": 177,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:2048B",
+          "target": "16x16:4096B",
+          "target_rows": 492,
+          "covered_rows": {
+            "template": 465,
+            "resolved_compatibility": 353,
+            "observed_boundary": 177,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:2048B",
+          "target": "32x8:4096B",
+          "target_rows": 509,
+          "covered_rows": {
+            "template": 509,
+            "resolved_compatibility": 507,
+            "observed_boundary": 496,
+            "full_local_mapping": 494,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 494
+          }
+        },
+        {
+          "source": "32x8:4096B",
+          "target": "8x32:2048B",
+          "target_rows": 485,
+          "covered_rows": {
+            "template": 407,
+            "resolved_compatibility": 230,
+            "observed_boundary": 94,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:4096B",
+          "target": "8x32:4096B",
+          "target_rows": 499,
+          "covered_rows": {
+            "template": 421,
+            "resolved_compatibility": 242,
+            "observed_boundary": 99,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:4096B",
+          "target": "16x16:2048B",
+          "target_rows": 487,
+          "covered_rows": {
+            "template": 460,
+            "resolved_compatibility": 350,
+            "observed_boundary": 177,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:4096B",
+          "target": "16x16:4096B",
+          "target_rows": 492,
+          "covered_rows": {
+            "template": 465,
+            "resolved_compatibility": 354,
+            "observed_boundary": 181,
+            "full_local_mapping": 0,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 0
+          }
+        },
+        {
+          "source": "32x8:4096B",
+          "target": "32x8:2048B",
+          "target_rows": 494,
+          "covered_rows": {
+            "template": 494,
+            "resolved_compatibility": 494,
+            "observed_boundary": 494,
+            "full_local_mapping": 494,
+            "row_payload": 0,
+            "full_mapping_and_cost_resource": 494
+          }
+        }
+      ],
+      "certified_semantic_merges": 0,
+      "avoided_search_work": 0
+    }
+  ]
+}

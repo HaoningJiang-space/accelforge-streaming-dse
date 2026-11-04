@@ -1,4 +1,10 @@
-# Fixed-architecture FFM memo gate
+# Graph memo feasibility gates
+
+The active experiment is now **state analysis before optimizer development**.
+See [MEMO_STATE_ANALYSIS.md](MEMO_STATE_ANALYSIS.md) for G1/G2/G3 definitions,
+signature limitations and the twelve independently generated 2mm/3mm catalogs.
+There is no evidence here that introducing a graph memo beats existing FFM or
+its cache. The snapshot gate below is retained as a transport correctness check.
 
 This research scaffold checks that original FFM per-Einsum candidate groups,
 their provenance, exact resource columns, architecture and source mapping objects
@@ -37,7 +43,8 @@ re-evaluation, including physical capacity and spatial fit checks. Re-evaluation
 still uses the FFM model; it is not an independent proof of physical lifetimes.
 These are two small correctness cases and no timing or speedup claim is made.
 
-The next gate requires safely retaining and composing genuine intermediate
-subgraph states without treating incomplete Compatibility as a complete physical
-interface. Only after that gate should conditional dominance, new join order,
-architecture reuse, or area-constrained hardware selection be introduced.
+The decision gate is evidence of substantial state compression beyond FFM's
+existing grouping. Equal observed interfaces do not authorize semantic merging;
+their future substitutability and useful cost/resource alternatives still need
+proof. The current small experiment does not justify a general optimizer,
+conditional pruning, or a new hardware selection layer.

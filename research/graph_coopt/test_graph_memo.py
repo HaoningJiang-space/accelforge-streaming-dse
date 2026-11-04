@@ -9,6 +9,7 @@ from research.graph_coopt.workload_dag import WorkloadDAG
 from research.tracking_audit import common
 from research.tracking_audit.shape_capacity_audit import build, validate_pick
 from accelforge.mapper.FFM.main import join_pmappings
+from research.graph_coopt.memo_state_analysis import analyze_candidates
 
 
 def einsum(name, inputs, outputs):
@@ -50,6 +51,15 @@ def test_memo_preserves_real_ffm_frontier_and_reconstructs(n, capacity):
     assert memo.dag.prefixes()[-1] == memo.dag.nodes
     assert len(memo.groups) > 0
     assert all(not group.interface.copies_complete for group in memo.groups)
+    snapshot = memo.materialize()
+    before = {name: [group.mappings.data.copy(deep=True) for group in groups]
+              for name, groups in snapshot.einsum2pmappings.items()}
+    analysis, _ = analyze_candidates(snapshot)
+    assert all(not stats['unsupported'] for stats in analysis['einsums'].values())
+    assert all(stats['certified_semantic_merges'] == 0 for stats in analysis['einsums'].values())
+    for name, groups in snapshot.einsum2pmappings.items():
+        for frame, group in zip(before[name], groups):
+            assert_frame_equal(frame, group.mappings.data)
     assert sum(len(memo.groups_for((node,))) for node in memo.dag.nodes) == len(memo.groups)
     with pytest.raises(ValueError, match='single-Einsum'):
         memo.groups_for(memo.dag.nodes)
