@@ -13,9 +13,19 @@ The [shape/capacity audit](results/shape_capacity/README.md) reproduces the thre
 array-ranking change at 128/132 KiB and compares full-grid time to one maximum-capacity
 resource-frontier search per shape. An opt-in serial prefix/compilation reuse context
 preserves the full numeric frontiers, but its extra cross-shape benefit is small and
-Attention can be slower. Low-capacity Attention additionally reveals an **unfixed**
-score/reconstruction mismatch, independently reproduced on clean `e76e66bf`; its
-failing grid is explicitly excluded from performance/architecture-quality claims.
+Attention can be slower. The low-capacity Attention score/reconstruction mismatch
+was traced to numeric Join ignoring the selected loop permutation and is now
+repaired. The historical failing grid remains excluded from performance claims.
+
+The [local retargetability audit](results/retargetability/README.md) now tests actual
+source-to-target factor transformations. Pure loop-band rebinding recovers 0/18
+MatMul and 0/24 Attention cross-shape selected winners. Allowing memory tile
+extents to change, while freezing storage positions and fused loops, recovers
+11/18 and 2/24, respectively; all reconstructed witnesses re-evaluate correctly.
+This is retrospective coverage, not a new search speedup or completeness proof.
+It motivates sharing symbolic constraint subproblems, not more exact-key caches.
+The action-level diagnostic explains the old 24 KiB DRAM discrepancy exactly.
+**369 research/Streaming regression tests pass.**
 
 ### Integer resource accounting fixes the 68-byte coverage regression
 

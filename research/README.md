@@ -1,13 +1,16 @@
 # AccelForge research workspace
 
-The latest experiment is [array shape × SRAM DSE](tracking_audit/results/shape_capacity/README.md):
-the MatMul architecture switch is reproduced, simple cross-shape reuse has limited
-benefit, and low-capacity Attention exposes an unfixed score/reconstruction mismatch
-also reproduced on the clean `e76e66bf` base. The [capacity-tracking audit](tracking_audit/README.md)
+The latest experiment is [local mapping retargetability](tracking_audit/results/retargetability/README.md):
+pure spatial factor rebinding is insufficient; allowing storage tile extents to
+change recovers 11/18 selected cross-shape MatMul winners but only 2/24 Attention
+winners. This is a coverage diagnostic, not an end-to-end acceleration result.
+The Attention scoring mismatch is repaired by applying the selected loop
+permutation to numeric Join matching. The [capacity-tracking audit](tracking_audit/README.md)
 contains earlier reuse experiments, correctness limits, and regression commands.
 
 | Directory | Status |
 | --- | --- |
+| [retargetability](tracking_audit/results/retargetability/README.md) | Local structure coverage, actual retargeted witnesses, Attention action-level diagnosis and repair. |
 | [shape_capacity](tracking_audit/results/shape_capacity/README.md) | Current architecture-selection grid, strong per-shape baseline, scoped reuse prototype and Attention failure. |
 | [tracking_audit](tracking_audit/README.md) | Current capacity reuse, mapping validation and resource-tracking investigations. |
 | [tracking_audit/HISTORY.md](tracking_audit/HISTORY.md) | Historical results and root-cause notes, tied to their original commits. |

@@ -1,4 +1,5 @@
 from collections import defaultdict
+from copy import copy
 import itertools
 import logging
 import os
@@ -34,6 +35,21 @@ from accelforge.mapper.FFM._pareto_df import exact_resources as exact
 
 
 logger = logging.getLogger(__name__)
+
+
+def _with_compatibility(group, compatibility):
+    """Use the selected loop permutation for numeric matching as well as grouping.
+
+    Loop symbols still name their original dataframe columns; permuting the
+    compatibility changes which columns must match, not their values. Preserve
+    the group's full tensor bookkeeping (including tensors no longer in its
+    live compatibility) and avoid mutating a group shared by other Join tasks.
+    """
+    result = copy(group)
+    result.compatibility = compatibility
+    result.tensors = dict(group.tensors)
+    result.tensors.update((t.name, t) for t in compatibility.tensors)
+    return result
 
 
 class JoiningTimer:
@@ -507,8 +523,8 @@ def join_pmappings(
                 t0 = time.time()
 
                 combined.append(
-                    a.merge_next(
-                        b,
+                    _with_compatibility(a, compatibility_a).merge_next(
+                        _with_compatibility(b, compatibility_b),
                         live_tensors,
                         live_tensors_with_right,
                         aliased_tensors,

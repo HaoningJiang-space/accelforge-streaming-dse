@@ -1,5 +1,9 @@
 # Array shape × capacity: architecture decisions and a reuse baseline
 
+Historical baseline at `ef779da6`. The Attention permutation-matching failure
+below is now diagnosed and repaired; see the [follow-up audit](../retargetability/README.md).
+The original failures and timings are preserved as measurements of that revision.
+
 This experiment shifts the question from membership encoding to architecture
 selection. It implements a conservative cross-shape execution-reuse baseline,
 not a new fusion contract or a joint search over spatial bindings.
