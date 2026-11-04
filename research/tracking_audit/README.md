@@ -7,6 +7,14 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Prefix sharing experiment: substantial duplication, slower prototype
+
+An [intrusive profile and isolated backend experiment](results/factorized_region/README.md)
+measures substantial duplicate prefix rows in the two heaviest templates.
+The experimental prefix-ID formula cache preserves all joint-cell frontiers,
+but is slower in three local runs. Region candidate arrays are still copied;
+this does not implement a full factorized state or establish a speedup.
+
 ### All six MatMul templates: complete terminal union, limited amortization
 
 The [whole-operator compiler](PARAMETRIC_OPERATOR.md) now prepares all six
