@@ -1030,6 +1030,7 @@ class PmappingDataframe:
         skip_pareto: bool,
         **kwargs,
     ) -> "PmappingDataframe":
+        """Reconstruct with new inputs; operation history is deliberately reset."""
         args = dict(
             data=self.data,
             skip_pareto=skip_pareto,
@@ -1041,6 +1042,7 @@ class PmappingDataframe:
         return PmappingDataframe(**args)
 
     def copy(self) -> "PmappingDataframe":
+        """Copy/rebuild the table, resetting operation history; not a checkpoint."""
         return self.update(
             data=self.data.copy(),
             skip_pareto=True,

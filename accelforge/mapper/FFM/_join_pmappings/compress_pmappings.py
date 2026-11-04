@@ -23,6 +23,7 @@ class DecompressData(NamedTuple):
 def _compress(
     einsum_name: EinsumName, pmappings: PmappingGroup, start_index: int
 ) -> tuple["PmappingDataframe", pd.DataFrame]:
+    """Compress an owned working group; resetting its row index is intentional."""
     data = pmappings.mappings.data
     data.reset_index(drop=True, inplace=True)
     data.index += start_index

@@ -1,10 +1,9 @@
 """Candidate preparation and resumable reference-order FFM composition."""
-from copy import deepcopy
-
 from accelforge.mapper.FFM.main import make_pmappings
 from accelforge.mapper.FFM._join_pmappings.compress_pmappings import compress_einsum2pmappings
 from accelforge.mapper.FFM._join_pmappings.join_context import JoinContext
 from accelforge.mapper.FFM._join_pmappings import join_engine
+from accelforge.mapper.FFM._join_pmappings.partial_state import copy_candidate_payload
 from accelforge.mapper.FFM._join_pmappings.join_pmappings import (
     _check_einsum2pmappings_not_empty, restore_mappings,
 )
@@ -22,7 +21,7 @@ def generate_memo(spec):
 class CandidateStore:
     """Owned source/decompression metadata plus one strict Join context."""
     def __init__(self, pmappings):
-        self._source = deepcopy(pmappings)
+        self._source = copy_candidate_payload(pmappings)
         _check_einsum2pmappings_not_empty(self._source.einsum2pmappings, self._source)
         self._groups, self._decompress = compress_einsum2pmappings(self._source.einsum2pmappings)
         self.context = JoinContext.from_spec(self._source.spec)
@@ -35,8 +34,8 @@ class CandidateStore:
 
     def finalize(self, state):
         joined = join_engine.finalize(state, self.context)
-        source = deepcopy(self._source)
-        return restore_mappings(source, joined, deepcopy(self._decompress),
+        source, metadata = copy_candidate_payload(self._source, self._decompress)
+        return restore_mappings(source, joined, metadata,
                                 tuple(source.einsum2pmappings))
 
 

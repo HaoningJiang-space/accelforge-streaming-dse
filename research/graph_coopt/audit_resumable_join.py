@@ -97,7 +97,10 @@ def main():
     paths = [Path(__file__), *Path(__file__).parent.glob('_reference_join_*.py'),
              *[common.ROOT / 'accelforge/mapper/FFM/_join_pmappings' / name for name in (
                  'join_pmappings.py', 'join_engine.py', 'join_context.py', 'partial_state.py')],
-             Path(__file__).with_name('ffm_adapter.py'), Path(__file__).with_name('memo.py')]
+             *[common.ROOT / 'accelforge/mapper/FFM/_join_pmappings' / name for name in (
+                 'pmapping_group.py', 'pmapping_dataframe.py', 'compress_pmappings.py')],
+             Path(__file__).with_name('ffm_adapter.py'), Path(__file__).with_name('memo.py'),
+             Path(__file__).with_name('workload_dag.py')]
     report['source_sha256'] = {str(p.relative_to(common.ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
                                for p in paths}
     args.output.parent.mkdir(parents=True, exist_ok=True)

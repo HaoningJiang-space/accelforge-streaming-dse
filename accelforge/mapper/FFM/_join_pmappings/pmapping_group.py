@@ -1,5 +1,4 @@
 from collections import defaultdict
-from functools import cached_property
 from typing import Any, Callable, Iterable
 import pandas as pd
 from joblib import delayed
@@ -24,11 +23,13 @@ class PmappingGroup:
         compatibility += " || " + ", ".join(str(t) for t in self.tensors.values())
         return compatibility
 
-    @cached_property
+    @property
     def tensor_names(self) -> set[str]:
+        # tensors changes during consolidation and dead-tensor removal.
         return set(self.tensors)
 
     def copy(self) -> "PmappingGroup":
+        """Rebuild a group; this historical API is not a partial-state checkpoint."""
         return PmappingGroup(self.compatibility, self.mappings.copy())
 
     def __len__(self) -> int:

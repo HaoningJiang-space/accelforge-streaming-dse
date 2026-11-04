@@ -7,6 +7,8 @@ class WorkloadDAG:
     nodes: tuple[str, ...]
     # One entry per producer, consumer and tensor; graph order is preserved.
     edges: tuple[tuple[str, str, str], ...]
+    tensor_uses: tuple[tuple[str, tuple[str, ...]], ...] = ()
+    external_inputs: tuple[tuple[str, tuple[str, ...]], ...] = ()
 
     @classmethod
     def from_workload(cls, workload):
@@ -32,7 +34,22 @@ class WorkloadDAG:
                 if producer == consumer or index[producer] >= index[consumer]:
                     raise ValueError("self-dependence or non-topological Einsum order")
                 edges.append((producer, consumer, tensor))
-        return cls(names, tuple(edges))
+        users = {}
+        for e in einsums:
+            for tensor in sorted(set(map(str, e.input_tensor_names)) | set(map(str, e.output_tensor_names))):
+                users.setdefault(tensor, []).append(str(e.name))
+        uses = tuple((t, tuple(users[t])) for t in sorted(users))
+        external = tuple((t, nodes) for t, nodes in uses if t not in producers)
+        # Shared external inputs are incidence relationships, not producer edges:
+        # retaining them must not impose a false execution order.
+        return cls(names, tuple(edges), uses, external)
+
+    def boundary_tensors(self, subgraph):
+        nodes = frozenset(subgraph)
+        if not nodes or not nodes.issubset(self.nodes):
+            raise ValueError('boundary requires a nonempty known subgraph')
+        return frozenset(t for t, users in self.tensor_uses
+                         if nodes.intersection(users) and set(users) - nodes)
 
     def require_chain(self):
         """Limit the prototype to actual contiguous producer-consumer chains."""

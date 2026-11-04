@@ -1,6 +1,6 @@
 """Architecture-bound, lossless storage of original FFM candidate groups."""
 from dataclasses import dataclass
-from copy import deepcopy
+from accelforge.mapper.FFM._join_pmappings.partial_state import copy_candidate_payload
 
 from .physical_traits import PhysicalInterface
 
@@ -37,7 +37,7 @@ class GraphMemo:
         if set(map(str, pmappings.einsums_with_pmappings_generated)) != set(dag.nodes):
             raise ValueError("all Einsums must have generated candidate groups")
         self.dag = dag
-        self._pmappings = deepcopy(pmappings)
+        self._pmappings = copy_candidate_payload(pmappings)
         self._store = None
         self._partials = {}
         self.groups = tuple(
@@ -93,4 +93,4 @@ class GraphMemo:
 
     def materialize(self):
         """Give the mutating FFM join its own complete snapshot."""
-        return deepcopy(self._pmappings)
+        return copy_candidate_payload(self._pmappings)

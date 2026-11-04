@@ -34,6 +34,24 @@ def test_graph_rejects_branch_cycles_and_ambiguous_producers():
     assert not trait.proves_substitutability(trait)
 
 
+def test_shared_external_inputs_are_boundary_data_without_false_dependency_edges():
+    workload = SimpleNamespace(einsums=[einsum('A', ['X'], ['Y']),
+                                       einsum('B', ['X', 'Y'], ['Z'])])
+    graph = WorkloadDAG.from_workload(workload)
+    graph.require_chain()
+    assert graph.edges == (('A', 'B', 'Y'),)
+    assert graph.external_inputs == (('X', ('A', 'B')),)
+    assert graph.boundary_tensors(('A',)) == {'X', 'Y'}
+    assert graph.boundary_tensors(('B',)) == {'X', 'Y'}
+    assert not graph.boundary_tensors(('A', 'B'))
+    independent = WorkloadDAG.from_workload(SimpleNamespace(einsums=[
+        einsum('A', ['X'], ['Y']), einsum('B', ['X'], ['Z'])]))
+    assert not independent.edges
+    assert independent.external_inputs == (('X', ('A', 'B')),)
+    with pytest.raises(ValueError, match='sequential chains'):
+        independent.require_chain()
+
+
 def numeric_frontier(frame):
     numeric = frame.select_dtypes(include='number')
     columns = sorted(numeric.columns)

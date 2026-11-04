@@ -7,6 +7,8 @@ There is no evidence here that introducing a graph memo beats existing FFM or
 its cache. A separate engineering refactor now supports actual intermediate
 state pause/resume; see [RESUMABLE_JOIN.md](RESUMABLE_JOIN.md). This is a reference
 equivalence interface, without new pruning or cross-architecture search.
+The follow-up [state snapshot audit](STATE_SNAPSHOT_AUDIT.md) covers extended
+ledgers, release cursors, object-valued source isolation and shared external inputs.
 
 This research scaffold checks that original FFM per-Einsum candidate groups,
 their provenance, exact resource columns, architecture and source mapping objects

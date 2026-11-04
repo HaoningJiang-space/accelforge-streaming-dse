@@ -48,6 +48,18 @@ can be advanced or finalized independently. A frozen wrapper is not evidence of
 physical-interface equivalence. No snapshot is compared by its array contents or
 used for conditional Pareto pruning.
 
+Checkpoint copying bypasses the historical group `copy()` and table
+`copy()/update()` reconstruction APIs: those APIs reset or reconstruct metadata.
+The state copier preserves the full tensor ledger, pre-pruning counts, operation
+cursors, reservation dictionaries, loop order, splits and source indexes.
+It explicitly deep-copies object-dtype frame cells because Pandas' own deep copy
+does not recursively copy objects stored inside them. Internal aliases across
+rows/groups are retained within a checkpoint; resumed states are isolated from
+each other and from the source state. Group `tensor_names` is computed from the
+current mutable ledger so removal/addition cannot leave a stale cached set.
+The same object-cell-aware copying is used for source candidates and for the
+source/decompression bundle restored into a public result.
+
 ## GraphMemo usage
 
 ```python

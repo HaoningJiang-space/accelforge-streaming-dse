@@ -3,8 +3,7 @@
 Public start/advance/finalize isolate working copies. The original full-Join
 wrapper uses the same owned kernel without copying at every transition.
 """
-from copy import deepcopy
-from .partial_state import PartialState, snapshot, resume
+from .partial_state import PartialState, snapshot, resume, copy_groups, copy_partial_state
 
 
 def _contract(context):
@@ -561,7 +560,7 @@ def _finalize_owned(state):
 
 
 def start(pmapping_groups, context):
-    return _start_owned(deepcopy(pmapping_groups), context)
+    return _start_owned(copy_groups(pmapping_groups), context)
 
 
 def advance(state, next_einsum=None, context=None):
@@ -572,7 +571,7 @@ def advance(state, next_einsum=None, context=None):
         raise ValueError('no remaining Einsum to advance')
     if next_einsum is not None and next_einsum != state.remaining[0]:
         raise ValueError('reference-order Join must advance the next Einsum')
-    return _advance_owned(deepcopy(state))
+    return _advance_owned(copy_partial_state(state))
 
 
 def finalize(state, context=None):
@@ -580,4 +579,4 @@ def finalize(state, context=None):
         context.require_same(state.context)
     if state.remaining:
         raise ValueError('cannot finalize before all Einsums are joined')
-    return _finalize_owned(deepcopy(state))
+    return _finalize_owned(copy_partial_state(state))

@@ -1,0 +1,155 @@
+{
+  "scope": "Engineering reference-equivalent in-memory pause/resume; no new pruning, cross-architecture binding or speedup claim.",
+  "timing_scope": "One diagnostic run per case; frozen-reference work excluded from phase totals but runs before the new engine and warms JIT. No fair baseline timing or speedup inference.",
+  "results": [
+    {
+      "workload": "matmuls(N_EINSUMS=2,M=4,KN=8)@nvdla",
+      "shape": [
+        4,
+        8
+      ],
+      "capacity_bytes": 96,
+      "processed": [
+        "Matmul0",
+        "Matmul1"
+      ],
+      "remaining": [],
+      "partial_rows": 11,
+      "prefix_merge_calls": [
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ]
+      ],
+      "resumed_merge_calls": [],
+      "prefix_joins_replayed": 0,
+      "generation_calls_after_pause": 0,
+      "complete_numeric_frontier_equal": true,
+      "source_mapping_identities_equal": true,
+      "result_rows": 6,
+      "re_evaluations": 6,
+      "diagnostic_phase_seconds": {
+        "spec_generation_and_memo_snapshot_s": 7.409068957902491,
+        "candidate_store_and_start_s": 0.07087408402003348,
+        "prefix_advance_including_copy_s": 0.08561812504194677,
+        "checkpoint_copy_s": 0.0004667920293286443,
+        "resume_copy_s": 0.0010181659599766135,
+        "continuation_finalize_and_source_copy_s": 0.07682874996680766,
+        "reconstruction_validation_s": 0.3297543750377372
+      },
+      "total_including_generation_copies_and_validation_s": 7.9736292499583215
+    },
+    {
+      "workload": "matmuls(N_EINSUMS=3,M=4,KN=8)@nvdla",
+      "shape": [
+        4,
+        8
+      ],
+      "capacity_bytes": 128,
+      "processed": [
+        "Matmul0",
+        "Matmul1"
+      ],
+      "remaining": [
+        "Matmul2"
+      ],
+      "partial_rows": 67,
+      "prefix_merge_calls": [
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ],
+        [
+          "Matmul1"
+        ]
+      ],
+      "resumed_merge_calls": [
+        [
+          "Matmul2"
+        ],
+        [
+          "Matmul2"
+        ],
+        [
+          "Matmul2"
+        ],
+        [
+          "Matmul2"
+        ]
+      ],
+      "prefix_joins_replayed": 0,
+      "generation_calls_after_pause": 0,
+      "complete_numeric_frontier_equal": true,
+      "source_mapping_identities_equal": true,
+      "result_rows": 7,
+      "re_evaluations": 7,
+      "diagnostic_phase_seconds": {
+        "spec_generation_and_memo_snapshot_s": 3.767962916987017,
+        "candidate_store_and_start_s": 0.07643433299381286,
+        "prefix_advance_including_copy_s": 0.04645404196344316,
+        "checkpoint_copy_s": 0.002279625041410327,
+        "resume_copy_s": 0.0016958750784397125,
+        "continuation_finalize_and_source_copy_s": 0.08914479205850512,
+        "reconstruction_validation_s": 0.5364689170382917
+      },
+      "total_including_generation_copies_and_validation_s": 4.52044050116092
+    }
+  ],
+  "source_sha256": {
+    "research/graph_coopt/audit_resumable_join.py": "775de5a74544d63d2568d501a4c6a9b049ad0c9d6540199d866c1d3bb3455b40",
+    "research/graph_coopt/_reference_join_bd39555f.py": "6423331f5ae3f091136a45f0d6c1dc3ee61afa9bdce54dda8f80e6589869ebb2",
+    "accelforge/mapper/FFM/_join_pmappings/join_pmappings.py": "1868def34bfab58d2d3751d688698ae9a8ead8bcf9c7f8bd670b2194c758ff8c",
+    "accelforge/mapper/FFM/_join_pmappings/join_engine.py": "19e067e03b63f24ef13fb629140baf3f8c13baeaae1d30befe93abdbf921cfc0",
+    "accelforge/mapper/FFM/_join_pmappings/join_context.py": "5ca9dd19f85de9577ee1da3b1952ab2c76683191ed920edb93007f12dc4e2b43",
+    "accelforge/mapper/FFM/_join_pmappings/partial_state.py": "f24ef697e67b673863b8b5030f0b3e2ca5b9a57b051a2ee09c6afd837172f1d4",
+    "accelforge/mapper/FFM/_join_pmappings/pmapping_group.py": "fe948eb3f353f653131953d35a3ca7f7a70114ed5efa1b8e1ade295a7040d301",
+    "accelforge/mapper/FFM/_join_pmappings/pmapping_dataframe.py": "0ebcfc95071efc85fdb8348e70018442807956907afd62badc3465207da6a32b",
+    "accelforge/mapper/FFM/_join_pmappings/compress_pmappings.py": "6ba46ef9a2adad3570886a0f2f4712d25584e744b0aeb846409804ac711e571c",
+    "research/graph_coopt/ffm_adapter.py": "3c24ead5be33eced4174c05665fe4ec115e6c32b65677e6090cd49d0ea343c6c",
+    "research/graph_coopt/memo.py": "2b1acde4164e1379a992d2bfae276ce9f4b2c2e60887fee71bb962bc0ca4c58e",
+    "research/graph_coopt/workload_dag.py": "e48cedcd3c54f95560f9b524079f9d9f741c563d7be9a980a4aa71186859b93e"
+  }
+}

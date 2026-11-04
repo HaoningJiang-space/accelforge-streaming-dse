@@ -1,13 +1,19 @@
 import copy
+from types import SimpleNamespace
+from uuid import uuid4
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from accelforge.frontend.mapping import Mapping, Temporal, Storage, Compute
 from research.graph_coopt.memo_state_analysis import (
     boundary_document, compare_catalogs, digest, encode, histogram, instantiate, local_document,
     resolved_compatibility,
+    analyze_candidates,
 )
+from accelforge.mapper.FFM._join_pmappings.pmapping_dataframe import PmappingDataframe
+from accelforge.mapper.FFM._join_pmappings.pmapping_group import PmappingGroup
 from accelforge.mapper.FFM._join_pmappings.compatibility import Compatibility, Split, SplitKind
 from accelforge.util import fzs
 
@@ -88,3 +94,24 @@ def test_overlap_is_directed_and_counts_unique_vs_occurrences():
     assert report['template'] == dict(target_rows=3, covered_rows=2, target_unique=2, shared_unique=1)
     assert report['full_mapping_and_cost_resource']['covered_rows'] == 1
     assert histogram(['a', 'a', 'b'])['unique'] == 2
+
+
+def test_analyzer_includes_shared_external_input_in_both_boundaries():
+    workload = SimpleNamespace(einsums=[
+        SimpleNamespace(name='A', input_tensor_names={'X'}, output_tensor_names={'Y'}),
+        SimpleNamespace(name='B', input_tensor_names={'X', 'Y'}, output_tensor_names={'Z'})])
+    pm = SimpleNamespace(spec=SimpleNamespace(workload=workload),
+                         einsum2pmappings={}, pmapping_objects={})
+    for name in ('A', 'B'):
+        key = uuid4()
+        mapping = example()
+        mapping.nodes[-1].einsum = name
+        frame = PmappingDataframe(pd.DataFrame({f'{name}<SEP>mapping': [key],
+            'Total<SEP>energy': [1.], 'Total<SEP>latency': [1.]}), 1, 1, skip_pareto=True)
+        pm.einsum2pmappings[name] = [PmappingGroup(Compatibility(tensors=fzs()), frame)]
+        pm.pmapping_objects[name] = {key: mapping}
+    summary, _ = analyze_candidates(pm)
+    assert summary['external_inputs'] == (('X', ('A', 'B')),)
+    for stats in summary['einsums'].values():
+        assert stats['boundary_tensors'] == ['X', 'Y']
+        assert not stats['unsupported']

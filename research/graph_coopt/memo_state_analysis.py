@@ -171,7 +171,7 @@ def analyze_candidates(pmappings):
     catalogs, summaries = {}, {}
     for einsum, groups in pmappings.einsum2pmappings.items():
         entries, unsupported = [], []
-        boundary = {t for a, b, t in dag.edges if str(einsum) in (a, b)}
+        boundary = dag.boundary_tensors((str(einsum),))
         for gi, group in enumerate(groups):
             frame = group.mappings.data
             # Column-wise access avoids mixed Series conversion, including loss
@@ -210,7 +210,8 @@ def analyze_candidates(pmappings):
             observations={kind: histogram(e['signatures'][kind] for e in entries) for kind in KINDS},
             boundary_groups_with_distinct_cost_or_resource=len([v for v in costs_by_boundary.values() if len(v) > 1]),
             certified_semantic_merges=0)
-    return dict(dag_nodes=dag.nodes, dag_edges=dag.edges, einsums=summaries), catalogs
+    return dict(dag_nodes=dag.nodes, dag_edges=dag.edges, tensor_uses=dag.tensor_uses,
+                external_inputs=dag.external_inputs, einsums=summaries), catalogs
 
 
 def compare_catalogs(source, target):
@@ -280,6 +281,7 @@ def main():
                              G3='cross-architecture signature overlap only; avoided search work is zero'),
                   results=[run_case(n, args.extent, shapes, capacities) for n in (2, 3)])
     paths = [Path(__file__), Path(__file__).with_name('physical_traits.py'),
+             Path(__file__).with_name('workload_dag.py'),
              common.ROOT / 'research/tracking_audit/shape_capacity_audit.py',
              common.ROOT / 'accelforge/mapper/FFM/_join_pmappings/compatibility.py']
     report['source_sha256'] = {str(f.relative_to(common.ROOT)): hashlib.sha256(f.read_bytes()).hexdigest()
