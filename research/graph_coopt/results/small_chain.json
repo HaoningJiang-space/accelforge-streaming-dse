@@ -1,0 +1,63 @@
+{
+  "scope": "Fixed architecture; memo stores FFM groups, original FFM performs all joins. No cross-architecture reuse or new planner.",
+  "results": [
+    {
+      "workload": "matmuls(N_EINSUMS=2,M=4,KN=8)@nvdla",
+      "shape": [
+        4,
+        8
+      ],
+      "capacity_bytes": 96,
+      "dag_nodes": [
+        "Matmul0",
+        "Matmul1"
+      ],
+      "dag_edges": [
+        [
+          "Matmul0",
+          "Matmul1",
+          "T1"
+        ]
+      ],
+      "candidate_groups": 15,
+      "candidate_rows": 44,
+      "result_rows": 6,
+      "reference_rows": 6,
+      "complete_numeric_frontier_equal": true,
+      "reconstructed_and_re_evaluated": 6,
+      "unique_mapping_ids": 6
+    },
+    {
+      "workload": "matmuls(N_EINSUMS=3,M=4,KN=8)@nvdla",
+      "shape": [
+        4,
+        8
+      ],
+      "capacity_bytes": 128,
+      "dag_nodes": [
+        "Matmul0",
+        "Matmul1",
+        "Matmul2"
+      ],
+      "dag_edges": [
+        [
+          "Matmul0",
+          "Matmul1",
+          "T1"
+        ],
+        [
+          "Matmul1",
+          "Matmul2",
+          "T2"
+        ]
+      ],
+      "candidate_groups": 40,
+      "candidate_rows": 109,
+      "result_rows": 7,
+      "reference_rows": 7,
+      "complete_numeric_frontier_equal": true,
+      "reconstructed_and_re_evaluated": 7,
+      "unique_mapping_ids": 7
+    }
+  ]
+}
