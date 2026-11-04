@@ -1,0 +1,491 @@
+{
+  "scope": "oracle-incumbent final-Join experiment; no graph-bound or runtime comparison",
+  "case": "matmuls(N_EINSUMS=2,M=4,KN=8)@nvdla",
+  "shape": [
+    4,
+    8
+  ],
+  "capacity_bytes": 96,
+  "incumbent_reported_edp": "15135544077217/79228162514264337593543950336",
+  "incumbent_validation": {
+    "feasible": true,
+    "ok": true,
+    "energy": 1.1939839999999998e-08,
+    "latency": 1.6e-08,
+    "edp": 1.9103743999999999e-16,
+    "gb_bytes": 96.0,
+    "mapping_id": "5e70fa26e8c73b07",
+    "spatial": [
+      {
+        "einsum": "Matmul0",
+        "used": [
+          4.0,
+          8.0
+        ]
+      },
+      {
+        "einsum": "Matmul1",
+        "used": [
+          4.0,
+          8.0
+        ]
+      }
+    ],
+    "mapping": {
+      "type": "Mapping",
+      "nodes": [
+        {
+          "type": "Storage",
+          "component": "GlobalBuffer",
+          "tensors": "['T1']",
+          "persistent": "False"
+        },
+        {
+          "type": "Sequential",
+          "nodes": [
+            {
+              "type": "Nested",
+              "nodes": [
+                {
+                  "type": "Storage",
+                  "component": "MainMemory",
+                  "tensors": "['W0', 'T0']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Storage",
+                  "component": "GlobalBuffer",
+                  "tensors": "['T0']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W0', 'T0']",
+                  "resource": "MainMemory",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['T1', 'T0']",
+                  "resource": "GlobalBuffer",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Temporal",
+                  "rank_variable": "n1",
+                  "tile_shape": "4",
+                  "initial_tile_shape": null
+                },
+                {
+                  "type": "Storage",
+                  "component": "GlobalBuffer",
+                  "tensors": "['W0']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W0']",
+                  "resource": "GlobalBuffer",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Spatial",
+                  "component": "ArrayFanout",
+                  "rank_variable": "n0",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null,
+                  "name": "reuse_output"
+                },
+                {
+                  "type": "Spatial",
+                  "component": "ArrayFanout",
+                  "rank_variable": "n1",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null,
+                  "name": "reuse_input"
+                },
+                {
+                  "type": "Storage",
+                  "component": "Register",
+                  "tensors": "['W0']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W0']",
+                  "resource": "Register",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Temporal",
+                  "rank_variable": "m",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null
+                },
+                {
+                  "type": "Compute",
+                  "component": "MAC",
+                  "einsum": "Matmul0"
+                }
+              ]
+            },
+            {
+              "type": "Nested",
+              "nodes": [
+                {
+                  "type": "Storage",
+                  "component": "MainMemory",
+                  "tensors": "['W1', 'T2']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W1', 'T2']",
+                  "resource": "MainMemory",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['T1']",
+                  "resource": "GlobalBuffer",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Temporal",
+                  "rank_variable": "n2",
+                  "tile_shape": "4",
+                  "initial_tile_shape": null
+                },
+                {
+                  "type": "Storage",
+                  "component": "GlobalBuffer",
+                  "tensors": "['W1', 'T2']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W1', 'T2']",
+                  "resource": "GlobalBuffer",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Spatial",
+                  "component": "ArrayFanout",
+                  "rank_variable": "n1",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null,
+                  "name": "reuse_output"
+                },
+                {
+                  "type": "Spatial",
+                  "component": "ArrayFanout",
+                  "rank_variable": "n2",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null,
+                  "name": "reuse_input"
+                },
+                {
+                  "type": "Storage",
+                  "component": "Register",
+                  "tensors": "['W1']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W1']",
+                  "resource": "Register",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Temporal",
+                  "rank_variable": "m",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null
+                },
+                {
+                  "type": "Compute",
+                  "component": "MAC",
+                  "einsum": "Matmul1"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "records": [
+    {
+      "left_rows": 5,
+      "right_rows": 5,
+      "bound": "19874155000575/79228162514264337593543950336",
+      "matched_pairs": null,
+      "strictly_above_incumbent": true,
+      "result_rows": 5,
+      "all_retained_rows_respect_bound": true
+    },
+    {
+      "left_rows": 5,
+      "right_rows": 5,
+      "bound": "30917518954395/158456325028528675187087900672",
+      "matched_pairs": 13,
+      "strictly_above_incumbent": true,
+      "result_rows": 3,
+      "all_retained_rows_respect_bound": true
+    },
+    {
+      "left_rows": 1,
+      "right_rows": 1,
+      "bound": "102443976576093/316912650057057350374175801344",
+      "matched_pairs": 1,
+      "strictly_above_incumbent": true,
+      "result_rows": 0,
+      "all_retained_rows_respect_bound": true
+    },
+    {
+      "left_rows": 3,
+      "right_rows": 3,
+      "bound": "121084316724411/633825300114114700748351602688",
+      "matched_pairs": null,
+      "strictly_above_incumbent": false,
+      "result_rows": 3,
+      "all_retained_rows_respect_bound": true
+    }
+  ],
+  "groups": 4,
+  "hypothetically_prunable_groups": 3,
+  "actual_pruned_groups": [
+    {
+      "left_rows": 5,
+      "right_rows": 5,
+      "bound": "19874155000575/79228162514264337593543950336"
+    },
+    {
+      "left_rows": 5,
+      "right_rows": 5,
+      "bound": "30917518954395/158456325028528675187087900672"
+    },
+    {
+      "left_rows": 1,
+      "right_rows": 1,
+      "bound": "102443976576093/316912650057057350374175801344"
+    }
+  ],
+  "actual_pruned_best_edp": "15135544077217/79228162514264337593543950336",
+  "actual_pruned_validation": {
+    "feasible": true,
+    "ok": true,
+    "energy": 1.1939839999999998e-08,
+    "latency": 1.6e-08,
+    "edp": 1.9103743999999999e-16,
+    "gb_bytes": 96.0,
+    "mapping_id": "5e70fa26e8c73b07",
+    "spatial": [
+      {
+        "einsum": "Matmul0",
+        "used": [
+          4.0,
+          8.0
+        ]
+      },
+      {
+        "einsum": "Matmul1",
+        "used": [
+          4.0,
+          8.0
+        ]
+      }
+    ],
+    "mapping": {
+      "type": "Mapping",
+      "nodes": [
+        {
+          "type": "Storage",
+          "component": "GlobalBuffer",
+          "tensors": "['T1']",
+          "persistent": "False"
+        },
+        {
+          "type": "Sequential",
+          "nodes": [
+            {
+              "type": "Nested",
+              "nodes": [
+                {
+                  "type": "Storage",
+                  "component": "MainMemory",
+                  "tensors": "['W0', 'T0']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Storage",
+                  "component": "GlobalBuffer",
+                  "tensors": "['T0']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W0', 'T0']",
+                  "resource": "MainMemory",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['T1', 'T0']",
+                  "resource": "GlobalBuffer",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Temporal",
+                  "rank_variable": "n1",
+                  "tile_shape": "4",
+                  "initial_tile_shape": null
+                },
+                {
+                  "type": "Storage",
+                  "component": "GlobalBuffer",
+                  "tensors": "['W0']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W0']",
+                  "resource": "GlobalBuffer",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Spatial",
+                  "component": "ArrayFanout",
+                  "rank_variable": "n0",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null,
+                  "name": "reuse_output"
+                },
+                {
+                  "type": "Spatial",
+                  "component": "ArrayFanout",
+                  "rank_variable": "n1",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null,
+                  "name": "reuse_input"
+                },
+                {
+                  "type": "Storage",
+                  "component": "Register",
+                  "tensors": "['W0']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W0']",
+                  "resource": "Register",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Temporal",
+                  "rank_variable": "m",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null
+                },
+                {
+                  "type": "Compute",
+                  "component": "MAC",
+                  "einsum": "Matmul0"
+                }
+              ]
+            },
+            {
+              "type": "Nested",
+              "nodes": [
+                {
+                  "type": "Storage",
+                  "component": "MainMemory",
+                  "tensors": "['W1', 'T2']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W1', 'T2']",
+                  "resource": "MainMemory",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['T1']",
+                  "resource": "GlobalBuffer",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Temporal",
+                  "rank_variable": "n2",
+                  "tile_shape": "4",
+                  "initial_tile_shape": null
+                },
+                {
+                  "type": "Storage",
+                  "component": "GlobalBuffer",
+                  "tensors": "['W1', 'T2']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W1', 'T2']",
+                  "resource": "GlobalBuffer",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Spatial",
+                  "component": "ArrayFanout",
+                  "rank_variable": "n1",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null,
+                  "name": "reuse_output"
+                },
+                {
+                  "type": "Spatial",
+                  "component": "ArrayFanout",
+                  "rank_variable": "n2",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null,
+                  "name": "reuse_input"
+                },
+                {
+                  "type": "Storage",
+                  "component": "Register",
+                  "tensors": "['W1']",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Reservation",
+                  "purposes": "['W1']",
+                  "resource": "Register",
+                  "persistent": "False"
+                },
+                {
+                  "type": "Temporal",
+                  "rank_variable": "m",
+                  "tile_shape": "1",
+                  "initial_tile_shape": null
+                },
+                {
+                  "type": "Compute",
+                  "component": "MAC",
+                  "einsum": "Matmul1"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "hypothetically_prunable_matched_pairs": 14,
+  "all_skipped_pair_counts_known": false,
+  "all_retained_rows_respect_bound": true,
+  "source_sha256": {
+    "research/tracking_audit/audit_real_join_bound.py": "d12b9bfc7c9d1ca8d1117dfbb12f280e70573c26ce0a84d36b7a97fc0e2ff16e",
+    "research/tracking_audit/shape_capacity_audit.py": "d99accded74fc85c79f970aa8b061d2f54a9cfb1d47b7e8548aaab2e8a3d3bb4",
+    "accelforge/mapper/FFM/_join_pmappings/pmapping_dataframe.py": "6b87e2f9eb048d2178700c58736fd41fd47f640b081ec2c48cf649095d507753",
+    "accelforge/mapper/FFM/_pareto_df/df_convention.py": "8445cf5966183288b7337086fea4c879006ae2b6a5652383b4d15eb486aec206"
+  }
+}

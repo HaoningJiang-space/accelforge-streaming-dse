@@ -7,6 +7,13 @@ provably unnecessary fixed resources during generation).
 
 ## Current status and limits
 
+### Architecture-family certificate: first bounded experiments
+
+The [architecture-family audit](results/architecture_family/README.md) tests
+final-Join pruning on one real FFM target with a prior oracle incumbent, and
+separately proves a 60-architecture box in the synthetic model using two corner
+evaluations. It is not yet an FFM family certificate or an end-to-end speedup.
+
 ### Conditional Fusion reservation-scope ledger
 
 The [lifetime audit](results/fusion_lifetime/README.md) records representative
