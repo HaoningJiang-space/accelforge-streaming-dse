@@ -75,6 +75,8 @@ less symbolic preparation and lower total time on this small case, but **more**
 numeric expansion and Join work than the strong existing Event baseline. Final
 model/group row counts tie Events. This does not establish graph-guided state
 compression. Consumer Requirements remain a separate future gate.
+The declared four-directory research regression passes **661 tests**, including
+the three new domain/coverage/boundary tests; see the saved result log.
 
 ```sh
 python -m pytest -q research/joint_search/tests --disable-warnings

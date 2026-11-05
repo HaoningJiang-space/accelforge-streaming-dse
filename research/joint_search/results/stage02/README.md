@@ -103,6 +103,11 @@ No consumer-driven reduction or architecture-family proof has been measured.
 - [audit.json](audit.json): six physical references, policy Tile coverage, complete
   frontier vectors, Mapping IDs, source re-evaluation and implementation hashes.
 - [targeted_tests.txt](targeted_tests.txt): three initial integration/contract tests.
+- [regression.txt](regression.txt): the declared research regression passes
+  **661 tests** in 256.40 seconds, including those three. Counts overlap and
+  must not be added. The declared suite is not an all-repository test claim.
+- [environment.json](environment.json): runtime/package versions, machine type
+  and explicit single-worker setting captured on the experiment environment.
 - [benchmark/summary.json](benchmark/summary.json): medians, work counts and
   per-variant cumulative validity flags.
 - `benchmark/{variant}_{1,2,3}.json`: every trial's cold/warm timings, source
