@@ -11,8 +11,17 @@ DP must import neither its candidate generator nor its Join/search routines.
 
 ## 0. Program, grammar and model
 
-The graph is `X=A·B; Y=X·W`, with A[M,K], B[K,N], W[N,P]. Exact bounded integer
-arithmetic is used; inputs/results in the executable checks fit signed 16 bits.
+The graph is `X=A·B; Y=X·W`, with A[M,K], B[K,N], W[N,P]. `MatMul.precision`
+explicitly distinguishes `operand_dtype`, `accumulator_dtype`, `output_dtype`
+and `overflow`. This grammar requires all three to be the same signed integer
+byte width, with **checked overflow after every MAC**, not wraparound,
+saturation or an unbounded hidden accumulator. The 2mm generator uses 16 bits.
+All initialized values and all intermediate writes must fit, not only final
+results. For example `32767*2 + (-32767)*2` is rejected even though its final
+mathematical result is zero. A request for a wider accumulator is explicitly
+unsupported until its storage/access and cost rules are modeled independently.
+Resource dominance is conditional on this common numerical contract; these
+bounded-input checks do not prove numerical validity for arbitrary input data.
 The model has one shared SRAM, DRAM, a rectangular PE array and nonoverlapping
 DMA/compute service. It has no aliasing, recomputation, parallel stages, leakage,
 NoC or calibrated area model. Positive bandwidth is a performance parameter, not
@@ -52,6 +61,13 @@ Exclusive ownership is a fixed grammar invariant, not a per-state choice.
 Copies have distinct identities in the execution trace. There is no hidden
 live tensor at this cut; A/B temporaries are dead and Y is not yet allocated.
 Internal tile views refer to a known owner; they do not allocate duplicate copies.
+The interpreter validates the whole View extent against its live owner and each
+access against the View's local coordinates. Allocation validates positive
+integer shape, location/layout and the exact rectangular initial data and its
+signed precision before changing IDs or occupancy. Host initialization does not
+count as an executed memory action. Uninitialized reads and dangling owners are
+errors. A failed execution is rejected, not a partially valid cost observation;
+the Runtime is not a transactional simulator after a failed MAC or copy.
 Unknown/unsupported aliasing, partial production or concurrency is an error,
 not zero occupancy or an equivalent interface.
 

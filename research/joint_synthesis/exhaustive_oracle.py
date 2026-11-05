@@ -5,6 +5,7 @@ are not used to compute its peak, action counts, numeric output or service time.
 """
 from dataclasses import dataclass
 from itertools import product
+from .graph_ir import IntegerPrecision, SignedInteger
 from .physical_plan import Property, Schedule, KernelPlan, CompletePlan
 
 
@@ -36,24 +37,51 @@ def multiply(a,b):
 
 
 class Runtime:
-    def __init__(self,model,word_bytes=2):
+    def __init__(self,model,word_bytes=2,precision=None):
+        dtype=SignedInteger(word_bytes)
+        if precision is None:precision=IntegerPrecision(dtype,dtype,dtype)
+        if not isinstance(precision,IntegerPrecision) or precision.operand_dtype!=dtype:
+            raise ValueError('runtime copy width must match the explicit MAC precision')
+        self.precision=precision
         self.model,self.word=model,word_bytes
         self.copies={};self.serial=0
         self.current=self.peak=self.macs=self.sram_bytes=self.dram_bytes=self.bursts=self.cycles=0
         self.pe_x=self.pe_y=1
 
     def alloc(self,rows,cols,location,layout='row',data=None):
-        ident=self.serial;self.serial+=1
+        # Validate before assigning an ID or changing occupancy. Host-side
+        # initialization is not an executed memory action, but is still typed.
+        if any(type(n) is not int or n<1 for n in (rows,cols)):
+            raise ValueError('allocation dimensions must be positive integers')
+        if location not in ('sram','dram') or layout not in ('row','col'):
+            raise ValueError('unsupported allocation location or layout')
+        if data is not None:
+            if (not isinstance(data,(list,tuple)) or len(data)!=rows or
+                    any(not isinstance(row,(list,tuple)) or len(row)!=cols for row in data)):
+                raise ValueError('initial data must have the exact allocation shape')
+            for row in data:
+                for value in row:self.check_value(value)
         physical=[None]*(rows*cols)
         if data is not None:
             for i,j in product(range(rows),range(cols)):
                 physical[i*cols+j if layout=='row' else j*rows+i]=data[i][j]
+        ident=self.serial;self.serial+=1
         self.copies[ident]=Copy(rows,cols,location,layout,physical)
         if location=='sram':
             self.current+=rows*cols*self.word;self.peak=max(self.peak,self.current)
         return ident
 
+    def check_value(self,value):
+        if type(value) is not int or not -(1<<(8*self.word-1))<=value<(1<<(8*self.word-1)):
+            raise AssertionError('integer value outside declared precision')
+
+    def copy_for(self,ident):
+        if type(ident) is not int or ident not in self.copies:
+            raise AssertionError('unknown or released physical copy')
+        return self.copies[ident]
+
     def free(self,ident):
+        self.copy_for(ident)
         c=self.copies.pop(ident)
         if c.location=='sram':
             self.current-=c.rows*c.cols*self.word
@@ -61,28 +89,37 @@ class Runtime:
             raise AssertionError('negative occupancy')
 
     def full(self,ident):
-        c=self.copies[ident]
+        c=self.copy_for(ident)
         return View(ident,0,0,c.rows,c.cols)
 
+    def validate_view(self,v):
+        if not isinstance(v,View):raise AssertionError('a bounded View is required')
+        c=self.copy_for(v.owner)
+        if (any(type(n) is not int for n in (v.row,v.col,v.rows,v.cols)) or
+                v.row<0 or v.col<0 or v.rows<1 or v.cols<1 or
+                v.row+v.rows>c.rows or v.col+v.cols>c.cols):
+            raise AssertionError('invalid view extent')
+        return c
+
     def address(self,v,i,j):
-        c=self.copies[v.owner];r,s=v.row+i,v.col+j
-        if not 0<=r<c.rows or not 0<=s<c.cols:
-            raise AssertionError('view outside physical copy')
+        c=self.validate_view(v)
+        if type(i) is not int or type(j) is not int or not 0<=i<v.rows or not 0<=j<v.cols:
+            raise AssertionError('access outside view')
+        r,s=v.row+i,v.col+j
         return (r*c.cols+s if c.layout=='row' else s*c.rows+r)*self.word
 
     def read(self,v,i,j):
         address=self.address(v,i,j)
         c=self.copies[v.owner]
-        if c.location=='sram':self.sram_bytes+=self.word
-        else:self.dram_bytes+=self.word
         value=c.data[address//self.word]
         if value is None:raise AssertionError('read before production')
+        if c.location=='sram':self.sram_bytes+=self.word
+        else:self.dram_bytes+=self.word
         return value
 
     def write(self,v,i,j,value):
         address=self.address(v,i,j)
-        if not -(1<<(8*self.word-1))<=value<(1<<(8*self.word-1)):
-            raise AssertionError('integer value outside declared precision')
+        self.check_value(value)
         c=self.copies[v.owner]
         if c.location=='sram':self.sram_bytes+=self.word
         else:self.dram_bytes+=self.word
@@ -90,14 +127,16 @@ class Runtime:
 
     def logical(self,ident):
         """Unpack for external validation; this is not an executed memory action."""
-        c=self.copies[ident];v=self.full(ident)
+        c=self.copy_for(ident);v=self.full(ident)
         return [[c.data[self.address(v,i,j)//self.word]for j in range(c.cols)]for i in range(c.rows)]
 
     def fill(self,v):
+        self.validate_view(v)
         for i,j in product(range(v.rows),range(v.cols)):
             self.write(v,i,j,0)
 
     def transfer(self,source,target):
+        self.validate_view(source);self.validate_view(target)
         if source.owner==target.owner:
             raise ValueError('in-place conversion is outside the copy grammar')
         if (source.rows,source.cols)!=(target.rows,target.cols):
@@ -113,6 +152,9 @@ class Runtime:
             self.write(target,i,j,self.read(source,i,j))
 
     def compute(self,a,b,c,u,v):
+        for view in (a,b,c):self.validate_view(view)
+        if any(type(n) is not int or n<1 for n in (u,v)):
+            raise ValueError('positive integer spatial extents required')
         if (a.rows,b.cols,a.cols)!=(c.rows,c.cols,b.rows):
             raise AssertionError('incompatible MAC views')
         if any(self.copies[x.owner].location!='sram'for x in (a,b,c)):
@@ -219,7 +261,7 @@ def convert(runtime,ident,source,target):
 
 
 def trace_local(plan,model):
-    runtime=Runtime(model,plan.op.left.word_bytes)
+    runtime=Runtime(model,plan.op.left.word_bytes,plan.op.precision)
     a_values=matrix(plan.op.left.rows,plan.op.left.cols,0)
     b_values=matrix(plan.op.right.rows,plan.op.right.cols,1)
     a=runtime.alloc(plan.op.left.rows,plan.op.left.cols,plan.required.location,plan.required.layout,a_values)
@@ -231,7 +273,7 @@ def trace_local(plan,model):
 
 
 def trace_complete(plan,model,seed=0):
-    runtime=Runtime(model,plan.producer.op.left.word_bytes)
+    runtime=Runtime(model,plan.producer.op.left.word_bytes,plan.producer.op.precision)
     a_shape,b_shape=plan.producer.op.left,plan.producer.op.right
     w_shape=plan.consumer.op.right
     av,bv,wv=matrix(a_shape.rows,a_shape.cols,seed),matrix(b_shape.rows,b_shape.cols,seed+1),matrix(w_shape.rows,w_shape.cols,seed+2)

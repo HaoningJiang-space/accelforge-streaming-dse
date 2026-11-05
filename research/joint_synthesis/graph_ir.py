@@ -3,6 +3,35 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True, order=True)
+class SignedInteger:
+    word_bytes: int=2
+
+    def __post_init__(self):
+        if type(self.word_bytes) is not int or self.word_bytes<1:
+            raise ValueError('positive integer byte width required')
+
+
+@dataclass(frozen=True)
+class IntegerPrecision:
+    """Explicit MAC roles in the current uniform-width, checked grammar.
+
+    Wider accumulators require different storage/action rules and are not
+    silently interpreted as uniform-width copies. Overflow never wraps/clips.
+    """
+    operand_dtype: SignedInteger=SignedInteger()
+    accumulator_dtype: SignedInteger=SignedInteger()
+    output_dtype: SignedInteger=SignedInteger()
+    overflow: str='reject'
+
+    def __post_init__(self):
+        roles=(self.operand_dtype,self.accumulator_dtype,self.output_dtype)
+        if any(not isinstance(t,SignedInteger) for t in roles):
+            raise ValueError('signed integer dtypes required for all MAC roles')
+        if len(set(roles))!=1 or self.overflow!='reject':
+            raise ValueError('only uniform-width MACs with checked overflow are modeled')
+
+
+@dataclass(frozen=True, order=True)
 class Tensor:
     name: str
     rows: int
@@ -20,6 +49,10 @@ class Tensor:
     def nbytes(self):
         return self.rows*self.cols*self.word_bytes
 
+    @property
+    def dtype(self):
+        return SignedInteger(self.word_bytes)
+
 
 @dataclass(frozen=True, order=True)
 class MatMul:
@@ -34,6 +67,10 @@ class MatMul:
         if (self.left.cols!=self.right.rows or self.output.rows!=self.left.rows
                 or self.output.cols!=self.right.cols or len({self.left.word_bytes,self.right.word_bytes,self.output.word_bytes})!=1):
             raise ValueError('incompatible MatMul dimensions or precision')
+
+    @property
+    def precision(self):
+        return IntegerPrecision(self.left.dtype,self.output.dtype,self.output.dtype)
 
 
 @dataclass(frozen=True)

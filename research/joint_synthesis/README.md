@@ -148,8 +148,10 @@ python -S -m research.joint_synthesis.validate_architecture --output research/jo
 python -m pytest -q research/joint_synthesis/tests --disable-warnings
 ```
 
-[architecture_tests.txt](results/architecture_tests.txt) records the 19 current
-tests. Earlier 10/11-test receipts remain historical and overlap this set. The
+[oracle_hardening_tests.txt](results/oracle_hardening_tests.txt) records 54 tests
+after the View/Allocation/precision review fixes. The earlier 19-test
+[architecture receipt](results/architecture_tests.txt) and 10/11-test receipts
+remain historical and overlap this set. The
 existing 661-test FFM research regression was recorded at `d40a664b`; it has not
 been rerun for this isolated, standard-library-only module. No production FFM
 code changed in this gate. Paper mechanisms and their limits are linked in the
