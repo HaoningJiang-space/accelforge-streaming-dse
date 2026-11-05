@@ -145,11 +145,14 @@ same-model performance baselines remain uncompleted.
 ```sh
 python -S -m research.joint_synthesis.validate --output research/joint_synthesis/results/composition_gate_modular.json
 python -S -m research.joint_synthesis.validate_architecture --output research/joint_synthesis/results/architecture_gate.json
+python -S -m research.joint_synthesis.validate_oracle --output research/joint_synthesis/results/oracle_shape_gate.json
 python -m pytest -q research/joint_synthesis/tests --disable-warnings
 ```
 
-[oracle_hardening_tests.txt](results/oracle_hardening_tests.txt) records 54 tests
-after the View/Allocation/precision review fixes. The earlier 19-test
+[ORACLE_REVIEW_RESULTS.md](ORACLE_REVIEW_RESULTS.md) describes the strict
+View/Allocation/precision checks and three new cross-shape/nondefault-cost
+exhaustive cases. [oracle_shape_tests.txt](results/oracle_shape_tests.txt) records
+62 tests after those review fixes. The 54-test hardening and earlier 19-test
 [architecture receipt](results/architecture_tests.txt) and 10/11-test receipts
 remain historical and overlap this set. The
 existing 661-test FFM research regression was recorded at `d40a664b`; it has not

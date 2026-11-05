@@ -3,6 +3,10 @@
 This is the next restricted step after `51b53d82`'s independent 2mm composition
 gate. The [hardware contract](ARCHITECTURE_CONTRACT.md) precedes the implementation.
 No native FFM, `joint_search`, Reservation or legacy pruner code is changed.
+After the Oracle invariant fixes, the same four configurations and all 452 budget
+queries were rerun in [architecture_gate_hardened.json](results/architecture_gate_hardened.json).
+See [ORACLE_REVIEW_RESULTS.md](ORACLE_REVIEW_RESULTS.md) for new shape/precision
+coverage; the original receipt below remains historical.
 
 ## Actual algorithm
 
