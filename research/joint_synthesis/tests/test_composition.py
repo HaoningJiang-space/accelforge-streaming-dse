@@ -25,8 +25,8 @@ def test_production_and_oracle_do_not_import_ffm_or_each_others_cost_rules():
         imports=[n.module for n in ast.walk(tree)if isinstance(n,ast.ImportFrom)]
         imports.extend(a.name for n in ast.walk(tree)if isinstance(n,ast.Import)for a in n.names)
         assert not any(name and name.startswith(forbidden)for name in imports),path
-        if path.name=='exhaustive_oracle.py':
-            assert not any(name in ('resource_demand','graph_dp','conditional_frontier','schedule_rules','composition')for name in imports)
+        if path.name in ('exhaustive_oracle.py','architecture_oracle.py'):
+            assert not any(name in ('resource_demand','graph_dp','conditional_frontier','schedule_rules','composition','architecture_synth')for name in imports)
 
 
 def test_oracle_executes_without_site_packages_or_production_cost_modules():
@@ -39,6 +39,7 @@ class Block:
             'research.joint_synthesis.composition',
             'research.joint_synthesis.graph_dp',
             'research.joint_synthesis.conditional_frontier',
+            'research.joint_synthesis.architecture_synth',
             'research.joint_synthesis.schedule_rules'):
             raise AssertionError('Oracle imported a blocked search/cost dependency: '+fullname)
 sys.meta_path.insert(0,Block())
@@ -46,6 +47,11 @@ from research.joint_synthesis.graph_ir import TwoMM, CostModel
 from research.joint_synthesis.exhaustive_oracle import exhaustive
 observations, stats = exhaustive(TwoMM(1,1,1,1),CostModel())
 assert observations and stats['complete_plans_traced']==144
+from research.joint_synthesis.hardware_ir import GridAxis, HardwareEnvelope, NormalizedPrices
+from research.joint_synthesis.architecture_oracle import enumerate_hardware
+envelope=HardwareEnvelope(GridAxis(1,1),GridAxis(1,1),GridAxis(8,16,8),GridAxis(1,2))
+designs,hardware_stats=enumerate_hardware(observations,envelope,NormalizedPrices(),100)
+assert designs and hardware_stats['hardware_grid_points']==4
 '''
     subprocess.run([sys.executable,'-S','-c',script],cwd=Path(__file__).parents[3],
                    capture_output=True,text=True,check=True)

@@ -24,12 +24,16 @@ must be separately versioned, with its effect on existing results reported.
 
 The active core is:
 
-`graph_ir → physical_plan → local resource_demand / composition → graph_dp`.
+`graph_ir → physical_plan → local resource_demand / composition → graph_dp
+→ architecture_synth`.
 
 `exhaustive_oracle` imports only plan/model **data**, implements its own physical
 storage, scalar execution and counters, and cannot import production demand,
 composition, schedule generation or Pareto helpers. `validate` compares the two
 after measurements exist. It cannot feed Oracle responses into DP decisions.
+`architecture_oracle` likewise imports no production synthesis or pricing
+helpers; it binds measured demands by exhaustive hardware grids. Both Oracles
+may share immutable hardware/plan/model data.
 
 Future external adapters may reuse AccelForge's Workload/Tensor IR, calibrated
 component models and reconstruction facilities. They must not call native FFM
@@ -55,5 +59,8 @@ reuse nor a shared tensor name establishes a fair EDP/performance comparison.
 The current barrier gate passes the first three in its restricted model. Its
 initial results are archived at `a986b381`; the modular replay is in
 `results/composition_gate_modular.json`. File separation is engineering, not an
-additional algorithmic or performance result. No placeholder architecture solver
-or generic graph framework is added to imply later gates are complete.
+additional algorithmic or performance result. The normalized-budget hardware
+binding gate now implements step 4 in that model and matches independent grids;
+see `ARCHITECTURE_CONTRACT.md` and `ARCHITECTURE_RESULTS.md`. Calibrated hardware
+costs, streaming Fusion, larger graphs and realistic performance comparisons
+remain open. No generic framework is added to imply those gates are complete.

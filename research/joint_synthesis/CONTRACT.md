@@ -1,8 +1,9 @@
 # First composition gate: architecture-independent 2mm physical plans
 
-Status: the restricted grammar, analytical rules, separator DP and independent
-scalar Oracle are executable. See `README.md` and the archived validation. General
-Fusion interfaces, architecture synthesis and strong-system baselines remain open.
+Status: the restricted grammar, analytical rules, separator DP, independent
+scalar Oracle and normalized-budget hardware binding are executable. See
+`ARCHITECTURE_CONTRACT.md` for the latter. General Fusion, calibrated hardware
+synthesis and strong-system baselines remain open.
 
 This is a **restricted proof/Oracle gate**, not a completed new optimizer or a
 novelty claim. Native FFM remains an untouched reference. The new grammar and
@@ -16,6 +17,10 @@ The model has one shared SRAM, DRAM, a rectangular PE array and nonoverlapping
 DMA/compute service. It has no aliasing, recomputation, parallel stages, leakage,
 NoC or calibrated area model. Positive bandwidth is a performance parameter, not
 a feasibility threshold unless a deadline is separately imposed.
+SRAM is an ideal byte-capacity pool: simultaneous owned-copy sizes determine
+occupancy. Fragmentation, bank/address assignment and physical relocation cost
+are not modeled. Packed addresses in the Oracle are relative to each copy;
+this is not a global SRAM placement or allocator feasibility proof.
 
 Each local implementation chooses divisor tiles (ti,tj,tk), an output-stationary
 `i,j,k`, row-strip `i,k,j`, or column-strip `j,k,i` order, and spatial dimensions

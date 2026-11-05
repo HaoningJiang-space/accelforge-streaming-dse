@@ -32,6 +32,9 @@ plans in the demand frontier.
 The binding rule is invalid if shape/capacity also changes clock, leakage,
 interconnect, access energy or other cost coefficients. Those dependencies need
 a new model/contract; they are not silently treated as invariant.
+The inherited SRAM model is an ideal byte-capacity pool with no fragmentation
+or bank/global-address placement constraints. Peak checks do not certify a
+physical allocator or memory macro implementation.
 
 ## Demand-driven hardware construction
 
@@ -71,6 +74,14 @@ FFM's capacity-dependent fallback/Pareto membership from a maximum-capacity run.
 Queries above the compiled ceiling are unsupported and must raise rather than
 return a partial result. Empty results establish infeasibility only for the
 supplied complete demand set, envelope and model.
+This family answers hardware-cost budgets. It does not answer arbitrary new
+per-axis restrictions or a different price function by reusing the same points;
+those require binding the graph demand frontier again under the new contract.
+
+`solve_joint(graph, model, ...)` obtains one consistent graph/model frontier and
+performs this binding once. The lower-level `synthesize(demands, ...)` explicitly
+requires a complete, model-consistent supplied frontier. Budget queries on the
+returned family do not invoke the graph DP again.
 
 ## Independent validation
 
@@ -86,6 +97,9 @@ source must round-trip its plan and replay through the physical interpreter on
 the **same global hardware**, with exact energy/latency/peak checks. Count actual
 hardware candidates constructed versus full-grid points and feasible plan–hardware
 bindings. These are same-model proof/work counts, not FFM speedup measurements.
+Also compare a controlled full-grid baseline with exactly the same root demand
+vectors. Otherwise a reduced binding count could be incorrectly attributed to
+hardware synthesis when it actually comes from earlier graph-state pruning.
 
 Current real FFM shape-switch cases and calibrated hardware costs remain later
 model-alignment gates. A toy normalized-budget switch is not their replacement.

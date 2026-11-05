@@ -7,10 +7,35 @@ This directory starts with its mathematical/executable foundation: an explicit
 finite 2mm grammar, a resource-demand composition law, and independent exhaustive
 validation. It does not wrap FFM generation or Join as a new optimizer.
 
+The next [global architecture-binding gate](ARCHITECTURE_RESULTS.md) is now
+executable under explicit normalized hardware prices. It produces one global
+Architecture–Mapping frontier from the graph demands and supports later budget
+queries without rerunning the graph DP. This remains the restricted barrier
+model, with no calibrated area or FFM-performance equivalence claim.
+
 Read [CONTRACT.md](CONTRACT.md) first. It defines the legal programs, physical
 properties, exact cost model, sufficient replacement rule and proof obligations.
 The executable main path uses only Python's standard library and runs with
 `python -S`; it imports no AccelForge/FFM generator, Join or cost routine.
+
+For one graph and one normalized hardware family:
+
+```python
+from research.joint_synthesis.graph_ir import TwoMM, CostModel
+from research.joint_synthesis.hardware_ir import GridAxis, HardwareEnvelope, NormalizedPrices
+from research.joint_synthesis.architecture_synth import solve_joint
+
+envelope = HardwareEnvelope(GridAxis(1, 3), GridAxis(1, 5),
+                            GridAxis(4, 48, 4), GridAxis(1, 9))
+family, work = solve_joint(TwoMM(), CostModel(), envelope,
+                          NormalizedPrices(4, 1, 3), budget_ceiling=128)
+best = family.best_edp(64)
+assert best.resource_cost <= 64
+print(best.hardware, best.energy, best.latency)
+```
+
+The same `family` answers other budgets up to 128 without new Mapping generation
+or DP. It does not rebind a different envelope or price function automatically.
 
 ## What is implemented
 
@@ -25,12 +50,17 @@ The executable main path uses only Python's standard library and runs with
 | `graph_dp.py` | Reduce local conditional frontiers, compose through explicit conversions, retain the root demand frontier |
 | `exhaustive_oracle.py` | Independent grammar enumeration and scalar allocation/address/MAC interpreter |
 | `validate.py` | Local/complete summary checks, exact root-front comparison, later hardware queries and witness replay |
+| `hardware_ir.py` | Global hardware envelope, integer grids and positive normalized resource prices |
+| `architecture_synth.py` | Demand-driven hardware binding, joint cost/E/T frontier and budget queries |
+| `architecture_oracle.py` | Independent full-grid hardware binding and frontier comparison |
+| `validate_architecture.py` | Full joint-front, all-budget and selected-source verification |
 
 The generator and DP accept **no architecture point or list**. They produce
 `(required_Px, required_Py, peak_SRAM, energy, latency_intercept, DRAM_bytes)`
 and physical execution witnesses. A single complete plan must use one global
 array/capacity/bandwidth. Validation queries hardware only after DP completes.
-This is not yet architecture selection under a calibrated budget (Step 4).
+Hardware selection under normalized budgets is implemented; a calibrated budget
+and realistic cost model remain unimplemented.
 
 The independent Oracle does not use the analytical demand/composition/pruning
 routines to calculate results. It allocates real copy records, interprets
@@ -100,25 +130,26 @@ It does not complete their general versions or the roadmap:
 | Physical-plan IR | Full materialized X and explicit converters; no streaming or arbitrary graph importer |
 | Demand frontier | Analytical local rules checked against execution for this grammar |
 | Independent DP | Two fixed-cut 2mm cases equal exhaustive demand/E/T fronts |
-| Global hardware synthesis | Not implemented; later validation queries are not an architecture optimizer |
+| Global hardware synthesis | Normalized-cost binding and budget queries pass independent grids; calibrated model pending |
 | Graph scalability / strong baselines | Not implemented or claimed |
 
 Before scaling to GLU or claiming realistic synthesis, the next
 semantic gate must test whether a streaming/fused boundary can retain the same
 replacement guarantee with a compact live-copy/partial-accumulator state. If
 that state approaches exhaustive histories, stop expanding the graph. Global
-architecture-budget synthesis, the known real shape-switch case and strong
+calibrated architecture-budget synthesis, the known real shape-switch case and strong
 same-model performance baselines remain uncompleted.
 
 ## Reproduce
 
 ```sh
 python -S -m research.joint_synthesis.validate --output research/joint_synthesis/results/composition_gate_modular.json
+python -S -m research.joint_synthesis.validate_architecture --output research/joint_synthesis/results/architecture_gate.json
 python -m pytest -q research/joint_synthesis/tests --disable-warnings
 ```
 
-[targeted_tests_modular.txt](results/targeted_tests_modular.txt) records the eleven
-current tests; the original ten-test receipt remains archived separately. The
+[architecture_tests.txt](results/architecture_tests.txt) records the 19 current
+tests. Earlier 10/11-test receipts remain historical and overlap this set. The
 existing 661-test FFM research regression was recorded at `d40a664b`; it has not
 been rerun for this isolated, standard-library-only module. No production FFM
 code changed in this gate. Paper mechanisms and their limits are linked in the
