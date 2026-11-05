@@ -130,6 +130,12 @@ by a concrete decomposition that preserves the coupled physical semantics and
 avoids work **beyond existing** FFM grouping/Pareto and parametric/cache baselines.
 Do not add another generic Memo or reorder operators based solely on this graph.
 
+The follow-up [conditional-elimination experiment](CONDITIONAL_ELIMINATION.md)
+tests one missing local aggregation law using native terminal resource response
+functions. It reduces pairs in three 3mm cases without changing operator order;
+it does not change this audit's zero-reduction equality-order result or establish
+full InsideOut factorization/width bounds.
+
 ## Reproduce and raw data
 
 ```sh

@@ -7,6 +7,16 @@ couplings; the [decision-hypergraph gate](DECISION_HYPERGRAPH.md) separates lega
 equality reordering from still-unproved full search decomposition. Neither is a
 new joint optimizer or a claimed speedup over the existing FFM cache.
 
+The next [focused FAQ/InsideOut and Cascades/Calcite reading](READING_INSIDEOUT_CASCADES.md)
+derives a [restricted conditional-elimination contract](CONDITIONAL_ELIMINATION.md).
+It compares native resource **response functions**, rather than requiring equal
+historical resource vectors, before materializing a terminal Join bucket. This
+is an executable local aggregation-law experiment with architecture fixed and
+candidates already generated; it does not implement a new joint optimizer,
+arbitrary elimination order or architecture-family certificate. The complete
+[six-point audit](results/conditional_elimination/README.md) includes coordinate
+controls, native transfer checks and full frontier/source comparisons.
+
 The earlier Memo, checkpoint, reservation and support analyses below remain
 infrastructure and historical feasibility gates, not the main research objective.
 

@@ -163,6 +163,19 @@ Do not infer a universal interface theorem, complete physical Mapspace coverage,
 cross-architecture correctness, or practical speedup from this experiment.
 The row-by-row audit intentionally repeats work to detect counterexamples.
 
+### Subsequent experiment
+
+[Conditional elimination](CONDITIONAL_ELIMINATION.md) follows the resource-transfer
+question above. It derives a restricted pointwise order between terminal resource
+response functions without consuming the enumerated responses from this audit.
+Distinct strict resource vectors can have ordered responses, so the new rule
+does not assert that the singleton strict-interface keys here were identical.
+The later six-point results remain fixed-architecture, terminal-bucket evidence.
+The post-hoc "ceiling" above was a witness-protected greedy ablation within its
+boundary-loop projection, not an optimal bound on every possible reduction.
+The later rule uses native-prepared consumer buckets and may choose different
+witnesses; its pair counts should not be bounded by that earlier greedy count.
+
 ## Reproduce
 
 From the repository root, with the same installed environment as the other
