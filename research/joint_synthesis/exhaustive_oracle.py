@@ -245,12 +245,25 @@ def kernel(runtime,plan,a,b):
     return output
 
 
-def convert(runtime,ident,source,target):
+def convert(runtime,ident,source,target,enforcer='direct'):
     if source.tensor!=target.tensor:raise ValueError('not the same logical data')
     copy=runtime.copy_for(ident);shape=source.tensor
     if ((copy.rows,copy.cols,copy.location,copy.layout,runtime.word)!=
             (shape.rows,shape.cols,source.location,source.layout,shape.word_bytes)):
         raise AssertionError('physical copy does not match declared conversion source')
+    if enforcer not in ('direct','spill_reload'):
+        raise ValueError('unknown physical enforcer')
+    if enforcer=='spill_reload':
+        if not (source.location==target.location=='sram' and source.layout!=target.layout):
+            raise ValueError('spill/reload requires distinct SRAM layouts')
+        # Execute both transfers; do not call production conversion summaries.
+        temporary=runtime.alloc(shape.rows,shape.cols,'dram','row')
+        runtime.transfer(runtime.full(ident),runtime.full(temporary))
+        runtime.free(ident)
+        result=runtime.alloc(shape.rows,shape.cols,'sram',target.layout)
+        runtime.transfer(runtime.full(temporary),runtime.full(result))
+        runtime.free(temporary)
+        return result
     if source==target:return ident
     if source.location==target.location=='dram':
         temporary=runtime.alloc(shape.rows,shape.cols,'sram')
@@ -286,7 +299,7 @@ def trace_complete(plan,model,seed=0):
     b=runtime.alloc(b_shape.rows,b_shape.cols,'dram','row',bv)
     w=runtime.alloc(w_shape.rows,w_shape.cols,'dram','row',wv)
     x=kernel(runtime,plan.producer,a,b)
-    x=convert(runtime,x,plan.producer.delivered,plan.consumer.required)
+    x=convert(runtime,x,plan.producer.delivered,plan.consumer.required,plan.enforcer)
     y=kernel(runtime,plan.consumer,x,w)
     runtime.free(x)
     if runtime.current:raise AssertionError('leaked complete-plan SRAM copy')
@@ -311,14 +324,25 @@ def enumerate_plans(graph):
     return tuple(plans)
 
 
+def enumerate_complete(first,second):
+    """Independent enforcer grammar; never import production choices/rules."""
+    for a,b in product(first,second):
+        yield CompletePlan(a,b,'direct')
+        if (a.delivered.location=='sram' and b.required.location=='sram'
+                and a.delivered.layout!=b.required.layout):
+            yield CompletePlan(a,b,'spill_reload')
+
+
 def exhaustive(graph,model,inspect=None):
     first,second=enumerate_plans(graph)
     observations={}
-    for a,b in product(first,second):
-        plan=CompletePlan(a,b)
+    counts=dict(direct=0,spill_reload=0)
+    for plan in enumerate_complete(first,second):
         vector=trace_complete(plan,model).vector
+        counts[plan.enforcer]+=1
         if inspect is not None:inspect(plan,vector)
         observations.setdefault(vector,plan)
-    return observations,dict(complete_plans_traced=len(first)*len(second),
+    return observations,dict(complete_plans_traced=sum(counts.values()),
+        kernel_pairs_traced=len(first)*len(second),complete_plans_by_enforcer=counts,
         unique_observed_vectors=len(observations),numeric_results_verified=True,
         allocations_and_accesses_interpreted=True,ffm_search_calls=0)

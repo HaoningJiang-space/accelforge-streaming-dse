@@ -7,6 +7,9 @@ After the Oracle invariant fixes, the same four configurations and all 452 budge
 queries were rerun in [architecture_gate_hardened.json](results/architecture_gate_hardened.json).
 See [ORACLE_REVIEW_RESULTS.md](ORACLE_REVIEW_RESULTS.md) for new shape/precision
 coverage; the original receipt below remains historical.
+The later expanded converter grammar is reported in
+[ENFORCER_RESULTS.md](ENFORCER_RESULTS.md); the unpruned work counts below refer
+to this earlier direct-only grammar.
 
 ## Actual algorithm
 

@@ -12,10 +12,23 @@ class ConversionDemand:
     traffic: int
 
 
-def conversion(source,target,model):
+def enforcer_choices(source,target):
     if source.tensor!=target.tensor:
         raise ValueError('conversion cannot change logical values/version/shape/width')
+    if source.location==target.location=='sram' and source.layout!=target.layout:
+        return 'direct','spill_reload'
+    return ('direct',)
+
+
+def conversion(source,target,model,enforcer='direct'):
+    if enforcer not in enforcer_choices(source,target):
+        raise ValueError('enforcer is not supported for these physical interfaces')
     size=source.tensor.nbytes
+    if enforcer=='spill_reload':
+        # Full row-major DRAM staging; release the old SRAM owner before
+        # allocating the target. Both transfers have one contiguous DRAM run.
+        return ConversionDemand(size,2*size*(model.sram_byte_energy+model.dram_byte_energy),
+                                2*model.burst_setup_cycles,2*size)
     if source==target:
         return ConversionDemand(source.live_bytes,0,0,0)
     src_dram=source.location=='dram';dst_dram=target.location=='dram'
@@ -29,9 +42,9 @@ def conversion(source,target,model):
                             nbursts*model.burst_setup_cycles,traffic)
 
 
-def compose(left,right,model):
-    plan=CompletePlan(left.plan,right.plan)
-    bridge=conversion(left.plan.delivered,right.plan.required,model)
+def compose(left,right,model,enforcer='direct'):
+    plan=CompletePlan(left.plan,right.plan,enforcer)
+    bridge=conversion(left.plan.delivered,right.plan.required,model,enforcer)
     if ((left.plan.required.location,left.plan.required.layout)!=('dram','row')
             or (right.plan.delivered.location,right.plan.delivered.layout)!=('dram','row')):
         raise ValueError('composition gate requires row-major external DRAM input and final output')

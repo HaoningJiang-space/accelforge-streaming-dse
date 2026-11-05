@@ -53,8 +53,10 @@ reuse nor a shared tensor name establishes a fair EDP/performance comparison.
    and simultaneous copy occupancy; keep unsupported semantics rejected.
 3. Check conditional DP against the unpruned complete space and replay sources.
 4. Only then propose a separately scoped global architecture-budget synthesis.
-5. Streaming/fused interfaces, 3mm/GLU and strong same-model performance gates
-   require new proofs/coverage and remain unimplemented.
+5. Explicit enforcer alternatives require coverage and execution checks; the
+   direct/spill-reload gate remains within the exclusive-owned full-tensor cut.
+6. Multi-live/materialized shared-consumer interfaces, then streaming Fusion,
+   3mm/GLU and strong same-model performance gates require new proofs/coverage.
 
 The current barrier gate passes the first three in its restricted model. Its
 initial results are archived at `a986b381`; the modular replay is in

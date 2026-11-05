@@ -49,6 +49,7 @@ class KernelPlan:
 class CompletePlan:
     producer: KernelPlan
     consumer: KernelPlan
+    enforcer: str='direct'
 
     def __post_init__(self):
         if self.producer.op.output!=self.consumer.op.left:
@@ -56,6 +57,12 @@ class CompletePlan:
         a,b=self.producer.op,self.consumer.op
         if len({a.left.name,a.right.name,a.output.name,b.right.name,b.output.name})!=5:
             raise ValueError('only the explicit intermediate may be shared across this cut')
+        if self.enforcer not in ('direct','spill_reload'):
+            raise ValueError('unknown physical enforcer')
+        if self.enforcer=='spill_reload' and not (
+                self.producer.delivered.location==self.consumer.required.location=='sram'
+                and self.producer.delivered.layout!=self.consumer.required.layout):
+            raise ValueError('spill/reload is modeled only for distinct SRAM layouts')
 
 
 def restore_plan(payload):

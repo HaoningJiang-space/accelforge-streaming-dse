@@ -1,7 +1,10 @@
 # Global hardware binding gate
 
-This extends the existing barrier-2mm proof model. It does not change its
-Mapping grammar, add streaming, or claim calibrated chip area/performance.
+This binds the existing barrier-2mm proof model. Binding itself does not change
+the Mapping grammar, add streaming, or claim calibrated chip area/performance.
+The later enforcer extension supplies complete `direct`/`spill_reload` demand
+alternatives to the same binding rule; its independent coverage is recorded in
+`ENFORCER_RESULTS.md`.
 The graph DP still generates a complete resource-demand frontier with no
 architecture points. Hardware binding is a separate exact step on that frontier.
 

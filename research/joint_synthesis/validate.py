@@ -36,6 +36,7 @@ def audit(graph,model=CostModel()):
     if any(set(p)!=set(o) for p,o in zip(production,oracle)):
         raise AssertionError('independent enumerators disagree about the declared grammar')
     local={}
+    direct_observations=set()
     for plan in (*production[0],*production[1]):
         summary=summarize(plan,model);measured=trace_local(plan,model)
         vector=list(measured.vector);vector[2]-=plan.required.live_bytes
@@ -46,12 +47,19 @@ def audit(graph,model=CostModel()):
         local[plan]=summary
     start=time.perf_counter()
     def check_composition(plan,measured):
-        expected=compose(local[plan.producer],local[plan.consumer],model).vector
+        expected=compose(local[plan.producer],local[plan.consumer],model,plan.enforcer).vector
         if expected!=measured:
             raise AssertionError(f'composition law/trace mismatch: {expected} != {measured}: {plan}')
+        if plan.enforcer=='direct':direct_observations.add(measured)
     observations,oracle_stats=exhaustive(graph,model,inspect=check_composition)
+    if stats['raw_complete_pairs']!=oracle_stats['complete_plans_traced']:
+        raise AssertionError('production/Oracle enforcer grammars have different coverage')
     if {x.vector for x in root}!=independent_frontier(observations):
         raise AssertionError('root demand frontier differs from exhaustive execution')
+    direct_front=independent_frontier(direct_observations)
+    direct_dp,_=solve(graph,model,include_spill_reload=False)
+    if {d.vector for d in direct_dp}!=direct_front:
+        raise AssertionError('direct-only DP differs from independently executed direct grammar')
     for state in root:
         restored=restore_plan(json.loads(json.dumps(asdict(state.plan))))
         if restored!=state.plan:raise AssertionError('execution witness failed JSON round-trip')
@@ -61,12 +69,23 @@ def audit(graph,model=CostModel()):
     oracle_validation_s=time.perf_counter()-start
     # Capacity boundaries and new hardware points are generated AFTER solve().
     capacities=sorted({c for v in observations for c in (v[2]-1,v[2],v[2]+1) if c>0})
-    queries=0;feasible=0
+    queries=0;feasible=0;changed=0;edp_improved=0;first_improvement=None
     for px,py,c,b in product(range(1,max(v[0]for v in observations)+1),
             range(1,max(v[1]for v in observations)+1),capacities,(1,2,3,5,8)):
         a=et_frontier([s.vector for s in root],px,py,c,b)
         expected=et_frontier(observations,px,py,c,b)
         if a!=expected:raise AssertionError('conditional hardware query lost a Pareto vector')
+        old=et_frontier(direct_front,px,py,c,b)
+        changed+=a!=old
+        new_edp=min((e*t for e,t in a),default=None)
+        old_edp=min((e*t for e,t in old),default=None)
+        if old_edp is not None and (new_edp is None or new_edp>old_edp):
+            raise AssertionError('adding enforcer alternatives worsened the optimum')
+        if new_edp is not None and (old_edp is None or new_edp<old_edp):
+            edp_improved+=1
+            if first_improvement is None:
+                first_improvement=dict(px=px,py=py,capacity=c,bandwidth=b,
+                    old_edp=None if old_edp is None else str(old_edp),new_edp=str(new_edp))
         queries+=1;feasible+=bool(a)
     return dict(status='complete',graph=asdict(graph),model=asdict(model),dp=stats,
         local_summaries_checked=len(local),composition_summaries_checked=oracle_stats['complete_plans_traced'],
@@ -76,6 +95,11 @@ def audit(graph,model=CostModel()):
         root_frontier=[dict(vector=s.vector,plan=asdict(s.plan))for s in root],
         source_roundtrip_witnesses_checked=len(root),
         oracle_demand_vectors=sorted(independent_frontier(observations)),
+        enforcer_expansion=dict(direct_only_dp_equal=True,direct_only_root_vectors=len(direct_front),
+            root_vectors_equal_to_direct_only={d.vector for d in root}==direct_front,
+            direct_only_demand_frontier=sorted(direct_front),
+            queries_with_changed_et_frontier=changed,queries_with_strict_edp_improvement=edp_improved,
+            first_edp_improvement=first_improvement),
         dp_diagnostic_s=dp_s,oracle_validation_s=oracle_validation_s,
         speedup_claim=False,ffm_grammar_equivalence=False,streaming_fusion_supported=False,
         new_physical_interface_theorem_for_ffm=False)

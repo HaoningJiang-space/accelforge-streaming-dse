@@ -13,6 +13,11 @@ Architecture–Mapping frontier from the graph demands and supports later budget
 queries without rerunning the graph DP. This remains the restricted barrier
 model, with no calibrated area or FFM-performance equivalence claim.
 
+The next executable gate adds **physical enforcer alternatives**: a complete
+plan retains `direct` or `spill_reload` provenance. See
+[ENFORCER_RESULTS.md](ENFORCER_RESULTS.md) for independent coverage, fixed-interface
+capacity tradeoffs and the negative result for unconstrained whole-graph search.
+
 Read [CONTRACT.md](CONTRACT.md) first. It defines the legal programs, physical
 properties, exact cost model, sufficient replacement rule and proof obligations.
 The executable main path uses only Python's standard library and runs with
@@ -42,10 +47,10 @@ or DP. It does not rebind a different envelope or price function automatically.
 | Component | Actual role |
 | --- | --- |
 | `graph_ir.py` | Immutable 2mm graph, tensor identities and normalized model parameters |
-| `physical_plan.py` | Required/delivered properties, schedules and JSON-restorable witnesses |
+| `physical_plan.py` | Required/delivered properties, schedules, enforcer choice and JSON-restorable witnesses |
 | `schedule_rules.py` | Architecture-independent divisor tiles, spatial extents and three loop/working-set rules |
 | `resource_demand.py` | Closed-form demands and bandwidth-dependent latency `c+q/B` |
-| `composition.py` | Explicit conversion demands and materialized-cut resource composition |
+| `composition.py` | Direct/spill-reload alternatives and materialized-cut resource composition |
 | `conditional_frontier.py` | Exact dominance within a fixed physical interface |
 | `graph_dp.py` | Reduce local conditional frontiers, compose through explicit conversions, retain the root demand frontier |
 | `exhaustive_oracle.py` | Independent grammar enumeration and scalar allocation/address/MAC interpreter |
@@ -54,6 +59,7 @@ or DP. It does not rebind a different envelope or price function automatically.
 | `architecture_synth.py` | Demand-driven hardware binding, joint cost/E/T frontier and budget queries |
 | `architecture_oracle.py` | Independent full-grid hardware binding and frontier comparison |
 | `validate_architecture.py` | Full joint-front, all-budget and selected-source verification |
+| `validate_enforcers.py` | Expanded grammar, direct-only control and fixed-interface architecture/budget witnesses |
 
 The generator and DP accept **no architecture point or list**. They produce
 `(required_Px, required_Py, peak_SRAM, energy, latency_intercept, DRAM_bytes)`
@@ -69,6 +75,11 @@ integer MACs, releases temporaries and checks the full result against ordinary
 scalar 2mm. Analytical comparisons occur only after its observations exist.
 
 ## First recorded gate
+
+This section records the **historical direct-only grammar**. The current default
+also expands spill/reload, with separately counted kernel pairs and complete
+`(producer, enforcer, consumer)` alternatives. The new receipt is linked above;
+the historical counts are not current-default work counts.
 
 Both cases use two-byte bounded integer data and the declared normalized model.
 Physical properties comprise four full-X interfaces: row/column-major ×
@@ -133,10 +144,11 @@ It does not complete their general versions or the roadmap:
 | Global hardware synthesis | Normalized-cost binding and budget queries pass independent grids; calibrated model pending |
 | Graph scalability / strong baselines | Not implemented or claimed |
 
-Before scaling to GLU or claiming realistic synthesis, the next
-semantic gate must test whether a streaming/fused boundary can retain the same
-replacement guarantee with a compact live-copy/partial-accumulator state. If
-that state approaches exhaustive histories, stop expanding the graph. Global
+Before scaling to GLU, the next separate semantic gate should test materialized
+multi-live boundaries, ownership and multiple consumers. The current enforcer
+cannot free a shared producer copy safely without those rules. Streaming/fused
+boundaries need an additional live-channel/partial-accumulator model. If that
+state approaches exhaustive histories, stop expanding the graph. Global
 calibrated architecture-budget synthesis, the known real shape-switch case and strong
 same-model performance baselines remain uncompleted.
 
@@ -146,13 +158,16 @@ same-model performance baselines remain uncompleted.
 python -S -m research.joint_synthesis.validate --output research/joint_synthesis/results/composition_gate_modular.json
 python -S -m research.joint_synthesis.validate_architecture --output research/joint_synthesis/results/architecture_gate.json
 python -S -m research.joint_synthesis.validate_oracle --output research/joint_synthesis/results/oracle_shape_gate.json
+python -S -m research.joint_synthesis.validate_enforcers --output research/joint_synthesis/results/enforcer_gate.json
 python -m pytest -q research/joint_synthesis/tests --disable-warnings
 ```
 
 [ORACLE_REVIEW_RESULTS.md](ORACLE_REVIEW_RESULTS.md) describes the strict
 View/Allocation/precision checks and three new cross-shape/nondefault-cost
-exhaustive cases. [oracle_shape_tests.txt](results/oracle_shape_tests.txt) records
-62 tests after those review fixes. The 54-test hardening and earlier 19-test
+exhaustive cases in the historical direct-only grammar.
+[enforcer_tests.txt](results/enforcer_tests.txt) records 83 tests with the expanded
+grammar and source/alias checks. The earlier 62-test
+[Oracle receipt](results/oracle_shape_tests.txt), 54-test hardening and 19-test
 [architecture receipt](results/architecture_tests.txt) and 10/11-test receipts
 remain historical and overlap this set. The
 existing 661-test FFM research regression was recorded at `d40a664b`; it has not

@@ -90,11 +90,26 @@ included in S. Required properties and delivered properties are distinct.
 ## 2. Explicit conversions
 
 For every ordered I→J, matching logical tensor/version/shape/width is mandatory.
-Identical physical properties use an identity conversion. Other pairs use an
-explicit row-ordered logical copy; SRAM destinations allocate a new full copy
-before the source is released. A DRAM→DRAM layout change uses a full SRAM staging
-copy. This is one declared finite converter grammar, not an optimal converter
-library. It may be expanded only with new execution/summary checks.
+The plan records an explicit enforcer choice. `direct` preserves the original
+grammar: identical physical properties use identity; other pairs use an explicit
+row-ordered logical copy, with the SRAM destination allocated before the source
+is released. A DRAM→DRAM layout change uses full SRAM staging.
+
+For distinct layouts with **both endpoints in SRAM**, `spill_reload` is an
+additional choice. It writes a full row-major DRAM temporary, releases the old
+SRAM owner, allocates the target SRAM owner, reads the temporary into it, then
+releases the temporary. For tensor size N, direct conversion has peak 2N and no
+DRAM traffic; spill/reload has peak N and traffic 2N. Both have 2N SRAM byte
+actions. The row-major temporary causes exactly two contiguous DRAM runs. Its
+energy/setup cost is paid explicitly; no overlap is allowed. No in-place,
+partial, tiled or streaming converter is implied. Even degenerate row/column
+layouts with equal packing follow these declared conversion choices.
+
+This is still a finite converter library, not coverage of all legal converters.
+Spill/reload relies on this cut's **exclusive ownership and single remaining
+consumer**. A shared source cannot be released this way without a new ownership
+rule. The model has no DRAM capacity limit. Both enumerators cover every declared
+route; source reconstruction retains the route rather than selecting it again.
 
 Conversion K has absolute cut peak P_K (all source/destination/staging copies),
 energy E_K and latency coefficients c_K,q_K. On exit only J remains live.
@@ -139,6 +154,9 @@ max and addition are monotone; for every B>0, smaller c and q_bytes give no larg
 latency. Thus complete energy, latency and resource demand cannot worsen on any
 hardware that could execute the removed plan. Equal vectors may retain one
 witness; all numerical Pareto vectors are preserved, not every tied source.
+The argument applies separately to each enforcer at identical endpoints, then
+to their union. Enforcers with a lower peak but higher energy/cycles/traffic must
+remain separate alternatives until safe dominance is established.
 
 This is a sufficient relation, not the exact order of all latency functions.
 It does not permit comparisons across interfaces, arbitrary reassociation,

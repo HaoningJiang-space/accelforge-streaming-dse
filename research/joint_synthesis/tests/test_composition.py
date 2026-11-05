@@ -46,7 +46,7 @@ sys.meta_path.insert(0,Block())
 from research.joint_synthesis.graph_ir import TwoMM, CostModel
 from research.joint_synthesis.exhaustive_oracle import exhaustive
 observations, stats = exhaustive(TwoMM(1,1,1,1),CostModel())
-assert observations and stats['complete_plans_traced']==144
+assert observations and stats['complete_plans_traced']==162
 from research.joint_synthesis.hardware_ir import GridAxis, HardwareEnvelope, NormalizedPrices
 from research.joint_synthesis.architecture_oracle import enumerate_hardware
 envelope=HardwareEnvelope(GridAxis(1,1),GridAxis(1,1),GridAxis(8,16,8),GridAxis(1,2))
