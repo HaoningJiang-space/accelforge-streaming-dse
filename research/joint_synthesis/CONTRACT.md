@@ -1,7 +1,8 @@
 # First composition gate: architecture-independent 2mm physical plans
 
-Status: definition first; the executable Oracle is not yet implemented in this
-initial contract commit.
+Status: the restricted grammar, analytical rules, separator DP and independent
+scalar Oracle are executable. See `README.md` and the archived validation. General
+Fusion interfaces, architecture synthesis and strong-system baselines remain open.
 
 This is a **restricted proof/Oracle gate**, not a completed new optimizer or a
 novelty claim. Native FFM remains an untouched reference. The new grammar and
@@ -40,10 +41,12 @@ is valid until grammar and cost-model differences are reconciled.
 
 ## 1. Sufficient interface and state
 
-The materialized interface I records logical tensor/version, full shape,
-element width, physical layout, storage location and exclusive ownership.
+Within one fixed graph/cut, the materialized interface I records logical
+tensor/version, full shape, element width, physical layout and storage location.
+Exclusive ownership is a fixed grammar invariant, not a per-state choice.
 Copies have distinct identities in the execution trace. There is no hidden
 live tensor at this cut; A/B temporaries are dead and Y is not yet allocated.
+Internal tile views refer to a known owner; they do not allocate duplicate copies.
 Unknown/unsupported aliasing, partial production or concurrency is an error,
 not zero occupancy or an equivalent interface.
 
@@ -101,7 +104,7 @@ even if both endpoint footprints fit individually.
 
 ## 4. Safe local dominance
 
-Only compare prefixes with **identical complete I**. A sufficient condition for
+Only compare prefixes at the **same graph/cut with identical complete I**. A sufficient condition for
 replacing q by p is componentwise nonincrease of `(u,v,P,E,c,q_bytes)`.
 L is identical because I is identical. The consumer analogue compares identical
 required J and `(u,v,S,E,c,q_bytes)`.
@@ -124,12 +127,12 @@ frontier, not a scalar local winner.
 
 ## 5. Independent executable validation
 
-The planned summaries use closed-form tile/strip transfer and resource counts.
-The independent Oracle must enumerate the complete finite grammar without DP pruning and run
+The implemented summaries use closed-form tile/strip transfer and resource counts.
+The independent Oracle enumerates the complete finite grammar without DP pruning and runs
 explicit allocations, physical-layout reads/writes, scalar MACs and releases.
-It must compute global occupancy from simultaneously live copies, count actual
+It computes global occupancy from simultaneously live copies, counts actual
 DRAM address runs, checks numeric Y against plain scalar matrix multiplication,
-and never call the summary/composition routines to obtain a cost or peak.
+and never calls the summary/composition routines to obtain a cost or peak.
 
 Validate all local summary coordinates against traces, every complete pairing
 and conversion against composed demands, and the DP's complete demand frontier

@@ -1,5 +1,10 @@
 # Finite architecture–mapping shared generation: Stage 0–2
 
+This remains an engineering reference and baseline. The independent research
+definition/Oracle gate is now in [`joint_synthesis`](../joint_synthesis/README.md),
+whose main search does not invoke this module or FFM. The two execution grammars
+and cost models differ; the new gate does not replace these measured results.
+
 This bounded prototype keeps native AccelForge/FFM generation, Reservation,
 Compatibility, numerical Join and Pareto implementations. It does not change the
 reference backend. It shares their execution across **one declared finite global
