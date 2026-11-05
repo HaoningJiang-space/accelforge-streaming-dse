@@ -8,10 +8,12 @@ import json
 from pathlib import Path
 import time
 
-from .graph_ir import TwoMM, CostModel, restore_plan
+from .graph_ir import TwoMM, CostModel
+from .physical_plan import restore_plan
 from .graph_dp import solve
 from .schedule_rules import generate
-from .resource_demand import summarize, compose
+from .resource_demand import summarize
+from .composition import compose
 from .exhaustive_oracle import enumerate_plans, trace_local, trace_complete, exhaustive
 
 

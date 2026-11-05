@@ -1,7 +1,8 @@
 """2mm separator DP; architecture remains unbound throughout construction."""
 from itertools import product
 from .conditional_frontier import conditioned, frontier
-from .resource_demand import summarize, compose
+from .resource_demand import summarize
+from .composition import compose
 from .schedule_rules import generate
 
 

@@ -2,12 +2,16 @@ import ast
 from dataclasses import replace, asdict
 from pathlib import Path
 from itertools import product
+import subprocess
+import sys
 
 import pytest
 
-from research.joint_synthesis.graph_ir import TwoMM, CostModel, Property, Tensor, KernelPlan, Schedule, CompletePlan, restore_plan
+from research.joint_synthesis.graph_ir import TwoMM, CostModel, Tensor
+from research.joint_synthesis.physical_plan import Property, KernelPlan, Schedule, CompletePlan, restore_plan
 from research.joint_synthesis.schedule_rules import generate
-from research.joint_synthesis.resource_demand import summarize, conversion, compose
+from research.joint_synthesis.resource_demand import summarize
+from research.joint_synthesis.composition import conversion, compose
 from research.joint_synthesis.exhaustive_oracle import Runtime, convert, matrix, trace_complete
 from research.joint_synthesis.conditional_frontier import frontier
 from research.joint_synthesis.validate import audit
@@ -22,7 +26,29 @@ def test_production_and_oracle_do_not_import_ffm_or_each_others_cost_rules():
         imports.extend(a.name for n in ast.walk(tree)if isinstance(n,ast.Import)for a in n.names)
         assert not any(name and name.startswith(forbidden)for name in imports),path
         if path.name=='exhaustive_oracle.py':
-            assert not any(name in ('resource_demand','graph_dp','conditional_frontier','schedule_rules')for name in imports)
+            assert not any(name in ('resource_demand','graph_dp','conditional_frontier','schedule_rules','composition')for name in imports)
+
+
+def test_oracle_executes_without_site_packages_or_production_cost_modules():
+    script='''
+import sys
+class Block:
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname.startswith('accelforge') or fullname in (
+            'research.joint_synthesis.resource_demand',
+            'research.joint_synthesis.composition',
+            'research.joint_synthesis.graph_dp',
+            'research.joint_synthesis.conditional_frontier',
+            'research.joint_synthesis.schedule_rules'):
+            raise AssertionError('Oracle imported a blocked search/cost dependency: '+fullname)
+sys.meta_path.insert(0,Block())
+from research.joint_synthesis.graph_ir import TwoMM, CostModel
+from research.joint_synthesis.exhaustive_oracle import exhaustive
+observations, stats = exhaustive(TwoMM(1,1,1,1),CostModel())
+assert observations and stats['complete_plans_traced']==144
+'''
+    subprocess.run([sys.executable,'-S','-c',script],cwd=Path(__file__).parents[3],
+                   capture_output=True,text=True,check=True)
 
 
 def test_every_explicit_converter_accounts_for_copies_actions_and_values():

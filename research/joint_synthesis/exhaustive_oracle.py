@@ -5,7 +5,7 @@ are not used to compute its peak, action counts, numeric output or service time.
 """
 from dataclasses import dataclass
 from itertools import product
-from .graph_ir import Property, Schedule, KernelPlan, CompletePlan
+from .physical_plan import Property, Schedule, KernelPlan, CompletePlan
 
 
 @dataclass

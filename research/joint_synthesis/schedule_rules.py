@@ -1,6 +1,6 @@
 """Generate physical alternatives without accepting an architecture argument."""
 from itertools import product
-from .graph_ir import KernelPlan, Property, Schedule
+from .physical_plan import KernelPlan, Property, Schedule
 
 
 def divisors(n):

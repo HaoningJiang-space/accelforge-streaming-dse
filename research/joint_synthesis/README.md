@@ -1,6 +1,8 @@
 # Independent physical-plan composition gate
 
 The active hypothesis is **Graph-Structured Architecture–Mapping Synthesis**.
+Development continues on the isolated **`research/joint-synthesis`** branch;
+[DEVELOPMENT.md](DEVELOPMENT.md) fixes the active/core/reference boundaries.
 This directory starts with its mathematical/executable foundation: an explicit
 finite 2mm grammar, a resource-demand composition law, and independent exhaustive
 validation. It does not wrap FFM generation or Join as a new optimizer.
@@ -14,9 +16,11 @@ The executable main path uses only Python's standard library and runs with
 
 | Component | Actual role |
 | --- | --- |
-| `graph_ir.py` | Immutable 2mm program, physical properties, schedules and JSON-restorable witnesses |
+| `graph_ir.py` | Immutable 2mm graph, tensor identities and normalized model parameters |
+| `physical_plan.py` | Required/delivered properties, schedules and JSON-restorable witnesses |
 | `schedule_rules.py` | Architecture-independent divisor tiles, spatial extents and three loop/working-set rules |
 | `resource_demand.py` | Closed-form demands and bandwidth-dependent latency `c+q/B` |
+| `composition.py` | Explicit conversion demands and materialized-cut resource composition |
 | `conditional_frontier.py` | Exact dominance within a fixed physical interface |
 | `graph_dp.py` | Reduce local conditional frontiers, compose through explicit conversions, retain the root demand frontier |
 | `exhaustive_oracle.py` | Independent grammar enumeration and scalar allocation/address/MAC interpreter |
@@ -45,7 +49,8 @@ SRAM/DRAM. Nonidentity connections use explicitly costed copies/staging.
 | (2,2,2,2) | 96 / 96 | 42 / 37 | 9,216 | 1,554 | 19 |
 | (2,2,4,2) | 144 / 144 | 70 / 47 | 20,736 | 3,290 | 54 |
 
-The [raw validation](results/composition_gate.json) checks:
+The [modular replay](results/composition_gate_modular.json) checks the same
+numerical results as the [initial a986b381 validation](results/composition_gate.json):
 
 - **480 local summaries** against independent action/occupancy traces;
 - **29,952 complete plans**, including every declared conversion, against the
@@ -61,12 +66,14 @@ grammar**. It follows from interface-conditioned componentwise dominance and
 does not establish a novel algorithm or a general separator-width bound.
 Timing fields are proof-gate diagnostics, not an FFM/DSE speedup comparison.
 
-Ten targeted tests cover the exhaustive gates, all 16 conversion endpoints,
+Eleven targeted tests cover the exhaustive gates, all 16 conversion endpoints,
 source reconstruction, rejection of unknown interface fields, forbidden FFM
 dependencies and two necessary counterexamples: local minimum EDP can lose a
 global winner, and conversion double residency can exceed both endpoint peaks.
 The tests also retain crossing bandwidth cost functions as separate states and
 verify that the Oracle stores row/column layouts in different physical packing.
+A separate fresh `python -S` process blocks imports of FFM and all production
+cost/composition/search modules, then directly executes the Oracle.
 
 ## Boundaries and next decision
 
@@ -106,11 +113,12 @@ same-model performance baselines remain uncompleted.
 ## Reproduce
 
 ```sh
-python -S -m research.joint_synthesis.validate --output research/joint_synthesis/results/composition_gate.json
+python -S -m research.joint_synthesis.validate --output research/joint_synthesis/results/composition_gate_modular.json
 python -m pytest -q research/joint_synthesis/tests --disable-warnings
 ```
 
-[targeted_tests.txt](results/targeted_tests.txt) records the ten new tests. The
+[targeted_tests_modular.txt](results/targeted_tests_modular.txt) records the eleven
+current tests; the original ten-test receipt remains archived separately. The
 existing 661-test FFM research regression was recorded at `d40a664b`; it has not
 been rerun for this isolated, standard-library-only module. No production FFM
 code changed in this gate. Paper mechanisms and their limits are linked in the
