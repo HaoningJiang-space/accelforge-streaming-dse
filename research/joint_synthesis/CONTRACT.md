@@ -68,6 +68,9 @@ signed precision before changing IDs or occupancy. Host initialization does not
 count as an executed memory action. Uninitialized reads and dangling owners are
 errors. A failed execution is rejected, not a partially valid cost observation;
 the Runtime is not a transactional simulator after a failed MAC or copy.
+Conversion checks actual source shape, width, location/layout and a live Copy ID
+even on an identity edge. A MAC output cannot share an allocation with either
+input, including disjoint views of one owner; in-place MACs need a separate rule.
 Unknown/unsupported aliasing, partial production or concurrency is an error,
 not zero occupancy or an equivalent interface.
 

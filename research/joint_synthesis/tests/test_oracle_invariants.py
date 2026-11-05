@@ -3,8 +3,9 @@ from dataclasses import replace
 
 import pytest
 
-from research.joint_synthesis.graph_ir import CostModel, IntegerPrecision, SignedInteger, TwoMM
-from research.joint_synthesis.exhaustive_oracle import Runtime, View, multiply
+from research.joint_synthesis.graph_ir import CostModel, IntegerPrecision, SignedInteger, Tensor, TwoMM
+from research.joint_synthesis.physical_plan import Property
+from research.joint_synthesis.exhaustive_oracle import Runtime, View, convert, multiply
 
 
 @pytest.mark.parametrize('layout',['row','col'])
@@ -132,3 +133,37 @@ def test_invalid_copy_or_mac_views_are_not_silently_empty_operations():
     with pytest.raises(ValueError,match='spatial extents'):
         r.compute(r.full(left),r.full(right),r.full(out),0,1)
     assert r.vector==before
+
+
+@pytest.mark.parametrize('source,target',[
+    (Property(Tensor('X',1,1),'row','dram'),Property(Tensor('X',1,1),'row','dram')),
+    (Property(Tensor('X',1,1),'col','sram'),Property(Tensor('X',1,1),'col','sram')),
+    (Property(Tensor('X',1,2),'row','sram'),Property(Tensor('X',1,2),'row','sram')),
+    (Property(Tensor('X',1,1,1),'row','sram'),Property(Tensor('X',1,1,1),'row','sram')),
+    (Property(Tensor('X',1,1),'col','sram'),Property(Tensor('X',1,1),'row','dram')),
+])
+def test_conversion_checks_physical_source_even_for_identity(source,target):
+    r=Runtime(CostModel());ident=r.alloc(1,1,'sram','row',[[3]])
+    before=r.vector
+    with pytest.raises(AssertionError,match='declared conversion source'):
+        convert(r,ident,source,target)
+    assert r.logical(ident)==[[3]] and r.vector==before and r.serial==1
+
+
+def test_identity_conversion_requires_live_owner_and_preserves_a_valid_copy():
+    r=Runtime(CostModel());ident=r.alloc(1,1,'sram','row',[[3]])
+    prop=Property(Tensor('X',1,1),'row','sram');before=r.vector
+    assert convert(r,ident,prop,prop)==ident and r.vector==before
+    r.free(ident)
+    with pytest.raises(AssertionError,match='unknown or released'):convert(r,ident,prop,prop)
+
+
+@pytest.mark.parametrize('output',['left','right','disjoint_subview'])
+def test_mac_rejects_input_output_owner_alias_before_actions(output):
+    r=Runtime(CostModel());left=r.alloc(1,2,'sram',data=[[2,0]])
+    right=r.alloc(1,1,'sram',data=[[3]])
+    a,b=View(left,0,0,1,1),r.full(right)
+    c=a if output=='left' else b if output=='right' else View(left,0,1,1,1)
+    before=r.vector
+    with pytest.raises(ValueError,match='input/output aliasing'):r.compute(a,b,c,1,1)
+    assert r.vector==before and r.logical(left)==[[2,0]] and r.logical(right)==[[3]]

@@ -159,6 +159,8 @@ class Runtime:
             raise AssertionError('incompatible MAC views')
         if any(self.copies[x.owner].location!='sram'for x in (a,b,c)):
             raise AssertionError('MAC operands must be SRAM copies/views')
+        if c.owner in (a.owner,b.owner):
+            raise ValueError('MAC input/output aliasing is outside the grammar')
         self.pe_x=max(self.pe_x,u);self.pe_y=max(self.pe_y,v)
         # Count actual spatial waves; no analytical kernel cycle formula.
         for base_i,base_j in product(range(0,c.rows,u),range(0,c.cols,v)):
@@ -245,8 +247,11 @@ def kernel(runtime,plan,a,b):
 
 def convert(runtime,ident,source,target):
     if source.tensor!=target.tensor:raise ValueError('not the same logical data')
+    copy=runtime.copy_for(ident);shape=source.tensor
+    if ((copy.rows,copy.cols,copy.location,copy.layout,runtime.word)!=
+            (shape.rows,shape.cols,source.location,source.layout,shape.word_bytes)):
+        raise AssertionError('physical copy does not match declared conversion source')
     if source==target:return ident
-    shape=source.tensor
     if source.location==target.location=='dram':
         temporary=runtime.alloc(shape.rows,shape.cols,'sram')
         runtime.transfer(runtime.full(ident),runtime.full(temporary))
