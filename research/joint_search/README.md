@@ -69,13 +69,15 @@ Template-specific policy Tile sets must equal those from each physical reference
 architecture; comparison of only terminal fronts would miss candidate-coverage
 errors. A separate 68/96 B test covers the known capacity-boundary failure.
 
-The initial targeted tests pass for all six points plus the boundary case.
-End-to-end speed, actual numeric expansion, model rows and memory still need the
-benchmark against Independent FFM, FFM + existing cache and the existing
-per-shape capacity Event + Bitset search. Shared expansion counts are not a
-speedup claim. Consumer Requirements remain a separate future gate.
+The [six-point audit and three-trial benchmark](results/stage02/README.md) record
+the actual outcome: complete declared Tile/frontier coverage and source checks,
+less symbolic preparation and lower total time on this small case, but **more**
+numeric expansion and Join work than the strong existing Event baseline. Final
+model/group row counts tie Events. This does not establish graph-guided state
+compression. Consumer Requirements remain a separate future gate.
 
 ```sh
 python -m pytest -q research/joint_search/tests --disable-warnings
 python -m research.joint_search.validation --output research/joint_search/results/stage02/audit.json
+python -m research.joint_search.benchmark --repeats 3 --output research/joint_search/results/stage02/benchmark
 ```
