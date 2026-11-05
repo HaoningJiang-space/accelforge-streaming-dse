@@ -22,7 +22,7 @@ def test_100_byte_conversion_tradeoff_executes_correct_release_order():
     observed={}
     for route in enforcer_choices(source,target):
         r=Runtime(model);values=matrix(2,25,3)
-        old=r.alloc(2,25,'sram','row',values)
+        old=r.alloc(2,25,'sram','row',values,tensor=tensor)
         out=convert(r,old,source,target,route)
         expected=conversion(source,target,model,route)
         assert (r.peak,*r.vector[3:])==(expected.peak,expected.energy,expected.cycles,expected.traffic)
@@ -45,7 +45,7 @@ def test_both_enforcers_match_independent_execution_across_layouts_and_shapes(ro
     target=Property(tensor,'col' if layout=='row' else 'row','sram')
     for route in ('direct','spill_reload'):
         r=Runtime(model);data=matrix(rows,cols,1)
-        old=r.alloc(rows,cols,'sram',layout,data)
+        old=r.alloc(rows,cols,'sram',layout,data,tensor=tensor)
         out=convert(r,old,source,target,route)
         d=conversion(source,target,model,route)
         assert (r.peak,*r.vector[3:])==(d.peak,d.energy,d.cycles,d.traffic)
@@ -90,7 +90,7 @@ def test_invalid_routes_are_rejected_before_conversion_actions():
     tensor=Tensor('X',1,2);model=CostModel()
     for source,target in product((Property(tensor,l,s)for l,s in product(('row','col'),('sram','dram'))),repeat=2):
         if source.location==target.location=='sram' and source.layout!=target.layout:continue
-        r=Runtime(model);old=r.alloc(1,2,source.location,source.layout,[[1,2]])
+        r=Runtime(model);old=r.alloc(1,2,source.location,source.layout,[[1,2]],tensor=tensor)
         before=r.vector
         with pytest.raises(ValueError):convert(r,old,source,target,'spill_reload')
         with pytest.raises(ValueError):conversion(source,target,model,'spill_reload')
@@ -99,7 +99,7 @@ def test_invalid_routes_are_rejected_before_conversion_actions():
     with pytest.raises(ValueError):CompletePlan(first[0],second[0],'unknown')
     with pytest.raises(ValueError):CompletePlan(first[0],second[0],'spill_reload')
     source=Property(tensor,'row','sram');target=Property(tensor,'col','sram')
-    r=Runtime(model);old=r.alloc(1,2,'sram','row',[[1,2]]);before=r.vector
+    r=Runtime(model);old=r.alloc(1,2,'sram','row',[[1,2]],tensor=tensor);before=r.vector
     with pytest.raises(ValueError):convert(r,old,source,target,'unknown')
     with pytest.raises(ValueError):conversion(source,target,model,'unknown')
     assert r.vector==before and r.logical(old)==[[1,2]]

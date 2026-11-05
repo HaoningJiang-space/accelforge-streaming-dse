@@ -64,7 +64,7 @@ def test_every_explicit_converter_accounts_for_copies_actions_and_values():
     for source,target in product(properties,repeat=2):
         runtime=Runtime(model)
         original=matrix(2,3,0)
-        x=runtime.alloc(2,3,source.location,source.layout,original)
+        x=runtime.alloc(2,3,source.location,source.layout,original,tensor=tensor)
         y=convert(runtime,x,source,target)
         expected=conversion(source,target,model)
         observed=runtime.vector

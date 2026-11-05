@@ -71,6 +71,13 @@ the Runtime is not a transactional simulator after a failed MAC or copy.
 Conversion checks actual source shape, width, location/layout and a live Copy ID
 even on an identity edge. A MAC output cannot share an allocation with either
 input, including disjoint views of one owner; in-place MACs need a separate rule.
+Interpreted graph allocations also carry the complete logical Tensor identity
+(including version) and region origin. Tile/strip transfers must preserve both
+identity and logical coordinates; kernel inputs must be the declared full
+tensors. Identity conversion rejects an unknown or different logical owner even
+when physical shape/layout matches. Untyped allocations remain available only
+for isolated physical Runtime probes; they cannot certify a graph conversion.
+The grammar still has one immutable logical version (0), not arbitrary versions.
 Unknown/unsupported aliasing, partial production or concurrency is an error,
 not zero occupancy or an equivalent interface.
 

@@ -151,7 +151,7 @@ def test_conversion_checks_physical_source_even_for_identity(source,target):
 
 
 def test_identity_conversion_requires_live_owner_and_preserves_a_valid_copy():
-    r=Runtime(CostModel());ident=r.alloc(1,1,'sram','row',[[3]])
+    r=Runtime(CostModel());ident=r.alloc(1,1,'sram','row',[[3]],tensor=Tensor('X',1,1))
     prop=Property(Tensor('X',1,1),'row','sram');before=r.vector
     assert convert(r,ident,prop,prop)==ident and r.vector==before
     r.free(ident)
@@ -167,3 +167,29 @@ def test_mac_rejects_input_output_owner_alias_before_actions(output):
     before=r.vector
     with pytest.raises(ValueError,match='input/output aliasing'):r.compute(a,b,c,1,1)
     assert r.vector==before and r.logical(left)==[[2,0]] and r.logical(right)==[[3]]
+
+
+@pytest.mark.parametrize('logical_name',[None,'Other'])
+def test_same_physical_shape_does_not_prove_logical_conversion_identity(logical_name):
+    tensor=Tensor('X',2,2);prop=Property(tensor,'row','sram')
+    claimed=None if logical_name is None else Tensor(logical_name,2,2)
+    r=Runtime(CostModel());ident=r.alloc(2,2,'sram',data=[[1,2],[3,4]],tensor=claimed)
+    before=r.vector
+    with pytest.raises(AssertionError,match='logical conversion source'):
+        convert(r,ident,prop,prop)
+    assert r.vector==before and r.serial==1
+
+
+def test_tile_copy_provenance_tracks_logical_region_and_distinct_owners():
+    tensor=Tensor('X',2,3);r=Runtime(CostModel())
+    source=r.alloc(2,3,'dram',data=[[1,2,3],[4,5,6]],tensor=tensor)
+    target=r.alloc(1,2,'sram',tensor=tensor,origin=(1,1))
+    r.transfer(View(source,1,1,1,2),r.full(target))
+    assert r.logical(target)==[[5,6]] and r.copies[source].tensor==r.copies[target].tensor==tensor
+    assert source!=target and r.copies[target].tensor.version==0
+    before=r.vector
+    with pytest.raises(AssertionError,match='logical tensor/version/region'):
+        r.transfer(View(source,0,1,1,2),r.full(target))
+    assert r.vector==before
+    with pytest.raises(ValueError):r.alloc(1,2,'sram',tensor=tensor,origin=(2,1))
+    with pytest.raises(ValueError):r.alloc(1,1,'sram',tensor=Tensor('X',1,1,1))

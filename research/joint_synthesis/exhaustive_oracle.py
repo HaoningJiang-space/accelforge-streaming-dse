@@ -5,7 +5,7 @@ are not used to compute its peak, action counts, numeric output or service time.
 """
 from dataclasses import dataclass
 from itertools import product
-from .graph_ir import IntegerPrecision, SignedInteger
+from .graph_ir import IntegerPrecision, SignedInteger, Tensor
 from .physical_plan import Property, Schedule, KernelPlan, CompletePlan
 
 
@@ -16,6 +16,9 @@ class Copy:
     location: str
     layout: str
     data: list
+    tensor: Tensor|None=None
+    logical_row: int=0
+    logical_col: int=0
 
 
 @dataclass(frozen=True)
@@ -48,13 +51,21 @@ class Runtime:
         self.current=self.peak=self.macs=self.sram_bytes=self.dram_bytes=self.bursts=self.cycles=0
         self.pe_x=self.pe_y=1
 
-    def alloc(self,rows,cols,location,layout='row',data=None):
+    def alloc(self,rows,cols,location,layout='row',data=None,*,tensor=None,origin=(0,0)):
         # Validate before assigning an ID or changing occupancy. Host-side
         # initialization is not an executed memory action, but is still typed.
         if any(type(n) is not int or n<1 for n in (rows,cols)):
             raise ValueError('allocation dimensions must be positive integers')
         if location not in ('sram','dram') or layout not in ('row','col'):
             raise ValueError('unsupported allocation location or layout')
+        if (not isinstance(origin,tuple) or len(origin)!=2 or
+                any(type(n) is not int or n<0 for n in origin)):
+            raise ValueError('nonnegative logical origin required')
+        if tensor is not None:
+            if (not isinstance(tensor,Tensor) or tensor.word_bytes!=self.word or
+                    origin[0]+rows>tensor.rows or origin[1]+cols>tensor.cols):
+                raise ValueError('allocation exceeds its logical tensor region or precision')
+        elif origin!=(0,0):raise ValueError('unknown logical tensor cannot have a region origin')
         if data is not None:
             if (not isinstance(data,(list,tuple)) or len(data)!=rows or
                     any(not isinstance(row,(list,tuple)) or len(row)!=cols for row in data)):
@@ -66,7 +77,7 @@ class Runtime:
             for i,j in product(range(rows),range(cols)):
                 physical[i*cols+j if layout=='row' else j*rows+i]=data[i][j]
         ident=self.serial;self.serial+=1
-        self.copies[ident]=Copy(rows,cols,location,layout,physical)
+        self.copies[ident]=Copy(rows,cols,location,layout,physical,tensor,*origin)
         if location=='sram':
             self.current+=rows*cols*self.word;self.peak=max(self.peak,self.current)
         return ident
@@ -141,6 +152,12 @@ class Runtime:
             raise ValueError('in-place conversion is outside the copy grammar')
         if (source.rows,source.cols)!=(target.rows,target.cols):
             raise AssertionError('copy changes logical shape')
+        a,b=self.copy_for(source.owner),self.copy_for(target.owner)
+        if a.tensor is not None or b.tensor is not None:
+            if (a.tensor is None or b.tensor is None or a.tensor!=b.tensor or
+                    (a.logical_row+source.row,a.logical_col+source.col)!=
+                    (b.logical_row+target.row,b.logical_col+target.col)):
+                raise AssertionError('copy changes logical tensor/version/region')
         previous={source.owner:None,target.owner:None}
         for i,j in product(range(source.rows),range(source.cols)):
             for v in (source,target):
@@ -161,6 +178,16 @@ class Runtime:
             raise AssertionError('MAC operands must be SRAM copies/views')
         if c.owner in (a.owner,b.owner):
             raise ValueError('MAC input/output aliasing is outside the grammar')
+        ac,bc,cc=(self.copy_for(x.owner) for x in (a,b,c))
+        if any(x.tensor is not None for x in (ac,bc,cc)):
+            if any(x.tensor is None for x in (ac,bc,cc)):
+                raise AssertionError('MAC mixes known and unknown logical provenance')
+            if ((ac.logical_row+a.row,bc.logical_col+b.col,ac.logical_col+a.col)!=
+                    (cc.logical_row+c.row,cc.logical_col+c.col,bc.logical_row+b.row) or
+                    (ac.tensor.rows,bc.tensor.cols,ac.tensor.cols)!=
+                    (cc.tensor.rows,cc.tensor.cols,bc.tensor.rows) or
+                    cc.tensor in (ac.tensor,bc.tensor)):
+                raise AssertionError('MAC logical tensor coordinates do not match')
         self.pe_x=max(self.pe_x,u);self.pe_y=max(self.pe_y,v)
         # Count actual spatial waves; no analytical kernel cycle formula.
         for base_i,base_j in product(range(0,c.rows,u),range(0,c.cols,v)):
@@ -179,26 +206,31 @@ class Runtime:
 
 def kernel(runtime,plan,a,b):
     """Execute one schedule using owned copies and bounded subviews."""
+    for ident,tensor in ((a,plan.op.left),(b,plan.op.right)):
+        copy=runtime.copy_for(ident)
+        if (copy.tensor!=tensor or copy.logical_row or copy.logical_col or
+                (copy.rows,copy.cols)!=(tensor.rows,tensor.cols)):
+            raise AssertionError('kernel input is not its full logical tensor')
     r,k,c=plan.op.left.rows,plan.op.left.cols,plan.op.output.cols
     s=plan.schedule;i_values=range(0,r,s.ti);j_values=range(0,c,s.tj);k_values=range(0,k,s.tk)
-    output=runtime.alloc(r,c,plan.delivered.location,plan.delivered.layout)
+    output=runtime.alloc(r,c,plan.delivered.location,plan.delivered.layout,tensor=plan.op.output)
     if plan.delivered.location=='sram':runtime.fill(runtime.full(output))
 
     def get_a(i,kk):
         source=View(a,i,kk,s.ti,s.tk)
         if runtime.copies[a].location=='sram':return source,None
-        ident=runtime.alloc(s.ti,s.tk,'sram')
+        ident=runtime.alloc(s.ti,s.tk,'sram',tensor=plan.op.left,origin=(i,kk))
         runtime.transfer(source,runtime.full(ident))
         return runtime.full(ident),ident
 
     def get_b(kk,j):
-        ident=runtime.alloc(s.tk,s.tj,'sram')
+        ident=runtime.alloc(s.tk,s.tj,'sram',tensor=plan.op.right,origin=(kk,j))
         runtime.transfer(View(b,kk,j,s.tk,s.tj),runtime.full(ident))
         return runtime.full(ident),ident
 
-    def accumulator(rows,cols):
+    def accumulator(rows,cols,row,col):
         if plan.delivered.location=='sram':return None
-        ident=runtime.alloc(rows,cols,'sram');runtime.fill(runtime.full(ident))
+        ident=runtime.alloc(rows,cols,'sram',tensor=plan.op.output,origin=(row,col));runtime.fill(runtime.full(ident))
         return ident
 
     def cv(ident,i,j,base_i,base_j):
@@ -210,7 +242,7 @@ def kernel(runtime,plan,a,b):
 
     if s.order=='ijk':
         for i,j in product(i_values,j_values):
-            acc=accumulator(s.ti,s.tj)
+            acc=accumulator(s.ti,s.tj,i,j)
             for kk in k_values:
                 av,ai=get_a(i,kk);bv,bi=get_b(kk,j)
                 runtime.compute(av,bv,cv(acc,i,j,i,j),s.ti,s.tj)
@@ -220,7 +252,7 @@ def kernel(runtime,plan,a,b):
             if acc is not None:runtime.free(acc)
     elif s.order=='ikj':
         for i in i_values:
-            acc=accumulator(s.ti,c)
+            acc=accumulator(s.ti,c,i,0)
             for kk in k_values:
                 av,ai=get_a(i,kk)
                 for j in j_values:
@@ -231,7 +263,7 @@ def kernel(runtime,plan,a,b):
             if acc is not None:runtime.free(acc)
     elif s.order=='jki':
         for j in j_values:
-            acc=accumulator(r,s.tj)
+            acc=accumulator(r,s.tj,0,j)
             for kk in k_values:
                 bv,bi=get_b(kk,j)
                 for i in i_values:
@@ -251,28 +283,30 @@ def convert(runtime,ident,source,target,enforcer='direct'):
     if ((copy.rows,copy.cols,copy.location,copy.layout,runtime.word)!=
             (shape.rows,shape.cols,source.location,source.layout,shape.word_bytes)):
         raise AssertionError('physical copy does not match declared conversion source')
+    if copy.tensor!=shape or copy.logical_row or copy.logical_col:
+        raise AssertionError('copy does not match logical conversion source/version')
     if enforcer not in ('direct','spill_reload'):
         raise ValueError('unknown physical enforcer')
     if enforcer=='spill_reload':
         if not (source.location==target.location=='sram' and source.layout!=target.layout):
             raise ValueError('spill/reload requires distinct SRAM layouts')
         # Execute both transfers; do not call production conversion summaries.
-        temporary=runtime.alloc(shape.rows,shape.cols,'dram','row')
+        temporary=runtime.alloc(shape.rows,shape.cols,'dram','row',tensor=shape)
         runtime.transfer(runtime.full(ident),runtime.full(temporary))
         runtime.free(ident)
-        result=runtime.alloc(shape.rows,shape.cols,'sram',target.layout)
+        result=runtime.alloc(shape.rows,shape.cols,'sram',target.layout,tensor=shape)
         runtime.transfer(runtime.full(temporary),runtime.full(result))
         runtime.free(temporary)
         return result
     if source==target:return ident
     if source.location==target.location=='dram':
-        temporary=runtime.alloc(shape.rows,shape.cols,'sram')
+        temporary=runtime.alloc(shape.rows,shape.cols,'sram',tensor=shape)
         runtime.transfer(runtime.full(ident),runtime.full(temporary))
-        result=runtime.alloc(shape.rows,shape.cols,'dram',target.layout)
+        result=runtime.alloc(shape.rows,shape.cols,'dram',target.layout,tensor=shape)
         runtime.transfer(runtime.full(temporary),runtime.full(result))
         runtime.free(temporary)
     else:
-        result=runtime.alloc(shape.rows,shape.cols,target.location,target.layout)
+        result=runtime.alloc(shape.rows,shape.cols,target.location,target.layout,tensor=shape)
         runtime.transfer(runtime.full(ident),runtime.full(result))
     runtime.free(ident)
     return result
@@ -282,8 +316,8 @@ def trace_local(plan,model):
     runtime=Runtime(model,plan.op.left.word_bytes,plan.op.precision)
     a_values=matrix(plan.op.left.rows,plan.op.left.cols,0)
     b_values=matrix(plan.op.right.rows,plan.op.right.cols,1)
-    a=runtime.alloc(plan.op.left.rows,plan.op.left.cols,plan.required.location,plan.required.layout,a_values)
-    b=runtime.alloc(plan.op.right.rows,plan.op.right.cols,'dram','row',b_values)
+    a=runtime.alloc(plan.op.left.rows,plan.op.left.cols,plan.required.location,plan.required.layout,a_values,tensor=plan.op.left)
+    b=runtime.alloc(plan.op.right.rows,plan.op.right.cols,'dram','row',b_values,tensor=plan.op.right)
     out=kernel(runtime,plan,a,b)
     if runtime.logical(out)!=multiply(a_values,b_values):raise AssertionError('incorrect local matrix result')
     if runtime.current!=plan.required.live_bytes+plan.delivered.live_bytes:raise AssertionError('leaked local scratch copy')
@@ -295,9 +329,9 @@ def trace_complete(plan,model,seed=0):
     a_shape,b_shape=plan.producer.op.left,plan.producer.op.right
     w_shape=plan.consumer.op.right
     av,bv,wv=matrix(a_shape.rows,a_shape.cols,seed),matrix(b_shape.rows,b_shape.cols,seed+1),matrix(w_shape.rows,w_shape.cols,seed+2)
-    a=runtime.alloc(a_shape.rows,a_shape.cols,'dram','row',av)
-    b=runtime.alloc(b_shape.rows,b_shape.cols,'dram','row',bv)
-    w=runtime.alloc(w_shape.rows,w_shape.cols,'dram','row',wv)
+    a=runtime.alloc(a_shape.rows,a_shape.cols,'dram','row',av,tensor=a_shape)
+    b=runtime.alloc(b_shape.rows,b_shape.cols,'dram','row',bv,tensor=b_shape)
+    w=runtime.alloc(w_shape.rows,w_shape.cols,'dram','row',wv,tensor=w_shape)
     x=kernel(runtime,plan.producer,a,b)
     x=convert(runtime,x,plan.producer.delivered,plan.consumer.required,plan.enforcer)
     y=kernel(runtime,plan.consumer,x,w)

@@ -29,8 +29,8 @@ def test_equal_degenerate_packing_does_not_make_declared_conversion_free(rows,co
     values=[[i*cols+j for j in range(cols)]for i in range(rows)]
     for location in ('sram','dram'):
         r=Runtime(model)
-        a=r.alloc(rows,cols,location,'row',values)
-        b=r.alloc(rows,cols,location,'col',values)
+        a=r.alloc(rows,cols,location,'row',values,tensor=tensor)
+        b=r.alloc(rows,cols,location,'col',values,tensor=tensor)
         assert r.copies[a].data==r.copies[b].data
         r.free(b)
         source,target=Property(tensor,'row',location),Property(tensor,'col',location)
