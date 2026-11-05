@@ -1,7 +1,3 @@
-from pathlib import Path
-import sys
-import subprocess
-
 import pandas as pd
 import sympy
 
@@ -41,3 +37,18 @@ def test_phase_wrappers_restore_after_exception():
             raise RuntimeError('probe')
     except RuntimeError:pass
     assert common.make_pmappings is original
+
+
+def test_filter_audit_counts_exact_gb_row_rejections_and_restores_native_method():
+    from research.diagnostics.resource_filter_3mm import FilterAudit
+    from accelforge.mapper.FFM._join_pmappings.pmapping_dataframe import PmappingDataframe
+    frame=pd.DataFrame({'resource_capacity_bits<SEP>GlobalBuffer':[80,80],
+        'reservation<SEP>GlobalBuffer<SEP>0<SEP>right':[64,96],
+        'Total<SEP>energy':[1.,2.],'Total<SEP>latency':[2.,1.]})
+    state=PmappingDataframe(frame,2,2,skip_pareto=True)
+    original=PmappingDataframe.limit_capacity
+    with FilterAudit()as audit:state.limit_capacity(drop_valid_reservations=False)
+    observed=audit.stats['other_outside_merge']
+    assert observed['capacity_input_rows']==2
+    assert observed['capacity_dropped_rows']==observed['gb_invalid_rows']==1
+    assert len(state.data)==1 and PmappingDataframe.limit_capacity is original
