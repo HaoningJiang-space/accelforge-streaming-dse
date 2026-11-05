@@ -20,7 +20,7 @@ def cases():
 
 @pytest.mark.parametrize('graph,model',list(cases()))
 def test_no_local_pruning_pruned_dp_and_scalar_grammar_have_same_joint_frontier(graph,model):
-    reference,raw_stats=solve(graph,model,local_pruning=False)
+    reference,raw_stats=solve(graph,model,local_pruning=False,layout_pruning=False)
     actual,stats=solve(graph,model)
     observations,_=exhaustive(graph,model)
     expected=independent_frontier(observations)
