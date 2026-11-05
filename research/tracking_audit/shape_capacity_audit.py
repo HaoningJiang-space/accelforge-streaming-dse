@@ -36,12 +36,15 @@ def mapping_structure(mapping):
     return node(mapping)
 
 
-def build(case, shape, capacity_bytes, metrics):
+def build(case, shape, capacity_bytes, metrics, gb_latency_scale=1.0):
     if len(shape) != 2 or any(type(n) is not int or n <= 0 for n in shape):
         raise ValueError('shape must contain two positive integer fanouts')
     if type(capacity_bytes) is not int or capacity_bytes <= 0:
         raise ValueError('capacity must be a positive integer byte count')
+    if not math.isfinite(gb_latency_scale) or gb_latency_scale <= 0:
+        raise ValueError('GlobalBuffer latency scale must be finite and positive')
     spec = common.build(case, capacity_bytes / 2**20, metrics)
+    spec.arch.find('GlobalBuffer').latency_scale = gb_latency_scale
     # These workloads use 8-bit values. The upstream NVDLA expression uses a
     # dummy 1-bit Register when an Einsum has no weight (QK_softmax), producing
     # different capacity metadata for one physical component. Fix its physical
@@ -63,11 +66,11 @@ def rows_fitting(data, capacity_bytes):
     return data[data[RAW_GB] <= capacity_bytes * 8]
 
 
-def validate_pick(case, shape, capacity_bytes, row):
+def validate_pick(case, shape, capacity_bytes, row, gb_latency_scale=1.0):
     if row is None:
         return {'feasible': False, 'ok': True}
     mapping = row['Total<SEP>mapping']()
-    spec = build(case, shape, capacity_bytes, common.RU)
+    spec = build(case, shape, capacity_bytes, common.RU, gb_latency_scale)
     spec.model.metrics = common.RU
     spec.mapping = copy.deepcopy(mapping)
     common.clear_switches()

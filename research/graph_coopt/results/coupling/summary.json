@@ -1,0 +1,129 @@
+{
+  "scope": "RQ1 model-level coupling; fixed resource strata, not a new joint optimizer or a performance benchmark.",
+  "cases": [
+    {
+      "label": "2mm",
+      "case": {
+        "workload": "matmuls",
+        "arch": "nvdla",
+        "params": [
+          2,
+          64,
+          128
+        ]
+      },
+      "independent_searches": 27,
+      "control_searches": 9,
+      "budget_strata": 9,
+      "distinct_grid_winning_shapes": [
+        "8x32"
+      ],
+      "fixed_16x16_median_edp_gap": 0.00592752256500062,
+      "fixed_16x16_max_edp_gap": 0.624959844143463,
+      "frozen_anchor_feasible_strata": 6,
+      "frozen_anchor_infeasible_strata": 3,
+      "frozen_anchor_max_feasible_edp_gap": 1.4329306521311107,
+      "adjacent_mapping_comparisons": 36,
+      "adjacent_disjoint_complete_tied_mapping_sets": 19,
+      "adjacent_storage_component_set_changes": 0,
+      "zero_fused_loop_control_max_edp_gap": 0.13705281058543717,
+      "legal_transfer_points_better_than_grid_reference": 0,
+      "search_rows_generated": 10238,
+      "diagnostic_search_seconds": 46.0392182066571,
+      "distinct_primary_selected_mapping_identities": 10
+    },
+    {
+      "label": "3mm",
+      "case": {
+        "workload": "matmuls",
+        "arch": "nvdla",
+        "params": [
+          3,
+          64,
+          128
+        ]
+      },
+      "independent_searches": 27,
+      "control_searches": 9,
+      "budget_strata": 9,
+      "distinct_grid_winning_shapes": [
+        "8x32"
+      ],
+      "fixed_16x16_median_edp_gap": 0.005926058946328583,
+      "fixed_16x16_max_edp_gap": 0.6094816943141261,
+      "frozen_anchor_feasible_strata": 6,
+      "frozen_anchor_infeasible_strata": 3,
+      "frozen_anchor_max_feasible_edp_gap": 1.4778081438416124,
+      "adjacent_mapping_comparisons": 36,
+      "adjacent_disjoint_complete_tied_mapping_sets": 18,
+      "adjacent_storage_component_set_changes": 9,
+      "zero_fused_loop_control_max_edp_gap": 0.0882785189412858,
+      "legal_transfer_points_better_than_grid_reference": 0,
+      "search_rows_generated": 20078,
+      "diagnostic_search_seconds": 72.68149637314491,
+      "distinct_primary_selected_mapping_identities": 10
+    },
+    {
+      "label": "glu",
+      "case": {
+        "workload": "glu",
+        "arch": "nvdla",
+        "params": [
+          32,
+          64,
+          128
+        ]
+      },
+      "independent_searches": 27,
+      "control_searches": 9,
+      "budget_strata": 9,
+      "distinct_grid_winning_shapes": [
+        "8x32"
+      ],
+      "fixed_16x16_median_edp_gap": 0.0038928005308365154,
+      "fixed_16x16_max_edp_gap": 0.29071931496821835,
+      "frozen_anchor_feasible_strata": 6,
+      "frozen_anchor_infeasible_strata": 3,
+      "frozen_anchor_max_feasible_edp_gap": 0.5540531573708851,
+      "adjacent_mapping_comparisons": 36,
+      "adjacent_disjoint_complete_tied_mapping_sets": 21,
+      "adjacent_storage_component_set_changes": 9,
+      "zero_fused_loop_control_max_edp_gap": 0.23077652952785788,
+      "legal_transfer_points_better_than_grid_reference": 0,
+      "search_rows_generated": 54784,
+      "diagnostic_search_seconds": 135.61109204322565,
+      "distinct_primary_selected_mapping_identities": 12
+    }
+  ],
+  "calibrated_area_budget": false,
+  "exhaustive_architecture_by_complete_mapping_equals_joint_optimum_mathematically": true,
+  "ffm_grid_is_a_global_optimality_oracle": false,
+  "independent_selected_mapping_validations": 81,
+  "control_selected_mapping_validations": 27,
+  "known_limitations": [
+    "Fixed NVDLA hierarchy, unit action energies, clock and zero leakage.",
+    "GB bandwidth scales action latency only; port area/energy is not calibrated.",
+    "Equal PE counts do not establish equal physical area or clock.",
+    "Fixed/tied returned-frontier comparisons do not prove complete Mapspace optimality.",
+    "Zero fused loops is not the same as all intermediates stored in DRAM."
+  ],
+  "base_git_revision": "31edfc0aac58671b6d84aefc7997a811e191ccfe",
+  "known_shape_reversal": {
+    "file": "known_shape_reversal.json",
+    "selected_mapping_reevaluations": 6,
+    "all_valid": true,
+    "pe_count": 6144,
+    "pooled_into_primary_grid": false,
+    "metrics": "Energy | Latency"
+  },
+  "total_own_architecture_selected_mapping_reevaluation_instances_including_controls_and_reversal": 114,
+  "anchor_search_included_in_each_primary_grid": true,
+  "source_hashes_verified": true,
+  "regression": {
+    "passed": 650,
+    "new_tests_included": 14,
+    "seconds": 211.78,
+    "log": "../decision_hypergraph/regression.txt",
+    "all_repository_tests": false
+  }
+}
