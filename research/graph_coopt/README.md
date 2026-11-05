@@ -7,6 +7,12 @@ couplings; the [decision-hypergraph gate](DECISION_HYPERGRAPH.md) separates lega
 equality reordering from still-unproved full search decomposition. Neither is a
 new joint optimizer or a claimed speedup over the existing FFM cache.
 
+The active Stage 0–2 prototype is now in
+[`research/joint_search`](../joint_search/README.md): one declared architecture
+domain enters shared native Tile cohorts and one unmodified FFM Fusion Join.
+It is validated against template-specific reference Tile sets and complete
+E/T/resource frontiers; consumer-driven pruning remains outside this gate.
+
 The next [focused FAQ/InsideOut and Cascades/Calcite reading](READING_INSIDEOUT_CASCADES.md)
 derives a [restricted conditional-elimination contract](CONDITIONAL_ELIMINATION.md).
 It compares native resource **response functions**, rather than requiring equal
