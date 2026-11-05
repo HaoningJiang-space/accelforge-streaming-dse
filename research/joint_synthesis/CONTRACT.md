@@ -158,6 +158,14 @@ The argument applies separately to each enforcer at identical endpoints, then
 to their union. Enforcers with a lower peak but higher energy/cycles/traffic must
 remain separate alternatives until safe dominance is established.
 
+Optional dominance witnesses resolve every removed local state to a final
+survivor at the same interface, including transitive/equal-vector removals.
+The search-decision tests check each witness against every declared opposite
+kernel/enforcer in a small graph using both composition and scalar execution.
+A `local_pruning=False` control materializes the full declared complete grammar
+before the final answer frontier. Order perturbation compares numerical vectors,
+not every tied source identity. Witness collection is opt-in validation state.
+
 This is a sufficient relation, not the exact order of all latency functions.
 It does not permit comparisons across interfaces, arbitrary reassociation,
 concurrent resource reuse, or moving this rule into native FFM fallback cohorts.
