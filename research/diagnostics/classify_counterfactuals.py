@@ -43,6 +43,12 @@ def vectors(frame,public=False):
     return frame[cols].to_numpy(dtype='float64')
 
 
+def separated_costs(q1,p1,q2,p2):
+    """Diagnostic margin filter, not a new pruning theorem or certificate."""
+    return any(min(q1[d]-p1[d],q2[d]-p2[d])>8*np.finfo(np.float32).eps*
+        max(q1[d],p1[d],q2[d],p2[d])for d in (0,1))
+
+
 def classify(raw,g1):
     started=time.perf_counter()
     old={(t['target'],t['einsum'],t['template']):t for t in g1['tasks']}
@@ -58,7 +64,8 @@ def classify(raw,g1):
         terminal_target_completion_occurrences=0,strict_global_dominance_occurrences=0,
         equal_final_point_occurrences=0,consumer_conditioned_front_occurrences=0,
         consumer_conditioned_but_globally_strict_occurrences=0,
-        nontrivial_conditioning_contrast_occurrences=0,resource_context_reversal_witnesses=0,examples={})for k in interesting}
+        nontrivial_conditioning_contrast_occurrences=0,resource_context_reversal_witnesses=0,
+        margin_separated_resource_reversal_witnesses=0,examples={})for k in interesting}
     def job(target,column,index):
         e=column.split('<SEP>')[0]
         return task_map[origins[(target,e,int(index))]['task_id']]
@@ -134,18 +141,22 @@ def classify(raw,g1):
                 p1,p2=wins[psource],loses[psource]
                 resource_flip=bool((v[p1,:2]<=v[q1,:2]).all()and (v[p2,:2]<=v[q2,:2]).all()and
                     (v[p1,2:]>v[q1,2:]).any()and (v[p2,2:]<=v[q2,2:]).all())
+                separated=bool(separated_costs(v[q1],v[p1],v[q2],v[p2]))
                 example=dict(target=point,bucket=bucket,producer_competitor_count=len(producer_set),
                     q_prefix_sources=qsource,p_prefix_sources=psource,
                     consumer_when_q_efficient=int(pool[consumer].iloc[q1]),
                     consumer_when_p_dominates=int(pool[consumer].iloc[q2]),
                     q_efficient_context=v[q1].tolist(),p_efficient_context=v[p1].tolist(),
                     q_dominated_context=v[q2].tolist(),p_dominated_context=v[p2].tolist(),
-                    resource_order_reversal=resource_flip,cohort_jobs=relevant)
+                    resource_order_reversal=resource_flip,strict_cost_margin_filter=separated,cohort_jobs=relevant)
                 if len(reversal_examples)<200:reversal_examples.append(example)
                 if resource_flip:
                     for k in relevant:
                         stats[k]['resource_context_reversal_witnesses']+=1
                         stats[k]['examples'].setdefault('same_producer_set_resource_reversal',example)
+                        if separated:
+                            stats[k]['margin_separated_resource_reversal_witnesses']+=1
+                            stats[k]['examples'].setdefault('margin_separated_resource_reversal',example)
         equal_count=strict_count=0
         for i,q in enumerate(v):
             equality=np.flatnonzero((fv==q).all(axis=1))
@@ -189,6 +200,7 @@ def classify(raw,g1):
             ('has_finite_consumer_conditioning_contrast',s['consumer_conditioned_but_globally_strict_occurrences']>0),
             ('has_nonsingleton_conditioning_contrast',s['nontrivial_conditioning_contrast_occurrences']>0),
             ('has_same_producer_set_resource_reversal',s['resource_context_reversal_witnesses']>0),
+            ('has_margin_separated_resource_reversal',s['margin_separated_resource_reversal_witnesses']>0),
             ('unresolved_no_terminal_witness',s['terminal_target_completion_occurrences']==0)):
             counts[label]+=predicate
         s['classification_scope']='Observed reference trace only; not exhaustive legal completions or universal local/context dominance.'

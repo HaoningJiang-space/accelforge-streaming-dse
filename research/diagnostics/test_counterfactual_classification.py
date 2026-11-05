@@ -3,7 +3,7 @@ import pandas as pd
 import sympy
 
 from research.diagnostics.counterfactual_trace import frozen_frame
-from research.diagnostics.classify_counterfactuals import restore,strict_front
+from research.diagnostics.classify_counterfactuals import restore,strict_front,separated_costs
 
 
 def test_counterfactual_front_preserves_equal_sources_and_all_resource_coordinates():
@@ -36,3 +36,11 @@ def test_trace_normalizes_exact_object_metadata_without_losing_high_bits():
     assert int(back['capacity'].iloc[0])==2**63+7
     assert back['energy'].dtype==np.dtype('float32')
     assert record['native_dtypes']['capacity']=='object'
+
+
+def test_margin_filter_does_not_label_one_ulp_cost_tie_as_separated():
+    q=[float(np.nextafter(np.float32(1),np.float32(2))),1.,5.,8.]
+    p=[1.,1.,10.,8.]
+    assert not separated_costs(q,p,q,p)
+    q[0]=1.01
+    assert separated_costs(q,p,q,p)
