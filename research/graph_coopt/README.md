@@ -1,6 +1,18 @@
-# Graph memo feasibility gates
+# Graph-structured architecture–mapping co-optimization
 
-The research gate remains **state analysis before optimizer development**.
+The objective is joint architecture and mapping selection, with one global
+hardware configuration and explicit resource budgets. The current
+[RQ1 coupling experiment](ARCHITECTURE_MAPPING_COOPT.md) measures real design
+couplings; the [decision-hypergraph gate](DECISION_HYPERGRAPH.md) separates legal
+equality reordering from still-unproved full search decomposition. Neither is a
+new joint optimizer or a claimed speedup over the existing FFM cache.
+
+The earlier Memo, checkpoint, reservation and support analyses below remain
+infrastructure and historical feasibility gates, not the main research objective.
+
+## Existing infrastructure and historical gates
+
+The original Memo gate was **state analysis before optimizer development**.
 See [MEMO_STATE_ANALYSIS.md](MEMO_STATE_ANALYSIS.md) for G1/G2/G3 definitions,
 signature limitations and the twelve independently generated 2mm/3mm catalogs.
 There is no evidence here that introducing a graph memo beats existing FFM or
@@ -54,7 +66,7 @@ re-evaluation, including physical capacity and spatial fit checks. Re-evaluation
 still uses the FFM model; it is not an independent proof of physical lifetimes.
 These are two small correctness cases and no timing or speedup claim is made.
 
-The decision gate is evidence of substantial state compression beyond FFM's
+The original Memo decision gate required evidence of substantial state compression beyond FFM's
 existing grouping. Equal observed interfaces do not authorize semantic merging;
 their future substitutability and useful cost/resource alternatives still need
 proof. The current small experiment does not justify a general optimizer,
