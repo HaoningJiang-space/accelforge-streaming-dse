@@ -1,0 +1,1001 @@
+{
+  "status": "complete",
+  "native_search_rerun": false,
+  "actual_jobs_skipped": 0,
+  "actual_run_model_calls_avoided": 0,
+  "actual_tile_enumerations_avoided": 0,
+  "actual_candidate_materializations_avoided": 0,
+  "catalog_crosswalk": {
+    "raw_families": 126,
+    "unique_keys_verified": true,
+    "key": "(shared target, einsum, compact template); archive linkage only, not an equivalence key",
+    "returned_source_labels_equal": true
+  },
+  "g1_stage_counts": {
+    "join_rows_no_final_descendant": 54,
+    "frontier_descendant": 54,
+    "no_local_join_rows": 18
+  },
+  "inherited_g2": {
+    "local": {
+      "certified_target_members": 0,
+      "certified_whole_shared_jobs": 0,
+      "same_pipeline_preanalysis_s": 0.016120498185046017,
+      "posthoc_free_reference_incumbent_dominance_screen": 0,
+      "cost_screen_is_not_a_rejection_certificate": true
+    },
+    "architecture": {
+      "certified_target_members": 0,
+      "certified_whole_shared_jobs": 0,
+      "same_pipeline_preanalysis_s": 0.01619062409736216,
+      "posthoc_free_reference_incumbent_dominance_screen": 0,
+      "cost_screen_is_not_a_rejection_certificate": true
+    },
+    "graph": {
+      "certified_target_members": 0,
+      "certified_whole_shared_jobs": 0,
+      "same_pipeline_preanalysis_s": 0.03441379207652062,
+      "posthoc_free_reference_incumbent_dominance_screen": 0,
+      "cost_screen_is_not_a_rejection_certificate": true
+    }
+  },
+  "selected_witness": {
+    "target": "32,192,131072",
+    "bucket": 68,
+    "producer_competitor_count": 32,
+    "q_prefix_sources": [
+      53,
+      78
+    ],
+    "p_prefix_sources": [
+      57,
+      78
+    ],
+    "consumer_when_q_efficient": 217,
+    "consumer_when_p_dominates": 209,
+    "q_efficient_context": [
+      0.00023312045959755778,
+      7.492266013287008e-05,
+      526336.0,
+      8.0
+    ],
+    "p_efficient_context": [
+      0.0002329899143660441,
+      7.492266013287008e-05,
+      557056.0,
+      8.0
+    ],
+    "q_dominated_context": [
+      0.00023312045959755778,
+      7.492266013287008e-05,
+      559104.0,
+      8.0
+    ],
+    "p_dominated_context": [
+      0.00023298989981412888,
+      7.492266013287008e-05,
+      559104.0,
+      8.0
+    ],
+    "resource_order_reversal": true,
+    "strict_cost_margin_filter": true,
+    "cohort_jobs": [
+      "task:55"
+    ]
+  },
+  "physical_contract": {
+    "bucket": 68,
+    "target": "((32, 192), (131072, 135168))",
+    "shared_loop_index": 2,
+    "next_shared_loop_index": -1,
+    "allocation_count": 0,
+    "free_count": 0,
+    "alias_count": 0,
+    "nonresource_context_fields_equal": true,
+    "differing_prepared_fields": {
+      "reservation<SEP>GlobalBuffer<SEP>0<SEP>left": [
+        360448,
+        557056
+      ],
+      "Total<SEP>energy": [
+        0.0001239070697920397,
+        0.000123776524560526
+      ],
+      "Matmul0<SEP>compressed_index": [
+        53,
+        57
+      ]
+    },
+    "left_match": [
+      "fused_loop<SEP>Matmul1<SEP>initial<SEP>M<SEP>0",
+      "fused_loop<SEP>Matmul1<SEP>stride<SEP>M<SEP>0",
+      "fused_loop<SEP>Matmul1<SEP>initial<SEP>N2<SEP>1",
+      "fused_loop<SEP>Matmul1<SEP>stride<SEP>N2<SEP>1",
+      "fused_loop<SEP>Matmul1<SEP>initial<SEP>M<SEP>2",
+      "fused_loop<SEP>Matmul1<SEP>stride<SEP>M<SEP>2",
+      "fused_loop<SEP>Matmul1<SEP>n_iterations<SEP>0",
+      "fused_loop<SEP>Matmul1<SEP>n_iterations<SEP>1",
+      "fused_loop<SEP>Matmul1<SEP>n_iterations<SEP>2"
+    ],
+    "right_match": [
+      "fused_loop<SEP>Matmul2<SEP>initial<SEP>M<SEP>0",
+      "fused_loop<SEP>Matmul2<SEP>stride<SEP>M<SEP>0",
+      "fused_loop<SEP>Matmul2<SEP>initial<SEP>N2<SEP>1",
+      "fused_loop<SEP>Matmul2<SEP>stride<SEP>N2<SEP>1",
+      "fused_loop<SEP>Matmul2<SEP>initial<SEP>M<SEP>3",
+      "fused_loop<SEP>Matmul2<SEP>stride<SEP>M<SEP>3",
+      "fused_loop<SEP>Matmul2<SEP>n_iterations<SEP>0",
+      "fused_loop<SEP>Matmul2<SEP>n_iterations<SEP>1",
+      "fused_loop<SEP>Matmul2<SEP>n_iterations<SEP>3"
+    ]
+  },
+  "linked_raw_families": {
+    "q": [
+      {
+        "compressed_source": 53,
+        "trace_task": "task:48",
+        "g1_task": "task:48",
+        "einsum": "Matmul0",
+        "template": "[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+        "target": "((32, 192), (131072, 135168))",
+        "tile_id": "task:48:tile:71",
+        "tile": {
+          "stride0": 128,
+          "stride1": 256,
+          "stride2": 32,
+          "stride3": 128,
+          "stride4": 128
+        },
+        "job_has_returned_descendant": true,
+        "generated_model_rows": 90,
+        "premodel_bound": {
+          "gb_bits": 24,
+          "register_bits": 8,
+          "energy_j": 1.2466520064e-05,
+          "latency_s": 4.096e-06,
+          "energy_rational": "380448/30517578125",
+          "latency_rational": "8/1953125"
+        },
+        "premodel_unknown": null,
+        "premodel_decisions": {
+          "131072": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 1.2466520064e-05,
+                "latency_s": 0.0,
+                "energy_rational": "380448/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 1.2466520064e-05,
+                "latency_s": 4.096e-06,
+                "energy_rational": "380448/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 3.0028070912e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "916384/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 22
+            }
+          },
+          "135168": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 1.2466520064e-05,
+                "latency_s": 0.0,
+                "energy_rational": "380448/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 1.2466520064e-05,
+                "latency_s": 4.096e-06,
+                "energy_rational": "380448/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 3.0028070912e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "916384/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 22
+            }
+          }
+        },
+        "historical_g1_evaluation_s": 0.022584750084206462
+      },
+      {
+        "compressed_source": 78,
+        "trace_task": "task:55",
+        "g1_task": "task:55",
+        "einsum": "Matmul1",
+        "template": "[W1,T1 in MainMemory] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+        "target": "((32, 192), (131072, 135168))",
+        "tile_id": "task:55:tile:82",
+        "tile": {
+          "stride0": 16,
+          "stride1": 128,
+          "stride2": 1,
+          "stride3": 1,
+          "stride4": 128,
+          "stride5": 32
+        },
+        "job_has_returned_descendant": false,
+        "generated_model_rows": 321,
+        "premodel_bound": {
+          "gb_bits": 2064,
+          "register_bits": 8,
+          "energy_j": 8.780775424e-06,
+          "latency_s": 4.096e-06,
+          "energy_rational": "267968/30517578125",
+          "latency_rational": "8/1953125"
+        },
+        "premodel_unknown": null,
+        "premodel_decisions": {
+          "131072": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 0.0,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 4.096e-06,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 3.0028070912e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "916384/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 13
+            }
+          },
+          "135168": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 0.0,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 4.096e-06,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 3.0028070912e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "916384/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 13
+            }
+          }
+        },
+        "historical_g1_evaluation_s": 0.030742165981791914
+      }
+    ],
+    "p": [
+      {
+        "compressed_source": 57,
+        "trace_task": "task:49",
+        "g1_task": "task:49",
+        "einsum": "Matmul0",
+        "template": "[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+        "target": "((32, 192), (131072, 135168))",
+        "tile_id": "task:49:tile:34",
+        "tile": {
+          "stride0": 256,
+          "stride1": 128,
+          "stride2": 128,
+          "stride3": 32
+        },
+        "job_has_returned_descendant": false,
+        "generated_model_rows": 36,
+        "premodel_bound": {
+          "gb_bits": 24,
+          "register_bits": 8,
+          "energy_j": 1.2466520064e-05,
+          "latency_s": 4.096e-06,
+          "energy_rational": "380448/30517578125",
+          "latency_rational": "8/1953125"
+        },
+        "premodel_unknown": null,
+        "premodel_decisions": {
+          "131072": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 1.2466520064e-05,
+                "latency_s": 0.0,
+                "energy_rational": "380448/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 1.2466520064e-05,
+                "latency_s": 4.096e-06,
+                "energy_rational": "380448/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 3.0028070912e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "916384/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 22
+            }
+          },
+          "135168": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 1.2466520064e-05,
+                "latency_s": 0.0,
+                "energy_rational": "380448/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 1.2466520064e-05,
+                "latency_s": 4.096e-06,
+                "energy_rational": "380448/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 24,
+                "register_bits": 8,
+                "energy_j": 3.0028070912e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "916384/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 22
+            }
+          }
+        },
+        "historical_g1_evaluation_s": 0.017365166102536023
+      },
+      {
+        "compressed_source": 78,
+        "trace_task": "task:55",
+        "g1_task": "task:55",
+        "einsum": "Matmul1",
+        "template": "[W1,T1 in MainMemory] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+        "target": "((32, 192), (131072, 135168))",
+        "tile_id": "task:55:tile:82",
+        "tile": {
+          "stride0": 16,
+          "stride1": 128,
+          "stride2": 1,
+          "stride3": 1,
+          "stride4": 128,
+          "stride5": 32
+        },
+        "job_has_returned_descendant": false,
+        "generated_model_rows": 321,
+        "premodel_bound": {
+          "gb_bits": 2064,
+          "register_bits": 8,
+          "energy_j": 8.780775424e-06,
+          "latency_s": 4.096e-06,
+          "energy_rational": "267968/30517578125",
+          "latency_rational": "8/1953125"
+        },
+        "premodel_unknown": null,
+        "premodel_decisions": {
+          "131072": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 0.0,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 4.096e-06,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 3.0028070912e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "916384/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 13
+            }
+          },
+          "135168": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 0.0,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 4.096e-06,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 3.0028070912e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "916384/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 13
+            }
+          }
+        },
+        "historical_g1_evaluation_s": 0.030742165981791914
+      }
+    ],
+    "consumers": [
+      {
+        "compressed_source": 217,
+        "trace_task": "task:68",
+        "g1_task": "task:68",
+        "einsum": "Matmul2",
+        "template": "[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+        "target": "((32, 192), (131072, 135168))",
+        "tile_id": "task:68:tile:32",
+        "tile": {
+          "stride0": 16,
+          "stride1": 128,
+          "stride2": 1,
+          "stride3": 1,
+          "stride4": 32,
+          "stride5": 128
+        },
+        "job_has_returned_descendant": false,
+        "generated_model_rows": 161,
+        "premodel_bound": {
+          "gb_bits": 2064,
+          "register_bits": 8,
+          "energy_j": 8.780775424e-06,
+          "latency_s": 4.096e-06,
+          "energy_rational": "267968/30517578125",
+          "latency_rational": "8/1953125"
+        },
+        "premodel_unknown": null,
+        "premodel_decisions": {
+          "131072": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 0.0,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 4.096e-06,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 2.2656581632e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "691424/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 22
+            }
+          },
+          "135168": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 0.0,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 4.096e-06,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 2064,
+                "register_bits": 8,
+                "energy_j": 2.2656581632e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "691424/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 22
+            }
+          }
+        },
+        "historical_g1_evaluation_s": 0.03691254090517759
+      },
+      {
+        "compressed_source": 209,
+        "trace_task": "task:67",
+        "g1_task": "task:67",
+        "einsum": "Matmul2",
+        "template": "[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+        "target": "((32, 192), (131072, 135168))",
+        "tile_id": "task:67:tile:21",
+        "tile": {
+          "stride0": 16,
+          "stride1": 128,
+          "stride2": 128,
+          "stride3": 1,
+          "stride4": 128,
+          "stride5": 32
+        },
+        "job_has_returned_descendant": false,
+        "generated_model_rows": 50,
+        "premodel_bound": {
+          "gb_bits": 4104,
+          "register_bits": 8,
+          "energy_j": 8.780775424e-06,
+          "latency_s": 4.096e-06,
+          "energy_rational": "267968/30517578125",
+          "latency_rational": "8/1953125"
+        },
+        "premodel_unknown": null,
+        "premodel_decisions": {
+          "131072": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 4104,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 0.0,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 4104,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 4.096e-06,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 4104,
+                "register_bits": 8,
+                "energy_j": 2.2656581632e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "691424/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 22
+            }
+          },
+          "135168": {
+            "local": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 4104,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 0.0,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "0"
+              }
+            },
+            "architecture": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 4104,
+                "register_bits": 8,
+                "energy_j": 8.780775424e-06,
+                "latency_s": 4.096e-06,
+                "energy_rational": "267968/30517578125",
+                "latency_rational": "8/1953125"
+              }
+            },
+            "graph": {
+              "reject": false,
+              "reasons": [],
+              "bound": {
+                "gb_bits": 4104,
+                "register_bits": 8,
+                "energy_j": 2.2656581632e-05,
+                "latency_s": 1.2288e-05,
+                "energy_rational": "691424/30517578125",
+                "latency_rational": "24/1953125"
+              },
+              "relaxed_supported_templates": 22
+            }
+          }
+        },
+        "historical_g1_evaluation_s": 0.023330832947976887
+      }
+    ]
+  },
+  "prepared_effects": {
+    "q": {
+      "variables": [
+        "reservation<SEP>GlobalBuffer<SEP>2<SEP>right",
+        "reservation<SEP>GlobalBuffer<SEP>3<SEP>right",
+        "reservation<SEP>Register<SEP>3<SEP>right"
+      ],
+      "outputs": {
+        "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": [
+          {
+            "coefficients": [
+              0,
+              0,
+              0
+            ],
+            "intercept": 360448
+          },
+          {
+            "coefficients": [
+              0,
+              1,
+              0
+            ],
+            "intercept": 262144
+          },
+          {
+            "coefficients": [
+              1,
+              0,
+              0
+            ],
+            "intercept": 264192
+          }
+        ],
+        "reservation<SEP>Register<SEP>0<SEP>right": [
+          {
+            "coefficients": [
+              0,
+              0,
+              0
+            ],
+            "intercept": 8
+          },
+          {
+            "coefficients": [
+              0,
+              0,
+              1
+            ],
+            "intercept": 0
+          }
+        ]
+      }
+    },
+    "p": {
+      "variables": [
+        "reservation<SEP>GlobalBuffer<SEP>2<SEP>right",
+        "reservation<SEP>GlobalBuffer<SEP>3<SEP>right",
+        "reservation<SEP>Register<SEP>3<SEP>right"
+      ],
+      "outputs": {
+        "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": [
+          {
+            "coefficients": [
+              0,
+              0,
+              0
+            ],
+            "intercept": 557056
+          },
+          {
+            "coefficients": [
+              0,
+              1,
+              0
+            ],
+            "intercept": 262144
+          },
+          {
+            "coefficients": [
+              1,
+              0,
+              0
+            ],
+            "intercept": 264192
+          }
+        ],
+        "reservation<SEP>Register<SEP>0<SEP>right": [
+          {
+            "coefficients": [
+              0,
+              0,
+              0
+            ],
+            "intercept": 8
+          },
+          {
+            "coefficients": [
+              0,
+              0,
+              1
+            ],
+            "intercept": 0
+          }
+        ]
+      }
+    }
+  },
+  "native_and_scalar_resource_replay": [
+    {
+      "prefix": "q",
+      "consumer": 217,
+      "incoming_resource_bits": {
+        "reservation<SEP>Register<SEP>3<SEP>right": 8,
+        "reservation<SEP>GlobalBuffer<SEP>2<SEP>right": 262144,
+        "reservation<SEP>GlobalBuffer<SEP>3<SEP>right": 263424
+      },
+      "resource_result_bits": {
+        "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 526336,
+        "reservation<SEP>Register<SEP>0<SEP>right": 8
+      },
+      "complete_vector": [
+        0.00023312045959755778,
+        7.492266013287008e-05,
+        526336,
+        8
+      ]
+    },
+    {
+      "prefix": "q",
+      "consumer": 209,
+      "incoming_resource_bits": {
+        "reservation<SEP>Register<SEP>3<SEP>right": 8,
+        "reservation<SEP>GlobalBuffer<SEP>2<SEP>right": 294912,
+        "reservation<SEP>GlobalBuffer<SEP>3<SEP>right": 295936
+      },
+      "resource_result_bits": {
+        "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 559104,
+        "reservation<SEP>Register<SEP>0<SEP>right": 8
+      },
+      "complete_vector": [
+        0.00023312045959755778,
+        7.492266013287008e-05,
+        559104,
+        8
+      ]
+    },
+    {
+      "prefix": "p",
+      "consumer": 217,
+      "incoming_resource_bits": {
+        "reservation<SEP>Register<SEP>3<SEP>right": 8,
+        "reservation<SEP>GlobalBuffer<SEP>2<SEP>right": 262144,
+        "reservation<SEP>GlobalBuffer<SEP>3<SEP>right": 263424
+      },
+      "resource_result_bits": {
+        "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 557056,
+        "reservation<SEP>Register<SEP>0<SEP>right": 8
+      },
+      "complete_vector": [
+        0.0002329899143660441,
+        7.492266013287008e-05,
+        557056,
+        8
+      ]
+    },
+    {
+      "prefix": "p",
+      "consumer": 209,
+      "incoming_resource_bits": {
+        "reservation<SEP>Register<SEP>3<SEP>right": 8,
+        "reservation<SEP>GlobalBuffer<SEP>2<SEP>right": 294912,
+        "reservation<SEP>GlobalBuffer<SEP>3<SEP>right": 295936
+      },
+      "resource_result_bits": {
+        "reservation<SEP>GlobalBuffer<SEP>0<SEP>right": 559104,
+        "reservation<SEP>Register<SEP>0<SEP>right": 8
+      },
+      "complete_vector": [
+        0.00023298989981412888,
+        7.492266013287008e-05,
+        559104,
+        8
+      ]
+    }
+  ],
+  "conditional_resource_equality": {
+    "resource_unit": "bits",
+    "floors_kib": {
+      "q": 44,
+      "p": 68
+    },
+    "common_term_offsets_kib": [
+      32,
+      32.25
+    ],
+    "statement": "For this prepared closed program, both GB responses are equal iff max(32KiB+x3,32.25KiB+x2)>=68KiB.",
+    "pre_generation_certificate": false,
+    "raw_job_elimination_proved": false
+  },
+  "scope": "Offline archive crosswalk and prepared-program replay. No new analyzer, native execution or search mechanism.",
+  "archive_sha256": {
+    "research/diagnostics/results/generation_provenance_3mm/trial_1.json": "80e29d2612e1ce3cadb81ccde96f809eead872f818a7d905bda62c55d65c3804",
+    "research/diagnostics/results/pregen_certificates/native_1.json": "7ae3b59b0d736d8514573ef4cb1409aa69a246a79dffadd6bce15b31ea3e3e9a",
+    "research/diagnostics/results/counterfactual_effects/classification.json": "542da88a7c2fa4e4c56ed3fdd35167dc24e334c129e79934da4e1231c75ce849",
+    "research/diagnostics/results/counterfactual_effects/trace.json.gz": "e3c2e57aedd76b3d1608ddb7da035f4c940865c6d9e03773f5b07bd85b289836"
+  },
+  "executed_source_commit": "e66325842f2608b969115db63dcfa382af797e47",
+  "audit_source_sha256": "27e79f2c5ef10859d7bdf775910776edbfd942f95821cb9e7bafc4a40dcbddb5",
+  "offline_audit_wall_s": 0.29979429207742214
+}

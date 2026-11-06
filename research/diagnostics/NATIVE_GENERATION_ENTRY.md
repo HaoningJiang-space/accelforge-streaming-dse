@@ -1,0 +1,191 @@
+# Native generation entry: a precise late certificate is not an early one
+
+The existing evidence does not yet justify skipping any native `run_model`, Tile
+enumeration or model-row construction. This audit fixes the **information and
+side-effect contract at that entry**, using the existing G1/G2 and Consumer
+witness archives. It adds no observer, provider, solver, cache or pruning rule.
+The search-work boundary study, SearchEngine, physical models and FFM remain
+frozen at `67e9a1f8`.
+
+There are two concrete findings. First, the observed `126 -> 42` physical-model
+output grouping omits part of the model's result and mutations; it is not a safe
+replacement key. Second, the original Consumer `217/209` reversal admits a very
+specific resource-equality condition, but its premises are currently known only
+after numerical evaluation and Join preparation. We can identify exactly which
+information is missing from the earlier cheap facts, without adding another
+candidate mechanism.
+
+## What exists before each expensive boundary
+
+| Boundary | Already available | Not established there | Existing source |
+| --- | --- | --- | --- |
+| `_allocate_jobs` | Raw mapping/storage/loop skeleton; rank domains; evaluated hardware/action model; constraints; tracked/fusable tensors; target-capacity requests; compatibility batches | Actual Tile assignments, quantitative resource/cost relations, target-specific kept membership, legal numerical completions | [`make_pmappings`](../../accelforge/mapper/FFM/_make_pmappings/make_pmappings.py#L429), [`Job`](../../accelforge/mapper/FFM/_make_pmappings/pmapper_job.py#L55) |
+| Immediately before `run_model` | Constraint loop indices set; terminal Tile set to one; remaining raw Tile decisions | Full SymbolRelations/objectives; symbolic reuse/action/reservation/latency expressions; complete model post-state | [`_make_tile_shapes`](../../accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py#L1616) |
+| After `run_model`, before enumeration | Five returned model objects and mutated mapping; SymbolRelations, objectives and utilization goals can now be constructed | Target-specific fallback history and retained Tiles; which loops become unit and disappear | [`run_model`](../../accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/run_model.py#L39), [`target dispatch`](../../accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py#L954) |
+| After enumeration/local batch processing | Concrete Tiles, target membership, materialized numerical columns, populated compatibility and surviving loops | Complete downstream obligations and final dominance | [`batch processing`](../../accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_pmappings_from_templates.py#L222) |
+| Prepared terminal Join | Closed numerical resource program and actual compatible input rows | An early derivation covering every completion of a raw family | Existing [counterfactual/effect study](COUNTERFACTUAL_EFFECT_RESULTS.md) |
+
+"Not established" is a computational distinction, not missing information in
+principle: the deterministic model's inputs specify its outcomes. The unresolved
+question is whether a sufficient relation can be derived more cheaply than the
+work it would avoid. This ledger is not an impossibility theorem for doing so.
+
+The fast reservation insertion used for structural compatibility does not itself
+compute the quantitative occupancy/cost analysis. Full reuse subsequently walks
+per-tensor mappings and their loop/storage effects. A raw loop can disappear when
+its evaluated iteration count is one; batch processing then drops/renames loops
+and shifts resource scopes. Thus the archived closed program's scope indices
+cannot simply be assumed constant over every Tile completion of its raw Job.
+
+G2 already runs at `_allocate_jobs` with expensive calls guarded. Its three tiers
+reject zero Jobs/batches. Moving the same predicates closer to `run_model` or
+changing a Python iterator would not strengthen their mathematical content.
+Conversely, a rule placed after `run_model` could avoid later work, but must not
+claim to have avoided the symbolic model itself.
+
+## The complete model contract is larger than its physical table
+
+The caller unpacks **five** objects:
+
+1. Ordered Symbols, including their assumptions.
+2. The symbolic numerical-column dictionary.
+3. Per-memory usage formulas used in capacity objectives.
+4. Spatial usage formulas used in target utilization/fallback.
+5. Per-tensor physical mappings used by later reconstruction/evaluation.
+
+The call also has observable mutations. Reuse analysis replaces `job.mapping`
+with reservation-bearing structure; symbol insertion changes Loop Tile/initial
+Tile/iteration fields; `run_model` sets `job.resource_capacities`. See
+[`analyze_reuse_and_add_reservations_to_mapping`](../../accelforge/model/_looptree/reuse/symbolic/symbolic.py#L490)
+and [`insert_sympy_symbols`](../../accelforge/model/_looptree/reuse/symbolic/symbolic.py#L1372).
+These are examples of relevant effects, not a proof that the list exhausts every
+transitive dependency.
+
+The earlier [repetition observer](search_repetition.py) groups a post-call key
+containing the mapped structure and **only the second returned object with
+capacity metadata removed**. It does not establish equality of objects 1/3/4/5,
+pre-call inputs or post-state. In particular, hardware fanout normalization can
+affect usage while the physical cost expressions agree. General latency formulas
+read architecture actions, component fields and `spec.variables`; energy can
+include leakage and utilization. A key omitting those dependencies cannot be
+declared safe from the NVDLA output-equality count alone.
+
+This is not a discovered wrong-cache bug: no such model-result cache exists in
+the frozen search. It identifies what a proposed replacement would have to
+prove. Existing immutable formula/prefix caches retain their own proven keys and
+are not changed. A conservative full-object key might avoid false sharing, but
+its repeat rate and construction cost have not been measured here; no new key
+or reuse saving is claimed.
+
+## Reconnecting the real Consumer 217/209 witness
+
+The archive replay verifies a unique `(shared target, einsum, compact template)`
+crosswalk for all **126 families** between G1, G2 and the counterfactual trace,
+with identical returned-source labels. UUIDs and `task:N` identifiers are run-local
+and are not used as cross-run keys. This is an archive linkage check, not a proof
+that a compact string is a sufficient physical/model-equivalence key.
+
+The selected trace is shape **32x192**, capacity **128 KiB**, prepared bucket 68.
+It closes scope 2 to -1, with zero Allocation/Free/Alias operations. Both Prefixes
+match both Consumer rows. Their prepared fields differ only in one GB column,
+energy and Matmul0 source ID; all other recorded context fields agree.
+
+| Role | Archived source | Raw Job | Concrete Tile | GB lower bound known to G2 before model |
+| --- | --- | --- | --- | ---: |
+| Q's Matmul0 | 53 | task:48 | stride=(128,256,32,128,128) | 3 B |
+| P's Matmul0 | 57 | task:49 | stride=(256,128,128,32) | 3 B |
+| Shared Matmul1 | 78 | task:55 | stride=(16,128,1,1,128,32) | 258 B |
+| Consumer 217 | 217 | task:68 | stride=(16,128,1,1,32,128) | 258 B |
+| Consumer 209 | 209 | task:67 | stride=(16,128,128,1,128,32) | 513 B |
+
+Each stride tuple follows that Job's archived ordered Symbol list; they are not
+the same variable vector across different templates. Full templates, assignments,
+G2 decisions and G1 lineage are in the [replayed evidence](results/native_generation_entry/audit.json).
+The lower bounds above are local necessary conditions, not exact demands.
+
+The selected cohort label `task:55` is **shared by Q and P**, while the changed
+upstream candidates are in Matmul0 Jobs 48 and 49. Job 48 has a returned frontier
+descendant; the other four listed Jobs do not. Therefore a reversal attached to
+Job 55 is not a certificate that its whole family, or all of Job 48, can be
+discarded. Job-level incidence and the internal decision that changes rank are
+different objects.
+
+## Exact conditional equality, with its timing limitation
+
+Reuse the existing `compile_closed` and independent scalar resource interpreter.
+Let `x2`, `x3` be this bucket's incoming Consumer GB reservations at scopes 2 and 3,
+measured in KiB. The two already-prepared Prefix responses are:
+
+```text
+H(x2,x3) = max(32 + x3, 32.25 + x2)
+GB_Q    = max(44, H)
+GB_P    = max(68, H)
+```
+
+Their Register responses are identical. Hence their GB responses are equal
+**if and only if `H >= 68`**. For `H < 68`, Q has strictly smaller GB. This follows
+directly from the two constant floors; it is an exact statement about this
+closed numerical resource program, not a theorem for arbitrary Fusion.
+
+| Consumer | x2 KiB | x3 KiB | H KiB | GB_Q KiB | GB_P KiB |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 217 | 32 | 32.15625 | 64.25 | 64.25 | 68 |
+| 209 | 36 | 36.125 | 68.25 | 68.25 | 68.25 |
+
+In both recorded completions P has lower energy and equal latency. Thus the
+second context permits P to cover Q, while the first preserves their E/GB
+tradeoff. All **four** native pre-capacity resource/cost vectors are rechecked
+exactly; resource results also agree with the existing scalar interpreter.
+This is a new replay of old numerical evidence, not new native execution or an
+independent scalar MatMul replay.
+
+The predicate `H >= 68` is not available from the G2 bounds in the preceding
+table. Its constants, actual scope program, exact matching Tiles and associated
+costs have already passed through expensive analysis. An early certificate would
+need to prove the relevant inequality and cost relation over a specified
+unexpanded subfamily, under the same physical requirements. Observing it for
+Consumer 209 cannot justify applying it to all completions of Consumer Job 67.
+Nor may a minimum from incompatible rows replace the minimum over the required
+interface. No such correlated family proof is supplied by these archives.
+
+## What can actually be avoided at the native entry today?
+
+| Proposed basis | Evidence available | Current decision |
+| --- | --- | --- |
+| Cheap hard-feasibility/relaxed support | G2 zero coverage on native and holdouts | No skipped generation justified |
+| G1 final-descendant labels | Retrospective 54 useful / 54 Join-input unused / 18 locally eliminated Jobs | Post-hoc screening only; not a safe branch decision |
+| 126 calls / 42 physical outputs | Partial post-call equality | Insufficient complete-call replacement contract |
+| Closed Consumer-dependent coverage | Exact conditional resource region for prepared Prefixes | Correct late evidence; no pre-model family proof |
+| Existing prefix/formula/event sharing | Already in the strongest compatible baseline | Retain; do not count it as a new Graph advantage |
+
+The actual newly avoided work in this audit is **zero**: no native Job runs,
+model calls, enumerations or candidates are skipped. Offline archive reading,
+decompression, linkage, existing-effect compilation and verification take about
+0.30 s in the saved execution. That is diagnostic cost, not an online certificate
+cost or a speed comparison. Historical G1 task timings are retained only for
+lineage; none is credited as a new saving, including unused-batch overhead.
+
+The explicit bridge now needed is a family-level proof supplying the same
+physical contract, resource/cost correlation and scope cases **before** their
+expensive evaluation, at lower total cost. Model replacement additionally needs
+all outputs and relevant post-state; policy-preserving deletion must account for
+target fallback and batch histories. This audit establishes neither bridge and
+does not authorize a new provider/filter implementation. RQ2 remains open; the
+research question, strong baselines and execution contracts stay fixed.
+
+## Reproduction and scope
+
+```sh
+python -m research.diagnostics.audit_native_generation_entry --output research/diagnostics/results/native_generation_entry/audit.json
+python -m pytest -q research/diagnostics/test_generation_provenance.py research/diagnostics/test_pregen_certificates.py research/diagnostics/test_counterfactual_classification.py research/diagnostics/test_scoped_effect.py --disable-warnings
+```
+
+The audit fails on ambiguous archive identities, mismatched family catalogs,
+changed source labels, unsupported scope operations, incompatible selected rows,
+or disagreement with native/scalar numerical records. It does not import/call
+native mapping generation or add a tracing hook. The
+[execution receipt](results/native_generation_entry/execution_receipt.json)
+records exact archive/source hashes and unchanged frozen paths. The **26 existing
+tests above passed in 1.03 seconds**; see [tests.txt](results/native_generation_entry/tests.txt).
+The prior 873-test research result remains historical; this round does not claim
+to rerun it or the legacy production suite, or to rerun a native DSE benchmark.
