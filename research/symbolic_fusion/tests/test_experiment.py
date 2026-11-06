@@ -92,3 +92,43 @@ def test_symbolic_external_effect_before_any_evaluation():
     assert int(f.effect.subs({N:256,s:256,k:64,j:64,x:65536,y:135168,z:86016}))==135168
     a,_=flat(f,cache_factors=True);b,_=eliminate(f)
     assert vectors(a)==vectors(b)
+
+
+def test_equal_bound_peak_does_not_imply_equal_future_effect():
+    from research.symbolic_fusion.model import Effect
+    # Both are 120 at x=64; the order reverses away from that single point.
+    a=Effect(120,10); b=Effect(70,56)
+    assert a.at(64)==b.at(64)==120
+    assert a.at(0)>b.at(0) and a.at(200)<b.at(200)
+    assert not a.no_larger_than(b) and not b.no_larger_than(a)
+
+
+def test_effect_dominance_all_external_obligations():
+    from research.symbolic_fusion.model import Effect
+    effects=[Effect(p,r)for p in range(5)for r in [None,*range(p+1)]]
+    for a,b in product(effects,repeat=2):
+        # x=10 passes every breakpoint (<=4); the proof also checks slope.
+        assert a.no_larger_than(b)==all(a.at(x)<=b.at(x)for x in range(11))
+
+
+def test_family_elimination_keeps_correlated_resource_effect():
+    f=Family()
+    for s in f.stripes:
+        factors=[[f.factor(i,s,*t)for t in f.legal_tiles(i,s)]for i in range(3)]
+        for alternatives in factors:
+            kept=frontier(alternatives)
+            for q in alternatives:
+                p=next(p for p in kept if dominates(p,q))
+                for x in (0,1,64*1024,128*1024,2**40):
+                    assert p.effect.at(x)<=q.effect.at(x)
+
+
+def test_event_effect_matches_symbolic_summary():
+    from dataclasses import asdict
+    f=Family(4,(2,4),(1,2))
+    for plan in f.plans():
+        total=State(0,0,Fraction(0),())
+        for i,t in enumerate(plan.tiles):
+            total=combine(total,f.factor(i,plan.stripe,*t))
+        actual=execute(f.n,plan.stripe,plan.tiles)
+        assert asdict(total.effect)==actual['effect']

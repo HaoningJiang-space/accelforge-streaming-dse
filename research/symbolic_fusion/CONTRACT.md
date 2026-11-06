@@ -69,14 +69,34 @@ subsequent energy and service-time calculations use integers and Fractions.
 
 ## Elimination and its limited sufficiency proof
 
-Within one s, each phase contributes a correlated `(P_i,E_i,T_i)` vector. The
-producer's P_i already includes its retained outer T2 obligation if s<N. The
-composition is `(max(P_i), sum(E_i), sum(T_i))`. All three operations are monotone.
-An alternative weakly dominated in all three dimensions can therefore be
-replaced under every continuation **in this grammar at the same s**. This does
-not assert that arbitrary physical interfaces with equal peaks are equivalent.
-No local EDP pruning or independently minimized E/T/resource bound is used.
-Equal vectors preserve one reconstructible plan, not all Mapping identities.
+Within one s, each phase contributes a correlated `(effect,E_i,T_i)` state.
+The effect is the canonical integer function `max(p,r+x)`, or constant `p` if
+there is no x-dependent branch. Here x is the outer T2 backing obligation. The
+stage effects before binding x are:
+
+- producer: `a+x` if s<N, otherwise constant `a`;
+- first consumer: `N*s+k1*j1+x`;
+- last consumer: `N*j2+k2*j2+x`.
+
+Composition takes the pointwise maximum of effects, and sums E/T. For canonical
+`p>=r`, pointwise dominance for **every x>=0** is exactly comparison at x=0
+(`p_left<=p_right`) plus comparison of the asymptotic intercept
+(`r_left<=r_right`); a constant has no growing branch. The implementation keeps
+both coefficients. Equality of peaks at x=64 KiB is insufficient, and a regression
+contains two functions with that equality whose order reverses elsewhere.
+
+All composition operations are monotone in this order. A dominated alternative
+can therefore be replaced under every continuation **in this grammar at the same
+s**, without choosing the 64-KiB obligation during internal elimination. The
+complete conditional frontier is also compared with independent exhaustive event
+effects before binding. The interpreter obtains those effects by observing which
+allocations coexist with T2, not by using the symbolic formulas. Substitutions
+x<N*N are algebra checks, not feasible smaller backing allocations for unchanged
+tensor dimensions. Actual capacity queries bind x=N*N only at the root.
+
+This does not assert arbitrary physical interfaces with equal peaks are
+equivalent. No local EDP pruning or independently minimized E/T/resource bound is
+used. Equal vectors preserve one reconstructible plan, not all Mapping identities.
 
 Stage-local symbolic factors are evaluated once per distinct structural input;
 free-symbol analysis proves the third phase independent of s. Incremental
@@ -91,14 +111,13 @@ allocation bound. It is valid only for this grammar; it cannot reject an FFM Job
    allocations, rather than evaluating P or action polynomials. Its own quadratic
    frontier is compared with flat symbolic and eliminated full frontiers.
 2. Scalar MAC execution of all plans in small N=4 and N=8 domains checks values
-   with dense identity weights and a bounded nonzero input pattern, including
+   with distinct permutation weights and a bounded nonsymmetric input pattern, including
    each intermediate accumulator. Large-size event enumeration is **not** scalar
    arithmetic validation of 192*3*256^3 operations.
 3. Verify local dominance against every finite continuation, reversed enumeration,
    exact-capacity boundaries, no-native-call construction/search, and oracle
    reconstruction of all returned witnesses.
-4. A separate adapter re-evaluates deterministic representatives and returned
-   witnesses with native FFM fixed-map evaluation. It is outside search and never
+4. A separate adapter re-evaluates every fixed full-size plan with native FFM fixed-map evaluation. It is outside search and never
    calls the Mapping generator. Compare actions/phase service costs/GB peaks.
    A mismatch invalidates a native-equivalence claim; do not fit coefficients.
 5. Time symbolic construction + flat/eliminated/budget search, report candidate

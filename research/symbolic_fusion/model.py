@@ -16,35 +16,66 @@ class Plan:
 
 
 @dataclass(frozen=True)
+class Effect:
+    # Canonical max(base, x+carried); None means no x-dependent branch.
+    base: int
+    carried: object = None
+
+    def __post_init__(self):
+        if self.base < 0 or (self.carried is not None and not 0 <= self.carried <= self.base):
+            raise ValueError('invalid canonical scoped effect')
+
+    def at(self, x):
+        if x < 0:
+            raise ValueError('negative external reservation')
+        return self.base if self.carried is None else max(self.base, self.carried+x)
+
+    def no_larger_than(self, other):
+        # At x=0 and asymptotically: necessary and sufficient for all x>=0.
+        if self.base > other.base:
+            return False
+        if self.carried is None:
+            return True
+        return other.carried is not None and self.carried <= other.carried
+
+    def join(self, other):
+        carried=[v for v in (self.carried,other.carried) if v is not None]
+        return Effect(max(self.base,other.base),max(carried) if carried else None)
+
+
+@dataclass(frozen=True)
 class State:
     peak: int
     energy: int  # femtojoules, exact
     latency: Fraction  # nanoseconds, exact
     tiles: tuple
+    effect: Effect = Effect(0)
 
     @property
     def vector(self):
         return self.peak, self.energy, self.latency
 
 
-def dominates(a, b):
-    return all(x <= y for x, y in zip(a.vector, b.vector))
+def dominates(a, b, grounded=False):
+    if grounded:
+        return all(x <= y for x,y in zip(a.vector,b.vector))
+    return a.effect.no_larger_than(b.effect) and a.energy <= b.energy and a.latency <= b.latency
 
 
-def frontier(states):
-    """Numeric frontier; equal vectors keep one reconstructible witness."""
+def frontier(states, grounded=False):
+    """Pointwise effect frontier, or explicitly grounded numeric frontier."""
     result = []
     for state in states:
-        if any(dominates(old, state) for old in result):
+        if any(dominates(old, state, grounded) for old in result):
             continue
-        result = [old for old in result if not dominates(state, old)]
+        result = [old for old in result if not dominates(state, old, grounded)]
         result.append(state)
     return result
 
 
 def combine(left, right):
     return State(max(left.peak, right.peak), left.energy + right.energy,
-                 left.latency + right.latency, left.tiles + right.tiles)
+                 left.latency + right.latency, left.tiles + right.tiles, left.effect.join(right.effect))
 
 
 class Family:
@@ -81,8 +112,12 @@ class Family:
         self.peaks = (N*s + N*k + k*j + sp.Piecewise((N**2, s < N), (0, True)),
                       N*s + N**2 + k*j,
                       N**2 + N*j + k*j)
-        self._functions = [sp.lambdify(self.symbols, (*c, p), 'math', cse=True)
-                           for c, p in zip(self.counts, self.peaks)]
+        self.bases = (N*s + N*k + k*j, N*s + k*j, N*j + k*j)
+        self.carries = (sp.Piecewise((1,s < N),(0,True)),sp.Integer(1),sp.Integer(1))
+        self._uses_s = tuple(any(s in sp.sympify(e).free_symbols for e in (*c, p))
+                             for c, p in zip(self.counts, self.peaks))
+        self._functions = [sp.lambdify(self.symbols, (*c,p,b,r), 'math', cse=True)
+                           for c,p,b,r in zip(self.counts,self.peaks,self.bases,self.carries)]
         x, y, z = sp.symbols('x y z', nonnegative=True, integer=True)
         self.obligations = x, y, z
         self.effect = sp.Max(N*s + N*k + k*j + sp.Piecewise((x, s < N), (0, True)), y, z)
@@ -101,9 +136,7 @@ class Family:
     def factor_key(self, stage, stripe, k, j):
         # Proven by free-symbol inspection before any concrete evaluation:
         # stage 2 is independent of the separator stripe. Do not merge stage 0/1.
-        expressions = (*self.counts[stage], self.peaks[stage])
-        uses_s = any(self.symbols[1] in sp.sympify(e).free_symbols for e in expressions)
-        return stage, stripe if uses_s else None, k, j
+        return stage, stripe if self._uses_s[stage] else None, k, j
 
     def factor(self, stage, stripe, k, j):
         if stage not in range(3) or stripe not in self.stripes or (k, j) not in self.legal_tiles(stage, stripe):
@@ -112,14 +145,16 @@ class Family:
         raw = self._functions[stage](self.n, stripe, k, j)
         if any(v < 0 or int(v) != v or v >= 2**53 for v in raw):
             raise AssertionError('inexact/noninteger symbolic count')
-        dr, dw, gr, gw, mac, cycles, peak = map(int, raw)
+        dr,dw,gr,gw,mac,cycles,peak,base,carries = map(int,raw)
+        effect=Effect(base,base if carries else None)
+        assert effect.at(self.n**2)==peak
         # Native NVDLA per-bit energies converted to per-byte femtojoules.
         energy = (dr+dw)*56240 + gr*1992 + gw*2344 + mac*84
         latency = max(Fraction(cycles), Fraction((dr+dw)*5, 192),
                       Fraction(gr, 512), Fraction(gw, 128))
-        return State(peak, energy, latency, ((k, j),))
+        return State(peak,energy,latency,((k,j),),effect)
 
     def formulas(self):
         return dict(scoped_effect=str(self.effect), phases=[dict(stage=i, counts={k: str(v) for k, v in zip(self.names, counts)},
-                     scoped_peak_bytes=str(peak))
+                     scoped_peak_bytes=str(peak),effect_base=str(self.bases[i]),carries_T2=str(self.carries[i]))
                 for i, (counts, peak) in enumerate(zip(self.counts, self.peaks))])

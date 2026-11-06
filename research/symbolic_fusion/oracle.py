@@ -17,34 +17,41 @@ def execute(n, stripe, tiles, numeric=False):
         raise ValueError('stripe must align with both incident tiles')
     if numeric and n > 8:
         raise ValueError('scalar verification limited to n<=8')
-    phases = [dict(dram_read=0, dram_write=0, gb_read=0, gb_write=0, mac=0, cycles=0) for _ in range(3)]
+    phases = [dict(dram_read=0, dram_write=0, gb_read=0, gb_write=0, mac=0, cycles=0, reg_read=0, reg_write=0) for _ in range(3)]
     live = {}; current = peak = events = 0
-    memory = {}
+    fixed_peak = 0; carried_peak = None
+    memory = {}; registers = {}
     def alloc(name, rows, cols):
-        nonlocal current, peak, events
+        nonlocal current, peak, events, fixed_peak, carried_peak
         if name in live:
             raise AssertionError('duplicate physical allocation')
         live[name] = rows*cols; current += rows*cols; peak = max(peak, current); events += 1
+        if 'T2' in live:
+            without_T2 = current-live['T2']
+            carried_peak = max(carried_peak or 0,without_T2)
+        else:
+            fixed_peak = max(fixed_peak,current)
         if numeric:
             memory[name] = [[0]*cols for _ in range(rows)]
     def free(name):
         nonlocal current, events
-        current -= live.pop(name); memory.pop(name, None); events += 1
+        current -= live.pop(name); memory.pop(name, None); registers.pop(name,None); events += 1
     def weight(i, r, c):
-        return int(r == c)  # dense execution, no sparsity shortcut
+        return int(c == (r+i+1) % n)  # distinct permutations; dense MAC execution
     def input_value(r, c):
-        return (r+c) % 2
+        return (3*r + 2*c + r*c + 1) % 3 - 1
     def wave(phase, inp, inp_row, inp_col, output, out_row, out_col, w, k, j, first):
         nonlocal events
         c = phases[phase]
         c['gb_read'] += k + (0 if first else j)
         c['gb_write'] += j
+        c['reg_read'] += k*j
         c['mac'] += k*j; c['cycles'] += 1; events += 1
         if numeric:
             for jj in range(j):
                 value = memory[output][out_row][out_col+jj]
                 for kk in range(k):
-                    value += memory[inp][inp_row][inp_col+kk]*memory[w][kk][jj]
+                    value += memory[inp][inp_row][inp_col+kk]*registers[w][kk][jj]
                     if not -128 <= value <= 127:
                         raise AssertionError('8-bit accumulator overflow')
                 memory[output][out_row][out_col+jj] = value
@@ -58,9 +65,10 @@ def execute(n, stripe, tiles, numeric=False):
                 memory['T0tile'] = [[input_value(r, red+c) for c in range(k)] for r in range(n)]
             for col in range(start, start+stripe, j):
                 alloc('W0', k, j)
-                phases[0]['dram_read'] += k*j; phases[0]['gb_write'] += k*j; phases[0]['gb_read'] += k*j
+                phases[0]['dram_read'] += k*j; phases[0]['gb_write'] += k*j; phases[0]['gb_read'] += k*j; phases[0]['reg_write'] += k*j
                 if numeric:
                     memory['W0'] = [[weight(0, red+r, col+c) for c in range(j)] for r in range(k)]
+                    registers['W0'] = [row[:] for row in memory['W0']]
                 for row in range(n):
                     wave(0, 'T0tile', row, 0, 'T1', row, col-start, 'W0', k, j, red == 0)
                 free('W0')
@@ -71,9 +79,10 @@ def execute(n, stripe, tiles, numeric=False):
         for red in range(start, start+stripe, k):
             for col in range(0, n, j):
                 alloc('W1', k, j)
-                phases[1]['dram_read'] += k*j; phases[1]['gb_write'] += k*j; phases[1]['gb_read'] += k*j
+                phases[1]['dram_read'] += k*j; phases[1]['gb_write'] += k*j; phases[1]['gb_read'] += k*j; phases[1]['reg_write'] += k*j
                 if numeric:
                     memory['W1'] = [[weight(1, red+r, col+c) for c in range(j)] for r in range(k)]
+                    registers['W1'] = [row[:] for row in memory['W1']]
                 for row in range(n):
                     wave(1, 'T1', row, red-start, 'T2', row, col, 'W1', k, j, red == 0)
                 free('W1')
@@ -84,9 +93,10 @@ def execute(n, stripe, tiles, numeric=False):
         alloc('T3tile', n, j)
         for red in range(0, n, k):
             alloc('W2', k, j)
-            phases[2]['dram_read'] += k*j; phases[2]['gb_write'] += k*j; phases[2]['gb_read'] += k*j
+            phases[2]['dram_read'] += k*j; phases[2]['gb_write'] += k*j; phases[2]['gb_read'] += k*j; phases[2]['reg_write'] += k*j
             if numeric:
                 memory['W2'] = [[weight(2, red+r, col+c) for c in range(j)] for r in range(k)]
+                registers['W2'] = [row[:] for row in memory['W2']]
             for row in range(n):
                 wave(2, 'T2', row, red, 'T3tile', row, 0, 'W2', k, j, red == 0)
             free('W2')
@@ -100,8 +110,15 @@ def execute(n, stripe, tiles, numeric=False):
     free('T2')
     if live or current:
         raise AssertionError('leaked allocation')
-    if numeric and output != [[input_value(r, c) for c in range(n)] for r in range(n)]:
-        raise AssertionError('incorrect scalar 3mm result')
+    if numeric:
+        # Untiled reference with distinct, nonsymmetric permutations, rather
+        # than identity weights that could hide a transpose or index error.
+        expected = [[input_value(r,c) for c in range(n)] for r in range(n)]
+        for stage in range(3):
+            expected = [[sum(expected[r][red]*weight(stage,red,c) for red in range(n))
+                         for c in range(n)] for r in range(n)]
+        if output != expected:
+            raise AssertionError('incorrect scalar 3mm result')
     # Primitive action prices shared with the declared hardware model, not with
     # the symbolic implementation. There is no call to its formulas/factors.
     energy = 0; latency = Fraction(0)
@@ -112,4 +129,5 @@ def execute(n, stripe, tiles, numeric=False):
         read_service = Fraction(c['gb_read'], 512); write_service = Fraction(c['gb_write'], 128)
         latency += max(Fraction(c['cycles']), dram_service, read_service, write_service)
     return dict(peak=peak, energy=energy, latency=latency, phases=phases, events=events,
-                numeric_checked=numeric)
+                numeric_checked=numeric,
+                effect=dict(base=max(fixed_peak,carried_peak or 0),carried=carried_peak))
