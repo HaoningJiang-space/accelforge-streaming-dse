@@ -1,5 +1,12 @@
 # Symbolic Fusion subfamily: feasible representation, cautious research decision
 
+**Attribution update:** [Grounded DP ablation](GROUNDED_ABLATION.md) reduces the
+same 192 plans to 33 complete candidates, better than the 60 below. The
+[two-residency study](RESIDENCY_RESULTS.md) verifies genuine context-sensitive
+pruning but finds no shared-conditional-DP advantage over equally cached
+Grounded DP. The measurements below remain valid; they do not demonstrate a
+unique Resource-Effect algorithm benefit.
+
 **A and B pass in the declared finite family. C shows actual candidate avoidance
 there, but does not establish reduced Generation or an end-to-end speedup in the
 original FFM/Capacity Events search. Do not expand a general optimizer yet.**
