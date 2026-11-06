@@ -1,0 +1,74 @@
+{
+  "baseline_commit": "c0f62874c9f2dba506df43ae5a2e67cd969f9998",
+  "tested_source_commit": "9df2c1e091b5625a04f2203faf9bd80f57decd34",
+  "branch": "research/search-engine-refactor",
+  "scope": "Engineering refactor of restricted 2mm search control; no new search algorithm or speedup claim.",
+  "environment": {
+    "python": "3.12.14",
+    "pytest": "9.2.0",
+    "platform": "macOS-15.1-arm64-arm-64bit"
+  },
+  "research_regression": {
+    "command": "python -m pytest -q research --disable-warnings",
+    "outcome": "passed",
+    "tests_passed": 864,
+    "warnings": 29578,
+    "elapsed_seconds": 279.03,
+    "collected_by_directory": {
+      "research/diagnostics": 35,
+      "research/graph_coopt": 65,
+      "research/joint_search": 3,
+      "research/joint_synthesis": 136,
+      "research/streaming_join": 39,
+      "research/symbolic_fusion": 32,
+      "research/tracking_audit": 554
+    },
+    "receipt": "research_regression.txt"
+  },
+  "frozen_control": {
+    "parameter_combinations": 24,
+    "compares": [
+      "complete returned Demand/Plan objects",
+      "complete statistics dictionary",
+      "local removed/dominator witness pairs",
+      "layout witnesses"
+    ],
+    "baseline_git_blobs": {
+      "graph_dp.py": "bc640aaa618ce47bf612b6227a5abea083260b62",
+      "conditional_frontier.py": "c69bb34d6f3a714ff5e7cb0de981d0fca1ac3770"
+    }
+  },
+  "legacy_ffm_collection": {
+    "command": "python -m pytest --collect-only -q tests/test_ffm_make_pmappings.py tests/test_ffm_make_tile_shapes.py tests/test_ffm_join_pmappings.py --disable-warnings",
+    "outcome": "collection_failed_on_both_baseline_and_refactor",
+    "errors_on_each": 3,
+    "tests_collected_on_each": 0,
+    "missing_imports": [
+      "pmappingcache",
+      "make_tile_shapes",
+      "accelforge.mapper.FFM._join_pmappings.compatibility_util"
+    ],
+    "baseline_receipt": "legacy_ffm_baseline_collection.txt",
+    "refactor_receipt": "legacy_ffm_refactor_collection.txt",
+    "scope_limit": "No claim that the repository-wide or legacy production suite passed."
+  },
+  "unchanged_paths_verified_by_git_diff": [
+    "accelforge",
+    "research/joint_synthesis/exhaustive_oracle.py",
+    "research/joint_synthesis/resource_demand.py",
+    "research/joint_synthesis/schedule_rules.py",
+    "research/joint_synthesis/composition.py",
+    "research/joint_synthesis/architecture_synth.py",
+    "research/symbolic_fusion",
+    "research/joint_search",
+    "research/graph_coopt",
+    "research/diagnostics"
+  ],
+  "source_sha256": {
+    "research/joint_synthesis/graph_dp.py": "ba999de33e739f8ea905ff8ee1558ac2cd33a5160ba9707eb9efd4e7dc4480a6",
+    "research/joint_synthesis/conditional_frontier.py": "5470e346b41d80c2b4bf914baa73ea9f063af226a25a71c7f7b7279cf8abb765",
+    "research/joint_synthesis/search_engine.py": "5c5b30eeebed376d330ace51d43a9ae14408a3d796a6e75dd51eecd4db29cc2b",
+    "research/joint_synthesis/tests/test_search_engine.py": "44267242b4e049f8867f8abdd8fc80db67ab8f400ed556d5a19bb67448c5d1c7"
+  },
+  "receipt_path_normalization": "Only local home/worktree paths replaced with placeholders; test outcomes preserved."
+}

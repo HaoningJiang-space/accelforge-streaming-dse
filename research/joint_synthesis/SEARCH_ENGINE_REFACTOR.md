@@ -59,7 +59,7 @@ lifetime/interface semantics and remains separate. No FFM implementation,
 Candidate Generator, cost coefficient, Oracle, or architecture-binding code is
 changed.
 
-## Validation plan and scope
+## Validation and scope
 
 The new tests contain exact frozen copies of both baseline control routines,
 verified against these Git blob IDs:
@@ -73,11 +73,30 @@ objects, complete statistics, exact local dominator pairs and layout witnesses.
 Additional controls cover requirements/empty catalogs, injected iterators,
 repeatability, invalid providers and Pareto schema violations.
 
-Run the independent synthesis and symbolic suites, followed by the executable
-research regression suite. Record actual results separately from historical
-receipts. The legacy `tests/test_ffm_*.py` files must not be reported as passing
-when they fail collection; compare the same command on the base commit to
-identify pre-existing failures rather than changing unrelated tests here.
+The executable research regression was run against source commit
+`9df2c1e091b5625a04f2203faf9bd80f57decd34`. Its actual result was **864 passed,
+29,578 warnings, 279.03 seconds**. This includes all 136 independent synthesis
+tests (98 existing and 38 new), 32 symbolic-fusion tests, and the research FFM
+and parameterized-search controls. The 24 exact old/new control combinations
+are part of those 38 new tests. This run validates behavior, not performance;
+its elapsed time is a test-suite duration, not a search benchmark.
+
+The three legacy `tests/test_ffm_*.py` files failed collection on both the
+unchanged base and the refactor: missing `pmappingcache`, removed
+`make_tile_shapes`, and missing `_join_pmappings.compatibility_util` imports.
+No tests were collected from those files. These failures were left unchanged;
+this is not a passing repository-wide or legacy production-suite result.
+
+The [summary and source hashes](results/search_engine_refactor/summary.json),
+[research run](results/search_engine_refactor/research_regression.txt),
+[baseline legacy collection](results/search_engine_refactor/legacy_ffm_baseline_collection.txt)
+and [refactor legacy collection](results/search_engine_refactor/legacy_ffm_refactor_collection.txt)
+preserve the evidence. Local home/worktree paths in the logs were replaced by
+placeholders. A Git diff also confirms that the native AccelForge implementation,
+execution Oracle, schedule/cost/composition rules, architecture binding,
+symbolic-fusion study and existing baseline/diagnostic modules are unchanged.
+
+Reproduce the synthesis/symbolic subset or the full research run with:
 
 ```sh
 python -m pytest -q research/joint_synthesis/tests research/symbolic_fusion/tests --disable-warnings
