@@ -32,7 +32,9 @@ def flat(family, capacity=None, cache_factors=False):
     return [(s, next(p for t, p in states if t is s)) for s in frontier((s for s, _ in states),grounded=True)], stats
 
 
-def eliminate(family, capacity=None, reverse=False, conditional=False):
+def eliminate(family, capacity=None, reverse=False, conditional=False, grounded=False):
+    if grounded and conditional:
+        raise ValueError("grounded elimination cannot return a universal frontier")
     if conditional and capacity is not None:
         raise ValueError('a budget-bound search cannot claim a universal effect frontier')
     cache = {}; roots = []; stats = dict(factor_evaluations=0, compositions=0,
@@ -61,7 +63,7 @@ def eliminate(family, capacity=None, reverse=False, conditional=False):
                 if capacity is None or state.peak <= capacity:
                     local.append(state)
             stats['local_alternatives'] += len(local)
-            kept = frontier(local)
+            kept = frontier(local,grounded=grounded)
             stats['local_frontier_states'] += len(kept)
             stats['dominance_witnesses'] += len(local)-len(kept)
             input_states = len(partial)
@@ -71,14 +73,15 @@ def eliminate(family, capacity=None, reverse=False, conditional=False):
                 candidates.append(combine(left, right))
             if stage==2:
                 stats['root_materializations'] += len(candidates)
-            partial = frontier(candidates)
+            partial = frontier(candidates,grounded=grounded)
             stats['separator_trace'].append(dict(stripe=stripe,stage=stage,
                 input_states=input_states,local_alternatives=len(local),local_frontier=len(kept),
                 partial_materializations=len(candidates),kept_states=len(partial)))
             stats['peak_partial_frontier'] = max(stats['peak_partial_frontier'], len(partial))
         stats['root_survivors'] += len(partial)
         roots.extend((s, Plan(stripe, s.tiles)) for s in partial)
-    effects = frontier(s for s, _ in roots)
-    stats['conditional_root_states'] = len(effects)
+    effects = frontier((s for s, _ in roots),grounded=grounded)
+    stats['dominance_mode'] = 'grounded' if grounded else 'universal'
+    stats['conditional_root_states'] = None if grounded else len(effects)
     kept = effects if conditional else frontier(effects,grounded=True)
     return [(s, next(p for t, p in roots if t is s)) for s in kept], stats
