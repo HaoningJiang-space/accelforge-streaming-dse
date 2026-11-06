@@ -1,0 +1,77 @@
+{
+  "status": "complete",
+  "base_commit": "76c496157706669443b95ca081907ef42210a97e",
+  "type": "Source-level proposition plus historical-archive cross-check; not a new experiment.",
+  "rows": [
+    {
+      "shape": [
+        16,
+        384
+      ],
+      "mapping_id": "20eae11943d378b4",
+      "present_as_events_ru_high_capacity_selected_source": true,
+      "causal_source_capacity_bytes": 135168,
+      "fixed_mapping_feasible_at_131072_bytes": false,
+      "fixed_mapping_feasible_at_135168_bytes": true,
+      "native_matmul1_tensors_bits": {
+        "T1": 524288,
+        "W1": 32768,
+        "T2": 524288
+      },
+      "native_matmul1_reservation_bits": 1081344,
+      "independent_physical_lifetime_proof": false
+    },
+    {
+      "shape": [
+        32,
+        192
+      ],
+      "mapping_id": "cdb9a8ad3cc0e9b3",
+      "present_as_events_ru_high_capacity_selected_source": true,
+      "causal_source_capacity_bytes": 135168,
+      "fixed_mapping_feasible_at_131072_bytes": false,
+      "fixed_mapping_feasible_at_135168_bytes": true,
+      "native_matmul1_tensors_bits": {
+        "T1": 524288,
+        "W1": 32768,
+        "T2": 524288
+      },
+      "native_matmul1_reservation_bits": 1081344,
+      "independent_physical_lifetime_proof": false
+    },
+    {
+      "shape": [
+        64,
+        96
+      ],
+      "mapping_id": "2ccc239546c9eb78",
+      "present_as_events_ru_high_capacity_selected_source": true,
+      "causal_source_capacity_bytes": 135168,
+      "fixed_mapping_feasible_at_131072_bytes": false,
+      "fixed_mapping_feasible_at_135168_bytes": true,
+      "native_matmul1_tensors_bits": {
+        "T1": 524288,
+        "W1": 32768,
+        "T2": 524288
+      },
+      "native_matmul1_reservation_bits": 1081344,
+      "independent_physical_lifetime_proof": false
+    }
+  ],
+  "checks": [
+    "All three 132-KiB Events RU selected IDs equal the causal source IDs.",
+    "All three stored fixed mappings fail at 128 KiB and pass at 132 KiB.",
+    "Native Matmul1 T1/T2/W1 reservation terms sum exactly to 132 KiB.",
+    "Frozen search/model/Oracle and prior diagnostic code unchanged."
+  ],
+  "source_sha256": {
+    "research/diagnostics/results/search_cost_3mm/events_ru_1.json": "2ea7e4062590da801ca9458a9a00925c5d73dd26da5fbe9569c70db1c870e5a9",
+    "research/diagnostics/results/causal_3mm_controls.json": "ac237e6bb64b35cff6166117e6f64c825e214087041c1331f58d0ed37f9990af"
+  },
+  "native_search_runs": 0,
+  "native_model_evaluations": 0,
+  "test_suite_runs": 0,
+  "new_generation_tasks_skipped": 0,
+  "scope": "Only rejects claiming shared model/output avoidance from low-capacity-only infeasibility. Does not bound unsuccessful prefix work or alternative model/decomposition algorithms.",
+  "formula_limit": "Full-residency family bound assumes disjoint simultaneously reserved intermediates and positive scratch; does not infer those premises from top-level Storage or prove a 4-KiB scratch minimum."
+}

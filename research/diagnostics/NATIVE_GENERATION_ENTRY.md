@@ -189,3 +189,96 @@ records exact archive/source hashes and unchanged frozen paths. The **26 existin
 tests above passed in 1.03 seconds**; see [tests.txt](results/native_generation_entry/tests.txt).
 The prior 873-test research result remains historical; this round does not claim
 to rerun it or the legacy production suite, or to rerun a native DSE benchmark.
+
+## Contract clarification and a shared-work elimination condition
+
+The research correctness target is an independent, explicitly declared physical
+plan space, not replication of all FFM fallback/Pareto histories. FFM policy
+reproduction remains a separate baseline/regression contract. A physical-space
+theorem must specify supported loops, copies, scope transitions, target hardware
+and objectives; it cannot import historical policy membership as physical law.
+This clarification does not supply the missing native Fusion grammar or extend
+the existing independent Oracle. Those remain unproved parts of the bridge.
+
+Before implementing even a sound early capacity test, account for the strong
+baseline's sharing. Fix **one PE shape**, its declared capacity targets A, and
+the baseline's per-target retained assignments P_a. No nesting or monotonicity
+of these policy sets is assumed. The unique physical assignments materialized
+after target enumeration are U = union_a P_a, with a separate membership relation.
+
+**Unique-output condition.** Suppose a prefilter only removes target/assignment
+pairs that cannot legally execute and the matched baseline already excludes
+those pairs. Preserving each P_a therefore preserves U. Such a filter cannot
+reduce the count of materialized unique output assignments merely by making
+their already-empty target memberships known sooner.
+
+**Proof.** Every removed pair is absent from its P_a, so subtracting those pairs
+leaves every P_a unchanged. Taking their union leaves U unchanged. In particular,
+an assignment still needed at any other target remains in U. This argument does
+not replace target-specific fallback with largest-capacity filtering.
+
+This set argument is not a proof that deleting an infeasible **partial state**
+preserves FFM policy. Such a change can alter fallback/Pareto histories and hence
+P_a; that requires its own proof if policy reproduction is the chosen contract.
+
+The corresponding *atomic Job* condition follows directly from the current
+evaluation schedule: `_make_tile_shapes` calls `run_model(job)` once **before**
+`get_tile_shape_choices_for_targets`. If some target still requires that Job's
+evaluation and the model evaluator is left unchanged and indivisible, removing
+only other targets cannot eliminate its one shared model call. A cheaper model
+replacement or a different, proved decomposition is outside this condition.
+
+These are work-accounting propositions for this sharing/evaluation model, not
+lower bounds on every possible optimizer. Identical final U can coexist with
+fewer unsuccessful intermediate prefixes, fewer policy operations, or a cheaper
+evaluation algorithm. Those effects must be proved and measured separately;
+output cardinality alone cannot establish or rule them out.
+
+### Applying the condition to the actual 128/132-KiB witness
+
+Consider the restricted family whose Matmul1 execution reserves disjoint full
+T1 and T2 buffers simultaneously, plus positive distinct W1 scratch. Conditional
+on those explicit physical premises, every member requires at least
+`65,536 + 65,536 + w` bytes, with `w >= 1`. Thus the family is impossible at
+128 KiB. This is a family-wide arithmetic implication of the premises, not an
+inference from top-level Storage labels. Independent execution coverage of every
+completion under those premises is not established here. In particular, the
+three observed 4-KiB scratch Tiles do **not** prove a 4-KiB minimum over that family.
+
+The saved high-capacity native mappings have w=4,096 bytes and need exactly
+135,168 bytes. Their Mapping IDs also occur as the high-capacity selected sources
+in the archived **Events + Cache RU** run:
+
+| PE shape | C=132 KiB Mapping ID in both records |
+| --- | --- |
+| 16x384 | `20eae11943d378b4` |
+| 32x192 | `cdb9a8ad3cc0e9b3` |
+| 64x96 | `2ccc239546c9eb78` |
+
+The causal records reject each fixed mapping at 128 KiB and accept it at 132 KiB.
+The [archive check](results/native_generation_entry/shared_target_check.json)
+verifies IDs, exact native Matmul1 reservation sums and both migrations. This
+cross-check uses stored native-model results; it is not a new independent
+physical-lifetime proof, new DSE run, or assertion that every selected source is
+the unique representative of its numerical point.
+
+Consequently, an early rule that *only* rejects the low-capacity instances cannot
+remove these already-shared high-capacity evaluations or their required physical
+assignments from a source-preserving replay. It has not shown new `run_model` or
+unique-output savings against this baseline. For a numerical-frontier contract,
+different sources could replace them, but that would require a separate coverage
+proof rather than this capacity argument. Whether an earlier test saves failed
+enumeration-prefix work remains unmeasured.
+
+This rejects implementing that capacity-only idea on the strength of the
+132-KiB example alone. It does not reject correlated physical decision
+elimination in general. The research gap is now two proof obligations, not one:
+**the eliminated family is safely covered, and the expensive shared work needed
+by the retained targets actually disappears or becomes cheaper.** Neither follows
+from the other. No new pruning rule, observer, optimizer or benchmark is added
+by this contract clarification.
+
+This section is a source-level argument and archive cross-check only. No test
+suite, native mapping evaluation or search was rerun; prior execution receipts
+remain historical. The location of work in the current `run_model` is not a
+theoretical lower bound on constructing a different sufficient representation.
