@@ -1,0 +1,283 @@
+{
+  "status": "complete",
+  "shape": [
+    2,
+    2,
+    2,
+    2
+  ],
+  "policy": "local_only",
+  "policy_parameters": {
+    "include_spill_reload": true,
+    "local_pruning": true,
+    "layout_pruning": false,
+    "order_seed": null
+  },
+  "model": {
+    "mac_energy": 1,
+    "sram_byte_energy": 1,
+    "dram_byte_energy": 8,
+    "burst_setup_cycles": 1
+  },
+  "cold_s": 0.013794415979646146,
+  "warm_s": 0.013653542031534016,
+  "cold_warm_exact_plans_and_statistics_equal": true,
+  "work": {
+    "raw_prefixes": 96,
+    "raw_consumers": 96,
+    "retained_prefixes": 42,
+    "retained_consumers": 37,
+    "prefix_states_by_interface": [
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+        "states": 8
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+        "states": 13
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+        "states": 8
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+        "states": 13
+      }
+    ],
+    "consumer_states_by_interface": [
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+        "states": 8
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+        "states": 13
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+        "states": 8
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+        "states": 8
+      }
+    ],
+    "materialized_complete_pairs": 1682,
+    "raw_complete_pairs": 10368,
+    "raw_kernel_pairs": 9216,
+    "materialized_kernel_pairs": 1554,
+    "layout_pruning": false,
+    "layout_pairs_skipped": 0,
+    "layout_alternatives_skipped": 0,
+    "root_states_by_enforcer": {
+      "direct": 19
+    },
+    "local_pruning": true,
+    "frontier_work": {
+      "prefix": {
+        "inputs": 96,
+        "peak_kept": 13,
+        "dominance_checks": 784,
+        "pruned": 54
+      },
+      "consumer": {
+        "inputs": 96,
+        "peak_kept": 13,
+        "dominance_checks": 647,
+        "pruned": 59
+      },
+      "root": {
+        "inputs": 1682,
+        "peak_kept": 20,
+        "dominance_checks": 10051,
+        "pruned": 1663
+      }
+    },
+    "enforcer_grammar": "direct_and_spill_reload",
+    "root_frontier_states": 19,
+    "architecture_points_supplied": 0,
+    "oracle_responses_used": false,
+    "ffm_search_calls": 0
+  },
+  "frontier": [
+    [
+      1,
+      1,
+      6,
+      880,
+      56,
+      80
+    ],
+    [
+      1,
+      1,
+      8,
+      736,
+      48,
+      64
+    ],
+    [
+      1,
+      1,
+      12,
+      592,
+      40,
+      48
+    ],
+    [
+      1,
+      1,
+      14,
+      520,
+      36,
+      40
+    ],
+    [
+      1,
+      1,
+      16,
+      520,
+      32,
+      40
+    ],
+    [
+      1,
+      2,
+      10,
+      736,
+      28,
+      64
+    ],
+    [
+      1,
+      2,
+      14,
+      448,
+      26,
+      32
+    ],
+    [
+      1,
+      2,
+      14,
+      592,
+      23,
+      48
+    ],
+    [
+      1,
+      2,
+      16,
+      520,
+      20,
+      40
+    ],
+    [
+      1,
+      2,
+      20,
+      448,
+      15,
+      32
+    ],
+    [
+      1,
+      2,
+      24,
+      448,
+      14,
+      32
+    ],
+    [
+      2,
+      1,
+      10,
+      736,
+      34,
+      64
+    ],
+    [
+      2,
+      1,
+      14,
+      448,
+      24,
+      32
+    ],
+    [
+      2,
+      1,
+      20,
+      448,
+      21,
+      32
+    ],
+    [
+      2,
+      2,
+      14,
+      448,
+      22,
+      32
+    ],
+    [
+      2,
+      2,
+      16,
+      448,
+      20,
+      32
+    ],
+    [
+      2,
+      2,
+      16,
+      520,
+      18,
+      40
+    ],
+    [
+      2,
+      2,
+      20,
+      448,
+      12,
+      32
+    ],
+    [
+      2,
+      2,
+      24,
+      448,
+      8,
+      32
+    ]
+  ],
+  "plans_sha256": "216d2b6a7f3fb250fecf3b1df788e92f956c25a7a6ad06520e8a572230c7522f",
+  "observation": null,
+  "source_sha256": {
+    "research/diagnostics/SEARCH_WORK_BOUNDARY_PROTOCOL.md": "7f3b8e3222725bfd770932c0e5db37871d37a44f3a3c0426b0507c65833b8bca",
+    "research/diagnostics/profile_search_work.py": "a327dd97a31041df4e466691f94363145aa94b24e4627a4806d77c37d6c8c26c",
+    "research/diagnostics/search_work_boundary.py": "5c44398ae2ab5996e2fc468f5a43aef440c0e654365e5bf7a74ca4e41e668f38",
+    "research/joint_synthesis/__init__.py": "a0b711e2a1230afee720480f865a7da411572d0dfdb3915d18d9d1b8300cb5c1",
+    "research/joint_synthesis/architecture_oracle.py": "3f9782df11c5df3531bf3fd8ed625d7d503f9a954605fed5a919e31a1cf1b8ea",
+    "research/joint_synthesis/architecture_synth.py": "74473f1a9ec5d77805016243d42b89dcd4c51344993b2dd6e34a55d57c70d352",
+    "research/joint_synthesis/composition.py": "57c93a3c2c35665654c9e3e320314af0663ae26f066e1c548b343baeeb81f8ae",
+    "research/joint_synthesis/conditional_frontier.py": "5470e346b41d80c2b4bf914baa73ea9f063af226a25a71c7f7b7279cf8abb765",
+    "research/joint_synthesis/exhaustive_oracle.py": "73e3cbe6373ed0083da860d52fc71891798ad05a342e292949e5039549b0880d",
+    "research/joint_synthesis/graph_dp.py": "ba999de33e739f8ea905ff8ee1558ac2cd33a5160ba9707eb9efd4e7dc4480a6",
+    "research/joint_synthesis/graph_ir.py": "24f8577cdcb9c84e86c5f6b6e698bc35b96dae6261a7330188745e2e13db5c8a",
+    "research/joint_synthesis/hardware_ir.py": "548c1afe6240351e06fbac6000fcbe57a1b98c72c71122147eb19034bde643cb",
+    "research/joint_synthesis/layout_rule.py": "1d536ba394c5175aaf58d996a7ac600712aaf700827b8283d2a7dc79e5d011a5",
+    "research/joint_synthesis/physical_plan.py": "dd64d7358308922f2e2069c7f2f4d5ba452c6317655ec1a4d41dc0f310a5ff32",
+    "research/joint_synthesis/requirements.py": "b43140c785a8487093105d5edb9fa2c44a6f067580ba8587b46424378e5ac494",
+    "research/joint_synthesis/resource_demand.py": "b1afe314a45a0ea4acec2cf8a1e44fddb01c8f1893c01ed7c565b054ac48ae2c",
+    "research/joint_synthesis/schedule_rules.py": "f5f544455bd2f4f39072ce18fd65656e41ee1e6fcaa0f132706430c27127084b",
+    "research/joint_synthesis/search_engine.py": "5c5b30eeebed376d330ace51d43a9ae14408a3d796a6e75dd51eecd4db29cc2b",
+    "research/joint_synthesis/validate.py": "8d39e2d3f2309e21e5ecc9d85ed0efa72b91b5c5c5e3d5e1358f541a1f307f3f",
+    "research/joint_synthesis/validate_architecture.py": "2f19d9b90f811f94710a8b919ec814ea95c67f27112451a48eaa4a9b2e3352c9",
+    "research/joint_synthesis/validate_enforcers.py": "77e91757558e96733d635f7904fee201c9583bd6861791e0556ff4cd77ea608d",
+    "research/joint_synthesis/validate_oracle.py": "bea4f82555f064376f112aa848a2c3d431ccd1907b503ffa5db00bc3629fdb70"
+  }
+}

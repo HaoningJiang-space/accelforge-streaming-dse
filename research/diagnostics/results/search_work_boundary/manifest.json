@@ -1,0 +1,83 @@
+{
+  "status": "complete",
+  "frozen_engine_base": "9e1002dca5146f58f8264fc8abb9613b3f595098",
+  "executed_diagnostic_commit": "d121f6fcce7442b046c2db48220e98aa396a0113",
+  "protocol": "research/diagnostics/SEARCH_WORK_BOUNDARY_PROTOCOL.md",
+  "fresh_process_trials": 27,
+  "additional_observation_passes": 9,
+  "all_policy_full_numerical_frontiers_equal": true,
+  "all_observed_exact_plans_and_statistics_equal": true,
+  "all_exclusive_partitions_equal": true,
+  "all_candidate_construction_evaluation_counts_reconciled": true,
+  "all_composition_conversion_complete_object_counts_reconciled": true,
+  "frozen_paths_verified_unchanged": [
+    "accelforge",
+    "research/joint_synthesis",
+    "research/symbolic_fusion",
+    "research/joint_search",
+    "research/tracking_audit",
+    "research/graph_coopt"
+  ],
+  "historical_native_reference": {
+    "rerun": false,
+    "report": "research/diagnostics/SEARCH_COST_3MM.md",
+    "raw_summary": "research/diagnostics/results/search_cost_3mm/summary.json",
+    "raw_summary_sha256": "9fce3a48dace6c6ff7ebfb3cabaf29148faa933b91bfc808c700363dcf394cc5",
+    "variant": "events_ru",
+    "warm_median_s": 6.466991958906874,
+    "instrumented_total_s": 6.43054366693832,
+    "generation_inclusive_s": 5.52106829197146,
+    "join_inclusive_s": 0.8553972501540557,
+    "symbolic_model_inclusive_s": 1.6470485798781738,
+    "work": {
+      "expansion_calls": 380,
+      "expanded_rows": 34189,
+      "model_rows": 8994,
+      "model_templates": 126,
+      "join_pair_rows": 55394,
+      "largest_pair_frame": 2772,
+      "frame_pareto_calls": 736,
+      "frame_pareto_input_rows": 74377,
+      "frame_pareto_output_rows": 31587,
+      "largest_pareto_input_rows": 2772
+    },
+    "same_grammar_or_model_as_restricted_2mm": false,
+    "cross_system_speed_or_quality_ratio_valid": false
+  },
+  "source_sha256": {
+    "research/diagnostics/SEARCH_WORK_BOUNDARY_PROTOCOL.md": "7f3b8e3222725bfd770932c0e5db37871d37a44f3a3c0426b0507c65833b8bca",
+    "research/diagnostics/profile_search_work.py": "a327dd97a31041df4e466691f94363145aa94b24e4627a4806d77c37d6c8c26c",
+    "research/diagnostics/search_work_boundary.py": "5c44398ae2ab5996e2fc468f5a43aef440c0e654365e5bf7a74ca4e41e668f38",
+    "research/joint_synthesis/__init__.py": "a0b711e2a1230afee720480f865a7da411572d0dfdb3915d18d9d1b8300cb5c1",
+    "research/joint_synthesis/architecture_oracle.py": "3f9782df11c5df3531bf3fd8ed625d7d503f9a954605fed5a919e31a1cf1b8ea",
+    "research/joint_synthesis/architecture_synth.py": "74473f1a9ec5d77805016243d42b89dcd4c51344993b2dd6e34a55d57c70d352",
+    "research/joint_synthesis/composition.py": "57c93a3c2c35665654c9e3e320314af0663ae26f066e1c548b343baeeb81f8ae",
+    "research/joint_synthesis/conditional_frontier.py": "5470e346b41d80c2b4bf914baa73ea9f063af226a25a71c7f7b7279cf8abb765",
+    "research/joint_synthesis/exhaustive_oracle.py": "73e3cbe6373ed0083da860d52fc71891798ad05a342e292949e5039549b0880d",
+    "research/joint_synthesis/graph_dp.py": "ba999de33e739f8ea905ff8ee1558ac2cd33a5160ba9707eb9efd4e7dc4480a6",
+    "research/joint_synthesis/graph_ir.py": "24f8577cdcb9c84e86c5f6b6e698bc35b96dae6261a7330188745e2e13db5c8a",
+    "research/joint_synthesis/hardware_ir.py": "548c1afe6240351e06fbac6000fcbe57a1b98c72c71122147eb19034bde643cb",
+    "research/joint_synthesis/layout_rule.py": "1d536ba394c5175aaf58d996a7ac600712aaf700827b8283d2a7dc79e5d011a5",
+    "research/joint_synthesis/physical_plan.py": "dd64d7358308922f2e2069c7f2f4d5ba452c6317655ec1a4d41dc0f310a5ff32",
+    "research/joint_synthesis/requirements.py": "b43140c785a8487093105d5edb9fa2c44a6f067580ba8587b46424378e5ac494",
+    "research/joint_synthesis/resource_demand.py": "b1afe314a45a0ea4acec2cf8a1e44fddb01c8f1893c01ed7c565b054ac48ae2c",
+    "research/joint_synthesis/schedule_rules.py": "f5f544455bd2f4f39072ce18fd65656e41ee1e6fcaa0f132706430c27127084b",
+    "research/joint_synthesis/search_engine.py": "5c5b30eeebed376d330ace51d43a9ae14408a3d796a6e75dd51eecd4db29cc2b",
+    "research/joint_synthesis/validate.py": "8d39e2d3f2309e21e5ecc9d85ed0efa72b91b5c5c5e3d5e1358f541a1f307f3f",
+    "research/joint_synthesis/validate_architecture.py": "2f19d9b90f811f94710a8b919ec814ea95c67f27112451a48eaa4a9b2e3352c9",
+    "research/joint_synthesis/validate_enforcers.py": "77e91757558e96733d635f7904fee201c9583bd6861791e0556ff4cd77ea608d",
+    "research/joint_synthesis/validate_oracle.py": "bea4f82555f064376f112aa848a2c3d431ccd1907b503ffa5db00bc3629fdb70"
+  },
+  "limitations": [
+    "No hardware binding or architecture points inside the restricted search timer.",
+    "Observation shares are instrumented; overhead 1.24-3.71 times same-process warm search.",
+    "No new generation avoidance mechanism, state equivalence rule or graph-specific search benefit established.",
+    "Legacy tests/test_ffm_*.py collection limitations from the frozen refactor remain; not included in the research suite."
+  ],
+  "validation_receipt": "execution_receipt.json",
+  "raw_logs_archive": {
+    "path": "trial_logs.zip",
+    "files": 28,
+    "sha256": "76e3253f7b492a004b2f28c555f6259c424379ab005f294085ff8d94aa264989"
+  }
+}

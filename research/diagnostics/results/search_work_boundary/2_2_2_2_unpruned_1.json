@@ -1,0 +1,506 @@
+{
+  "status": "complete",
+  "shape": [
+    2,
+    2,
+    2,
+    2
+  ],
+  "policy": "unpruned",
+  "policy_parameters": {
+    "include_spill_reload": true,
+    "local_pruning": false,
+    "layout_pruning": false,
+    "order_seed": null
+  },
+  "model": {
+    "mac_energy": 1,
+    "sram_byte_energy": 1,
+    "dram_byte_energy": 8,
+    "burst_setup_cycles": 1
+  },
+  "cold_s": 0.06564437493216246,
+  "warm_s": 0.06562291702721268,
+  "cold_warm_exact_plans_and_statistics_equal": true,
+  "work": {
+    "raw_prefixes": 96,
+    "raw_consumers": 96,
+    "retained_prefixes": 96,
+    "retained_consumers": 96,
+    "prefix_states_by_interface": [
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+        "states": 24
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+        "states": 24
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+        "states": 24
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+        "states": 24
+      }
+    ],
+    "consumer_states_by_interface": [
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+        "states": 24
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+        "states": 24
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+        "states": 24
+      },
+      {
+        "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+        "states": 24
+      }
+    ],
+    "materialized_complete_pairs": 10368,
+    "raw_complete_pairs": 10368,
+    "raw_kernel_pairs": 9216,
+    "materialized_kernel_pairs": 9216,
+    "layout_pruning": false,
+    "layout_pairs_skipped": 0,
+    "layout_alternatives_skipped": 0,
+    "root_states_by_enforcer": {
+      "direct": 19
+    },
+    "local_pruning": false,
+    "frontier_work": {
+      "prefix": {},
+      "consumer": {},
+      "root": {
+        "inputs": 10368,
+        "peak_kept": 20,
+        "dominance_checks": 57242,
+        "pruned": 10349
+      }
+    },
+    "enforcer_grammar": "direct_and_spill_reload",
+    "root_frontier_states": 19,
+    "architecture_points_supplied": 0,
+    "oracle_responses_used": false,
+    "ffm_search_calls": 0
+  },
+  "frontier": [
+    [
+      1,
+      1,
+      6,
+      880,
+      56,
+      80
+    ],
+    [
+      1,
+      1,
+      8,
+      736,
+      48,
+      64
+    ],
+    [
+      1,
+      1,
+      12,
+      592,
+      40,
+      48
+    ],
+    [
+      1,
+      1,
+      14,
+      520,
+      36,
+      40
+    ],
+    [
+      1,
+      1,
+      16,
+      520,
+      32,
+      40
+    ],
+    [
+      1,
+      2,
+      10,
+      736,
+      28,
+      64
+    ],
+    [
+      1,
+      2,
+      14,
+      448,
+      26,
+      32
+    ],
+    [
+      1,
+      2,
+      14,
+      592,
+      23,
+      48
+    ],
+    [
+      1,
+      2,
+      16,
+      520,
+      20,
+      40
+    ],
+    [
+      1,
+      2,
+      20,
+      448,
+      15,
+      32
+    ],
+    [
+      1,
+      2,
+      24,
+      448,
+      14,
+      32
+    ],
+    [
+      2,
+      1,
+      10,
+      736,
+      34,
+      64
+    ],
+    [
+      2,
+      1,
+      14,
+      448,
+      24,
+      32
+    ],
+    [
+      2,
+      1,
+      20,
+      448,
+      21,
+      32
+    ],
+    [
+      2,
+      2,
+      14,
+      448,
+      22,
+      32
+    ],
+    [
+      2,
+      2,
+      16,
+      448,
+      20,
+      32
+    ],
+    [
+      2,
+      2,
+      16,
+      520,
+      18,
+      40
+    ],
+    [
+      2,
+      2,
+      20,
+      448,
+      12,
+      32
+    ],
+    [
+      2,
+      2,
+      24,
+      448,
+      8,
+      32
+    ]
+  ],
+  "plans_sha256": "216d2b6a7f3fb250fecf3b1df788e92f956c25a7a6ad06520e8a572230c7522f",
+  "observation": {
+    "scopes": {
+      "catalog.consume": {
+        "calls": 1,
+        "failed_calls": 0,
+        "inclusive_s": 0.000242834,
+        "exclusive_s": 5.3751e-05
+      },
+      "catalog.produce": {
+        "calls": 1,
+        "failed_calls": 0,
+        "inclusive_s": 0.000251208,
+        "exclusive_s": 5.7416e-05
+      },
+      "complete.construct": {
+        "calls": 10368,
+        "failed_calls": 0,
+        "inclusive_s": 0.006846434,
+        "exclusive_s": 0.006846434
+      },
+      "compose": {
+        "calls": 10368,
+        "failed_calls": 0,
+        "inclusive_s": 0.040677532,
+        "exclusive_s": 0.025079934
+      },
+      "conversion": {
+        "calls": 10368,
+        "failed_calls": 0,
+        "inclusive_s": 0.008751164,
+        "exclusive_s": 0.008751164
+      },
+      "evaluate.consume": {
+        "calls": 96,
+        "failed_calls": 0,
+        "inclusive_s": 0.000111964,
+        "exclusive_s": 0.000111964
+      },
+      "evaluate.produce": {
+        "calls": 96,
+        "failed_calls": 0,
+        "inclusive_s": 0.000114,
+        "exclusive_s": 0.000114
+      },
+      "grouping.consume": {
+        "calls": 1,
+        "failed_calls": 0,
+        "inclusive_s": 0.000189083,
+        "exclusive_s": 7.7119e-05
+      },
+      "grouping.produce": {
+        "calls": 1,
+        "failed_calls": 0,
+        "inclusive_s": 0.000193792,
+        "exclusive_s": 7.9792e-05
+      },
+      "kernel.construct.consume": {
+        "calls": 96,
+        "failed_calls": 0,
+        "inclusive_s": 5.8875e-05,
+        "exclusive_s": 5.8875e-05
+      },
+      "kernel.construct.produce": {
+        "calls": 96,
+        "failed_calls": 0,
+        "inclusive_s": 6.4373e-05,
+        "exclusive_s": 6.4373e-05
+      },
+      "pareto.add.root": {
+        "calls": 10368,
+        "failed_calls": 0,
+        "inclusive_s": 0.043129768,
+        "exclusive_s": 0.043129768
+      },
+      "pareto.finish.root": {
+        "calls": 1,
+        "failed_calls": 0,
+        "inclusive_s": 3.291e-06,
+        "exclusive_s": 3.291e-06
+      },
+      "provider.generate": {
+        "calls": 1,
+        "failed_calls": 0,
+        "inclusive_s": 0.000353667,
+        "exclusive_s": 0.000230419
+      },
+      "routes": {
+        "calls": 9232,
+        "failed_calls": 0,
+        "inclusive_s": 0.003089701,
+        "exclusive_s": 0.003089701
+      },
+      "search": {
+        "calls": 1,
+        "failed_calls": 0,
+        "inclusive_s": 0.109167709,
+        "exclusive_s": 0.021419708
+      }
+    },
+    "exclusive_buckets_s": {
+      "candidate_generation": 0.000353667,
+      "catalog_control": 0.000111167,
+      "complete_materialization": 0.006846434,
+      "composition_control": 0.025079934,
+      "conversion_evaluation": 0.008751164,
+      "interface_analysis": 0.003089701,
+      "interface_grouping": 0.000156911,
+      "local_evaluation": 0.000225964,
+      "pareto_maintenance": 0.043133059,
+      "search_control": 0.021419708
+    },
+    "search_inclusive_s": 0.109167709,
+    "exclusive_partition_equal": true,
+    "attribution": "Instrumented named-scope remainders; include wrapper overhead and uninstrumented helpers.",
+    "instrumented_wall_s": 0.109174458,
+    "stages": {
+      "produce": {
+        "candidates": 96,
+        "kernel_plan_constructions": 96,
+        "evaluations": 96,
+        "retained": 96,
+        "pareto_inputs": 0,
+        "pareto_add_calls": 0,
+        "dominance_checks": 0,
+        "pareto_pruned": 0,
+        "largest_interface_frontier": 0
+      },
+      "consume": {
+        "candidates": 96,
+        "kernel_plan_constructions": 96,
+        "evaluations": 96,
+        "retained": 96,
+        "pareto_inputs": 0,
+        "pareto_add_calls": 0,
+        "dominance_checks": 0,
+        "pareto_pruned": 0,
+        "largest_interface_frontier": 0
+      }
+    },
+    "composition": {
+      "kernel_pairs_visited": 9216,
+      "layout_pairs_skipped": 0,
+      "complete_pairs_composed": 10368,
+      "complete_plan_constructions": 10368,
+      "raw_complete_alternatives": 10368,
+      "conversion_evaluations": 10368,
+      "route_queries_including_statistics": 9232,
+      "layout_match_calls": 0
+    },
+    "root_pareto": {
+      "inputs": 10368,
+      "states": 19,
+      "dominance_checks": 57242,
+      "pruned": 10349,
+      "peak_kept": 20
+    },
+    "policy": {
+      "include_spill_reload": true,
+      "local_pruning": false,
+      "layout_pruning": false,
+      "order_seed": null
+    },
+    "search_stats": {
+      "raw_prefixes": 96,
+      "raw_consumers": 96,
+      "retained_prefixes": 96,
+      "retained_consumers": 96,
+      "prefix_states_by_interface": [
+        {
+          "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+          "states": 24
+        },
+        {
+          "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+          "states": 24
+        },
+        {
+          "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+          "states": 24
+        },
+        {
+          "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+          "states": 24
+        }
+      ],
+      "consumer_states_by_interface": [
+        {
+          "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+          "states": 24
+        },
+        {
+          "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+          "states": 24
+        },
+        {
+          "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+          "states": 24
+        },
+        {
+          "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+          "states": 24
+        }
+      ],
+      "materialized_complete_pairs": 10368,
+      "raw_complete_pairs": 10368,
+      "raw_kernel_pairs": 9216,
+      "materialized_kernel_pairs": 9216,
+      "layout_pruning": false,
+      "layout_pairs_skipped": 0,
+      "layout_alternatives_skipped": 0,
+      "root_states_by_enforcer": {
+        "direct": 19
+      },
+      "local_pruning": false,
+      "frontier_work": {
+        "prefix": {},
+        "consumer": {},
+        "root": {
+          "inputs": 10368,
+          "peak_kept": 20,
+          "dominance_checks": 57242,
+          "pruned": 10349
+        }
+      },
+      "enforcer_grammar": "direct_and_spill_reload",
+      "root_frontier_states": 19,
+      "architecture_points_supplied": 0,
+      "oracle_responses_used": false,
+      "ffm_search_calls": 0
+    },
+    "no_evaluation_avoided_before_local_pareto": true,
+    "exact_plans_and_statistics_equal": true,
+    "wall_over_warm_ratio": 1.663663594148478
+  },
+  "source_sha256": {
+    "research/diagnostics/SEARCH_WORK_BOUNDARY_PROTOCOL.md": "7f3b8e3222725bfd770932c0e5db37871d37a44f3a3c0426b0507c65833b8bca",
+    "research/diagnostics/profile_search_work.py": "a327dd97a31041df4e466691f94363145aa94b24e4627a4806d77c37d6c8c26c",
+    "research/diagnostics/search_work_boundary.py": "5c44398ae2ab5996e2fc468f5a43aef440c0e654365e5bf7a74ca4e41e668f38",
+    "research/joint_synthesis/__init__.py": "a0b711e2a1230afee720480f865a7da411572d0dfdb3915d18d9d1b8300cb5c1",
+    "research/joint_synthesis/architecture_oracle.py": "3f9782df11c5df3531bf3fd8ed625d7d503f9a954605fed5a919e31a1cf1b8ea",
+    "research/joint_synthesis/architecture_synth.py": "74473f1a9ec5d77805016243d42b89dcd4c51344993b2dd6e34a55d57c70d352",
+    "research/joint_synthesis/composition.py": "57c93a3c2c35665654c9e3e320314af0663ae26f066e1c548b343baeeb81f8ae",
+    "research/joint_synthesis/conditional_frontier.py": "5470e346b41d80c2b4bf914baa73ea9f063af226a25a71c7f7b7279cf8abb765",
+    "research/joint_synthesis/exhaustive_oracle.py": "73e3cbe6373ed0083da860d52fc71891798ad05a342e292949e5039549b0880d",
+    "research/joint_synthesis/graph_dp.py": "ba999de33e739f8ea905ff8ee1558ac2cd33a5160ba9707eb9efd4e7dc4480a6",
+    "research/joint_synthesis/graph_ir.py": "24f8577cdcb9c84e86c5f6b6e698bc35b96dae6261a7330188745e2e13db5c8a",
+    "research/joint_synthesis/hardware_ir.py": "548c1afe6240351e06fbac6000fcbe57a1b98c72c71122147eb19034bde643cb",
+    "research/joint_synthesis/layout_rule.py": "1d536ba394c5175aaf58d996a7ac600712aaf700827b8283d2a7dc79e5d011a5",
+    "research/joint_synthesis/physical_plan.py": "dd64d7358308922f2e2069c7f2f4d5ba452c6317655ec1a4d41dc0f310a5ff32",
+    "research/joint_synthesis/requirements.py": "b43140c785a8487093105d5edb9fa2c44a6f067580ba8587b46424378e5ac494",
+    "research/joint_synthesis/resource_demand.py": "b1afe314a45a0ea4acec2cf8a1e44fddb01c8f1893c01ed7c565b054ac48ae2c",
+    "research/joint_synthesis/schedule_rules.py": "f5f544455bd2f4f39072ce18fd65656e41ee1e6fcaa0f132706430c27127084b",
+    "research/joint_synthesis/search_engine.py": "5c5b30eeebed376d330ace51d43a9ae14408a3d796a6e75dd51eecd4db29cc2b",
+    "research/joint_synthesis/validate.py": "8d39e2d3f2309e21e5ecc9d85ed0efa72b91b5c5c5e3d5e1358f541a1f307f3f",
+    "research/joint_synthesis/validate_architecture.py": "2f19d9b90f811f94710a8b919ec814ea95c67f27112451a48eaa4a9b2e3352c9",
+    "research/joint_synthesis/validate_enforcers.py": "77e91757558e96733d635f7904fee201c9583bd6861791e0556ff4cd77ea608d",
+    "research/joint_synthesis/validate_oracle.py": "bea4f82555f064376f112aa848a2c3d431ccd1907b503ffa5db00bc3629fdb70"
+  }
+}

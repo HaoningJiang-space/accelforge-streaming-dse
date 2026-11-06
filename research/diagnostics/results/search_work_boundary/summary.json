@@ -1,0 +1,8671 @@
+{
+  "status": "complete",
+  "repeats": 3,
+  "groups": {
+    "2,2,2,2/unpruned": {
+      "shape": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "policy": "unpruned",
+      "cold_samples_s": [
+        0.06564437493216246,
+        0.06833191704936326,
+        0.06871633301489055
+      ],
+      "warm_samples_s": [
+        0.06562291702721268,
+        0.06752962502650917,
+        0.06712079094722867
+      ],
+      "cold_median_s": 0.06833191704936326,
+      "warm_median_s": 0.06712079094722867,
+      "warm_range_s": [
+        0.06562291702721268,
+        0.06752962502650917
+      ],
+      "work": {
+        "raw_prefixes": 96,
+        "raw_consumers": 96,
+        "retained_prefixes": 96,
+        "retained_consumers": 96,
+        "prefix_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 24
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 24
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 24
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 24
+          }
+        ],
+        "consumer_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 24
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 24
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 24
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 24
+          }
+        ],
+        "materialized_complete_pairs": 10368,
+        "raw_complete_pairs": 10368,
+        "raw_kernel_pairs": 9216,
+        "materialized_kernel_pairs": 9216,
+        "layout_pruning": false,
+        "layout_pairs_skipped": 0,
+        "layout_alternatives_skipped": 0,
+        "root_states_by_enforcer": {
+          "direct": 19
+        },
+        "local_pruning": false,
+        "frontier_work": {
+          "prefix": {},
+          "consumer": {},
+          "root": {
+            "inputs": 10368,
+            "peak_kept": 20,
+            "dominance_checks": 57242,
+            "pruned": 10349
+          }
+        },
+        "enforcer_grammar": "direct_and_spill_reload",
+        "root_frontier_states": 19,
+        "architecture_points_supplied": 0,
+        "oracle_responses_used": false,
+        "ffm_search_calls": 0
+      },
+      "frontier": [
+        [
+          1,
+          1,
+          6,
+          880,
+          56,
+          80
+        ],
+        [
+          1,
+          1,
+          8,
+          736,
+          48,
+          64
+        ],
+        [
+          1,
+          1,
+          12,
+          592,
+          40,
+          48
+        ],
+        [
+          1,
+          1,
+          14,
+          520,
+          36,
+          40
+        ],
+        [
+          1,
+          1,
+          16,
+          520,
+          32,
+          40
+        ],
+        [
+          1,
+          2,
+          10,
+          736,
+          28,
+          64
+        ],
+        [
+          1,
+          2,
+          14,
+          448,
+          26,
+          32
+        ],
+        [
+          1,
+          2,
+          14,
+          592,
+          23,
+          48
+        ],
+        [
+          1,
+          2,
+          16,
+          520,
+          20,
+          40
+        ],
+        [
+          1,
+          2,
+          20,
+          448,
+          15,
+          32
+        ],
+        [
+          1,
+          2,
+          24,
+          448,
+          14,
+          32
+        ],
+        [
+          2,
+          1,
+          10,
+          736,
+          34,
+          64
+        ],
+        [
+          2,
+          1,
+          14,
+          448,
+          24,
+          32
+        ],
+        [
+          2,
+          1,
+          20,
+          448,
+          21,
+          32
+        ],
+        [
+          2,
+          2,
+          14,
+          448,
+          22,
+          32
+        ],
+        [
+          2,
+          2,
+          16,
+          448,
+          20,
+          32
+        ],
+        [
+          2,
+          2,
+          16,
+          520,
+          18,
+          40
+        ],
+        [
+          2,
+          2,
+          20,
+          448,
+          12,
+          32
+        ],
+        [
+          2,
+          2,
+          24,
+          448,
+          8,
+          32
+        ]
+      ],
+      "observation": {
+        "scopes": {
+          "catalog.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000242834,
+            "exclusive_s": 5.3751e-05
+          },
+          "catalog.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000251208,
+            "exclusive_s": 5.7416e-05
+          },
+          "complete.construct": {
+            "calls": 10368,
+            "failed_calls": 0,
+            "inclusive_s": 0.006846434,
+            "exclusive_s": 0.006846434
+          },
+          "compose": {
+            "calls": 10368,
+            "failed_calls": 0,
+            "inclusive_s": 0.040677532,
+            "exclusive_s": 0.025079934
+          },
+          "conversion": {
+            "calls": 10368,
+            "failed_calls": 0,
+            "inclusive_s": 0.008751164,
+            "exclusive_s": 0.008751164
+          },
+          "evaluate.consume": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 0.000111964,
+            "exclusive_s": 0.000111964
+          },
+          "evaluate.produce": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 0.000114,
+            "exclusive_s": 0.000114
+          },
+          "grouping.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000189083,
+            "exclusive_s": 7.7119e-05
+          },
+          "grouping.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000193792,
+            "exclusive_s": 7.9792e-05
+          },
+          "kernel.construct.consume": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 5.8875e-05,
+            "exclusive_s": 5.8875e-05
+          },
+          "kernel.construct.produce": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 6.4373e-05,
+            "exclusive_s": 6.4373e-05
+          },
+          "pareto.add.root": {
+            "calls": 10368,
+            "failed_calls": 0,
+            "inclusive_s": 0.043129768,
+            "exclusive_s": 0.043129768
+          },
+          "pareto.finish.root": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 3.291e-06,
+            "exclusive_s": 3.291e-06
+          },
+          "provider.generate": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000353667,
+            "exclusive_s": 0.000230419
+          },
+          "routes": {
+            "calls": 9232,
+            "failed_calls": 0,
+            "inclusive_s": 0.003089701,
+            "exclusive_s": 0.003089701
+          },
+          "search": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.109167709,
+            "exclusive_s": 0.021419708
+          }
+        },
+        "exclusive_buckets_s": {
+          "candidate_generation": 0.000353667,
+          "catalog_control": 0.000111167,
+          "complete_materialization": 0.006846434,
+          "composition_control": 0.025079934,
+          "conversion_evaluation": 0.008751164,
+          "interface_analysis": 0.003089701,
+          "interface_grouping": 0.000156911,
+          "local_evaluation": 0.000225964,
+          "pareto_maintenance": 0.043133059,
+          "search_control": 0.021419708
+        },
+        "search_inclusive_s": 0.109167709,
+        "exclusive_partition_equal": true,
+        "attribution": "Instrumented named-scope remainders; include wrapper overhead and uninstrumented helpers.",
+        "instrumented_wall_s": 0.109174458,
+        "stages": {
+          "produce": {
+            "candidates": 96,
+            "kernel_plan_constructions": 96,
+            "evaluations": 96,
+            "retained": 96,
+            "pareto_inputs": 0,
+            "pareto_add_calls": 0,
+            "dominance_checks": 0,
+            "pareto_pruned": 0,
+            "largest_interface_frontier": 0
+          },
+          "consume": {
+            "candidates": 96,
+            "kernel_plan_constructions": 96,
+            "evaluations": 96,
+            "retained": 96,
+            "pareto_inputs": 0,
+            "pareto_add_calls": 0,
+            "dominance_checks": 0,
+            "pareto_pruned": 0,
+            "largest_interface_frontier": 0
+          }
+        },
+        "composition": {
+          "kernel_pairs_visited": 9216,
+          "layout_pairs_skipped": 0,
+          "complete_pairs_composed": 10368,
+          "complete_plan_constructions": 10368,
+          "raw_complete_alternatives": 10368,
+          "conversion_evaluations": 10368,
+          "route_queries_including_statistics": 9232,
+          "layout_match_calls": 0
+        },
+        "root_pareto": {
+          "inputs": 10368,
+          "states": 19,
+          "dominance_checks": 57242,
+          "pruned": 10349,
+          "peak_kept": 20
+        },
+        "policy": {
+          "include_spill_reload": true,
+          "local_pruning": false,
+          "layout_pruning": false,
+          "order_seed": null
+        },
+        "search_stats": {
+          "raw_prefixes": 96,
+          "raw_consumers": 96,
+          "retained_prefixes": 96,
+          "retained_consumers": 96,
+          "prefix_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 24
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 24
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 24
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 24
+            }
+          ],
+          "consumer_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 24
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 24
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 24
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 24
+            }
+          ],
+          "materialized_complete_pairs": 10368,
+          "raw_complete_pairs": 10368,
+          "raw_kernel_pairs": 9216,
+          "materialized_kernel_pairs": 9216,
+          "layout_pruning": false,
+          "layout_pairs_skipped": 0,
+          "layout_alternatives_skipped": 0,
+          "root_states_by_enforcer": {
+            "direct": 19
+          },
+          "local_pruning": false,
+          "frontier_work": {
+            "prefix": {},
+            "consumer": {},
+            "root": {
+              "inputs": 10368,
+              "peak_kept": 20,
+              "dominance_checks": 57242,
+              "pruned": 10349
+            }
+          },
+          "enforcer_grammar": "direct_and_spill_reload",
+          "root_frontier_states": 19,
+          "architecture_points_supplied": 0,
+          "oracle_responses_used": false,
+          "ffm_search_calls": 0
+        },
+        "no_evaluation_avoided_before_local_pareto": true,
+        "exact_plans_and_statistics_equal": true,
+        "wall_over_warm_ratio": 1.663663594148478
+      },
+      "all_replicates_exact_equal": true
+    },
+    "2,2,2,2/local_only": {
+      "shape": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "policy": "local_only",
+      "cold_samples_s": [
+        0.013422125019133091,
+        0.013401499949395657,
+        0.013794415979646146
+      ],
+      "warm_samples_s": [
+        0.012873833067715168,
+        0.013193291961215436,
+        0.013653542031534016
+      ],
+      "cold_median_s": 0.013422125019133091,
+      "warm_median_s": 0.013193291961215436,
+      "warm_range_s": [
+        0.012873833067715168,
+        0.013653542031534016
+      ],
+      "work": {
+        "raw_prefixes": 96,
+        "raw_consumers": 96,
+        "retained_prefixes": 42,
+        "retained_consumers": 37,
+        "prefix_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 8
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 13
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 8
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 13
+          }
+        ],
+        "consumer_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 8
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 13
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 8
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 8
+          }
+        ],
+        "materialized_complete_pairs": 1682,
+        "raw_complete_pairs": 10368,
+        "raw_kernel_pairs": 9216,
+        "materialized_kernel_pairs": 1554,
+        "layout_pruning": false,
+        "layout_pairs_skipped": 0,
+        "layout_alternatives_skipped": 0,
+        "root_states_by_enforcer": {
+          "direct": 19
+        },
+        "local_pruning": true,
+        "frontier_work": {
+          "prefix": {
+            "inputs": 96,
+            "peak_kept": 13,
+            "dominance_checks": 784,
+            "pruned": 54
+          },
+          "consumer": {
+            "inputs": 96,
+            "peak_kept": 13,
+            "dominance_checks": 647,
+            "pruned": 59
+          },
+          "root": {
+            "inputs": 1682,
+            "peak_kept": 20,
+            "dominance_checks": 10051,
+            "pruned": 1663
+          }
+        },
+        "enforcer_grammar": "direct_and_spill_reload",
+        "root_frontier_states": 19,
+        "architecture_points_supplied": 0,
+        "oracle_responses_used": false,
+        "ffm_search_calls": 0
+      },
+      "frontier": [
+        [
+          1,
+          1,
+          6,
+          880,
+          56,
+          80
+        ],
+        [
+          1,
+          1,
+          8,
+          736,
+          48,
+          64
+        ],
+        [
+          1,
+          1,
+          12,
+          592,
+          40,
+          48
+        ],
+        [
+          1,
+          1,
+          14,
+          520,
+          36,
+          40
+        ],
+        [
+          1,
+          1,
+          16,
+          520,
+          32,
+          40
+        ],
+        [
+          1,
+          2,
+          10,
+          736,
+          28,
+          64
+        ],
+        [
+          1,
+          2,
+          14,
+          448,
+          26,
+          32
+        ],
+        [
+          1,
+          2,
+          14,
+          592,
+          23,
+          48
+        ],
+        [
+          1,
+          2,
+          16,
+          520,
+          20,
+          40
+        ],
+        [
+          1,
+          2,
+          20,
+          448,
+          15,
+          32
+        ],
+        [
+          1,
+          2,
+          24,
+          448,
+          14,
+          32
+        ],
+        [
+          2,
+          1,
+          10,
+          736,
+          34,
+          64
+        ],
+        [
+          2,
+          1,
+          14,
+          448,
+          24,
+          32
+        ],
+        [
+          2,
+          1,
+          20,
+          448,
+          21,
+          32
+        ],
+        [
+          2,
+          2,
+          14,
+          448,
+          22,
+          32
+        ],
+        [
+          2,
+          2,
+          16,
+          448,
+          20,
+          32
+        ],
+        [
+          2,
+          2,
+          16,
+          520,
+          18,
+          40
+        ],
+        [
+          2,
+          2,
+          20,
+          448,
+          12,
+          32
+        ],
+        [
+          2,
+          2,
+          24,
+          448,
+          8,
+          32
+        ]
+      ],
+      "observation": {
+        "scopes": {
+          "catalog.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000809791,
+            "exclusive_s": 5.7083e-05
+          },
+          "catalog.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000857125,
+            "exclusive_s": 6.05e-05
+          },
+          "complete.construct": {
+            "calls": 1682,
+            "failed_calls": 0,
+            "inclusive_s": 0.001106142,
+            "exclusive_s": 0.001106142
+          },
+          "compose": {
+            "calls": 1682,
+            "failed_calls": 0,
+            "inclusive_s": 0.006565111,
+            "exclusive_s": 0.004063744
+          },
+          "conversion": {
+            "calls": 1682,
+            "failed_calls": 0,
+            "inclusive_s": 0.001395225,
+            "exclusive_s": 0.001395225
+          },
+          "evaluate.consume": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 0.000125337,
+            "exclusive_s": 0.000125337
+          },
+          "evaluate.produce": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 0.000116877,
+            "exclusive_s": 0.000116877
+          },
+          "grouping.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000752708,
+            "exclusive_s": 0.000169165
+          },
+          "grouping.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000796625,
+            "exclusive_s": 0.00016421
+          },
+          "kernel.construct.consume": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 6e-05,
+            "exclusive_s": 6e-05
+          },
+          "kernel.construct.produce": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 6.5588e-05,
+            "exclusive_s": 6.5588e-05
+          },
+          "pareto.add.consume": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 0.000452289,
+            "exclusive_s": 0.000452289
+          },
+          "pareto.add.produce": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 0.000510247,
+            "exclusive_s": 0.000510247
+          },
+          "pareto.add.root": {
+            "calls": 1682,
+            "failed_calls": 0,
+            "inclusive_s": 0.007516659,
+            "exclusive_s": 0.007516659
+          },
+          "pareto.finish.consume": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 5.917e-06,
+            "exclusive_s": 5.917e-06
+          },
+          "pareto.finish.produce": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 5.291e-06,
+            "exclusive_s": 5.291e-06
+          },
+          "pareto.finish.root": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 2.167e-06,
+            "exclusive_s": 2.167e-06
+          },
+          "provider.generate": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000364334,
+            "exclusive_s": 0.000238746
+          },
+          "routes": {
+            "calls": 1570,
+            "failed_calls": 0,
+            "inclusive_s": 0.000514306,
+            "exclusive_s": 0.000514306
+          },
+          "search": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.020045666,
+            "exclusive_s": 0.003416173
+          }
+        },
+        "exclusive_buckets_s": {
+          "candidate_generation": 0.000364334,
+          "catalog_control": 0.000117583,
+          "complete_materialization": 0.001106142,
+          "composition_control": 0.004063744,
+          "conversion_evaluation": 0.001395225,
+          "interface_analysis": 0.000514306,
+          "interface_grouping": 0.000333375,
+          "local_evaluation": 0.000242214,
+          "pareto_maintenance": 0.00849257,
+          "search_control": 0.003416173
+        },
+        "search_inclusive_s": 0.020045666,
+        "exclusive_partition_equal": true,
+        "attribution": "Instrumented named-scope remainders; include wrapper overhead and uninstrumented helpers.",
+        "instrumented_wall_s": 0.020050917,
+        "stages": {
+          "produce": {
+            "candidates": 96,
+            "kernel_plan_constructions": 96,
+            "evaluations": 96,
+            "retained": 42,
+            "pareto_inputs": 96,
+            "pareto_add_calls": 96,
+            "dominance_checks": 784,
+            "pareto_pruned": 54,
+            "largest_interface_frontier": 13
+          },
+          "consume": {
+            "candidates": 96,
+            "kernel_plan_constructions": 96,
+            "evaluations": 96,
+            "retained": 37,
+            "pareto_inputs": 96,
+            "pareto_add_calls": 96,
+            "dominance_checks": 647,
+            "pareto_pruned": 59,
+            "largest_interface_frontier": 13
+          }
+        },
+        "composition": {
+          "kernel_pairs_visited": 1554,
+          "layout_pairs_skipped": 0,
+          "complete_pairs_composed": 1682,
+          "complete_plan_constructions": 1682,
+          "raw_complete_alternatives": 10368,
+          "conversion_evaluations": 1682,
+          "route_queries_including_statistics": 1570,
+          "layout_match_calls": 0
+        },
+        "root_pareto": {
+          "inputs": 1682,
+          "states": 19,
+          "dominance_checks": 10051,
+          "pruned": 1663,
+          "peak_kept": 20
+        },
+        "policy": {
+          "include_spill_reload": true,
+          "local_pruning": true,
+          "layout_pruning": false,
+          "order_seed": null
+        },
+        "search_stats": {
+          "raw_prefixes": 96,
+          "raw_consumers": 96,
+          "retained_prefixes": 42,
+          "retained_consumers": 37,
+          "prefix_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 8
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 13
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 8
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 13
+            }
+          ],
+          "consumer_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 8
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 13
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 8
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 8
+            }
+          ],
+          "materialized_complete_pairs": 1682,
+          "raw_complete_pairs": 10368,
+          "raw_kernel_pairs": 9216,
+          "materialized_kernel_pairs": 1554,
+          "layout_pruning": false,
+          "layout_pairs_skipped": 0,
+          "layout_alternatives_skipped": 0,
+          "root_states_by_enforcer": {
+            "direct": 19
+          },
+          "local_pruning": true,
+          "frontier_work": {
+            "prefix": {
+              "inputs": 96,
+              "peak_kept": 13,
+              "dominance_checks": 784,
+              "pruned": 54
+            },
+            "consumer": {
+              "inputs": 96,
+              "peak_kept": 13,
+              "dominance_checks": 647,
+              "pruned": 59
+            },
+            "root": {
+              "inputs": 1682,
+              "peak_kept": 20,
+              "dominance_checks": 10051,
+              "pruned": 1663
+            }
+          },
+          "enforcer_grammar": "direct_and_spill_reload",
+          "root_frontier_states": 19,
+          "architecture_points_supplied": 0,
+          "oracle_responses_used": false,
+          "ffm_search_calls": 0
+        },
+        "no_evaluation_avoided_before_local_pareto": true,
+        "exact_plans_and_statistics_equal": true,
+        "wall_over_warm_ratio": 1.5574939409680115
+      },
+      "all_replicates_exact_equal": true
+    },
+    "2,2,2,2/default": {
+      "shape": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "policy": "default",
+      "cold_samples_s": [
+        0.011865791981108487,
+        0.011814416968263686,
+        0.011789000011049211
+      ],
+      "warm_samples_s": [
+        0.01180104201193899,
+        0.012077499995939434,
+        0.011877209064550698
+      ],
+      "cold_median_s": 0.011814416968263686,
+      "warm_median_s": 0.011877209064550698,
+      "warm_range_s": [
+        0.01180104201193899,
+        0.012077499995939434
+      ],
+      "work": {
+        "raw_prefixes": 96,
+        "raw_consumers": 96,
+        "retained_prefixes": 42,
+        "retained_consumers": 37,
+        "prefix_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 8
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 13
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 8
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 13
+          }
+        ],
+        "consumer_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 8
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 13
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 8
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 8
+          }
+        ],
+        "materialized_complete_pairs": 1426,
+        "raw_complete_pairs": 10368,
+        "raw_kernel_pairs": 9216,
+        "materialized_kernel_pairs": 1426,
+        "layout_pruning": true,
+        "layout_pairs_skipped": 128,
+        "layout_alternatives_skipped": 256,
+        "root_states_by_enforcer": {
+          "direct": 19
+        },
+        "local_pruning": true,
+        "frontier_work": {
+          "prefix": {
+            "inputs": 96,
+            "peak_kept": 13,
+            "dominance_checks": 784,
+            "pruned": 54
+          },
+          "consumer": {
+            "inputs": 96,
+            "peak_kept": 13,
+            "dominance_checks": 647,
+            "pruned": 59
+          },
+          "root": {
+            "inputs": 1426,
+            "peak_kept": 20,
+            "dominance_checks": 8341,
+            "pruned": 1407
+          }
+        },
+        "enforcer_grammar": "direct_and_spill_reload",
+        "root_frontier_states": 19,
+        "architecture_points_supplied": 0,
+        "oracle_responses_used": false,
+        "ffm_search_calls": 0
+      },
+      "frontier": [
+        [
+          1,
+          1,
+          6,
+          880,
+          56,
+          80
+        ],
+        [
+          1,
+          1,
+          8,
+          736,
+          48,
+          64
+        ],
+        [
+          1,
+          1,
+          12,
+          592,
+          40,
+          48
+        ],
+        [
+          1,
+          1,
+          14,
+          520,
+          36,
+          40
+        ],
+        [
+          1,
+          1,
+          16,
+          520,
+          32,
+          40
+        ],
+        [
+          1,
+          2,
+          10,
+          736,
+          28,
+          64
+        ],
+        [
+          1,
+          2,
+          14,
+          448,
+          26,
+          32
+        ],
+        [
+          1,
+          2,
+          14,
+          592,
+          23,
+          48
+        ],
+        [
+          1,
+          2,
+          16,
+          520,
+          20,
+          40
+        ],
+        [
+          1,
+          2,
+          20,
+          448,
+          15,
+          32
+        ],
+        [
+          1,
+          2,
+          24,
+          448,
+          14,
+          32
+        ],
+        [
+          2,
+          1,
+          10,
+          736,
+          34,
+          64
+        ],
+        [
+          2,
+          1,
+          14,
+          448,
+          24,
+          32
+        ],
+        [
+          2,
+          1,
+          20,
+          448,
+          21,
+          32
+        ],
+        [
+          2,
+          2,
+          14,
+          448,
+          22,
+          32
+        ],
+        [
+          2,
+          2,
+          16,
+          448,
+          20,
+          32
+        ],
+        [
+          2,
+          2,
+          16,
+          520,
+          18,
+          40
+        ],
+        [
+          2,
+          2,
+          20,
+          448,
+          12,
+          32
+        ],
+        [
+          2,
+          2,
+          24,
+          448,
+          8,
+          32
+        ]
+      ],
+      "observation": {
+        "scopes": {
+          "catalog.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000850291,
+            "exclusive_s": 6.2291e-05
+          },
+          "catalog.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.001304708,
+            "exclusive_s": 7.3541e-05
+          },
+          "complete.construct": {
+            "calls": 1426,
+            "failed_calls": 0,
+            "inclusive_s": 0.000932227,
+            "exclusive_s": 0.000932227
+          },
+          "compose": {
+            "calls": 1426,
+            "failed_calls": 0,
+            "inclusive_s": 0.005517646,
+            "exclusive_s": 0.003378328
+          },
+          "conversion": {
+            "calls": 1426,
+            "failed_calls": 0,
+            "inclusive_s": 0.001207091,
+            "exclusive_s": 0.001207091
+          },
+          "evaluate.consume": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 0.000130705,
+            "exclusive_s": 0.000130705
+          },
+          "evaluate.produce": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 0.000136373,
+            "exclusive_s": 0.000136373
+          },
+          "grouping.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000788,
+            "exclusive_s": 0.000174878
+          },
+          "grouping.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.001231167,
+            "exclusive_s": 0.000295131
+          },
+          "kernel.construct.consume": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 6.5092e-05,
+            "exclusive_s": 6.5092e-05
+          },
+          "kernel.construct.produce": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 7.7582e-05,
+            "exclusive_s": 7.7582e-05
+          },
+          "layout.match": {
+            "calls": 1554,
+            "failed_calls": 0,
+            "inclusive_s": 0.000674859,
+            "exclusive_s": 0.000674859
+          },
+          "pareto.add.consume": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 0.000474917,
+            "exclusive_s": 0.000474917
+          },
+          "pareto.add.produce": {
+            "calls": 96,
+            "failed_calls": 0,
+            "inclusive_s": 0.000792288,
+            "exclusive_s": 0.000792288
+          },
+          "pareto.add.root": {
+            "calls": 1426,
+            "failed_calls": 0,
+            "inclusive_s": 0.006130654,
+            "exclusive_s": 0.006130654
+          },
+          "pareto.finish.consume": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 7.5e-06,
+            "exclusive_s": 7.5e-06
+          },
+          "pareto.finish.produce": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 7.375e-06,
+            "exclusive_s": 7.375e-06
+          },
+          "pareto.finish.root": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 2.167e-06,
+            "exclusive_s": 2.167e-06
+          },
+          "provider.generate": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000412625,
+            "exclusive_s": 0.000269951
+          },
+          "routes": {
+            "calls": 1570,
+            "failed_calls": 0,
+            "inclusive_s": 0.000515633,
+            "exclusive_s": 0.000515633
+          },
+          "search": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.01943975,
+            "exclusive_s": 0.004031167
+          }
+        },
+        "exclusive_buckets_s": {
+          "candidate_generation": 0.000412625,
+          "catalog_control": 0.000135832,
+          "complete_materialization": 0.000932227,
+          "composition_control": 0.003378328,
+          "conversion_evaluation": 0.001207091,
+          "interface_analysis": 0.001190492,
+          "interface_grouping": 0.000470009,
+          "local_evaluation": 0.000267078,
+          "pareto_maintenance": 0.007414901,
+          "search_control": 0.004031167
+        },
+        "search_inclusive_s": 0.01943975,
+        "exclusive_partition_equal": true,
+        "attribution": "Instrumented named-scope remainders; include wrapper overhead and uninstrumented helpers.",
+        "instrumented_wall_s": 0.01944375,
+        "stages": {
+          "produce": {
+            "candidates": 96,
+            "kernel_plan_constructions": 96,
+            "evaluations": 96,
+            "retained": 42,
+            "pareto_inputs": 96,
+            "pareto_add_calls": 96,
+            "dominance_checks": 784,
+            "pareto_pruned": 54,
+            "largest_interface_frontier": 13
+          },
+          "consume": {
+            "candidates": 96,
+            "kernel_plan_constructions": 96,
+            "evaluations": 96,
+            "retained": 37,
+            "pareto_inputs": 96,
+            "pareto_add_calls": 96,
+            "dominance_checks": 647,
+            "pareto_pruned": 59,
+            "largest_interface_frontier": 13
+          }
+        },
+        "composition": {
+          "kernel_pairs_visited": 1554,
+          "layout_pairs_skipped": 128,
+          "complete_pairs_composed": 1426,
+          "complete_plan_constructions": 1426,
+          "raw_complete_alternatives": 10368,
+          "conversion_evaluations": 1426,
+          "route_queries_including_statistics": 1570,
+          "layout_match_calls": 1554
+        },
+        "root_pareto": {
+          "inputs": 1426,
+          "states": 19,
+          "dominance_checks": 8341,
+          "pruned": 1407,
+          "peak_kept": 20
+        },
+        "policy": {
+          "include_spill_reload": true,
+          "local_pruning": true,
+          "layout_pruning": true,
+          "order_seed": null
+        },
+        "search_stats": {
+          "raw_prefixes": 96,
+          "raw_consumers": 96,
+          "retained_prefixes": 42,
+          "retained_consumers": 37,
+          "prefix_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 8
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 13
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 8
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 13
+            }
+          ],
+          "consumer_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 8
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 13
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 8
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=2, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 8
+            }
+          ],
+          "materialized_complete_pairs": 1426,
+          "raw_complete_pairs": 10368,
+          "raw_kernel_pairs": 9216,
+          "materialized_kernel_pairs": 1426,
+          "layout_pruning": true,
+          "layout_pairs_skipped": 128,
+          "layout_alternatives_skipped": 256,
+          "root_states_by_enforcer": {
+            "direct": 19
+          },
+          "local_pruning": true,
+          "frontier_work": {
+            "prefix": {
+              "inputs": 96,
+              "peak_kept": 13,
+              "dominance_checks": 784,
+              "pruned": 54
+            },
+            "consumer": {
+              "inputs": 96,
+              "peak_kept": 13,
+              "dominance_checks": 647,
+              "pruned": 59
+            },
+            "root": {
+              "inputs": 1426,
+              "peak_kept": 20,
+              "dominance_checks": 8341,
+              "pruned": 1407
+            }
+          },
+          "enforcer_grammar": "direct_and_spill_reload",
+          "root_frontier_states": 19,
+          "architecture_points_supplied": 0,
+          "oracle_responses_used": false,
+          "ffm_search_calls": 0
+        },
+        "no_evaluation_avoided_before_local_pareto": true,
+        "exact_plans_and_statistics_equal": true,
+        "wall_over_warm_ratio": 1.6476299279613582
+      },
+      "all_replicates_exact_equal": true
+    },
+    "2,3,4,5/unpruned": {
+      "shape": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "policy": "unpruned",
+      "cold_samples_s": [
+        0.25334712502080947,
+        0.25278900004923344,
+        0.25473225000314415
+      ],
+      "warm_samples_s": [
+        0.25438545795623213,
+        0.2530896660173312,
+        0.2553295419784263
+      ],
+      "cold_median_s": 0.25334712502080947,
+      "warm_median_s": 0.25438545795623213,
+      "warm_range_s": [
+        0.2530896660173312,
+        0.2553295419784263
+      ],
+      "work": {
+        "raw_prefixes": 144,
+        "raw_consumers": 144,
+        "retained_prefixes": 144,
+        "retained_consumers": 144,
+        "prefix_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 36
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 36
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 36
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 36
+          }
+        ],
+        "consumer_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 36
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 36
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 36
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 36
+          }
+        ],
+        "materialized_complete_pairs": 23328,
+        "raw_complete_pairs": 23328,
+        "raw_kernel_pairs": 20736,
+        "materialized_kernel_pairs": 20736,
+        "layout_pruning": false,
+        "layout_pairs_skipped": 0,
+        "layout_alternatives_skipped": 0,
+        "root_states_by_enforcer": {
+          "direct": 79
+        },
+        "local_pruning": false,
+        "frontier_work": {
+          "prefix": {},
+          "consumer": {},
+          "root": {
+            "inputs": 23328,
+            "peak_kept": 80,
+            "dominance_checks": 294782,
+            "pruned": 23249
+          }
+        },
+        "enforcer_grammar": "direct_and_spill_reload",
+        "root_frontier_states": 79,
+        "architecture_points_supplied": 0,
+        "oracle_responses_used": false,
+        "ffm_search_calls": 0
+      },
+      "frontier": [
+        [
+          1,
+          1,
+          6,
+          3240,
+          210,
+          292
+        ],
+        [
+          1,
+          1,
+          8,
+          2664,
+          178,
+          228
+        ],
+        [
+          1,
+          1,
+          12,
+          2556,
+          152,
+          216
+        ],
+        [
+          1,
+          1,
+          14,
+          2340,
+          160,
+          192
+        ],
+        [
+          1,
+          1,
+          16,
+          2448,
+          150,
+          204
+        ],
+        [
+          1,
+          1,
+          16,
+          2664,
+          142,
+          228
+        ],
+        [
+          1,
+          1,
+          18,
+          2340,
+          156,
+          192
+        ],
+        [
+          1,
+          1,
+          18,
+          2448,
+          146,
+          204
+        ],
+        [
+          1,
+          1,
+          20,
+          2052,
+          144,
+          160
+        ],
+        [
+          1,
+          1,
+          20,
+          2448,
+          143,
+          204
+        ],
+        [
+          1,
+          1,
+          20,
+          2556,
+          135,
+          216
+        ],
+        [
+          1,
+          1,
+          20,
+          2664,
+          132,
+          228
+        ],
+        [
+          1,
+          1,
+          22,
+          1692,
+          124,
+          120
+        ],
+        [
+          1,
+          1,
+          22,
+          2088,
+          123,
+          164
+        ],
+        [
+          1,
+          1,
+          28,
+          1692,
+          120,
+          120
+        ],
+        [
+          1,
+          1,
+          28,
+          1800,
+          114,
+          132
+        ],
+        [
+          1,
+          2,
+          10,
+          2664,
+          150,
+          228
+        ],
+        [
+          1,
+          2,
+          12,
+          2664,
+          130,
+          228
+        ],
+        [
+          1,
+          2,
+          14,
+          2232,
+          132,
+          180
+        ],
+        [
+          1,
+          2,
+          14,
+          2448,
+          124,
+          204
+        ],
+        [
+          1,
+          2,
+          18,
+          2232,
+          128,
+          180
+        ],
+        [
+          1,
+          2,
+          20,
+          2232,
+          125,
+          180
+        ],
+        [
+          1,
+          2,
+          20,
+          2448,
+          114,
+          204
+        ],
+        [
+          1,
+          2,
+          22,
+          1584,
+          100,
+          108
+        ],
+        [
+          1,
+          2,
+          26,
+          1872,
+          97,
+          140
+        ],
+        [
+          1,
+          2,
+          34,
+          1584,
+          92,
+          108
+        ],
+        [
+          1,
+          4,
+          18,
+          2340,
+          114,
+          192
+        ],
+        [
+          1,
+          4,
+          18,
+          2556,
+          110,
+          216
+        ],
+        [
+          1,
+          4,
+          20,
+          2340,
+          111,
+          192
+        ],
+        [
+          1,
+          4,
+          20,
+          2556,
+          100,
+          216
+        ],
+        [
+          1,
+          4,
+          22,
+          1980,
+          91,
+          152
+        ],
+        [
+          1,
+          4,
+          26,
+          1476,
+          85,
+          96
+        ],
+        [
+          1,
+          4,
+          38,
+          1980,
+          83,
+          152
+        ],
+        [
+          1,
+          4,
+          46,
+          1476,
+          79,
+          96
+        ],
+        [
+          1,
+          5,
+          22,
+          2232,
+          57,
+          180
+        ],
+        [
+          1,
+          5,
+          22,
+          2340,
+          46,
+          192
+        ],
+        [
+          1,
+          5,
+          26,
+          2124,
+          42,
+          168
+        ],
+        [
+          1,
+          5,
+          32,
+          1764,
+          38,
+          128
+        ],
+        [
+          1,
+          5,
+          34,
+          2124,
+          34,
+          168
+        ],
+        [
+          1,
+          5,
+          36,
+          1836,
+          33,
+          136
+        ],
+        [
+          1,
+          5,
+          38,
+          2340,
+          30,
+          192
+        ],
+        [
+          1,
+          5,
+          44,
+          1764,
+          32,
+          128
+        ],
+        [
+          1,
+          5,
+          44,
+          1980,
+          28,
+          152
+        ],
+        [
+          1,
+          5,
+          46,
+          1476,
+          23,
+          96
+        ],
+        [
+          1,
+          5,
+          56,
+          1476,
+          21,
+          96
+        ],
+        [
+          1,
+          5,
+          76,
+          1476,
+          20,
+          96
+        ],
+        [
+          2,
+          1,
+          10,
+          2664,
+          122,
+          228
+        ],
+        [
+          2,
+          1,
+          12,
+          2556,
+          132,
+          216
+        ],
+        [
+          2,
+          1,
+          14,
+          2448,
+          150,
+          204
+        ],
+        [
+          2,
+          1,
+          20,
+          2556,
+          125,
+          216
+        ],
+        [
+          2,
+          1,
+          22,
+          1476,
+          80,
+          96
+        ],
+        [
+          2,
+          1,
+          34,
+          1476,
+          75,
+          96
+        ],
+        [
+          2,
+          2,
+          10,
+          2664,
+          114,
+          228
+        ],
+        [
+          2,
+          2,
+          14,
+          2448,
+          108,
+          204
+        ],
+        [
+          2,
+          2,
+          16,
+          2232,
+          126,
+          180
+        ],
+        [
+          2,
+          2,
+          16,
+          2448,
+          98,
+          204
+        ],
+        [
+          2,
+          2,
+          18,
+          2232,
+          122,
+          180
+        ],
+        [
+          2,
+          2,
+          20,
+          2232,
+          119,
+          180
+        ],
+        [
+          2,
+          2,
+          22,
+          1872,
+          79,
+          140
+        ],
+        [
+          2,
+          2,
+          24,
+          1476,
+          68,
+          96
+        ],
+        [
+          2,
+          2,
+          40,
+          1476,
+          63,
+          96
+        ],
+        [
+          2,
+          4,
+          18,
+          2556,
+          90,
+          216
+        ],
+        [
+          2,
+          4,
+          22,
+          1980,
+          71,
+          152
+        ],
+        [
+          2,
+          4,
+          26,
+          1476,
+          65,
+          96
+        ],
+        [
+          2,
+          4,
+          28,
+          1476,
+          62,
+          96
+        ],
+        [
+          2,
+          4,
+          46,
+          1476,
+          59,
+          96
+        ],
+        [
+          2,
+          4,
+          52,
+          1476,
+          55,
+          96
+        ],
+        [
+          2,
+          5,
+          22,
+          2124,
+          57,
+          168
+        ],
+        [
+          2,
+          5,
+          22,
+          2232,
+          54,
+          180
+        ],
+        [
+          2,
+          5,
+          24,
+          2124,
+          45,
+          168
+        ],
+        [
+          2,
+          5,
+          28,
+          2124,
+          39,
+          168
+        ],
+        [
+          2,
+          5,
+          32,
+          1764,
+          35,
+          128
+        ],
+        [
+          2,
+          5,
+          34,
+          1764,
+          30,
+          128
+        ],
+        [
+          2,
+          5,
+          38,
+          1980,
+          29,
+          152
+        ],
+        [
+          2,
+          5,
+          44,
+          1764,
+          29,
+          128
+        ],
+        [
+          2,
+          5,
+          46,
+          1476,
+          18,
+          96
+        ],
+        [
+          2,
+          5,
+          52,
+          1476,
+          14,
+          96
+        ],
+        [
+          2,
+          5,
+          56,
+          1476,
+          12,
+          96
+        ],
+        [
+          2,
+          5,
+          76,
+          1476,
+          11,
+          96
+        ]
+      ],
+      "observation": {
+        "scopes": {
+          "catalog.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000397916,
+            "exclusive_s": 8.8207e-05
+          },
+          "catalog.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000411583,
+            "exclusive_s": 9.3916e-05
+          },
+          "complete.construct": {
+            "calls": 23328,
+            "failed_calls": 0,
+            "inclusive_s": 0.040601894,
+            "exclusive_s": 0.040601894
+          },
+          "compose": {
+            "calls": 23328,
+            "failed_calls": 0,
+            "inclusive_s": 0.249746023,
+            "exclusive_s": 0.157076382
+          },
+          "conversion": {
+            "calls": 23328,
+            "failed_calls": 0,
+            "inclusive_s": 0.052067747,
+            "exclusive_s": 0.052067747
+          },
+          "evaluate.consume": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.000185997,
+            "exclusive_s": 0.000185997
+          },
+          "evaluate.produce": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.000189993,
+            "exclusive_s": 0.000189993
+          },
+          "grouping.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000309709,
+            "exclusive_s": 0.000123712
+          },
+          "grouping.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000317667,
+            "exclusive_s": 0.000127674
+          },
+          "kernel.construct.consume": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 9.6115e-05,
+            "exclusive_s": 9.6115e-05
+          },
+          "kernel.construct.produce": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.000102656,
+            "exclusive_s": 0.000102656
+          },
+          "pareto.add.root": {
+            "calls": 23328,
+            "failed_calls": 0,
+            "inclusive_s": 0.517726198,
+            "exclusive_s": 0.517726198
+          },
+          "pareto.finish.root": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 1.4042e-05,
+            "exclusive_s": 1.4042e-05
+          },
+          "provider.generate": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000558042,
+            "exclusive_s": 0.000359271
+          },
+          "routes": {
+            "calls": 20752,
+            "failed_calls": 0,
+            "inclusive_s": 0.025764486,
+            "exclusive_s": 0.025764486
+          },
+          "search": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.943970041,
+            "exclusive_s": 0.149351751
+          }
+        },
+        "exclusive_buckets_s": {
+          "candidate_generation": 0.000558042,
+          "catalog_control": 0.000182123,
+          "complete_materialization": 0.040601894,
+          "composition_control": 0.157076382,
+          "conversion_evaluation": 0.052067747,
+          "interface_analysis": 0.025764486,
+          "interface_grouping": 0.000251386,
+          "local_evaluation": 0.00037599,
+          "pareto_maintenance": 0.51774024,
+          "search_control": 0.149351751
+        },
+        "search_inclusive_s": 0.943970041,
+        "exclusive_partition_equal": true,
+        "attribution": "Instrumented named-scope remainders; include wrapper overhead and uninstrumented helpers.",
+        "instrumented_wall_s": 0.943980541,
+        "stages": {
+          "produce": {
+            "candidates": 144,
+            "kernel_plan_constructions": 144,
+            "evaluations": 144,
+            "retained": 144,
+            "pareto_inputs": 0,
+            "pareto_add_calls": 0,
+            "dominance_checks": 0,
+            "pareto_pruned": 0,
+            "largest_interface_frontier": 0
+          },
+          "consume": {
+            "candidates": 144,
+            "kernel_plan_constructions": 144,
+            "evaluations": 144,
+            "retained": 144,
+            "pareto_inputs": 0,
+            "pareto_add_calls": 0,
+            "dominance_checks": 0,
+            "pareto_pruned": 0,
+            "largest_interface_frontier": 0
+          }
+        },
+        "composition": {
+          "kernel_pairs_visited": 20736,
+          "layout_pairs_skipped": 0,
+          "complete_pairs_composed": 23328,
+          "complete_plan_constructions": 23328,
+          "raw_complete_alternatives": 23328,
+          "conversion_evaluations": 23328,
+          "route_queries_including_statistics": 20752,
+          "layout_match_calls": 0
+        },
+        "root_pareto": {
+          "inputs": 23328,
+          "states": 79,
+          "dominance_checks": 294782,
+          "pruned": 23249,
+          "peak_kept": 80
+        },
+        "policy": {
+          "include_spill_reload": true,
+          "local_pruning": false,
+          "layout_pruning": false,
+          "order_seed": null
+        },
+        "search_stats": {
+          "raw_prefixes": 144,
+          "raw_consumers": 144,
+          "retained_prefixes": 144,
+          "retained_consumers": 144,
+          "prefix_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 36
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 36
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 36
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 36
+            }
+          ],
+          "consumer_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 36
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 36
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 36
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 36
+            }
+          ],
+          "materialized_complete_pairs": 23328,
+          "raw_complete_pairs": 23328,
+          "raw_kernel_pairs": 20736,
+          "materialized_kernel_pairs": 20736,
+          "layout_pruning": false,
+          "layout_pairs_skipped": 0,
+          "layout_alternatives_skipped": 0,
+          "root_states_by_enforcer": {
+            "direct": 79
+          },
+          "local_pruning": false,
+          "frontier_work": {
+            "prefix": {},
+            "consumer": {},
+            "root": {
+              "inputs": 23328,
+              "peak_kept": 80,
+              "dominance_checks": 294782,
+              "pruned": 23249
+            }
+          },
+          "enforcer_grammar": "direct_and_spill_reload",
+          "root_frontier_states": 79,
+          "architecture_points_supplied": 0,
+          "oracle_responses_used": false,
+          "ffm_search_calls": 0
+        },
+        "no_evaluation_avoided_before_local_pareto": true,
+        "exact_plans_and_statistics_equal": true,
+        "wall_over_warm_ratio": 3.7108274528900744
+      },
+      "all_replicates_exact_equal": true
+    },
+    "2,3,4,5/local_only": {
+      "shape": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "policy": "local_only",
+      "cold_samples_s": [
+        0.053989000036381185,
+        0.05385791708249599,
+        0.05501062492839992
+      ],
+      "warm_samples_s": [
+        0.0541107919998467,
+        0.05390054197050631,
+        0.05412287497892976
+      ],
+      "cold_median_s": 0.053989000036381185,
+      "warm_median_s": 0.0541107919998467,
+      "warm_range_s": [
+        0.05390054197050631,
+        0.05412287497892976
+      ],
+      "work": {
+        "raw_prefixes": 144,
+        "raw_consumers": 144,
+        "retained_prefixes": 72,
+        "retained_consumers": 52,
+        "prefix_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 13
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 23
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 13
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 23
+          }
+        ],
+        "consumer_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 10
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 22
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 10
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 10
+          }
+        ],
+        "materialized_complete_pairs": 4004,
+        "raw_complete_pairs": 23328,
+        "raw_kernel_pairs": 20736,
+        "materialized_kernel_pairs": 3744,
+        "layout_pruning": false,
+        "layout_pairs_skipped": 0,
+        "layout_alternatives_skipped": 0,
+        "root_states_by_enforcer": {
+          "direct": 79
+        },
+        "local_pruning": true,
+        "frontier_work": {
+          "prefix": {
+            "inputs": 144,
+            "peak_kept": 23,
+            "dominance_checks": 2238,
+            "pruned": 72
+          },
+          "consumer": {
+            "inputs": 144,
+            "peak_kept": 22,
+            "dominance_checks": 1396,
+            "pruned": 92
+          },
+          "root": {
+            "inputs": 4004,
+            "peak_kept": 80,
+            "dominance_checks": 61723,
+            "pruned": 3925
+          }
+        },
+        "enforcer_grammar": "direct_and_spill_reload",
+        "root_frontier_states": 79,
+        "architecture_points_supplied": 0,
+        "oracle_responses_used": false,
+        "ffm_search_calls": 0
+      },
+      "frontier": [
+        [
+          1,
+          1,
+          6,
+          3240,
+          210,
+          292
+        ],
+        [
+          1,
+          1,
+          8,
+          2664,
+          178,
+          228
+        ],
+        [
+          1,
+          1,
+          12,
+          2556,
+          152,
+          216
+        ],
+        [
+          1,
+          1,
+          14,
+          2340,
+          160,
+          192
+        ],
+        [
+          1,
+          1,
+          16,
+          2448,
+          150,
+          204
+        ],
+        [
+          1,
+          1,
+          16,
+          2664,
+          142,
+          228
+        ],
+        [
+          1,
+          1,
+          18,
+          2340,
+          156,
+          192
+        ],
+        [
+          1,
+          1,
+          18,
+          2448,
+          146,
+          204
+        ],
+        [
+          1,
+          1,
+          20,
+          2052,
+          144,
+          160
+        ],
+        [
+          1,
+          1,
+          20,
+          2448,
+          143,
+          204
+        ],
+        [
+          1,
+          1,
+          20,
+          2556,
+          135,
+          216
+        ],
+        [
+          1,
+          1,
+          20,
+          2664,
+          132,
+          228
+        ],
+        [
+          1,
+          1,
+          22,
+          1692,
+          124,
+          120
+        ],
+        [
+          1,
+          1,
+          22,
+          2088,
+          123,
+          164
+        ],
+        [
+          1,
+          1,
+          28,
+          1692,
+          120,
+          120
+        ],
+        [
+          1,
+          1,
+          28,
+          1800,
+          114,
+          132
+        ],
+        [
+          1,
+          2,
+          10,
+          2664,
+          150,
+          228
+        ],
+        [
+          1,
+          2,
+          12,
+          2664,
+          130,
+          228
+        ],
+        [
+          1,
+          2,
+          14,
+          2232,
+          132,
+          180
+        ],
+        [
+          1,
+          2,
+          14,
+          2448,
+          124,
+          204
+        ],
+        [
+          1,
+          2,
+          18,
+          2232,
+          128,
+          180
+        ],
+        [
+          1,
+          2,
+          20,
+          2232,
+          125,
+          180
+        ],
+        [
+          1,
+          2,
+          20,
+          2448,
+          114,
+          204
+        ],
+        [
+          1,
+          2,
+          22,
+          1584,
+          100,
+          108
+        ],
+        [
+          1,
+          2,
+          26,
+          1872,
+          97,
+          140
+        ],
+        [
+          1,
+          2,
+          34,
+          1584,
+          92,
+          108
+        ],
+        [
+          1,
+          4,
+          18,
+          2340,
+          114,
+          192
+        ],
+        [
+          1,
+          4,
+          18,
+          2556,
+          110,
+          216
+        ],
+        [
+          1,
+          4,
+          20,
+          2340,
+          111,
+          192
+        ],
+        [
+          1,
+          4,
+          20,
+          2556,
+          100,
+          216
+        ],
+        [
+          1,
+          4,
+          22,
+          1980,
+          91,
+          152
+        ],
+        [
+          1,
+          4,
+          26,
+          1476,
+          85,
+          96
+        ],
+        [
+          1,
+          4,
+          38,
+          1980,
+          83,
+          152
+        ],
+        [
+          1,
+          4,
+          46,
+          1476,
+          79,
+          96
+        ],
+        [
+          1,
+          5,
+          22,
+          2232,
+          57,
+          180
+        ],
+        [
+          1,
+          5,
+          22,
+          2340,
+          46,
+          192
+        ],
+        [
+          1,
+          5,
+          26,
+          2124,
+          42,
+          168
+        ],
+        [
+          1,
+          5,
+          32,
+          1764,
+          38,
+          128
+        ],
+        [
+          1,
+          5,
+          34,
+          2124,
+          34,
+          168
+        ],
+        [
+          1,
+          5,
+          36,
+          1836,
+          33,
+          136
+        ],
+        [
+          1,
+          5,
+          38,
+          2340,
+          30,
+          192
+        ],
+        [
+          1,
+          5,
+          44,
+          1764,
+          32,
+          128
+        ],
+        [
+          1,
+          5,
+          44,
+          1980,
+          28,
+          152
+        ],
+        [
+          1,
+          5,
+          46,
+          1476,
+          23,
+          96
+        ],
+        [
+          1,
+          5,
+          56,
+          1476,
+          21,
+          96
+        ],
+        [
+          1,
+          5,
+          76,
+          1476,
+          20,
+          96
+        ],
+        [
+          2,
+          1,
+          10,
+          2664,
+          122,
+          228
+        ],
+        [
+          2,
+          1,
+          12,
+          2556,
+          132,
+          216
+        ],
+        [
+          2,
+          1,
+          14,
+          2448,
+          150,
+          204
+        ],
+        [
+          2,
+          1,
+          20,
+          2556,
+          125,
+          216
+        ],
+        [
+          2,
+          1,
+          22,
+          1476,
+          80,
+          96
+        ],
+        [
+          2,
+          1,
+          34,
+          1476,
+          75,
+          96
+        ],
+        [
+          2,
+          2,
+          10,
+          2664,
+          114,
+          228
+        ],
+        [
+          2,
+          2,
+          14,
+          2448,
+          108,
+          204
+        ],
+        [
+          2,
+          2,
+          16,
+          2232,
+          126,
+          180
+        ],
+        [
+          2,
+          2,
+          16,
+          2448,
+          98,
+          204
+        ],
+        [
+          2,
+          2,
+          18,
+          2232,
+          122,
+          180
+        ],
+        [
+          2,
+          2,
+          20,
+          2232,
+          119,
+          180
+        ],
+        [
+          2,
+          2,
+          22,
+          1872,
+          79,
+          140
+        ],
+        [
+          2,
+          2,
+          24,
+          1476,
+          68,
+          96
+        ],
+        [
+          2,
+          2,
+          40,
+          1476,
+          63,
+          96
+        ],
+        [
+          2,
+          4,
+          18,
+          2556,
+          90,
+          216
+        ],
+        [
+          2,
+          4,
+          22,
+          1980,
+          71,
+          152
+        ],
+        [
+          2,
+          4,
+          26,
+          1476,
+          65,
+          96
+        ],
+        [
+          2,
+          4,
+          28,
+          1476,
+          62,
+          96
+        ],
+        [
+          2,
+          4,
+          46,
+          1476,
+          59,
+          96
+        ],
+        [
+          2,
+          4,
+          52,
+          1476,
+          55,
+          96
+        ],
+        [
+          2,
+          5,
+          22,
+          2124,
+          57,
+          168
+        ],
+        [
+          2,
+          5,
+          22,
+          2232,
+          54,
+          180
+        ],
+        [
+          2,
+          5,
+          24,
+          2124,
+          45,
+          168
+        ],
+        [
+          2,
+          5,
+          28,
+          2124,
+          39,
+          168
+        ],
+        [
+          2,
+          5,
+          32,
+          1764,
+          35,
+          128
+        ],
+        [
+          2,
+          5,
+          34,
+          1764,
+          30,
+          128
+        ],
+        [
+          2,
+          5,
+          38,
+          1980,
+          29,
+          152
+        ],
+        [
+          2,
+          5,
+          44,
+          1764,
+          29,
+          128
+        ],
+        [
+          2,
+          5,
+          46,
+          1476,
+          18,
+          96
+        ],
+        [
+          2,
+          5,
+          52,
+          1476,
+          14,
+          96
+        ],
+        [
+          2,
+          5,
+          56,
+          1476,
+          12,
+          96
+        ],
+        [
+          2,
+          5,
+          76,
+          1476,
+          11,
+          96
+        ]
+      ],
+      "observation": {
+        "scopes": {
+          "catalog.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.001456042,
+            "exclusive_s": 8.3376e-05
+          },
+          "catalog.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.002031292,
+            "exclusive_s": 9.1792e-05
+          },
+          "complete.construct": {
+            "calls": 4004,
+            "failed_calls": 0,
+            "inclusive_s": 0.002596344,
+            "exclusive_s": 0.002596344
+          },
+          "compose": {
+            "calls": 4004,
+            "failed_calls": 0,
+            "inclusive_s": 0.015682312,
+            "exclusive_s": 0.009679955
+          },
+          "conversion": {
+            "calls": 4004,
+            "failed_calls": 0,
+            "inclusive_s": 0.003406013,
+            "exclusive_s": 0.003406013
+          },
+          "evaluate.consume": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.000182713,
+            "exclusive_s": 0.000182713
+          },
+          "evaluate.produce": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.00020875,
+            "exclusive_s": 0.00020875
+          },
+          "grouping.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.001372666,
+            "exclusive_s": 0.000246828
+          },
+          "grouping.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.0019395,
+            "exclusive_s": 0.000273535
+          },
+          "kernel.construct.consume": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 9.5916e-05,
+            "exclusive_s": 9.5916e-05
+          },
+          "kernel.construct.produce": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.000101909,
+            "exclusive_s": 0.000101909
+          },
+          "pareto.add.consume": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.000937083,
+            "exclusive_s": 0.000937083
+          },
+          "pareto.add.produce": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.001448632,
+            "exclusive_s": 0.001448632
+          },
+          "pareto.add.root": {
+            "calls": 4004,
+            "failed_calls": 0,
+            "inclusive_s": 0.041015772,
+            "exclusive_s": 0.041015772
+          },
+          "pareto.finish.consume": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 6.042e-06,
+            "exclusive_s": 6.042e-06
+          },
+          "pareto.finish.produce": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 8.583e-06,
+            "exclusive_s": 8.583e-06
+          },
+          "pareto.finish.root": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 9.042e-06,
+            "exclusive_s": 9.042e-06
+          },
+          "provider.generate": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000549833,
+            "exclusive_s": 0.000352008
+          },
+          "routes": {
+            "calls": 3760,
+            "failed_calls": 0,
+            "inclusive_s": 0.001282684,
+            "exclusive_s": 0.001282684
+          },
+          "search": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.070618291,
+            "exclusive_s": 0.008591314
+          }
+        },
+        "exclusive_buckets_s": {
+          "candidate_generation": 0.000549833,
+          "catalog_control": 0.000175168,
+          "complete_materialization": 0.002596344,
+          "composition_control": 0.009679955,
+          "conversion_evaluation": 0.003406013,
+          "interface_analysis": 0.001282684,
+          "interface_grouping": 0.000520363,
+          "local_evaluation": 0.000391463,
+          "pareto_maintenance": 0.043425154,
+          "search_control": 0.008591314
+        },
+        "search_inclusive_s": 0.070618291,
+        "exclusive_partition_equal": true,
+        "attribution": "Instrumented named-scope remainders; include wrapper overhead and uninstrumented helpers.",
+        "instrumented_wall_s": 0.070624,
+        "stages": {
+          "produce": {
+            "candidates": 144,
+            "kernel_plan_constructions": 144,
+            "evaluations": 144,
+            "retained": 72,
+            "pareto_inputs": 144,
+            "pareto_add_calls": 144,
+            "dominance_checks": 2238,
+            "pareto_pruned": 72,
+            "largest_interface_frontier": 23
+          },
+          "consume": {
+            "candidates": 144,
+            "kernel_plan_constructions": 144,
+            "evaluations": 144,
+            "retained": 52,
+            "pareto_inputs": 144,
+            "pareto_add_calls": 144,
+            "dominance_checks": 1396,
+            "pareto_pruned": 92,
+            "largest_interface_frontier": 22
+          }
+        },
+        "composition": {
+          "kernel_pairs_visited": 3744,
+          "layout_pairs_skipped": 0,
+          "complete_pairs_composed": 4004,
+          "complete_plan_constructions": 4004,
+          "raw_complete_alternatives": 23328,
+          "conversion_evaluations": 4004,
+          "route_queries_including_statistics": 3760,
+          "layout_match_calls": 0
+        },
+        "root_pareto": {
+          "inputs": 4004,
+          "states": 79,
+          "dominance_checks": 61723,
+          "pruned": 3925,
+          "peak_kept": 80
+        },
+        "policy": {
+          "include_spill_reload": true,
+          "local_pruning": true,
+          "layout_pruning": false,
+          "order_seed": null
+        },
+        "search_stats": {
+          "raw_prefixes": 144,
+          "raw_consumers": 144,
+          "retained_prefixes": 72,
+          "retained_consumers": 52,
+          "prefix_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 13
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 23
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 13
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 23
+            }
+          ],
+          "consumer_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 10
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 22
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 10
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 10
+            }
+          ],
+          "materialized_complete_pairs": 4004,
+          "raw_complete_pairs": 23328,
+          "raw_kernel_pairs": 20736,
+          "materialized_kernel_pairs": 3744,
+          "layout_pruning": false,
+          "layout_pairs_skipped": 0,
+          "layout_alternatives_skipped": 0,
+          "root_states_by_enforcer": {
+            "direct": 79
+          },
+          "local_pruning": true,
+          "frontier_work": {
+            "prefix": {
+              "inputs": 144,
+              "peak_kept": 23,
+              "dominance_checks": 2238,
+              "pruned": 72
+            },
+            "consumer": {
+              "inputs": 144,
+              "peak_kept": 22,
+              "dominance_checks": 1396,
+              "pruned": 92
+            },
+            "root": {
+              "inputs": 4004,
+              "peak_kept": 80,
+              "dominance_checks": 61723,
+              "pruned": 3925
+            }
+          },
+          "enforcer_grammar": "direct_and_spill_reload",
+          "root_frontier_states": 79,
+          "architecture_points_supplied": 0,
+          "oracle_responses_used": false,
+          "ffm_search_calls": 0
+        },
+        "no_evaluation_avoided_before_local_pareto": true,
+        "exact_plans_and_statistics_equal": true,
+        "wall_over_warm_ratio": 1.3051740214817054
+      },
+      "all_replicates_exact_equal": true
+    },
+    "2,3,4,5/default": {
+      "shape": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "policy": "default",
+      "cold_samples_s": [
+        0.05035666702315211,
+        0.04992945911362767,
+        0.05009720893576741
+      ],
+      "warm_samples_s": [
+        0.05003891699016094,
+        0.050276750000193715,
+        0.05048345809336752
+      ],
+      "cold_median_s": 0.05009720893576741,
+      "warm_median_s": 0.050276750000193715,
+      "warm_range_s": [
+        0.05003891699016094,
+        0.05048345809336752
+      ],
+      "work": {
+        "raw_prefixes": 144,
+        "raw_consumers": 144,
+        "retained_prefixes": 72,
+        "retained_consumers": 52,
+        "prefix_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 13
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 23
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 13
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 23
+          }
+        ],
+        "consumer_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 10
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 22
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 10
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 10
+          }
+        ],
+        "materialized_complete_pairs": 3484,
+        "raw_complete_pairs": 23328,
+        "raw_kernel_pairs": 20736,
+        "materialized_kernel_pairs": 3484,
+        "layout_pruning": true,
+        "layout_pairs_skipped": 260,
+        "layout_alternatives_skipped": 520,
+        "root_states_by_enforcer": {
+          "direct": 79
+        },
+        "local_pruning": true,
+        "frontier_work": {
+          "prefix": {
+            "inputs": 144,
+            "peak_kept": 23,
+            "dominance_checks": 2238,
+            "pruned": 72
+          },
+          "consumer": {
+            "inputs": 144,
+            "peak_kept": 22,
+            "dominance_checks": 1396,
+            "pruned": 92
+          },
+          "root": {
+            "inputs": 3484,
+            "peak_kept": 80,
+            "dominance_checks": 55895,
+            "pruned": 3405
+          }
+        },
+        "enforcer_grammar": "direct_and_spill_reload",
+        "root_frontier_states": 79,
+        "architecture_points_supplied": 0,
+        "oracle_responses_used": false,
+        "ffm_search_calls": 0
+      },
+      "frontier": [
+        [
+          1,
+          1,
+          6,
+          3240,
+          210,
+          292
+        ],
+        [
+          1,
+          1,
+          8,
+          2664,
+          178,
+          228
+        ],
+        [
+          1,
+          1,
+          12,
+          2556,
+          152,
+          216
+        ],
+        [
+          1,
+          1,
+          14,
+          2340,
+          160,
+          192
+        ],
+        [
+          1,
+          1,
+          16,
+          2448,
+          150,
+          204
+        ],
+        [
+          1,
+          1,
+          16,
+          2664,
+          142,
+          228
+        ],
+        [
+          1,
+          1,
+          18,
+          2340,
+          156,
+          192
+        ],
+        [
+          1,
+          1,
+          18,
+          2448,
+          146,
+          204
+        ],
+        [
+          1,
+          1,
+          20,
+          2052,
+          144,
+          160
+        ],
+        [
+          1,
+          1,
+          20,
+          2448,
+          143,
+          204
+        ],
+        [
+          1,
+          1,
+          20,
+          2556,
+          135,
+          216
+        ],
+        [
+          1,
+          1,
+          20,
+          2664,
+          132,
+          228
+        ],
+        [
+          1,
+          1,
+          22,
+          1692,
+          124,
+          120
+        ],
+        [
+          1,
+          1,
+          22,
+          2088,
+          123,
+          164
+        ],
+        [
+          1,
+          1,
+          28,
+          1692,
+          120,
+          120
+        ],
+        [
+          1,
+          1,
+          28,
+          1800,
+          114,
+          132
+        ],
+        [
+          1,
+          2,
+          10,
+          2664,
+          150,
+          228
+        ],
+        [
+          1,
+          2,
+          12,
+          2664,
+          130,
+          228
+        ],
+        [
+          1,
+          2,
+          14,
+          2232,
+          132,
+          180
+        ],
+        [
+          1,
+          2,
+          14,
+          2448,
+          124,
+          204
+        ],
+        [
+          1,
+          2,
+          18,
+          2232,
+          128,
+          180
+        ],
+        [
+          1,
+          2,
+          20,
+          2232,
+          125,
+          180
+        ],
+        [
+          1,
+          2,
+          20,
+          2448,
+          114,
+          204
+        ],
+        [
+          1,
+          2,
+          22,
+          1584,
+          100,
+          108
+        ],
+        [
+          1,
+          2,
+          26,
+          1872,
+          97,
+          140
+        ],
+        [
+          1,
+          2,
+          34,
+          1584,
+          92,
+          108
+        ],
+        [
+          1,
+          4,
+          18,
+          2340,
+          114,
+          192
+        ],
+        [
+          1,
+          4,
+          18,
+          2556,
+          110,
+          216
+        ],
+        [
+          1,
+          4,
+          20,
+          2340,
+          111,
+          192
+        ],
+        [
+          1,
+          4,
+          20,
+          2556,
+          100,
+          216
+        ],
+        [
+          1,
+          4,
+          22,
+          1980,
+          91,
+          152
+        ],
+        [
+          1,
+          4,
+          26,
+          1476,
+          85,
+          96
+        ],
+        [
+          1,
+          4,
+          38,
+          1980,
+          83,
+          152
+        ],
+        [
+          1,
+          4,
+          46,
+          1476,
+          79,
+          96
+        ],
+        [
+          1,
+          5,
+          22,
+          2232,
+          57,
+          180
+        ],
+        [
+          1,
+          5,
+          22,
+          2340,
+          46,
+          192
+        ],
+        [
+          1,
+          5,
+          26,
+          2124,
+          42,
+          168
+        ],
+        [
+          1,
+          5,
+          32,
+          1764,
+          38,
+          128
+        ],
+        [
+          1,
+          5,
+          34,
+          2124,
+          34,
+          168
+        ],
+        [
+          1,
+          5,
+          36,
+          1836,
+          33,
+          136
+        ],
+        [
+          1,
+          5,
+          38,
+          2340,
+          30,
+          192
+        ],
+        [
+          1,
+          5,
+          44,
+          1764,
+          32,
+          128
+        ],
+        [
+          1,
+          5,
+          44,
+          1980,
+          28,
+          152
+        ],
+        [
+          1,
+          5,
+          46,
+          1476,
+          23,
+          96
+        ],
+        [
+          1,
+          5,
+          56,
+          1476,
+          21,
+          96
+        ],
+        [
+          1,
+          5,
+          76,
+          1476,
+          20,
+          96
+        ],
+        [
+          2,
+          1,
+          10,
+          2664,
+          122,
+          228
+        ],
+        [
+          2,
+          1,
+          12,
+          2556,
+          132,
+          216
+        ],
+        [
+          2,
+          1,
+          14,
+          2448,
+          150,
+          204
+        ],
+        [
+          2,
+          1,
+          20,
+          2556,
+          125,
+          216
+        ],
+        [
+          2,
+          1,
+          22,
+          1476,
+          80,
+          96
+        ],
+        [
+          2,
+          1,
+          34,
+          1476,
+          75,
+          96
+        ],
+        [
+          2,
+          2,
+          10,
+          2664,
+          114,
+          228
+        ],
+        [
+          2,
+          2,
+          14,
+          2448,
+          108,
+          204
+        ],
+        [
+          2,
+          2,
+          16,
+          2232,
+          126,
+          180
+        ],
+        [
+          2,
+          2,
+          16,
+          2448,
+          98,
+          204
+        ],
+        [
+          2,
+          2,
+          18,
+          2232,
+          122,
+          180
+        ],
+        [
+          2,
+          2,
+          20,
+          2232,
+          119,
+          180
+        ],
+        [
+          2,
+          2,
+          22,
+          1872,
+          79,
+          140
+        ],
+        [
+          2,
+          2,
+          24,
+          1476,
+          68,
+          96
+        ],
+        [
+          2,
+          2,
+          40,
+          1476,
+          63,
+          96
+        ],
+        [
+          2,
+          4,
+          18,
+          2556,
+          90,
+          216
+        ],
+        [
+          2,
+          4,
+          22,
+          1980,
+          71,
+          152
+        ],
+        [
+          2,
+          4,
+          26,
+          1476,
+          65,
+          96
+        ],
+        [
+          2,
+          4,
+          28,
+          1476,
+          62,
+          96
+        ],
+        [
+          2,
+          4,
+          46,
+          1476,
+          59,
+          96
+        ],
+        [
+          2,
+          4,
+          52,
+          1476,
+          55,
+          96
+        ],
+        [
+          2,
+          5,
+          22,
+          2124,
+          57,
+          168
+        ],
+        [
+          2,
+          5,
+          22,
+          2232,
+          54,
+          180
+        ],
+        [
+          2,
+          5,
+          24,
+          2124,
+          45,
+          168
+        ],
+        [
+          2,
+          5,
+          28,
+          2124,
+          39,
+          168
+        ],
+        [
+          2,
+          5,
+          32,
+          1764,
+          35,
+          128
+        ],
+        [
+          2,
+          5,
+          34,
+          1764,
+          30,
+          128
+        ],
+        [
+          2,
+          5,
+          38,
+          1980,
+          29,
+          152
+        ],
+        [
+          2,
+          5,
+          44,
+          1764,
+          29,
+          128
+        ],
+        [
+          2,
+          5,
+          46,
+          1476,
+          18,
+          96
+        ],
+        [
+          2,
+          5,
+          52,
+          1476,
+          14,
+          96
+        ],
+        [
+          2,
+          5,
+          56,
+          1476,
+          12,
+          96
+        ],
+        [
+          2,
+          5,
+          76,
+          1476,
+          11,
+          96
+        ]
+      ],
+      "observation": {
+        "scopes": {
+          "catalog.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.001459125,
+            "exclusive_s": 8.3875e-05
+          },
+          "catalog.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.002000667,
+            "exclusive_s": 8.9958e-05
+          },
+          "complete.construct": {
+            "calls": 3484,
+            "failed_calls": 0,
+            "inclusive_s": 0.002283261,
+            "exclusive_s": 0.002283261
+          },
+          "compose": {
+            "calls": 3484,
+            "failed_calls": 0,
+            "inclusive_s": 0.01373413,
+            "exclusive_s": 0.008445706
+          },
+          "conversion": {
+            "calls": 3484,
+            "failed_calls": 0,
+            "inclusive_s": 0.003005163,
+            "exclusive_s": 0.003005163
+          },
+          "evaluate.consume": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.000185045,
+            "exclusive_s": 0.000185045
+          },
+          "evaluate.produce": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.000186541,
+            "exclusive_s": 0.000186541
+          },
+          "grouping.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.00137525,
+            "exclusive_s": 0.000244537
+          },
+          "grouping.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.001910709,
+            "exclusive_s": 0.00025859
+          },
+          "kernel.construct.consume": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 9.5081e-05,
+            "exclusive_s": 9.5081e-05
+          },
+          "kernel.construct.produce": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.000102035,
+            "exclusive_s": 0.000102035
+          },
+          "layout.match": {
+            "calls": 3744,
+            "failed_calls": 0,
+            "inclusive_s": 0.001862428,
+            "exclusive_s": 0.001862428
+          },
+          "pareto.add.consume": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.000939668,
+            "exclusive_s": 0.000939668
+          },
+          "pareto.add.produce": {
+            "calls": 144,
+            "failed_calls": 0,
+            "inclusive_s": 0.001457162,
+            "exclusive_s": 0.001457162
+          },
+          "pareto.add.root": {
+            "calls": 3484,
+            "failed_calls": 0,
+            "inclusive_s": 0.037010133,
+            "exclusive_s": 0.037010133
+          },
+          "pareto.finish.consume": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 6e-06,
+            "exclusive_s": 6e-06
+          },
+          "pareto.finish.produce": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 8.416e-06,
+            "exclusive_s": 8.416e-06
+          },
+          "pareto.finish.root": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 8.166e-06,
+            "exclusive_s": 8.166e-06
+          },
+          "provider.generate": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000547667,
+            "exclusive_s": 0.000350551
+          },
+          "routes": {
+            "calls": 3760,
+            "failed_calls": 0,
+            "inclusive_s": 0.001288534,
+            "exclusive_s": 0.001288534
+          },
+          "search": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.068160792,
+            "exclusive_s": 0.010249942
+          }
+        },
+        "exclusive_buckets_s": {
+          "candidate_generation": 0.000547667,
+          "catalog_control": 0.000173833,
+          "complete_materialization": 0.002283261,
+          "composition_control": 0.008445706,
+          "conversion_evaluation": 0.003005163,
+          "interface_analysis": 0.003150962,
+          "interface_grouping": 0.000503127,
+          "local_evaluation": 0.000371586,
+          "pareto_maintenance": 0.039429545,
+          "search_control": 0.010249942
+        },
+        "search_inclusive_s": 0.068160792,
+        "exclusive_partition_equal": true,
+        "attribution": "Instrumented named-scope remainders; include wrapper overhead and uninstrumented helpers.",
+        "instrumented_wall_s": 0.06816675,
+        "stages": {
+          "produce": {
+            "candidates": 144,
+            "kernel_plan_constructions": 144,
+            "evaluations": 144,
+            "retained": 72,
+            "pareto_inputs": 144,
+            "pareto_add_calls": 144,
+            "dominance_checks": 2238,
+            "pareto_pruned": 72,
+            "largest_interface_frontier": 23
+          },
+          "consume": {
+            "candidates": 144,
+            "kernel_plan_constructions": 144,
+            "evaluations": 144,
+            "retained": 52,
+            "pareto_inputs": 144,
+            "pareto_add_calls": 144,
+            "dominance_checks": 1396,
+            "pareto_pruned": 92,
+            "largest_interface_frontier": 22
+          }
+        },
+        "composition": {
+          "kernel_pairs_visited": 3744,
+          "layout_pairs_skipped": 260,
+          "complete_pairs_composed": 3484,
+          "complete_plan_constructions": 3484,
+          "raw_complete_alternatives": 23328,
+          "conversion_evaluations": 3484,
+          "route_queries_including_statistics": 3760,
+          "layout_match_calls": 3744
+        },
+        "root_pareto": {
+          "inputs": 3484,
+          "states": 79,
+          "dominance_checks": 55895,
+          "pruned": 3405,
+          "peak_kept": 80
+        },
+        "policy": {
+          "include_spill_reload": true,
+          "local_pruning": true,
+          "layout_pruning": true,
+          "order_seed": null
+        },
+        "search_stats": {
+          "raw_prefixes": 144,
+          "raw_consumers": 144,
+          "retained_prefixes": 72,
+          "retained_consumers": 52,
+          "prefix_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 13
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 23
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 13
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 23
+            }
+          ],
+          "consumer_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 10
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 22
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 10
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=2, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 10
+            }
+          ],
+          "materialized_complete_pairs": 3484,
+          "raw_complete_pairs": 23328,
+          "raw_kernel_pairs": 20736,
+          "materialized_kernel_pairs": 3484,
+          "layout_pruning": true,
+          "layout_pairs_skipped": 260,
+          "layout_alternatives_skipped": 520,
+          "root_states_by_enforcer": {
+            "direct": 79
+          },
+          "local_pruning": true,
+          "frontier_work": {
+            "prefix": {
+              "inputs": 144,
+              "peak_kept": 23,
+              "dominance_checks": 2238,
+              "pruned": 72
+            },
+            "consumer": {
+              "inputs": 144,
+              "peak_kept": 22,
+              "dominance_checks": 1396,
+              "pruned": 92
+            },
+            "root": {
+              "inputs": 3484,
+              "peak_kept": 80,
+              "dominance_checks": 55895,
+              "pruned": 3405
+            }
+          },
+          "enforcer_grammar": "direct_and_spill_reload",
+          "root_frontier_states": 79,
+          "architecture_points_supplied": 0,
+          "oracle_responses_used": false,
+          "ffm_search_calls": 0
+        },
+        "no_evaluation_avoided_before_local_pareto": true,
+        "exact_plans_and_statistics_equal": true,
+        "wall_over_warm_ratio": 1.3622746873878884
+      },
+      "all_replicates_exact_equal": true
+    },
+    "4,4,4,4/unpruned": {
+      "shape": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "policy": "unpruned",
+      "cold_samples_s": [
+        2.0467280000448227,
+        2.0675125420093536,
+        2.068854875047691
+      ],
+      "warm_samples_s": [
+        2.0526293750153854,
+        2.055020791012794,
+        2.0552316249813884
+      ],
+      "cold_median_s": 2.0675125420093536,
+      "warm_median_s": 2.055020791012794,
+      "warm_range_s": [
+        2.0526293750153854,
+        2.0552316249813884
+      ],
+      "work": {
+        "raw_prefixes": 324,
+        "raw_consumers": 324,
+        "retained_prefixes": 324,
+        "retained_consumers": 324,
+        "prefix_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 81
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 81
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 81
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 81
+          }
+        ],
+        "consumer_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 81
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 81
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 81
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 81
+          }
+        ],
+        "materialized_complete_pairs": 118098,
+        "raw_complete_pairs": 118098,
+        "raw_kernel_pairs": 104976,
+        "materialized_kernel_pairs": 104976,
+        "layout_pruning": false,
+        "layout_pairs_skipped": 0,
+        "layout_alternatives_skipped": 0,
+        "root_states_by_enforcer": {
+          "direct": 126
+        },
+        "local_pruning": false,
+        "frontier_work": {
+          "prefix": {},
+          "consumer": {},
+          "root": {
+            "inputs": 118098,
+            "peak_kept": 130,
+            "dominance_checks": 2699657,
+            "pruned": 117972
+          }
+        },
+        "enforcer_grammar": "direct_and_spill_reload",
+        "root_frontier_states": 126,
+        "architecture_points_supplied": 0,
+        "oracle_responses_used": false,
+        "ffm_search_calls": 0
+      },
+      "frontier": [
+        [
+          1,
+          1,
+          6,
+          6400,
+          416,
+          576
+        ],
+        [
+          1,
+          1,
+          10,
+          6400,
+          352,
+          576
+        ],
+        [
+          1,
+          1,
+          12,
+          4672,
+          320,
+          384
+        ],
+        [
+          1,
+          1,
+          16,
+          4672,
+          256,
+          384
+        ],
+        [
+          1,
+          1,
+          24,
+          4672,
+          224,
+          384
+        ],
+        [
+          1,
+          1,
+          36,
+          4096,
+          288,
+          320
+        ],
+        [
+          1,
+          1,
+          40,
+          4096,
+          256,
+          320
+        ],
+        [
+          1,
+          1,
+          42,
+          3232,
+          208,
+          224
+        ],
+        [
+          1,
+          1,
+          48,
+          3232,
+          192,
+          224
+        ],
+        [
+          1,
+          2,
+          10,
+          5248,
+          208,
+          448
+        ],
+        [
+          1,
+          2,
+          12,
+          4960,
+          264,
+          416
+        ],
+        [
+          1,
+          2,
+          14,
+          4672,
+          176,
+          384
+        ],
+        [
+          1,
+          2,
+          20,
+          4672,
+          160,
+          384
+        ],
+        [
+          1,
+          2,
+          22,
+          3520,
+          160,
+          256
+        ],
+        [
+          1,
+          2,
+          28,
+          3520,
+          128,
+          256
+        ],
+        [
+          1,
+          2,
+          40,
+          3520,
+          112,
+          256
+        ],
+        [
+          1,
+          2,
+          42,
+          2656,
+          168,
+          160
+        ],
+        [
+          1,
+          2,
+          42,
+          3232,
+          153,
+          224
+        ],
+        [
+          1,
+          2,
+          44,
+          2656,
+          152,
+          160
+        ],
+        [
+          1,
+          2,
+          52,
+          2656,
+          104,
+          160
+        ],
+        [
+          1,
+          2,
+          56,
+          2656,
+          96,
+          160
+        ],
+        [
+          1,
+          4,
+          18,
+          4672,
+          104,
+          384
+        ],
+        [
+          1,
+          4,
+          22,
+          4096,
+          132,
+          320
+        ],
+        [
+          1,
+          4,
+          28,
+          4096,
+          100,
+          320
+        ],
+        [
+          1,
+          4,
+          28,
+          4672,
+          72,
+          384
+        ],
+        [
+          1,
+          4,
+          40,
+          4096,
+          92,
+          320
+        ],
+        [
+          1,
+          4,
+          42,
+          2368,
+          132,
+          128
+        ],
+        [
+          1,
+          4,
+          42,
+          2944,
+          77,
+          192
+        ],
+        [
+          1,
+          4,
+          42,
+          3808,
+          73,
+          288
+        ],
+        [
+          1,
+          4,
+          48,
+          3232,
+          72,
+          224
+        ],
+        [
+          1,
+          4,
+          48,
+          3808,
+          65,
+          288
+        ],
+        [
+          1,
+          4,
+          48,
+          4672,
+          56,
+          384
+        ],
+        [
+          1,
+          4,
+          52,
+          2368,
+          74,
+          128
+        ],
+        [
+          1,
+          4,
+          52,
+          2944,
+          57,
+          192
+        ],
+        [
+          1,
+          4,
+          52,
+          3808,
+          55,
+          288
+        ],
+        [
+          1,
+          4,
+          56,
+          3232,
+          54,
+          224
+        ],
+        [
+          1,
+          4,
+          72,
+          2368,
+          45,
+          128
+        ],
+        [
+          1,
+          4,
+          80,
+          2368,
+          43,
+          128
+        ],
+        [
+          1,
+          4,
+          96,
+          2368,
+          42,
+          128
+        ],
+        [
+          2,
+          1,
+          10,
+          5248,
+          248,
+          448
+        ],
+        [
+          2,
+          1,
+          12,
+          4960,
+          272,
+          416
+        ],
+        [
+          2,
+          1,
+          14,
+          4672,
+          216,
+          384
+        ],
+        [
+          2,
+          1,
+          16,
+          4960,
+          200,
+          416
+        ],
+        [
+          2,
+          1,
+          20,
+          4672,
+          184,
+          384
+        ],
+        [
+          2,
+          1,
+          22,
+          3520,
+          176,
+          256
+        ],
+        [
+          2,
+          1,
+          28,
+          3520,
+          168,
+          256
+        ],
+        [
+          2,
+          1,
+          32,
+          4096,
+          152,
+          320
+        ],
+        [
+          2,
+          1,
+          32,
+          4672,
+          144,
+          384
+        ],
+        [
+          2,
+          1,
+          38,
+          2944,
+          160,
+          192
+        ],
+        [
+          2,
+          1,
+          42,
+          2656,
+          144,
+          160
+        ],
+        [
+          2,
+          1,
+          42,
+          3808,
+          137,
+          288
+        ],
+        [
+          2,
+          1,
+          44,
+          2656,
+          136,
+          160
+        ],
+        [
+          2,
+          1,
+          56,
+          2656,
+          130,
+          160
+        ],
+        [
+          2,
+          1,
+          56,
+          3232,
+          120,
+          224
+        ],
+        [
+          2,
+          2,
+          16,
+          4096,
+          136,
+          320
+        ],
+        [
+          2,
+          2,
+          22,
+          3808,
+          144,
+          288
+        ],
+        [
+          2,
+          2,
+          24,
+          3520,
+          112,
+          256
+        ],
+        [
+          2,
+          2,
+          32,
+          3520,
+          96,
+          256
+        ],
+        [
+          2,
+          2,
+          38,
+          2944,
+          152,
+          192
+        ],
+        [
+          2,
+          2,
+          40,
+          2944,
+          128,
+          192
+        ],
+        [
+          2,
+          2,
+          40,
+          3808,
+          92,
+          288
+        ],
+        [
+          2,
+          2,
+          40,
+          4096,
+          88,
+          320
+        ],
+        [
+          2,
+          2,
+          42,
+          2656,
+          112,
+          160
+        ],
+        [
+          2,
+          2,
+          44,
+          2944,
+          88,
+          192
+        ],
+        [
+          2,
+          2,
+          44,
+          3808,
+          85,
+          288
+        ],
+        [
+          2,
+          2,
+          48,
+          2656,
+          104,
+          160
+        ],
+        [
+          2,
+          2,
+          48,
+          2944,
+          80,
+          192
+        ],
+        [
+          2,
+          2,
+          48,
+          3520,
+          72,
+          256
+        ],
+        [
+          2,
+          2,
+          52,
+          2656,
+          72,
+          160
+        ],
+        [
+          2,
+          2,
+          52,
+          3232,
+          69,
+          224
+        ],
+        [
+          2,
+          2,
+          64,
+          2656,
+          60,
+          160
+        ],
+        [
+          2,
+          4,
+          18,
+          4384,
+          120,
+          352
+        ],
+        [
+          2,
+          4,
+          24,
+          4096,
+          108,
+          320
+        ],
+        [
+          2,
+          4,
+          28,
+          3520,
+          68,
+          256
+        ],
+        [
+          2,
+          4,
+          40,
+          3520,
+          44,
+          256
+        ],
+        [
+          2,
+          4,
+          42,
+          2368,
+          100,
+          128
+        ],
+        [
+          2,
+          4,
+          42,
+          3232,
+          59,
+          224
+        ],
+        [
+          2,
+          4,
+          44,
+          2368,
+          92,
+          128
+        ],
+        [
+          2,
+          4,
+          44,
+          2656,
+          68,
+          160
+        ],
+        [
+          2,
+          4,
+          44,
+          2944,
+          59,
+          192
+        ],
+        [
+          2,
+          4,
+          44,
+          3232,
+          51,
+          224
+        ],
+        [
+          2,
+          4,
+          52,
+          2368,
+          58,
+          128
+        ],
+        [
+          2,
+          4,
+          52,
+          3232,
+          49,
+          224
+        ],
+        [
+          2,
+          4,
+          56,
+          2368,
+          50,
+          128
+        ],
+        [
+          2,
+          4,
+          56,
+          2656,
+          36,
+          160
+        ],
+        [
+          2,
+          4,
+          64,
+          2656,
+          32,
+          160
+        ],
+        [
+          2,
+          4,
+          64,
+          3520,
+          28,
+          256
+        ],
+        [
+          2,
+          4,
+          72,
+          2368,
+          32,
+          128
+        ],
+        [
+          2,
+          4,
+          72,
+          3232,
+          29,
+          224
+        ],
+        [
+          2,
+          4,
+          80,
+          2368,
+          23,
+          128
+        ],
+        [
+          2,
+          4,
+          96,
+          2368,
+          22,
+          128
+        ],
+        [
+          4,
+          1,
+          18,
+          4672,
+          164,
+          384
+        ],
+        [
+          4,
+          1,
+          20,
+          4672,
+          152,
+          384
+        ],
+        [
+          4,
+          1,
+          22,
+          4096,
+          152,
+          320
+        ],
+        [
+          4,
+          1,
+          28,
+          4096,
+          144,
+          320
+        ],
+        [
+          4,
+          1,
+          28,
+          4672,
+          132,
+          384
+        ],
+        [
+          4,
+          1,
+          32,
+          4672,
+          128,
+          384
+        ],
+        [
+          4,
+          1,
+          40,
+          4096,
+          138,
+          320
+        ],
+        [
+          4,
+          1,
+          42,
+          2368,
+          96,
+          128
+        ],
+        [
+          4,
+          1,
+          48,
+          3808,
+          92,
+          288
+        ],
+        [
+          4,
+          1,
+          52,
+          2368,
+          88,
+          128
+        ],
+        [
+          4,
+          1,
+          72,
+          2368,
+          81,
+          128
+        ],
+        [
+          4,
+          2,
+          28,
+          3520,
+          96,
+          256
+        ],
+        [
+          4,
+          2,
+          32,
+          3520,
+          88,
+          256
+        ],
+        [
+          4,
+          2,
+          40,
+          3520,
+          80,
+          256
+        ],
+        [
+          4,
+          2,
+          42,
+          3232,
+          84,
+          224
+        ],
+        [
+          4,
+          2,
+          44,
+          2368,
+          80,
+          128
+        ],
+        [
+          4,
+          2,
+          44,
+          2656,
+          72,
+          160
+        ],
+        [
+          4,
+          2,
+          48,
+          3232,
+          69,
+          224
+        ],
+        [
+          4,
+          2,
+          48,
+          3808,
+          68,
+          288
+        ],
+        [
+          4,
+          2,
+          52,
+          2368,
+          56,
+          128
+        ],
+        [
+          4,
+          2,
+          56,
+          2368,
+          48,
+          128
+        ],
+        [
+          4,
+          2,
+          80,
+          2368,
+          41,
+          128
+        ],
+        [
+          4,
+          4,
+          42,
+          2368,
+          84,
+          128
+        ],
+        [
+          4,
+          4,
+          44,
+          2368,
+          76,
+          128
+        ],
+        [
+          4,
+          4,
+          48,
+          2368,
+          72,
+          128
+        ],
+        [
+          4,
+          4,
+          48,
+          2656,
+          64,
+          160
+        ],
+        [
+          4,
+          4,
+          48,
+          2944,
+          50,
+          192
+        ],
+        [
+          4,
+          4,
+          48,
+          3232,
+          47,
+          224
+        ],
+        [
+          4,
+          4,
+          52,
+          2368,
+          48,
+          128
+        ],
+        [
+          4,
+          4,
+          56,
+          2368,
+          42,
+          128
+        ],
+        [
+          4,
+          4,
+          64,
+          2368,
+          38,
+          128
+        ],
+        [
+          4,
+          4,
+          64,
+          2656,
+          28,
+          160
+        ],
+        [
+          4,
+          4,
+          72,
+          2368,
+          23,
+          128
+        ],
+        [
+          4,
+          4,
+          80,
+          2368,
+          18,
+          128
+        ],
+        [
+          4,
+          4,
+          96,
+          2368,
+          12,
+          128
+        ]
+      ],
+      "observation": {
+        "scopes": {
+          "catalog.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000880917,
+            "exclusive_s": 0.000187667
+          },
+          "catalog.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000927375,
+            "exclusive_s": 0.000191208
+          },
+          "complete.construct": {
+            "calls": 118098,
+            "failed_calls": 0,
+            "inclusive_s": 0.081307703,
+            "exclusive_s": 0.081307703
+          },
+          "compose": {
+            "calls": 118098,
+            "failed_calls": 0,
+            "inclusive_s": 0.480922859,
+            "exclusive_s": 0.294832344
+          },
+          "conversion": {
+            "calls": 118098,
+            "failed_calls": 0,
+            "inclusive_s": 0.104782812,
+            "exclusive_s": 0.104782812
+          },
+          "evaluate.consume": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.000424964,
+            "exclusive_s": 0.000424964
+          },
+          "evaluate.produce": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.000459463,
+            "exclusive_s": 0.000459463
+          },
+          "grouping.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.00069325,
+            "exclusive_s": 0.000268286
+          },
+          "grouping.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.000736167,
+            "exclusive_s": 0.000276704
+          },
+          "kernel.construct.consume": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.00024128,
+            "exclusive_s": 0.00024128
+          },
+          "kernel.construct.produce": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.00022441,
+            "exclusive_s": 0.00022441
+          },
+          "pareto.add.root": {
+            "calls": 118098,
+            "failed_calls": 0,
+            "inclusive_s": 1.782590159,
+            "exclusive_s": 1.782590159
+          },
+          "pareto.finish.root": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 1.4458e-05,
+            "exclusive_s": 1.4458e-05
+          },
+          "provider.generate": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.00118475,
+            "exclusive_s": 0.00071906
+          },
+          "routes": {
+            "calls": 104992,
+            "failed_calls": 0,
+            "inclusive_s": 0.036023201,
+            "exclusive_s": 0.036023201
+          },
+          "search": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 2.555334375,
+            "exclusive_s": 0.252790656
+          }
+        },
+        "exclusive_buckets_s": {
+          "candidate_generation": 0.00118475,
+          "catalog_control": 0.000378875,
+          "complete_materialization": 0.081307703,
+          "composition_control": 0.294832344,
+          "conversion_evaluation": 0.104782812,
+          "interface_analysis": 0.036023201,
+          "interface_grouping": 0.00054499,
+          "local_evaluation": 0.000884427,
+          "pareto_maintenance": 1.782604617,
+          "search_control": 0.252790656
+        },
+        "search_inclusive_s": 2.555334375,
+        "exclusive_partition_equal": true,
+        "attribution": "Instrumented named-scope remainders; include wrapper overhead and uninstrumented helpers.",
+        "instrumented_wall_s": 2.555344333,
+        "stages": {
+          "produce": {
+            "candidates": 324,
+            "kernel_plan_constructions": 324,
+            "evaluations": 324,
+            "retained": 324,
+            "pareto_inputs": 0,
+            "pareto_add_calls": 0,
+            "dominance_checks": 0,
+            "pareto_pruned": 0,
+            "largest_interface_frontier": 0
+          },
+          "consume": {
+            "candidates": 324,
+            "kernel_plan_constructions": 324,
+            "evaluations": 324,
+            "retained": 324,
+            "pareto_inputs": 0,
+            "pareto_add_calls": 0,
+            "dominance_checks": 0,
+            "pareto_pruned": 0,
+            "largest_interface_frontier": 0
+          }
+        },
+        "composition": {
+          "kernel_pairs_visited": 104976,
+          "layout_pairs_skipped": 0,
+          "complete_pairs_composed": 118098,
+          "complete_plan_constructions": 118098,
+          "raw_complete_alternatives": 118098,
+          "conversion_evaluations": 118098,
+          "route_queries_including_statistics": 104992,
+          "layout_match_calls": 0
+        },
+        "root_pareto": {
+          "inputs": 118098,
+          "states": 126,
+          "dominance_checks": 2699657,
+          "pruned": 117972,
+          "peak_kept": 130
+        },
+        "policy": {
+          "include_spill_reload": true,
+          "local_pruning": false,
+          "layout_pruning": false,
+          "order_seed": null
+        },
+        "search_stats": {
+          "raw_prefixes": 324,
+          "raw_consumers": 324,
+          "retained_prefixes": 324,
+          "retained_consumers": 324,
+          "prefix_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 81
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 81
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 81
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 81
+            }
+          ],
+          "consumer_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 81
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 81
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 81
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 81
+            }
+          ],
+          "materialized_complete_pairs": 118098,
+          "raw_complete_pairs": 118098,
+          "raw_kernel_pairs": 104976,
+          "materialized_kernel_pairs": 104976,
+          "layout_pruning": false,
+          "layout_pairs_skipped": 0,
+          "layout_alternatives_skipped": 0,
+          "root_states_by_enforcer": {
+            "direct": 126
+          },
+          "local_pruning": false,
+          "frontier_work": {
+            "prefix": {},
+            "consumer": {},
+            "root": {
+              "inputs": 118098,
+              "peak_kept": 130,
+              "dominance_checks": 2699657,
+              "pruned": 117972
+            }
+          },
+          "enforcer_grammar": "direct_and_spill_reload",
+          "root_frontier_states": 126,
+          "architecture_points_supplied": 0,
+          "oracle_responses_used": false,
+          "ffm_search_calls": 0
+        },
+        "no_evaluation_avoided_before_local_pareto": true,
+        "exact_plans_and_statistics_equal": true,
+        "wall_over_warm_ratio": 1.2449126783937048
+      },
+      "all_replicates_exact_equal": true
+    },
+    "4,4,4,4/local_only": {
+      "shape": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "policy": "local_only",
+      "cold_samples_s": [
+        0.4365399170201272,
+        0.4348295829258859,
+        0.43379299994558096
+      ],
+      "warm_samples_s": [
+        0.4446857499424368,
+        0.43673933297395706,
+        0.4331617089919746
+      ],
+      "cold_median_s": 0.4348295829258859,
+      "warm_median_s": 0.43673933297395706,
+      "warm_range_s": [
+        0.4331617089919746,
+        0.4446857499424368
+      ],
+      "work": {
+        "raw_prefixes": 324,
+        "raw_consumers": 324,
+        "retained_prefixes": 156,
+        "retained_consumers": 118,
+        "prefix_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 28
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 50
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 28
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 50
+          }
+        ],
+        "consumer_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 23
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 50
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 23
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 22
+          }
+        ],
+        "materialized_complete_pairs": 19696,
+        "raw_complete_pairs": 118098,
+        "raw_kernel_pairs": 104976,
+        "materialized_kernel_pairs": 18408,
+        "layout_pruning": false,
+        "layout_pairs_skipped": 0,
+        "layout_alternatives_skipped": 0,
+        "root_states_by_enforcer": {
+          "direct": 126
+        },
+        "local_pruning": true,
+        "frontier_work": {
+          "prefix": {
+            "inputs": 324,
+            "peak_kept": 50,
+            "dominance_checks": 10036,
+            "pruned": 168
+          },
+          "consumer": {
+            "inputs": 324,
+            "peak_kept": 50,
+            "dominance_checks": 6993,
+            "pruned": 206
+          },
+          "root": {
+            "inputs": 19696,
+            "peak_kept": 130,
+            "dominance_checks": 588092,
+            "pruned": 19570
+          }
+        },
+        "enforcer_grammar": "direct_and_spill_reload",
+        "root_frontier_states": 126,
+        "architecture_points_supplied": 0,
+        "oracle_responses_used": false,
+        "ffm_search_calls": 0
+      },
+      "frontier": [
+        [
+          1,
+          1,
+          6,
+          6400,
+          416,
+          576
+        ],
+        [
+          1,
+          1,
+          10,
+          6400,
+          352,
+          576
+        ],
+        [
+          1,
+          1,
+          12,
+          4672,
+          320,
+          384
+        ],
+        [
+          1,
+          1,
+          16,
+          4672,
+          256,
+          384
+        ],
+        [
+          1,
+          1,
+          24,
+          4672,
+          224,
+          384
+        ],
+        [
+          1,
+          1,
+          36,
+          4096,
+          288,
+          320
+        ],
+        [
+          1,
+          1,
+          40,
+          4096,
+          256,
+          320
+        ],
+        [
+          1,
+          1,
+          42,
+          3232,
+          208,
+          224
+        ],
+        [
+          1,
+          1,
+          48,
+          3232,
+          192,
+          224
+        ],
+        [
+          1,
+          2,
+          10,
+          5248,
+          208,
+          448
+        ],
+        [
+          1,
+          2,
+          12,
+          4960,
+          264,
+          416
+        ],
+        [
+          1,
+          2,
+          14,
+          4672,
+          176,
+          384
+        ],
+        [
+          1,
+          2,
+          20,
+          4672,
+          160,
+          384
+        ],
+        [
+          1,
+          2,
+          22,
+          3520,
+          160,
+          256
+        ],
+        [
+          1,
+          2,
+          28,
+          3520,
+          128,
+          256
+        ],
+        [
+          1,
+          2,
+          40,
+          3520,
+          112,
+          256
+        ],
+        [
+          1,
+          2,
+          42,
+          2656,
+          168,
+          160
+        ],
+        [
+          1,
+          2,
+          42,
+          3232,
+          153,
+          224
+        ],
+        [
+          1,
+          2,
+          44,
+          2656,
+          152,
+          160
+        ],
+        [
+          1,
+          2,
+          52,
+          2656,
+          104,
+          160
+        ],
+        [
+          1,
+          2,
+          56,
+          2656,
+          96,
+          160
+        ],
+        [
+          1,
+          4,
+          18,
+          4672,
+          104,
+          384
+        ],
+        [
+          1,
+          4,
+          22,
+          4096,
+          132,
+          320
+        ],
+        [
+          1,
+          4,
+          28,
+          4096,
+          100,
+          320
+        ],
+        [
+          1,
+          4,
+          28,
+          4672,
+          72,
+          384
+        ],
+        [
+          1,
+          4,
+          40,
+          4096,
+          92,
+          320
+        ],
+        [
+          1,
+          4,
+          42,
+          2368,
+          132,
+          128
+        ],
+        [
+          1,
+          4,
+          42,
+          2944,
+          77,
+          192
+        ],
+        [
+          1,
+          4,
+          42,
+          3808,
+          73,
+          288
+        ],
+        [
+          1,
+          4,
+          48,
+          3232,
+          72,
+          224
+        ],
+        [
+          1,
+          4,
+          48,
+          3808,
+          65,
+          288
+        ],
+        [
+          1,
+          4,
+          48,
+          4672,
+          56,
+          384
+        ],
+        [
+          1,
+          4,
+          52,
+          2368,
+          74,
+          128
+        ],
+        [
+          1,
+          4,
+          52,
+          2944,
+          57,
+          192
+        ],
+        [
+          1,
+          4,
+          52,
+          3808,
+          55,
+          288
+        ],
+        [
+          1,
+          4,
+          56,
+          3232,
+          54,
+          224
+        ],
+        [
+          1,
+          4,
+          72,
+          2368,
+          45,
+          128
+        ],
+        [
+          1,
+          4,
+          80,
+          2368,
+          43,
+          128
+        ],
+        [
+          1,
+          4,
+          96,
+          2368,
+          42,
+          128
+        ],
+        [
+          2,
+          1,
+          10,
+          5248,
+          248,
+          448
+        ],
+        [
+          2,
+          1,
+          12,
+          4960,
+          272,
+          416
+        ],
+        [
+          2,
+          1,
+          14,
+          4672,
+          216,
+          384
+        ],
+        [
+          2,
+          1,
+          16,
+          4960,
+          200,
+          416
+        ],
+        [
+          2,
+          1,
+          20,
+          4672,
+          184,
+          384
+        ],
+        [
+          2,
+          1,
+          22,
+          3520,
+          176,
+          256
+        ],
+        [
+          2,
+          1,
+          28,
+          3520,
+          168,
+          256
+        ],
+        [
+          2,
+          1,
+          32,
+          4096,
+          152,
+          320
+        ],
+        [
+          2,
+          1,
+          32,
+          4672,
+          144,
+          384
+        ],
+        [
+          2,
+          1,
+          38,
+          2944,
+          160,
+          192
+        ],
+        [
+          2,
+          1,
+          42,
+          2656,
+          144,
+          160
+        ],
+        [
+          2,
+          1,
+          42,
+          3808,
+          137,
+          288
+        ],
+        [
+          2,
+          1,
+          44,
+          2656,
+          136,
+          160
+        ],
+        [
+          2,
+          1,
+          56,
+          2656,
+          130,
+          160
+        ],
+        [
+          2,
+          1,
+          56,
+          3232,
+          120,
+          224
+        ],
+        [
+          2,
+          2,
+          16,
+          4096,
+          136,
+          320
+        ],
+        [
+          2,
+          2,
+          22,
+          3808,
+          144,
+          288
+        ],
+        [
+          2,
+          2,
+          24,
+          3520,
+          112,
+          256
+        ],
+        [
+          2,
+          2,
+          32,
+          3520,
+          96,
+          256
+        ],
+        [
+          2,
+          2,
+          38,
+          2944,
+          152,
+          192
+        ],
+        [
+          2,
+          2,
+          40,
+          2944,
+          128,
+          192
+        ],
+        [
+          2,
+          2,
+          40,
+          3808,
+          92,
+          288
+        ],
+        [
+          2,
+          2,
+          40,
+          4096,
+          88,
+          320
+        ],
+        [
+          2,
+          2,
+          42,
+          2656,
+          112,
+          160
+        ],
+        [
+          2,
+          2,
+          44,
+          2944,
+          88,
+          192
+        ],
+        [
+          2,
+          2,
+          44,
+          3808,
+          85,
+          288
+        ],
+        [
+          2,
+          2,
+          48,
+          2656,
+          104,
+          160
+        ],
+        [
+          2,
+          2,
+          48,
+          2944,
+          80,
+          192
+        ],
+        [
+          2,
+          2,
+          48,
+          3520,
+          72,
+          256
+        ],
+        [
+          2,
+          2,
+          52,
+          2656,
+          72,
+          160
+        ],
+        [
+          2,
+          2,
+          52,
+          3232,
+          69,
+          224
+        ],
+        [
+          2,
+          2,
+          64,
+          2656,
+          60,
+          160
+        ],
+        [
+          2,
+          4,
+          18,
+          4384,
+          120,
+          352
+        ],
+        [
+          2,
+          4,
+          24,
+          4096,
+          108,
+          320
+        ],
+        [
+          2,
+          4,
+          28,
+          3520,
+          68,
+          256
+        ],
+        [
+          2,
+          4,
+          40,
+          3520,
+          44,
+          256
+        ],
+        [
+          2,
+          4,
+          42,
+          2368,
+          100,
+          128
+        ],
+        [
+          2,
+          4,
+          42,
+          3232,
+          59,
+          224
+        ],
+        [
+          2,
+          4,
+          44,
+          2368,
+          92,
+          128
+        ],
+        [
+          2,
+          4,
+          44,
+          2656,
+          68,
+          160
+        ],
+        [
+          2,
+          4,
+          44,
+          2944,
+          59,
+          192
+        ],
+        [
+          2,
+          4,
+          44,
+          3232,
+          51,
+          224
+        ],
+        [
+          2,
+          4,
+          52,
+          2368,
+          58,
+          128
+        ],
+        [
+          2,
+          4,
+          52,
+          3232,
+          49,
+          224
+        ],
+        [
+          2,
+          4,
+          56,
+          2368,
+          50,
+          128
+        ],
+        [
+          2,
+          4,
+          56,
+          2656,
+          36,
+          160
+        ],
+        [
+          2,
+          4,
+          64,
+          2656,
+          32,
+          160
+        ],
+        [
+          2,
+          4,
+          64,
+          3520,
+          28,
+          256
+        ],
+        [
+          2,
+          4,
+          72,
+          2368,
+          32,
+          128
+        ],
+        [
+          2,
+          4,
+          72,
+          3232,
+          29,
+          224
+        ],
+        [
+          2,
+          4,
+          80,
+          2368,
+          23,
+          128
+        ],
+        [
+          2,
+          4,
+          96,
+          2368,
+          22,
+          128
+        ],
+        [
+          4,
+          1,
+          18,
+          4672,
+          164,
+          384
+        ],
+        [
+          4,
+          1,
+          20,
+          4672,
+          152,
+          384
+        ],
+        [
+          4,
+          1,
+          22,
+          4096,
+          152,
+          320
+        ],
+        [
+          4,
+          1,
+          28,
+          4096,
+          144,
+          320
+        ],
+        [
+          4,
+          1,
+          28,
+          4672,
+          132,
+          384
+        ],
+        [
+          4,
+          1,
+          32,
+          4672,
+          128,
+          384
+        ],
+        [
+          4,
+          1,
+          40,
+          4096,
+          138,
+          320
+        ],
+        [
+          4,
+          1,
+          42,
+          2368,
+          96,
+          128
+        ],
+        [
+          4,
+          1,
+          48,
+          3808,
+          92,
+          288
+        ],
+        [
+          4,
+          1,
+          52,
+          2368,
+          88,
+          128
+        ],
+        [
+          4,
+          1,
+          72,
+          2368,
+          81,
+          128
+        ],
+        [
+          4,
+          2,
+          28,
+          3520,
+          96,
+          256
+        ],
+        [
+          4,
+          2,
+          32,
+          3520,
+          88,
+          256
+        ],
+        [
+          4,
+          2,
+          40,
+          3520,
+          80,
+          256
+        ],
+        [
+          4,
+          2,
+          42,
+          3232,
+          84,
+          224
+        ],
+        [
+          4,
+          2,
+          44,
+          2368,
+          80,
+          128
+        ],
+        [
+          4,
+          2,
+          44,
+          2656,
+          72,
+          160
+        ],
+        [
+          4,
+          2,
+          48,
+          3232,
+          69,
+          224
+        ],
+        [
+          4,
+          2,
+          48,
+          3808,
+          68,
+          288
+        ],
+        [
+          4,
+          2,
+          52,
+          2368,
+          56,
+          128
+        ],
+        [
+          4,
+          2,
+          56,
+          2368,
+          48,
+          128
+        ],
+        [
+          4,
+          2,
+          80,
+          2368,
+          41,
+          128
+        ],
+        [
+          4,
+          4,
+          42,
+          2368,
+          84,
+          128
+        ],
+        [
+          4,
+          4,
+          44,
+          2368,
+          76,
+          128
+        ],
+        [
+          4,
+          4,
+          48,
+          2368,
+          72,
+          128
+        ],
+        [
+          4,
+          4,
+          48,
+          2656,
+          64,
+          160
+        ],
+        [
+          4,
+          4,
+          48,
+          2944,
+          50,
+          192
+        ],
+        [
+          4,
+          4,
+          48,
+          3232,
+          47,
+          224
+        ],
+        [
+          4,
+          4,
+          52,
+          2368,
+          48,
+          128
+        ],
+        [
+          4,
+          4,
+          56,
+          2368,
+          42,
+          128
+        ],
+        [
+          4,
+          4,
+          64,
+          2368,
+          38,
+          128
+        ],
+        [
+          4,
+          4,
+          64,
+          2656,
+          28,
+          160
+        ],
+        [
+          4,
+          4,
+          72,
+          2368,
+          23,
+          128
+        ],
+        [
+          4,
+          4,
+          80,
+          2368,
+          18,
+          128
+        ],
+        [
+          4,
+          4,
+          96,
+          2368,
+          12,
+          128
+        ]
+      ],
+      "observation": {
+        "scopes": {
+          "catalog.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.006040292,
+            "exclusive_s": 0.00019975
+          },
+          "catalog.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.00772025,
+            "exclusive_s": 0.000201208
+          },
+          "complete.construct": {
+            "calls": 19696,
+            "failed_calls": 0,
+            "inclusive_s": 0.015642998,
+            "exclusive_s": 0.015642998
+          },
+          "compose": {
+            "calls": 19696,
+            "failed_calls": 0,
+            "inclusive_s": 0.089226239,
+            "exclusive_s": 0.05442346
+          },
+          "conversion": {
+            "calls": 19696,
+            "failed_calls": 0,
+            "inclusive_s": 0.019159781,
+            "exclusive_s": 0.019159781
+          },
+          "evaluate.consume": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.000434364,
+            "exclusive_s": 0.000434364
+          },
+          "evaluate.produce": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.000473036,
+            "exclusive_s": 0.000473036
+          },
+          "grouping.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.005840542,
+            "exclusive_s": 0.000603758
+          },
+          "grouping.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.007519042,
+            "exclusive_s": 0.00058205
+          },
+          "kernel.construct.consume": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.00025009,
+            "exclusive_s": 0.00025009
+          },
+          "kernel.construct.produce": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.000233214,
+            "exclusive_s": 0.000233214
+          },
+          "pareto.add.consume": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.004788627,
+            "exclusive_s": 0.004788627
+          },
+          "pareto.add.produce": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.006446872,
+            "exclusive_s": 0.006446872
+          },
+          "pareto.add.root": {
+            "calls": 19696,
+            "failed_calls": 0,
+            "inclusive_s": 0.410374862,
+            "exclusive_s": 0.410374862
+          },
+          "pareto.finish.consume": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 1.3793e-05,
+            "exclusive_s": 1.3793e-05
+          },
+          "pareto.finish.produce": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 1.7084e-05,
+            "exclusive_s": 1.7084e-05
+          },
+          "pareto.finish.root": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 1.3375e-05,
+            "exclusive_s": 1.3375e-05
+          },
+          "provider.generate": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.002158375,
+            "exclusive_s": 0.001675071
+          },
+          "routes": {
+            "calls": 18424,
+            "failed_calls": 0,
+            "inclusive_s": 0.007379584,
+            "exclusive_s": 0.007379584
+          },
+          "search": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.570959375,
+            "exclusive_s": 0.048046398
+          }
+        },
+        "exclusive_buckets_s": {
+          "candidate_generation": 0.002158375,
+          "catalog_control": 0.000400958,
+          "complete_materialization": 0.015642998,
+          "composition_control": 0.05442346,
+          "conversion_evaluation": 0.019159781,
+          "interface_analysis": 0.007379584,
+          "interface_grouping": 0.001185808,
+          "local_evaluation": 0.0009074,
+          "pareto_maintenance": 0.421654613,
+          "search_control": 0.048046398
+        },
+        "search_inclusive_s": 0.570959375,
+        "exclusive_partition_equal": true,
+        "attribution": "Instrumented named-scope remainders; include wrapper overhead and uninstrumented helpers.",
+        "instrumented_wall_s": 0.570968708,
+        "stages": {
+          "produce": {
+            "candidates": 324,
+            "kernel_plan_constructions": 324,
+            "evaluations": 324,
+            "retained": 156,
+            "pareto_inputs": 324,
+            "pareto_add_calls": 324,
+            "dominance_checks": 10036,
+            "pareto_pruned": 168,
+            "largest_interface_frontier": 50
+          },
+          "consume": {
+            "candidates": 324,
+            "kernel_plan_constructions": 324,
+            "evaluations": 324,
+            "retained": 118,
+            "pareto_inputs": 324,
+            "pareto_add_calls": 324,
+            "dominance_checks": 6993,
+            "pareto_pruned": 206,
+            "largest_interface_frontier": 50
+          }
+        },
+        "composition": {
+          "kernel_pairs_visited": 18408,
+          "layout_pairs_skipped": 0,
+          "complete_pairs_composed": 19696,
+          "complete_plan_constructions": 19696,
+          "raw_complete_alternatives": 118098,
+          "conversion_evaluations": 19696,
+          "route_queries_including_statistics": 18424,
+          "layout_match_calls": 0
+        },
+        "root_pareto": {
+          "inputs": 19696,
+          "states": 126,
+          "dominance_checks": 588092,
+          "pruned": 19570,
+          "peak_kept": 130
+        },
+        "policy": {
+          "include_spill_reload": true,
+          "local_pruning": true,
+          "layout_pruning": false,
+          "order_seed": null
+        },
+        "search_stats": {
+          "raw_prefixes": 324,
+          "raw_consumers": 324,
+          "retained_prefixes": 156,
+          "retained_consumers": 118,
+          "prefix_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 28
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 50
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 28
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 50
+            }
+          ],
+          "consumer_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 23
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 50
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 23
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 22
+            }
+          ],
+          "materialized_complete_pairs": 19696,
+          "raw_complete_pairs": 118098,
+          "raw_kernel_pairs": 104976,
+          "materialized_kernel_pairs": 18408,
+          "layout_pruning": false,
+          "layout_pairs_skipped": 0,
+          "layout_alternatives_skipped": 0,
+          "root_states_by_enforcer": {
+            "direct": 126
+          },
+          "local_pruning": true,
+          "frontier_work": {
+            "prefix": {
+              "inputs": 324,
+              "peak_kept": 50,
+              "dominance_checks": 10036,
+              "pruned": 168
+            },
+            "consumer": {
+              "inputs": 324,
+              "peak_kept": 50,
+              "dominance_checks": 6993,
+              "pruned": 206
+            },
+            "root": {
+              "inputs": 19696,
+              "peak_kept": 130,
+              "dominance_checks": 588092,
+              "pruned": 19570
+            }
+          },
+          "enforcer_grammar": "direct_and_spill_reload",
+          "root_frontier_states": 126,
+          "architecture_points_supplied": 0,
+          "oracle_responses_used": false,
+          "ffm_search_calls": 0
+        },
+        "no_evaluation_avoided_before_local_pareto": true,
+        "exact_plans_and_statistics_equal": true,
+        "wall_over_warm_ratio": 1.2839824709334853
+      },
+      "all_replicates_exact_equal": true
+    },
+    "4,4,4,4/default": {
+      "shape": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "policy": "default",
+      "cold_samples_s": [
+        0.42584675003308803,
+        0.4070594999939203,
+        0.40774183301255107
+      ],
+      "warm_samples_s": [
+        0.4030068749561906,
+        0.4145803339779377,
+        0.41011574992444366
+      ],
+      "cold_median_s": 0.40774183301255107,
+      "warm_median_s": 0.41011574992444366,
+      "warm_range_s": [
+        0.4030068749561906,
+        0.4145803339779377
+      ],
+      "work": {
+        "raw_prefixes": 324,
+        "raw_consumers": 324,
+        "retained_prefixes": 156,
+        "retained_consumers": 118,
+        "prefix_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 28
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 50
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 28
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 50
+          }
+        ],
+        "consumer_states_by_interface": [
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+            "states": 23
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+            "states": 50
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+            "states": 23
+          },
+          {
+            "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+            "states": 22
+          }
+        ],
+        "materialized_complete_pairs": 17120,
+        "raw_complete_pairs": 118098,
+        "raw_kernel_pairs": 104976,
+        "materialized_kernel_pairs": 17120,
+        "layout_pruning": true,
+        "layout_pairs_skipped": 1288,
+        "layout_alternatives_skipped": 2576,
+        "root_states_by_enforcer": {
+          "direct": 126
+        },
+        "local_pruning": true,
+        "frontier_work": {
+          "prefix": {
+            "inputs": 324,
+            "peak_kept": 50,
+            "dominance_checks": 10036,
+            "pruned": 168
+          },
+          "consumer": {
+            "inputs": 324,
+            "peak_kept": 50,
+            "dominance_checks": 6993,
+            "pruned": 206
+          },
+          "root": {
+            "inputs": 17120,
+            "peak_kept": 130,
+            "dominance_checks": 533350,
+            "pruned": 16994
+          }
+        },
+        "enforcer_grammar": "direct_and_spill_reload",
+        "root_frontier_states": 126,
+        "architecture_points_supplied": 0,
+        "oracle_responses_used": false,
+        "ffm_search_calls": 0
+      },
+      "frontier": [
+        [
+          1,
+          1,
+          6,
+          6400,
+          416,
+          576
+        ],
+        [
+          1,
+          1,
+          10,
+          6400,
+          352,
+          576
+        ],
+        [
+          1,
+          1,
+          12,
+          4672,
+          320,
+          384
+        ],
+        [
+          1,
+          1,
+          16,
+          4672,
+          256,
+          384
+        ],
+        [
+          1,
+          1,
+          24,
+          4672,
+          224,
+          384
+        ],
+        [
+          1,
+          1,
+          36,
+          4096,
+          288,
+          320
+        ],
+        [
+          1,
+          1,
+          40,
+          4096,
+          256,
+          320
+        ],
+        [
+          1,
+          1,
+          42,
+          3232,
+          208,
+          224
+        ],
+        [
+          1,
+          1,
+          48,
+          3232,
+          192,
+          224
+        ],
+        [
+          1,
+          2,
+          10,
+          5248,
+          208,
+          448
+        ],
+        [
+          1,
+          2,
+          12,
+          4960,
+          264,
+          416
+        ],
+        [
+          1,
+          2,
+          14,
+          4672,
+          176,
+          384
+        ],
+        [
+          1,
+          2,
+          20,
+          4672,
+          160,
+          384
+        ],
+        [
+          1,
+          2,
+          22,
+          3520,
+          160,
+          256
+        ],
+        [
+          1,
+          2,
+          28,
+          3520,
+          128,
+          256
+        ],
+        [
+          1,
+          2,
+          40,
+          3520,
+          112,
+          256
+        ],
+        [
+          1,
+          2,
+          42,
+          2656,
+          168,
+          160
+        ],
+        [
+          1,
+          2,
+          42,
+          3232,
+          153,
+          224
+        ],
+        [
+          1,
+          2,
+          44,
+          2656,
+          152,
+          160
+        ],
+        [
+          1,
+          2,
+          52,
+          2656,
+          104,
+          160
+        ],
+        [
+          1,
+          2,
+          56,
+          2656,
+          96,
+          160
+        ],
+        [
+          1,
+          4,
+          18,
+          4672,
+          104,
+          384
+        ],
+        [
+          1,
+          4,
+          22,
+          4096,
+          132,
+          320
+        ],
+        [
+          1,
+          4,
+          28,
+          4096,
+          100,
+          320
+        ],
+        [
+          1,
+          4,
+          28,
+          4672,
+          72,
+          384
+        ],
+        [
+          1,
+          4,
+          40,
+          4096,
+          92,
+          320
+        ],
+        [
+          1,
+          4,
+          42,
+          2368,
+          132,
+          128
+        ],
+        [
+          1,
+          4,
+          42,
+          2944,
+          77,
+          192
+        ],
+        [
+          1,
+          4,
+          42,
+          3808,
+          73,
+          288
+        ],
+        [
+          1,
+          4,
+          48,
+          3232,
+          72,
+          224
+        ],
+        [
+          1,
+          4,
+          48,
+          3808,
+          65,
+          288
+        ],
+        [
+          1,
+          4,
+          48,
+          4672,
+          56,
+          384
+        ],
+        [
+          1,
+          4,
+          52,
+          2368,
+          74,
+          128
+        ],
+        [
+          1,
+          4,
+          52,
+          2944,
+          57,
+          192
+        ],
+        [
+          1,
+          4,
+          52,
+          3808,
+          55,
+          288
+        ],
+        [
+          1,
+          4,
+          56,
+          3232,
+          54,
+          224
+        ],
+        [
+          1,
+          4,
+          72,
+          2368,
+          45,
+          128
+        ],
+        [
+          1,
+          4,
+          80,
+          2368,
+          43,
+          128
+        ],
+        [
+          1,
+          4,
+          96,
+          2368,
+          42,
+          128
+        ],
+        [
+          2,
+          1,
+          10,
+          5248,
+          248,
+          448
+        ],
+        [
+          2,
+          1,
+          12,
+          4960,
+          272,
+          416
+        ],
+        [
+          2,
+          1,
+          14,
+          4672,
+          216,
+          384
+        ],
+        [
+          2,
+          1,
+          16,
+          4960,
+          200,
+          416
+        ],
+        [
+          2,
+          1,
+          20,
+          4672,
+          184,
+          384
+        ],
+        [
+          2,
+          1,
+          22,
+          3520,
+          176,
+          256
+        ],
+        [
+          2,
+          1,
+          28,
+          3520,
+          168,
+          256
+        ],
+        [
+          2,
+          1,
+          32,
+          4096,
+          152,
+          320
+        ],
+        [
+          2,
+          1,
+          32,
+          4672,
+          144,
+          384
+        ],
+        [
+          2,
+          1,
+          38,
+          2944,
+          160,
+          192
+        ],
+        [
+          2,
+          1,
+          42,
+          2656,
+          144,
+          160
+        ],
+        [
+          2,
+          1,
+          42,
+          3808,
+          137,
+          288
+        ],
+        [
+          2,
+          1,
+          44,
+          2656,
+          136,
+          160
+        ],
+        [
+          2,
+          1,
+          56,
+          2656,
+          130,
+          160
+        ],
+        [
+          2,
+          1,
+          56,
+          3232,
+          120,
+          224
+        ],
+        [
+          2,
+          2,
+          16,
+          4096,
+          136,
+          320
+        ],
+        [
+          2,
+          2,
+          22,
+          3808,
+          144,
+          288
+        ],
+        [
+          2,
+          2,
+          24,
+          3520,
+          112,
+          256
+        ],
+        [
+          2,
+          2,
+          32,
+          3520,
+          96,
+          256
+        ],
+        [
+          2,
+          2,
+          38,
+          2944,
+          152,
+          192
+        ],
+        [
+          2,
+          2,
+          40,
+          2944,
+          128,
+          192
+        ],
+        [
+          2,
+          2,
+          40,
+          3808,
+          92,
+          288
+        ],
+        [
+          2,
+          2,
+          40,
+          4096,
+          88,
+          320
+        ],
+        [
+          2,
+          2,
+          42,
+          2656,
+          112,
+          160
+        ],
+        [
+          2,
+          2,
+          44,
+          2944,
+          88,
+          192
+        ],
+        [
+          2,
+          2,
+          44,
+          3808,
+          85,
+          288
+        ],
+        [
+          2,
+          2,
+          48,
+          2656,
+          104,
+          160
+        ],
+        [
+          2,
+          2,
+          48,
+          2944,
+          80,
+          192
+        ],
+        [
+          2,
+          2,
+          48,
+          3520,
+          72,
+          256
+        ],
+        [
+          2,
+          2,
+          52,
+          2656,
+          72,
+          160
+        ],
+        [
+          2,
+          2,
+          52,
+          3232,
+          69,
+          224
+        ],
+        [
+          2,
+          2,
+          64,
+          2656,
+          60,
+          160
+        ],
+        [
+          2,
+          4,
+          18,
+          4384,
+          120,
+          352
+        ],
+        [
+          2,
+          4,
+          24,
+          4096,
+          108,
+          320
+        ],
+        [
+          2,
+          4,
+          28,
+          3520,
+          68,
+          256
+        ],
+        [
+          2,
+          4,
+          40,
+          3520,
+          44,
+          256
+        ],
+        [
+          2,
+          4,
+          42,
+          2368,
+          100,
+          128
+        ],
+        [
+          2,
+          4,
+          42,
+          3232,
+          59,
+          224
+        ],
+        [
+          2,
+          4,
+          44,
+          2368,
+          92,
+          128
+        ],
+        [
+          2,
+          4,
+          44,
+          2656,
+          68,
+          160
+        ],
+        [
+          2,
+          4,
+          44,
+          2944,
+          59,
+          192
+        ],
+        [
+          2,
+          4,
+          44,
+          3232,
+          51,
+          224
+        ],
+        [
+          2,
+          4,
+          52,
+          2368,
+          58,
+          128
+        ],
+        [
+          2,
+          4,
+          52,
+          3232,
+          49,
+          224
+        ],
+        [
+          2,
+          4,
+          56,
+          2368,
+          50,
+          128
+        ],
+        [
+          2,
+          4,
+          56,
+          2656,
+          36,
+          160
+        ],
+        [
+          2,
+          4,
+          64,
+          2656,
+          32,
+          160
+        ],
+        [
+          2,
+          4,
+          64,
+          3520,
+          28,
+          256
+        ],
+        [
+          2,
+          4,
+          72,
+          2368,
+          32,
+          128
+        ],
+        [
+          2,
+          4,
+          72,
+          3232,
+          29,
+          224
+        ],
+        [
+          2,
+          4,
+          80,
+          2368,
+          23,
+          128
+        ],
+        [
+          2,
+          4,
+          96,
+          2368,
+          22,
+          128
+        ],
+        [
+          4,
+          1,
+          18,
+          4672,
+          164,
+          384
+        ],
+        [
+          4,
+          1,
+          20,
+          4672,
+          152,
+          384
+        ],
+        [
+          4,
+          1,
+          22,
+          4096,
+          152,
+          320
+        ],
+        [
+          4,
+          1,
+          28,
+          4096,
+          144,
+          320
+        ],
+        [
+          4,
+          1,
+          28,
+          4672,
+          132,
+          384
+        ],
+        [
+          4,
+          1,
+          32,
+          4672,
+          128,
+          384
+        ],
+        [
+          4,
+          1,
+          40,
+          4096,
+          138,
+          320
+        ],
+        [
+          4,
+          1,
+          42,
+          2368,
+          96,
+          128
+        ],
+        [
+          4,
+          1,
+          48,
+          3808,
+          92,
+          288
+        ],
+        [
+          4,
+          1,
+          52,
+          2368,
+          88,
+          128
+        ],
+        [
+          4,
+          1,
+          72,
+          2368,
+          81,
+          128
+        ],
+        [
+          4,
+          2,
+          28,
+          3520,
+          96,
+          256
+        ],
+        [
+          4,
+          2,
+          32,
+          3520,
+          88,
+          256
+        ],
+        [
+          4,
+          2,
+          40,
+          3520,
+          80,
+          256
+        ],
+        [
+          4,
+          2,
+          42,
+          3232,
+          84,
+          224
+        ],
+        [
+          4,
+          2,
+          44,
+          2368,
+          80,
+          128
+        ],
+        [
+          4,
+          2,
+          44,
+          2656,
+          72,
+          160
+        ],
+        [
+          4,
+          2,
+          48,
+          3232,
+          69,
+          224
+        ],
+        [
+          4,
+          2,
+          48,
+          3808,
+          68,
+          288
+        ],
+        [
+          4,
+          2,
+          52,
+          2368,
+          56,
+          128
+        ],
+        [
+          4,
+          2,
+          56,
+          2368,
+          48,
+          128
+        ],
+        [
+          4,
+          2,
+          80,
+          2368,
+          41,
+          128
+        ],
+        [
+          4,
+          4,
+          42,
+          2368,
+          84,
+          128
+        ],
+        [
+          4,
+          4,
+          44,
+          2368,
+          76,
+          128
+        ],
+        [
+          4,
+          4,
+          48,
+          2368,
+          72,
+          128
+        ],
+        [
+          4,
+          4,
+          48,
+          2656,
+          64,
+          160
+        ],
+        [
+          4,
+          4,
+          48,
+          2944,
+          50,
+          192
+        ],
+        [
+          4,
+          4,
+          48,
+          3232,
+          47,
+          224
+        ],
+        [
+          4,
+          4,
+          52,
+          2368,
+          48,
+          128
+        ],
+        [
+          4,
+          4,
+          56,
+          2368,
+          42,
+          128
+        ],
+        [
+          4,
+          4,
+          64,
+          2368,
+          38,
+          128
+        ],
+        [
+          4,
+          4,
+          64,
+          2656,
+          28,
+          160
+        ],
+        [
+          4,
+          4,
+          72,
+          2368,
+          23,
+          128
+        ],
+        [
+          4,
+          4,
+          80,
+          2368,
+          18,
+          128
+        ],
+        [
+          4,
+          4,
+          96,
+          2368,
+          12,
+          128
+        ]
+      ],
+      "observation": {
+        "scopes": {
+          "catalog.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.005648792,
+            "exclusive_s": 0.000190792
+          },
+          "catalog.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.007480417,
+            "exclusive_s": 0.000198
+          },
+          "complete.construct": {
+            "calls": 17120,
+            "failed_calls": 0,
+            "inclusive_s": 0.011563674,
+            "exclusive_s": 0.011563674
+          },
+          "compose": {
+            "calls": 17120,
+            "failed_calls": 0,
+            "inclusive_s": 0.069399482,
+            "exclusive_s": 0.042501193
+          },
+          "conversion": {
+            "calls": 17120,
+            "failed_calls": 0,
+            "inclusive_s": 0.015334615,
+            "exclusive_s": 0.015334615
+          },
+          "evaluate.consume": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.000471333,
+            "exclusive_s": 0.000471333
+          },
+          "evaluate.produce": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.000463541,
+            "exclusive_s": 0.000463541
+          },
+          "grouping.consume": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.005458,
+            "exclusive_s": 0.000584956
+          },
+          "grouping.produce": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.007282417,
+            "exclusive_s": 0.000562834
+          },
+          "kernel.construct.consume": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.00024884,
+            "exclusive_s": 0.00024884
+          },
+          "kernel.construct.produce": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.000223745,
+            "exclusive_s": 0.000223745
+          },
+          "layout.match": {
+            "calls": 18408,
+            "failed_calls": 0,
+            "inclusive_s": 0.014876566,
+            "exclusive_s": 0.014876566
+          },
+          "pareto.add.consume": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.004389421,
+            "exclusive_s": 0.004389421
+          },
+          "pareto.add.produce": {
+            "calls": 324,
+            "failed_calls": 0,
+            "inclusive_s": 0.006239792,
+            "exclusive_s": 0.006239792
+          },
+          "pareto.add.root": {
+            "calls": 17120,
+            "failed_calls": 0,
+            "inclusive_s": 0.344101956,
+            "exclusive_s": 0.344101956
+          },
+          "pareto.finish.consume": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 1.229e-05,
+            "exclusive_s": 1.229e-05
+          },
+          "pareto.finish.produce": {
+            "calls": 4,
+            "failed_calls": 0,
+            "inclusive_s": 1.625e-05,
+            "exclusive_s": 1.625e-05
+          },
+          "pareto.finish.root": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 1.4417e-05,
+            "exclusive_s": 1.4417e-05
+          },
+          "provider.generate": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.001653042,
+            "exclusive_s": 0.001180457
+          },
+          "routes": {
+            "calls": 18424,
+            "failed_calls": 0,
+            "inclusive_s": 0.006483519,
+            "exclusive_s": 0.006483519
+          },
+          "search": {
+            "calls": 1,
+            "failed_calls": 0,
+            "inclusive_s": 0.500072041,
+            "exclusive_s": 0.05041385
+          }
+        },
+        "exclusive_buckets_s": {
+          "candidate_generation": 0.001653042,
+          "catalog_control": 0.000388792,
+          "complete_materialization": 0.011563674,
+          "composition_control": 0.042501193,
+          "conversion_evaluation": 0.015334615,
+          "interface_analysis": 0.021360085,
+          "interface_grouping": 0.00114779,
+          "local_evaluation": 0.000934874,
+          "pareto_maintenance": 0.354774126,
+          "search_control": 0.05041385
+        },
+        "search_inclusive_s": 0.500072041,
+        "exclusive_partition_equal": true,
+        "attribution": "Instrumented named-scope remainders; include wrapper overhead and uninstrumented helpers.",
+        "instrumented_wall_s": 0.500078584,
+        "stages": {
+          "produce": {
+            "candidates": 324,
+            "kernel_plan_constructions": 324,
+            "evaluations": 324,
+            "retained": 156,
+            "pareto_inputs": 324,
+            "pareto_add_calls": 324,
+            "dominance_checks": 10036,
+            "pareto_pruned": 168,
+            "largest_interface_frontier": 50
+          },
+          "consume": {
+            "candidates": 324,
+            "kernel_plan_constructions": 324,
+            "evaluations": 324,
+            "retained": 118,
+            "pareto_inputs": 324,
+            "pareto_add_calls": 324,
+            "dominance_checks": 6993,
+            "pareto_pruned": 206,
+            "largest_interface_frontier": 50
+          }
+        },
+        "composition": {
+          "kernel_pairs_visited": 18408,
+          "layout_pairs_skipped": 1288,
+          "complete_pairs_composed": 17120,
+          "complete_plan_constructions": 17120,
+          "raw_complete_alternatives": 118098,
+          "conversion_evaluations": 17120,
+          "route_queries_including_statistics": 18424,
+          "layout_match_calls": 18408
+        },
+        "root_pareto": {
+          "inputs": 17120,
+          "states": 126,
+          "dominance_checks": 533350,
+          "pruned": 16994,
+          "peak_kept": 130
+        },
+        "policy": {
+          "include_spill_reload": true,
+          "local_pruning": true,
+          "layout_pruning": true,
+          "order_seed": null
+        },
+        "search_stats": {
+          "raw_prefixes": 324,
+          "raw_consumers": 324,
+          "retained_prefixes": 156,
+          "retained_consumers": 118,
+          "prefix_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 28
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 50
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 28
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 50
+            }
+          ],
+          "consumer_states_by_interface": [
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='sram')",
+              "states": 23
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='row', location='dram')",
+              "states": 50
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='sram')",
+              "states": 23
+            },
+            {
+              "interface": "Property(tensor=Tensor(name='X', rows=4, cols=4, word_bytes=2, version=0), layout='col', location='dram')",
+              "states": 22
+            }
+          ],
+          "materialized_complete_pairs": 17120,
+          "raw_complete_pairs": 118098,
+          "raw_kernel_pairs": 104976,
+          "materialized_kernel_pairs": 17120,
+          "layout_pruning": true,
+          "layout_pairs_skipped": 1288,
+          "layout_alternatives_skipped": 2576,
+          "root_states_by_enforcer": {
+            "direct": 126
+          },
+          "local_pruning": true,
+          "frontier_work": {
+            "prefix": {
+              "inputs": 324,
+              "peak_kept": 50,
+              "dominance_checks": 10036,
+              "pruned": 168
+            },
+            "consumer": {
+              "inputs": 324,
+              "peak_kept": 50,
+              "dominance_checks": 6993,
+              "pruned": 206
+            },
+            "root": {
+              "inputs": 17120,
+              "peak_kept": 130,
+              "dominance_checks": 533350,
+              "pruned": 16994
+            }
+          },
+          "enforcer_grammar": "direct_and_spill_reload",
+          "root_frontier_states": 126,
+          "architecture_points_supplied": 0,
+          "oracle_responses_used": false,
+          "ffm_search_calls": 0
+        },
+        "no_evaluation_avoided_before_local_pareto": true,
+        "exact_plans_and_statistics_equal": true,
+        "wall_over_warm_ratio": 1.240868618070999
+      },
+      "all_replicates_exact_equal": true
+    }
+  },
+  "source_sha256": {
+    "research/diagnostics/SEARCH_WORK_BOUNDARY_PROTOCOL.md": "7f3b8e3222725bfd770932c0e5db37871d37a44f3a3c0426b0507c65833b8bca",
+    "research/diagnostics/profile_search_work.py": "a327dd97a31041df4e466691f94363145aa94b24e4627a4806d77c37d6c8c26c",
+    "research/diagnostics/search_work_boundary.py": "5c44398ae2ab5996e2fc468f5a43aef440c0e654365e5bf7a74ca4e41e668f38",
+    "research/joint_synthesis/__init__.py": "a0b711e2a1230afee720480f865a7da411572d0dfdb3915d18d9d1b8300cb5c1",
+    "research/joint_synthesis/architecture_oracle.py": "3f9782df11c5df3531bf3fd8ed625d7d503f9a954605fed5a919e31a1cf1b8ea",
+    "research/joint_synthesis/architecture_synth.py": "74473f1a9ec5d77805016243d42b89dcd4c51344993b2dd6e34a55d57c70d352",
+    "research/joint_synthesis/composition.py": "57c93a3c2c35665654c9e3e320314af0663ae26f066e1c548b343baeeb81f8ae",
+    "research/joint_synthesis/conditional_frontier.py": "5470e346b41d80c2b4bf914baa73ea9f063af226a25a71c7f7b7279cf8abb765",
+    "research/joint_synthesis/exhaustive_oracle.py": "73e3cbe6373ed0083da860d52fc71891798ad05a342e292949e5039549b0880d",
+    "research/joint_synthesis/graph_dp.py": "ba999de33e739f8ea905ff8ee1558ac2cd33a5160ba9707eb9efd4e7dc4480a6",
+    "research/joint_synthesis/graph_ir.py": "24f8577cdcb9c84e86c5f6b6e698bc35b96dae6261a7330188745e2e13db5c8a",
+    "research/joint_synthesis/hardware_ir.py": "548c1afe6240351e06fbac6000fcbe57a1b98c72c71122147eb19034bde643cb",
+    "research/joint_synthesis/layout_rule.py": "1d536ba394c5175aaf58d996a7ac600712aaf700827b8283d2a7dc79e5d011a5",
+    "research/joint_synthesis/physical_plan.py": "dd64d7358308922f2e2069c7f2f4d5ba452c6317655ec1a4d41dc0f310a5ff32",
+    "research/joint_synthesis/requirements.py": "b43140c785a8487093105d5edb9fa2c44a6f067580ba8587b46424378e5ac494",
+    "research/joint_synthesis/resource_demand.py": "b1afe314a45a0ea4acec2cf8a1e44fddb01c8f1893c01ed7c565b054ac48ae2c",
+    "research/joint_synthesis/schedule_rules.py": "f5f544455bd2f4f39072ce18fd65656e41ee1e6fcaa0f132706430c27127084b",
+    "research/joint_synthesis/search_engine.py": "5c5b30eeebed376d330ace51d43a9ae14408a3d796a6e75dd51eecd4db29cc2b",
+    "research/joint_synthesis/validate.py": "8d39e2d3f2309e21e5ecc9d85ed0efa72b91b5c5c5e3d5e1358f541a1f307f3f",
+    "research/joint_synthesis/validate_architecture.py": "2f19d9b90f811f94710a8b919ec814ea95c67f27112451a48eaa4a9b2e3352c9",
+    "research/joint_synthesis/validate_enforcers.py": "77e91757558e96733d635f7904fee201c9583bd6861791e0556ff4cd77ea608d",
+    "research/joint_synthesis/validate_oracle.py": "bea4f82555f064376f112aa848a2c3d431ccd1907b503ffa5db00bc3629fdb70"
+  },
+  "source_commit": "d121f6fcce7442b046c2db48220e98aa396a0113",
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 13:50:33) [Clang 22.1.3 ]",
+    "platform": "macOS-15.1-arm64-arm-64bit",
+    "workers": 1,
+    "requested_numeric_threads": 1
+  },
+  "native_3mm": "Historical receipts only; not rerun; different grammar/model/coverage; no cross-system speed ratio.",
+  "engine_core_changed": false,
+  "new_provider": false,
+  "new_search_algorithm": false,
+  "timing_scope": "Fresh full restricted 2mm search; imports, serialization, observation and hardware binding excluded.",
+  "all_matched_policy_frontiers_equal": true
+}
