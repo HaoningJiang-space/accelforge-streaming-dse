@@ -1,0 +1,2290 @@
+{
+  "status": "complete",
+  "base_commit": "b1725647a6f79623884b9f840f85ae0aacb38a6b",
+  "candidate": "Sequential full-buffer forwarding, with full-copy and ownership premises.",
+  "scope": "Offline refutation of applying this rewrite to entire observed raw DRAM-backed Job domains.",
+  "dram_backed_raw_jobs": 54,
+  "jobs_with_an_emitted_tile_outside_full_copy_predicate": 54,
+  "entire_jobs_certified_by_this_rewrite_alone": 0,
+  "stage_counts": {
+    "no_local_join_rows": 15,
+    "frontier_descendant": 32,
+    "join_rows_no_final_descendant": 7
+  },
+  "records": [
+    {
+      "task_id": "task:5",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:5:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 256,
+        "stride2": 16,
+        "stride3": 256
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:6",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:6:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 256,
+        "stride2": 16,
+        "stride3": 1,
+        "stride4": 256
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:7",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:7:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 16,
+        "stride2": 256,
+        "stride3": 16
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:8",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:8:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 16,
+        "stride2": 256,
+        "stride3": 1,
+        "stride4": 16
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:9",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:9:tile:0",
+      "assignment": {
+        "stride0": 256,
+        "stride1": 16,
+        "stride2": 1,
+        "stride3": 16,
+        "stride4": 256
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:10",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:10:tile:0",
+      "assignment": {
+        "stride0": 256,
+        "stride1": 16,
+        "stride2": 1,
+        "stride3": 256,
+        "stride4": 16
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:17",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:17:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 256,
+        "stride2": 16,
+        "stride3": 256
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:18",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:18:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 256,
+        "stride2": 16,
+        "stride3": 1,
+        "stride4": 256
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:19",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:19:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 16,
+        "stride2": 256,
+        "stride3": 16
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:20",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:20:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 16,
+        "stride2": 256,
+        "stride3": 1,
+        "stride4": 16
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:21",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:21:tile:0",
+      "assignment": {
+        "stride0": 256,
+        "stride1": 16,
+        "stride2": 1,
+        "stride3": 16,
+        "stride4": 256
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:22",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:22:tile:0",
+      "assignment": {
+        "stride0": 256,
+        "stride1": 16,
+        "stride2": 1,
+        "stride3": 256,
+        "stride4": 16
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              16
+            ],
+            "raw_scope_payload_upper_bits": 128
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:28",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:28:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 256,
+        "stride2": 16,
+        "stride3": 256
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:29",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:29:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 256,
+        "stride2": 16,
+        "stride3": 1,
+        "stride4": 256
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:30",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:30:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 16,
+        "stride2": 256,
+        "stride3": 16
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:31",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:31:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 16,
+        "stride2": 256,
+        "stride3": 1,
+        "stride4": 16
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:32",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:32:tile:0",
+      "assignment": {
+        "stride0": 256,
+        "stride1": 16,
+        "stride2": 1,
+        "stride3": 16,
+        "stride4": 256
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:33",
+      "target": "((16, 384), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:33:tile:0",
+      "assignment": {
+        "stride0": 256,
+        "stride1": 16,
+        "stride2": 1,
+        "stride3": 256,
+        "stride4": 16
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              256
+            ],
+            "raw_scope_payload_upper_bits": 2048
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:47",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:47:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 128,
+        "stride2": 32,
+        "stride3": 128
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:48",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:48:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 128,
+        "stride2": 32,
+        "stride3": 1,
+        "stride4": 128
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:49",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:49:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 32,
+        "stride2": 128,
+        "stride3": 32
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "join_rows_no_final_descendant"
+    },
+    {
+      "task_id": "task:50",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:50:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 32,
+        "stride2": 128,
+        "stride3": 1,
+        "stride4": 32
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:51",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:51:tile:0",
+      "assignment": {
+        "stride0": 128,
+        "stride1": 32,
+        "stride2": 1,
+        "stride3": 32,
+        "stride4": 128
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:52",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:52:tile:0",
+      "assignment": {
+        "stride0": 128,
+        "stride1": 32,
+        "stride2": 1,
+        "stride3": 128,
+        "stride4": 32
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:59",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:59:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 128,
+        "stride2": 32,
+        "stride3": 128
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:60",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:60:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 128,
+        "stride2": 32,
+        "stride3": 1,
+        "stride4": 128
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:61",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:61:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 32,
+        "stride2": 128,
+        "stride3": 32
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "join_rows_no_final_descendant"
+    },
+    {
+      "task_id": "task:62",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:62:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 32,
+        "stride2": 128,
+        "stride3": 1,
+        "stride4": 32
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:63",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:63:tile:0",
+      "assignment": {
+        "stride0": 128,
+        "stride1": 32,
+        "stride2": 1,
+        "stride3": 32,
+        "stride4": 128
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:64",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:64:tile:0",
+      "assignment": {
+        "stride0": 128,
+        "stride1": 32,
+        "stride2": 1,
+        "stride3": 128,
+        "stride4": 32
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              32
+            ],
+            "raw_scope_payload_upper_bits": 256
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:70",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:70:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 128,
+        "stride2": 32,
+        "stride3": 128
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:71",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:71:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 128,
+        "stride2": 32,
+        "stride3": 1,
+        "stride4": 128
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:72",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:72:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 32,
+        "stride2": 128,
+        "stride3": 32
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "join_rows_no_final_descendant"
+    },
+    {
+      "task_id": "task:73",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:73:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 32,
+        "stride2": 128,
+        "stride3": 1,
+        "stride4": 32
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:74",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:74:tile:0",
+      "assignment": {
+        "stride0": 128,
+        "stride1": 32,
+        "stride2": 1,
+        "stride3": 32,
+        "stride4": 128
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:75",
+      "target": "((32, 192), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:75:tile:0",
+      "assignment": {
+        "stride0": 128,
+        "stride1": 32,
+        "stride2": 1,
+        "stride3": 128,
+        "stride4": 32
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              128
+            ],
+            "raw_scope_payload_upper_bits": 1024
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:89",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:89:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 64
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "join_rows_no_final_descendant"
+    },
+    {
+      "task_id": "task:90",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:90:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 1,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:91",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:91:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 64
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:92",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:92:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 1,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:93",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:93:tile:0",
+      "assignment": {
+        "stride0": 64,
+        "stride1": 64,
+        "stride2": 1,
+        "stride3": 64,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:94",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul0",
+      "template": "[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0",
+      "first_emitted_tile_id": "task:94:tile:0",
+      "assignment": {
+        "stride0": 64,
+        "stride1": 64,
+        "stride2": 1,
+        "stride3": 64,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T1"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:101",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:101:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 64
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "join_rows_no_final_descendant"
+    },
+    {
+      "task_id": "task:102",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:102:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 1,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:103",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:103:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 64
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "join_rows_no_final_descendant"
+    },
+    {
+      "task_id": "task:104",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:104:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 1,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:105",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:105:tile:0",
+      "assignment": {
+        "stride0": 64,
+        "stride1": 64,
+        "stride2": 1,
+        "stride3": 64,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:106",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul1",
+      "template": "[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1",
+      "first_emitted_tile_id": "task:106:tile:0",
+      "assignment": {
+        "stride0": 64,
+        "stride1": 64,
+        "stride2": 1,
+        "stride3": 64,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "copy_bounds": {
+        "T1": [
+          {
+            "axes": [
+              "m",
+              "n1"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ],
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T1",
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:112",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:112:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 64
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:113",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:113:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 1,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "no_local_join_rows"
+    },
+    {
+      "task_id": "task:114",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:114:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 64
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": false,
+      "observed_stage_class": "join_rows_no_final_descendant"
+    },
+    {
+      "task_id": "task:115",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:115:tile:0",
+      "assignment": {
+        "stride0": 1,
+        "stride1": 64,
+        "stride2": 64,
+        "stride3": 1,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:116",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:116:tile:0",
+      "assignment": {
+        "stride0": 64,
+        "stride1": 64,
+        "stride2": 1,
+        "stride3": 64,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    },
+    {
+      "task_id": "task:117",
+      "target": "((64, 96), (131072, 135168))",
+      "einsum": "Matmul2",
+      "template": "[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2",
+      "first_emitted_tile_id": "task:117:tile:0",
+      "assignment": {
+        "stride0": 64,
+        "stride1": 64,
+        "stride2": 1,
+        "stride3": 64,
+        "stride4": 64
+      },
+      "relevant_intermediates": [
+        "T2"
+      ],
+      "copy_bounds": {
+        "T2": [
+          {
+            "axes": [
+              "m",
+              "n2"
+            ],
+            "extents": [
+              1,
+              64
+            ],
+            "raw_scope_payload_upper_bits": 512
+          }
+        ]
+      },
+      "partial_intermediates": [
+        "T2"
+      ],
+      "job_has_returned_descendant": true,
+      "observed_stage_class": "frontier_descendant"
+    }
+  ],
+  "assumptions": [
+    "Frozen direct dense 3mm, all rank extents 256 and values 8 bits.",
+    "Perfect divisor Tiles; no initial-Tile/halo cases; terminal loops forced to one.",
+    "Exactly one relevant GB copy per tensor and no preceding spatial loop.",
+    "Later reservation lowering cannot enlarge the tensor region present at this GB storage scope."
+  ],
+  "limitations": [
+    "Counterexamples to whole-Job predicate applicability, not necessary Pareto completions.",
+    "Compact strings are used only under the checked restricted pattern, not as equivalence keys.",
+    "No lower bound on all possible partial-prefix savings, and no general no-go for forwarding."
+  ],
+  "native_searches_run": 0,
+  "native_model_calls": 0,
+  "actual_generation_tasks_skipped": 0,
+  "checker_sha256": "ab3c73b2b5a6d40b225b24f36b008d3fef88a845c1057905321f169268d6085d",
+  "source_sha256": {
+    "accelforge/frontend/mapping/mapping.py": "3a514ca6b60cdba55be6e7036cac4cc02b4ecb3d9ecbfc7ca0ec76e22b2560a0",
+    "accelforge/model/_looptree/reuse/symbolic/symbolic.py": "c55a9923b7ec0f1166ae889f25a1415756da2947ee3286d1c2e1b0bb4322686e",
+    "accelforge/mapper/FFM/_make_pmappings/make_pmappings_from_templates/make_tile_shapes.py": "0b693e326da3b7e621e0a928a81bdb2ca9893aff795b95cb140bbbca3df90d5a"
+  },
+  "archive_sha256": {
+    "research/diagnostics/results/counterfactual_effects/trace.json.gz": "e3c2e57aedd76b3d1608ddb7da035f4c940865c6d9e03773f5b07bd85b289836",
+    "research/diagnostics/results/pregen_certificates/native_1.json": "7ae3b59b0d736d8514573ef4cb1409aa69a246a79dffadd6bce15b31ea3e3e9a"
+  }
+}

@@ -282,3 +282,100 @@ This section is a source-level argument and archive cross-check only. No test
 suite, native mapping evaluation or search was rerun; prior execution receipts
 remain historical. The location of work in the current `run_model` is not a
 theoretical lower bound on constructing a different sufficient representation.
+
+## Candidate examined: retain an already-full GB copy
+
+One concrete candidate was examined before implementing any optimization. It
+targets the DRAM round trip of an internal edge in a sequential 3mm program:
+the producer already has a full GB output copy, and the consumer would allocate
+and load an identical full GB input copy. This uses a graph edge and ownership,
+not a free layout change or a new capacity threshold.
+
+**Conditional trace law.** Assume a linear, single-consumer edge; no external
+observation of the intermediate's DRAM copy; identical full logical regions,
+versions, precision and GB physical properties; no aliases/input writes; and
+sequential kernels with barriers, no cross-stage fused loops or overlapping DMA.
+Other stage-owned buffers are released before the next stage starts. Replace
+writeback/free/reload of the intermediate by retaining its producer allocation
+and giving its full read-only view to the consumer. Release it at the consumer's
+last use. Internal kernel Tiles, loop orders and spatial assignments stay fixed.
+
+The consumer sees identical values at every read, so its computation trace and
+output are unchanged for **every** kernel schedule satisfying these premises.
+During each kernel, live allocations match the original execution after
+identifying the two boundary copies. Between kernels, only a buffer already
+present in an original kernel is retained; no unrelated work occurs in the gap.
+The global peak cannot increase. PE/Register demand is unchanged. The rewrite
+only removes copy actions. With nonnegative action costs and monotone component
+service functions, E/T cannot increase. The frozen NVDLA model has zero leakage,
+positive copy costs and monotone read/write service expressions.
+
+This is a standard copy-forwarding argument under a narrow physical contract,
+not a new optimizer theorem or proof for arbitrary native Fusion. It does not
+apply to a tiled consumer input, another consumer needing the DRAM instance,
+different physical properties, asynchronous execution or an open shared scope.
+The prior causal fixed-map controls give three native examples of the reverse
+transformation: adding 262,144 DRAM bytes at equal 132-KiB peak. They do not
+independently validate native lowering for every schedule in this family.
+
+### Whole-Job applicability fails before implementation
+
+The candidate's source predicate requires full GB copies at both ends. Reuse
+the existing G2 raw templates and G1/counterfactual emitted Tile assignments;
+do not run native generation again. There are **54 raw Jobs**, 18 per operator
+across the three shapes, whose relevant intermediate backing is MainMemory.
+For **each of the 54**, its first archived emitted Tile has at least one relevant
+GB copy that is only a partial tensor region. Thus this raw Job is not wholly
+inside the full-copy source predicate.
+
+This check is deliberately restricted: direct dense 8-bit 256x256 projections,
+perfect divisor Tiles, one GB copy of each relevant tensor, no spatial loop
+preceding that GB copy, and the verified native loop/Symbol correspondence.
+The region at GB storage is bounded by the two current rank Tiles. Later
+reservation lowering cannot move its allocation before that storage or enlarge
+its projected region; temporal repetition does not turn one tiled allocation
+into a simultaneous full copy. The checker fails on unsupported patterns; it
+does not treat compact strings as general equivalence keys.
+
+For example, Matmul0 `task:49` has an emitted assignment beginning `stride0=1,
+stride1=32`. Its T1 GB copy is bounded by a 1x32 region (32 bytes), not the full
+65,536-byte tensor. A high total reservation from other tensors would not prove
+that this particular T1 copy is full.
+
+| Archived class among the 54 Jobs | Jobs with an outside-predicate Tile |
+| --- | ---: |
+| Has a returned frontier descendant | 32 |
+| Local Join input, no final descendant | 7 |
+| No local Join rows | 15 |
+
+These are counterexamples to **whole-Job applicability of this rewrite**, not
+proof that each outside Tile has a necessary Pareto completion. Combined rules
+might eventually cover those remaining domains; this rule alone does not.
+The [54 counterexamples](results/native_generation_entry/full_copy_scope.json)
+retain raw templates, exact assignments, copy bounds and source hashes.
+
+There is a second granularity obstacle. The rule covers complete producer/
+consumer **pairs** with full copies. A local plan may also connect to a tiled
+consumer, where retaining a full input could raise the consumer's peak. The
+argument supplies no coverage for those other completions. Removing a covered
+set of pairs does not remove a local generation task if it still has uncovered
+contexts. A proof permitting local evaluation to disappear must cover all such
+contexts or demonstrate a cheaper shared replacement. No such proof is provided
+by this candidate. Its actual prefix/row savings have not been established.
+
+**Decision: do not implement this as a Generation-saving filter.** It may be a
+valid complete-plan rewrite within the conditional trace grammar, but it has
+not passed the native family-coverage and computational-elimination gates.
+There is no new model-call, enumeration or batch-time credit. Once this work
+boundary failed, no forwarding engine or additional scalar-Oracle expansion was
+built. The research question and strong baseline remain unchanged.
+
+The reproduction checker performs archive arithmetic only:
+
+```sh
+python research/diagnostics/results/native_generation_entry/check_full_copy_scope.py --output research/diagnostics/results/native_generation_entry/full_copy_scope.json
+```
+
+No native search/model or test suite was rerun for this candidate. All earlier
+benchmark/test receipts remain historical; frozen source/model/Oracle paths are
+unchanged. This is a rejected concrete candidate, not another search mechanism.
