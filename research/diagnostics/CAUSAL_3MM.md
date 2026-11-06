@@ -54,7 +54,7 @@ intermediates, nor that all physically legal implementations need 132 KiB.
 ## 2. A per-phase maximum misses a real cross-stage Reservation
 
 The 64×96, 128-KiB winner keeps T2 at root GB and exchanges a partial T1 through
-a shared m=128 loop between Matmul0 and Matmul1. Individual phase model peaks
+a shared n1=128 loop between Matmul0 and Matmul1. Individual phase model peaks
 are 52/100/84 KiB, but the joined Mapping needs **116 KiB**, not max=100 KiB.
 
 The recorded first Join performs:
