@@ -1,5 +1,11 @@
 # AccelForge research workspace
 
+The [Chat-supervised joint-budget experiment](joint_budget/README.md) reproduces
+native 3mm across twelve architectures on Windows and tests a pre-enumeration
+graph-support relaxation. It finds **zero nonlocal family-deletion certificates**;
+no new BCGE optimizer or SOTA improvement is claimed. The
+[native Windows runtime](runtime/README.md) records its compatibility limits.
+
 The latest experiment is [local mapping retargetability](tracking_audit/results/retargetability/README.md):
 pure spatial factor rebinding is insufficient; allowing storage tile extents to
 change recovers 11/18 selected cross-shape MatMul winners but only 2/24 Attention

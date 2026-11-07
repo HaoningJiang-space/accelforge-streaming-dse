@@ -21,7 +21,10 @@ import copy
 import math
 import numbers
 import os
-import resource
+try:
+    import resource
+except ImportError:  # Windows
+    resource = None
 import subprocess
 import sys
 import time
@@ -125,9 +128,35 @@ def shutdown_workers():
 def peak_rss_gb():
     """Peak RSS of this process and of its largest finished child, in GB.
 
-    Children count only once reaped, so call after shutdown_workers(). The total for the
-    whole process group is in the run_capped.sh watchdog line.
+    Children count only once reaped on POSIX, so call after shutdown_workers().
+    Windows reports process peak working set; finished-child peaks are unavailable
+    and represented by None. This is not an aggregate process-tree measurement.
     """
+    if resource is None:
+        if sys.platform != 'win32':
+            raise NotImplementedError('peak RSS is unsupported on this platform')
+        import ctypes
+        from ctypes import wintypes
+
+        class ProcessMemoryCounters(ctypes.Structure):
+            _fields_ = [('cb', wintypes.DWORD), ('PageFaultCount', wintypes.DWORD)] + [
+                (name, ctypes.c_size_t) for name in (
+                    'PeakWorkingSetSize', 'WorkingSetSize', 'QuotaPeakPagedPoolUsage',
+                    'QuotaPagedPoolUsage', 'QuotaPeakNonPagedPoolUsage',
+                    'QuotaNonPagedPoolUsage', 'PagefileUsage', 'PeakPagefileUsage')]
+
+        kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+        kernel.GetCurrentProcess.argtypes = []
+        kernel.GetCurrentProcess.restype = wintypes.HANDLE
+        psapi = ctypes.WinDLL('psapi', use_last_error=True)
+        psapi.GetProcessMemoryInfo.argtypes = [wintypes.HANDLE,
+            ctypes.POINTER(ProcessMemoryCounters), wintypes.DWORD]
+        psapi.GetProcessMemoryInfo.restype = wintypes.BOOL
+        counters = ProcessMemoryCounters()
+        counters.cb = ctypes.sizeof(counters)
+        if not psapi.GetProcessMemoryInfo(kernel.GetCurrentProcess(), ctypes.byref(counters), counters.cb):
+            raise ctypes.WinError(ctypes.get_last_error())
+        return {'main': counters.PeakWorkingSetSize / 2**30, 'largest_worker': None}
     # macOS reports bytes; Linux reports KiB. Output is GiB on both systems.
     divisor = 2**30 if sys.platform == 'darwin' else 2**20
     own = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss

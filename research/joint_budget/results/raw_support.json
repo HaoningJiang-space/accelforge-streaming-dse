@@ -1,0 +1,923 @@
+{
+  "status": "complete",
+  "workload": "matmuls(N_EINSUMS=3,M=256,KN=256)@nvdla",
+  "domain": [
+    {
+      "px": 16,
+      "py": 384,
+      "capacity_bytes": 131072
+    },
+    {
+      "px": 16,
+      "py": 384,
+      "capacity_bytes": 135167
+    },
+    {
+      "px": 16,
+      "py": 384,
+      "capacity_bytes": 135168
+    },
+    {
+      "px": 16,
+      "py": 384,
+      "capacity_bytes": 262144
+    },
+    {
+      "px": 32,
+      "py": 192,
+      "capacity_bytes": 131072
+    },
+    {
+      "px": 32,
+      "py": 192,
+      "capacity_bytes": 135167
+    },
+    {
+      "px": 32,
+      "py": 192,
+      "capacity_bytes": 135168
+    },
+    {
+      "px": 32,
+      "py": 192,
+      "capacity_bytes": 262144
+    },
+    {
+      "px": 64,
+      "py": 96,
+      "capacity_bytes": 131072
+    },
+    {
+      "px": 64,
+      "py": 96,
+      "capacity_bytes": 135167
+    },
+    {
+      "px": 64,
+      "py": 96,
+      "capacity_bytes": 135168
+    },
+    {
+      "px": 64,
+      "py": 96,
+      "capacity_bytes": 262144
+    }
+  ],
+  "graph_edges": [
+    [
+      "Matmul0",
+      "Matmul1"
+    ],
+    [
+      "Matmul1",
+      "Matmul2"
+    ]
+  ],
+  "audited_edges": [
+    [
+      "Matmul0",
+      "Matmul1"
+    ]
+  ],
+  "later_prefix_interfaces_unsupported": true,
+  "native_match_coverage_certified": false,
+  "bucket_closedness_certified": false,
+  "preparation": [
+    {
+      "hardware": 0,
+      "architecture": {
+        "px": 16,
+        "py": 384,
+        "capacity_bytes": 131072
+      },
+      "preparation_s": 0.505763900000602,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    },
+    {
+      "hardware": 1,
+      "architecture": {
+        "px": 16,
+        "py": 384,
+        "capacity_bytes": 135167
+      },
+      "preparation_s": 0.46623260001069866,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    },
+    {
+      "hardware": 2,
+      "architecture": {
+        "px": 16,
+        "py": 384,
+        "capacity_bytes": 135168
+      },
+      "preparation_s": 0.5583234999940032,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    },
+    {
+      "hardware": 3,
+      "architecture": {
+        "px": 16,
+        "py": 384,
+        "capacity_bytes": 262144
+      },
+      "preparation_s": 0.46147470000141766,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    },
+    {
+      "hardware": 4,
+      "architecture": {
+        "px": 32,
+        "py": 192,
+        "capacity_bytes": 131072
+      },
+      "preparation_s": 0.49806500000704546,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    },
+    {
+      "hardware": 5,
+      "architecture": {
+        "px": 32,
+        "py": 192,
+        "capacity_bytes": 135167
+      },
+      "preparation_s": 0.47099279999383725,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    },
+    {
+      "hardware": 6,
+      "architecture": {
+        "px": 32,
+        "py": 192,
+        "capacity_bytes": 135168
+      },
+      "preparation_s": 0.5140493000071729,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    },
+    {
+      "hardware": 7,
+      "architecture": {
+        "px": 32,
+        "py": 192,
+        "capacity_bytes": 262144
+      },
+      "preparation_s": 0.443885800006683,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    },
+    {
+      "hardware": 8,
+      "architecture": {
+        "px": 64,
+        "py": 96,
+        "capacity_bytes": 131072
+      },
+      "preparation_s": 0.5189620000019204,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    },
+    {
+      "hardware": 9,
+      "architecture": {
+        "px": 64,
+        "py": 96,
+        "capacity_bytes": 135167
+      },
+      "preparation_s": 0.5518095000006724,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    },
+    {
+      "hardware": 10,
+      "architecture": {
+        "px": 64,
+        "py": 96,
+        "capacity_bytes": 135168
+      },
+      "preparation_s": 0.5932530999998562,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    },
+    {
+      "hardware": 11,
+      "architecture": {
+        "px": 64,
+        "py": 96,
+        "capacity_bytes": 262144
+      },
+      "preparation_s": 0.5070323999971151,
+      "templates": 42,
+      "loops_without_iteration_formulas": 72,
+      "families_by_operator": {
+        "Matmul0": [
+          "17b589d41d5b9f99c16a2c85f2e7dd76248f63517f5e1a8d2be248958d3579ef",
+          "34df02eaae03898b6cf47b97ff7ede3225bc0a30d1b7aaa5740cb89f5160267e",
+          "385e36d705ae7d3966cc0ab83020b10148e1c06d88b32794879375be1745bf4d",
+          "55fd40f0ee754c0ac1d58916e9bd08ef079e22166a55fc696e1ca054fe54a70b",
+          "6105bae90e5aecea487b3e94bd3c9ab53094350a16ee0cd26c3778de4987d5ed",
+          "938f8790e62978e7412d2fa6177c4b05d32d1f72a7a56ca13f1124b6b84713d6",
+          "b6f1ab38123c8306c2c573278a3553daa80ac0a55837c8c42cd49d016143355f",
+          "d07779061191857eca1c66124f914711566489d69df07aad17c6d555a5b50d4c",
+          "e389816bd7a2e5d28a668185dd3b36ed314be88be3f22f6213840549b5ea2357",
+          "f3f9d142e34a180e744670543a7a4a6cc07c020c6ca21bfd797e94ad438bdbdd",
+          "f6538bb47413e47224638d34a4b32068d6697747cfe09f4e5b472c32e2d9b89a",
+          "f8e3e17f64f7c216f102f4c9767f5edb7d0133d5b366ea81d51562c21db1ce64"
+        ],
+        "Matmul1": [
+          "0038a1065726ea795cce923eb7e563ad80aa4bc43db997c4bf56798e8c9c6dd7",
+          "22ce2ad81fceffa92f2463468c26c5c61b5373775fe50e3c20eb929e34b04d4e",
+          "3dbbcc4e30e8f489ab91832f0dd2ebae2f806ce7a231ab3661357b0035206eea",
+          "40aa3c55e6caf55abe346f44ee220b27b0e3a1c5fec7ceb56e214c8736acf885",
+          "451f4b6fada5a4bfbc3b1dc5cc68406cea74a2d47cc5c77604b1da06215846db",
+          "45f804162d351e9e7b73cb320e199f1c6e4ef660ef20674a7587edb02fc48380",
+          "616e11462c0c749b4fd972e421ffe1ad31864ac4ecbad9ad74dab00cfd5a07dc",
+          "88095a57baf4758758b291611dab1b4ab56a1efcc566bdd8e4e6ccf2d9b48d54",
+          "8cb8ed20b9ff1f885f6ffc462b563b5c08a7cf80b5c0de05ceea2609b31382d4",
+          "9cebda5be830014e9bca67d879b4bb030a70b660a367f34167333ca5dbdea3d4",
+          "ab59b6c3d4113db1b8508e0843273f8e28ff46d70f9ee4ce838af26803242b6f",
+          "c27f43a58b49de0771e82b7d10ad094fb1070173a9a6a1f1aa62628e448d8d77",
+          "d14a709e7859c7e724af184804ff45a908e4f0c33e36238bd0ea9c918f67fdc9",
+          "d94b3c51b9b87937b33bad2e5e9e547ec63cacda422db839a127470714ec31ce",
+          "e19b89139b036c3d33eb71477066cbe36e3a4c4a35188d64f9cc7e0648087d26",
+          "e9c2ecbe4a45638d905f739a8d60520318618d95caa52e6c26dbda2816abdc53",
+          "f0d4eabf9aaa71b10daf926f94ad6631bc5d745584632bf4d16613ee4208dc65",
+          "f0fedd102d03c02822521fd970bfacffc8380e7338cce7af48c86c996783aa11"
+        ],
+        "Matmul2": [
+          "2717168ec7d458922918269047128f94038bd4e87419f6a1d343ac07fae9536c",
+          "2d53705be04843f39582522afd43775484d8350bbee7cd31fd5c953a66533042",
+          "48e1048c633496c95195b9bd382f2e2394f79749eed7c8abb490856f6954e018",
+          "4a11963746e2bfe85f67be21dcef0ae29eadd0cc1a4964521b96f6ccd6da24d5",
+          "5c231776ffc7dec802ef29bf59fbcdacce997ab3d40b6b45462b9be9d0ca40a8",
+          "62c62f674f6c9b2189a9b53a3bcf465a0c83ae7ebbfe4be99a4a130663cbc758",
+          "9079ee966a00c22e64bdd884260fdf657b9dba64781160d3de5efacaf34f21da",
+          "b13cacd8be4ced6a6664503a19199c8f54112ff0552d65c035671803cf6bdb3c",
+          "b6eccd69612f8b9f7ebea1c459ff99395a934696e620ac3e613c21ab72f9ba97",
+          "cff215e5910e46157e3341e61e257730f8fdd957c5c0a868f3d8df331b74a741",
+          "ee41a3bb1438ed2202cad5a82f45eecb34879017ff4ef9b7547b5b4621c5de4a",
+          "fde60c56cb12bc1862b597b3f32a01d0043ec85eca6fe5520441318409ec13c8"
+        ]
+      }
+    }
+  ],
+  "budgets": [
+    {
+      "rounds": 1,
+      "removed": [],
+      "surviving_hardware": [
+        0,
+        4,
+        8
+      ],
+      "removed_hardware": [],
+      "input_family_instances": 126,
+      "retained_family_instances": 126,
+      "numeric_expansion_calls": 0,
+      "native_join_calls": 0,
+      "actual_skipped_jobs": 0,
+      "pruning_enabled": false,
+      "soundness_scope": "necessary boundary equality only; no sufficiency or policy-preserving deletion claim",
+      "budget": {
+        "max_pes": 6144,
+        "max_sram_bytes": 131072
+      },
+      "propagation_s": 0.00018339999951422215
+    },
+    {
+      "rounds": 1,
+      "removed": [],
+      "surviving_hardware": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10
+      ],
+      "removed_hardware": [],
+      "input_family_instances": 378,
+      "retained_family_instances": 378,
+      "numeric_expansion_calls": 0,
+      "native_join_calls": 0,
+      "actual_skipped_jobs": 0,
+      "pruning_enabled": false,
+      "soundness_scope": "necessary boundary equality only; no sufficiency or policy-preserving deletion claim",
+      "budget": {
+        "max_pes": 6144,
+        "max_sram_bytes": 135168
+      },
+      "propagation_s": 0.00041480000072624534
+    },
+    {
+      "rounds": 1,
+      "removed": [],
+      "surviving_hardware": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "removed_hardware": [],
+      "input_family_instances": 504,
+      "retained_family_instances": 504,
+      "numeric_expansion_calls": 0,
+      "native_join_calls": 0,
+      "actual_skipped_jobs": 0,
+      "pruning_enabled": false,
+      "soundness_scope": "necessary boundary equality only; no sufficiency or policy-preserving deletion claim",
+      "budget": {
+        "max_pes": 6144,
+        "max_sram_bytes": 262144
+      },
+      "propagation_s": 0.00030810000316705555
+    }
+  ],
+  "interface_instances": 360,
+  "unknown_interface_instances": 0,
+  "abstraction": "all unit-loop deletions; necessary backing/persistence/loop counts; sizes/ranks/aliases relaxed",
+  "numeric_expansion_calls": 0,
+  "native_join_calls": 0,
+  "bcge_implemented": false,
+  "sota_acceptance": false,
+  "policy_preserving_pruning_enabled": false,
+  "decision": "no_nonlocal_family_elimination_certified",
+  "numeric_generation_and_join_forbidden_during_audit": true,
+  "source_sha256": {
+    "C:\\Users\\hjiangbq\\Desktop\\GitHub\u4ed3\u5e93\\accelforge-streaming-dse\\research\\joint_budget\\baseline.py": "5a6b3e450c02bf3a82ad0418d3e563d336623ef66877a441ce66eedf7200ee67",
+    "C:\\Users\\hjiangbq\\Desktop\\GitHub\u4ed3\u5e93\\accelforge-streaming-dse\\research\\joint_budget\\family_support.py": "7443248dffd597e53734e4c5c401e80f2dfca2035cf70616937d807be4de9d04",
+    "C:\\Users\\hjiangbq\\Desktop\\GitHub\u4ed3\u5e93\\accelforge-streaming-dse\\research\\joint_budget\\protocol.py": "200d5cc795a2ad057a558e113d2671e4aa90ea02cebd6d48a568daebadae96f8",
+    "C:\\Users\\hjiangbq\\Desktop\\GitHub\u4ed3\u5e93\\accelforge-streaming-dse\\research\\joint_budget\\support_audit.py": "6dc48950a66cd0eb8ad973f798fc3e96ca591e092f0054e49b850c2c6a62d0cb",
+    "C:\\Users\\hjiangbq\\Desktop\\GitHub\u4ed3\u5e93\\accelforge-streaming-dse\\research\\joint_budget\\test_family_support.py": "4401944c34b0f63c5543e0df706128708b33368cd295076a2fd54ee941b577f9",
+    "C:\\Users\\hjiangbq\\Desktop\\GitHub\u4ed3\u5e93\\accelforge-streaming-dse\\research\\joint_budget\\test_protocol.py": "9cd00edfb714ecc0de1527f405cda0928d86592a93c1b0cb8e5466468135973a",
+    "C:\\Users\\hjiangbq\\Desktop\\GitHub\u4ed3\u5e93\\accelforge-streaming-dse\\research\\joint_budget\\__init__.py": "6b1588355921ab26cdec2200225ac60016402d79e2eaccaa2de79b23db97cfa2",
+    "research\\graph_coopt\\template_support_audit.py": "717b5af1a50564db9c7ec1ee5e8ecd9a9cb856c11c2fcd944e00658781a059f4",
+    "research\\graph_coopt\\workload_dag.py": "e48cedcd3c54f95560f9b524079f9d9f741c563d7be9a980a4aa71186859b93e"
+  }
+}

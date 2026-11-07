@@ -74,3 +74,17 @@ def test_generation_semantics_version_invalidates_old_candidates(monkeypatch, tm
     assert mapper.make_pmappings(**kwargs) == 1
     assert mapper.make_pmappings(**kwargs) == 1
     assert calls == [0, 1]
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='Windows extended-length cache paths')
+def test_long_cache_root_persists_instead_of_silently_regenerating(monkeypatch, tmp_path):
+    calls = []
+    def generate(spec, einsum_names=None, can_combine_multiple_runs=False):
+        calls.append(spec)
+        return {'scenario': spec}
+    monkeypatch.setattr(mapper, '_make_pmappings', generate)
+    root = tmp_path / ('long-cache-segment-' * 8) / ('nested-' * 12)
+    kwargs = dict(spec='long-root', cache_dir=str(root), print_number_of_pmappings=False)
+    assert mapper.make_pmappings(**kwargs) == {'scenario': 'long-root'}
+    assert mapper.make_pmappings(**kwargs) == {'scenario': 'long-root'}
+    assert calls == ['long-root']

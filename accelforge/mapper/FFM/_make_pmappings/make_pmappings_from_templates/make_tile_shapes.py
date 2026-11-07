@@ -4,7 +4,11 @@ from functools import lru_cache
 from math import ceil, log2, prod
 import copy
 import re
-import resource
+try:
+    import resource
+except ImportError:  # Windows has no POSIX resource module.
+    resource = None
+import warnings
 import time
 from typing import Callable, Iterator, Optional
 from sympy import Expr, Symbol, factorint, lambdify
@@ -1874,14 +1878,21 @@ def _make_tile_shapes(job: "Job"):
 
 def make_tile_shapes(job: "Job"):
     memory_limit = job.memory_limit // 8  # Bytes -> bits
-    if job.memory_limit != float("inf"):
+    if resource is None and (job.memory_limit != float("inf") or job.time_limit != float("inf")):
+        warnings.warn(
+            "POSIX worker memory/CPU limits are unavailable on this platform; "
+            "tile exploration runs without OS-enforced worker limits.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+    if resource is not None and job.memory_limit != float("inf"):
         try:
             resource.setrlimit(resource.RLIMIT_AS, (job.memory_limit, job.memory_limit))
         except (ValueError, OSError):
             # Ignore permission errors when trying to set memory limits
             pass
 
-    if job.time_limit != float("inf"):
+    if resource is not None and job.time_limit != float("inf"):
         try:
             resource.setrlimit(
                 resource.RLIMIT_CPU, (ceil(job.time_limit), ceil(job.time_limit))
@@ -1914,6 +1925,12 @@ def make_tile_shapes(job: "Job"):
         raise RuntimeError(job.pretty_str()) from e
 
     finally:
+        _reset_worker_limits()
+
+
+def _reset_worker_limits():
+    """Reset POSIX limits after a tile job on supported platforms."""
+    if resource is not None:
         try:
             resource.setrlimit(
                 resource.RLIMIT_AS, (resource.RLIM_INFINITY, resource.RLIM_INFINITY)

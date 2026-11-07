@@ -1,0 +1,83 @@
+........................................................................ [ 10%]
+........................................................................ [ 21%]
+..............................................F
+================================== FAILURES ===================================
+_ test_generation_switch_changes_cache_key[AF_ENUMERATION_PREFIX_BYTES-8388608] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001EABDA50CE0>
+tmp_path = WindowsPath('C:/Users/hjiangbq/AppData/Local/Temp/pytest-of-hjiangbq/pytest-0/test_generation_switch_changes0')
+switch = 'AF_ENUMERATION_PREFIX_BYTES', value = '8388608'
+
+    @pytest.mark.parametrize('switch,value', [
+        ('AF_ENUMERATION_PREFIX_BYTES', '8388608'),
+        ('AF_ENUMERATION_PARETO_BYTES', '8388608'),
+        ('AF_TARGET_ENUMERATION', 'events'),
+        ('AF_CAPACITY_MEMBERSHIP', 'bitset'),
+        ('AF_LATENCY_SCALES', 'GlobalBuffer:2'),
+        ('AF_GENERATION_CAPACITY_FRACTIONS', 'GlobalBuffer:0.5,1.0'),
+        ('AF_GENERATION_VARIABLE_RESOURCES', 'GlobalBuffer'),
+        ('AF_ABL_ALLOW_UNREPRESENTABLE', '1'),
+        ('AF_ABL_SKIP_BIG_ENOUGH', 'GlobalBuffer'),
+        ('AF_ABL_SKIP_PMAPPING_ONLY', 'GlobalBuffer'),
+        ('AF_ABL_BIG_ENOUGH_UNTRACK_ONLY', 'GlobalBuffer'),
+    ])
+    def test_generation_switch_changes_cache_key(monkeypatch, tmp_path, switch, value):
+        monkeypatch.delenv(switch, raising=False)
+        calls = []
+    
+        def generate(spec, einsum_names=None, can_combine_multiple_runs=False):
+            calls.append(os.environ.get(switch))
+            return {'scenario': os.environ.get(switch)}
+    
+        monkeypatch.setattr(mapper, '_make_pmappings', generate)
+        kwargs = dict(spec='fixed-spec', cache_dir=str(tmp_path), print_number_of_pmappings=False)
+        assert mapper.make_pmappings(**kwargs) == {'scenario': None}
+        assert mapper.make_pmappings(**kwargs) == {'scenario': None}
+>       assert calls == [None]
+E       assert [None, None] == [None]
+E         
+E         Left contains one more item: None
+E         Use -v to get more diff
+
+research\tracking_audit\test_generation_cache.py:35: AssertionError
+---------------------------- Captured stdout call -----------------------------
+________________________________________________________________________________
+[Memory] Calling accelforge.mapper.FFM.main.make_pmappings.%3Clocals%3E._make_pmappings_cached...
+_make_pmappings_cached({ 'AF_ABL_ALLOW_UNREPRESENTABLE': None,
+  'AF_ABL_BIG_ENOUGH_UNTRACK_ONLY': None,
+  'AF_ABL_SKIP_BIG_ENOUGH': None,
+  'AF_ABL_SKIP_PMAPPING_ONLY': None,
+  'AF_CAPACITY_MEMBERSHIP': None,
+  'AF_ENUMERATION_PARETO_BYTES': None,
+  'AF_ENUMERATION_PREFIX_BYTES': None,
+  'AF_GENERATION_CAPACITY_BITS': None,
+  'AF_GENERATION_CAPACITY_FRACTIONS': None,
+  'AF_GENERATION_VARIABLE_RESOURCES': None,
+  'AF_LATENCY_SCALES': None,
+  'AF_RESOURCE_UNITS': None,
+  'AF_TARGET_ENUMERATION': None,
+  'generation_cache_version': 3,
+  'pareto_tolerance': 0.0}, spec='fixed-spec', einsum_names=None, can_combine_multiple_runs=False)
+____________________________________________make_pmappings_cached - 0.0s, 0.0min
+________________________________________________________________________________
+[Memory] Calling accelforge.mapper.FFM.main.make_pmappings.%3Clocals%3E._make_pmappings_cached...
+_make_pmappings_cached({ 'AF_ABL_ALLOW_UNREPRESENTABLE': None,
+  'AF_ABL_BIG_ENOUGH_UNTRACK_ONLY': None,
+  'AF_ABL_SKIP_BIG_ENOUGH': None,
+  'AF_ABL_SKIP_PMAPPING_ONLY': None,
+  'AF_CAPACITY_MEMBERSHIP': None,
+  'AF_ENUMERATION_PARETO_BYTES': None,
+  'AF_ENUMERATION_PREFIX_BYTES': None,
+  'AF_GENERATION_CAPACITY_BITS': None,
+  'AF_GENERATION_CAPACITY_FRACTIONS': None,
+  'AF_GENERATION_VARIABLE_RESOURCES': None,
+  'AF_LATENCY_SCALES': None,
+  'AF_RESOURCE_UNITS': None,
+  'AF_TARGET_ENUMERATION': None,
+  'generation_cache_version': 3,
+  'pareto_tolerance': 0.0}, spec='fixed-spec', einsum_names=None, can_combine_multiple_runs=False)
+____________________________________________make_pmappings_cached - 0.0s, 0.0min
+=========================== short test summary info ===========================
+FAILED research/tracking_audit/test_generation_cache.py::test_generation_switch_changes_cache_key[AF_ENUMERATION_PREFIX_BYTES-8388608]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 190 passed, 1 skipped, 5813 warnings in 171.42s (0:02:51)
