@@ -1,6 +1,7 @@
 """Run the physical tail proposal order without reading a precomputed tail score."""
 
 import argparse
+from dataclasses import replace
 import hashlib
 from itertools import combinations
 import json
@@ -10,6 +11,7 @@ import sys
 import time
 
 from research.joint_physical import replay as codec
+from research.runtime.audit_tail_phases import phases
 from research.runtime.audit_tail_ports import price
 from research.runtime.summarize_joint_trials import checkout_hashes
 from research.runtime.tail_query_benchmark import Design, run as query_run
@@ -67,7 +69,8 @@ def register(case, points):
     return designs,edits
 
 
-def run(seed_report, queries, target_report, output, method="physical", seed=0, optuna_path=None):
+def run(seed_report, queries, target_report, output, method="physical", seed=0, optuna_path=None,
+        phase_objective=False, bounded_phases=False):
     start = time.perf_counter()
     optuna = None
     if method.startswith("tpe"):
@@ -82,9 +85,13 @@ def run(seed_report, queries, target_report, output, method="physical", seed=0, 
     common.af.set_n_parallel_jobs(1)
     common.clear_switches()
     designs,edits = register(case,seeds["points"])
+    if bounded_phases:
+        exact = {(p["px"],p["py"]) for p in seeds.get("exact_hardware_points",())}
+        designs = [replace(d,priority=(d.shape not in exact,d.priority)) for d in designs]
     setup_s = time.perf_counter()-start
     budgets = [b["budget"]["max_sram_bytes"] for b in seeds["budget_selections"]]
     initial = [b["witness"]["edp"] for b in seeds["budget_selections"]]
+    phase_incumbents = list(initial)
     events = []
     def query(key):
         i,_ = key
@@ -95,22 +102,38 @@ def run(seed_report, queries, target_report, output, method="physical", seed=0, 
             witness,trace,_,_ = numeric(case,point,seed["witness"]["mapping"],edits[key])
             corrected = price(witness,trace)
             record.update(status="verified",witness=witness,independent_trace=trace,corrected=corrected)
+            if phase_objective:
+                eligible = [j for j,cap in enumerate(budgets) if point["capacity_bytes"]<=cap]
+                if bounded_phases and all(corrected["edp"]>phase_incumbents[j]*(1+1e-12) for j in eligible):
+                    record.update(status="bound_dominated",incumbents=[phase_incumbents[j] for j in eligible])
+                else:
+                    record["phase_accounting"] = phases(case,point,record)
+                    value = record["phase_accounting"]["phase_edp"]
+                    if value<corrected["edp"]*(1-1e-12):
+                        raise ValueError("phase EDP falls below its aggregate lower bound")
+                    for j in eligible:
+                        phase_incumbents[j] = min(phase_incumbents[j],value)
         except ValueError as error:
             record.update(status="rejected",reason=str(error))
         record["elapsed_s"] = time.perf_counter()-start
         events.append(record)
-        return record["corrected"]["edp"] if record["status"]=="verified" else None
+        if record["status"]!="verified":
+            return None
+        return record["phase_accounting"]["phase_edp"] if phase_objective else record["corrected"]["edp"]
     with exact_tail_evaluation():
         selection = query_run(designs,query,initial,budgets,queries,method,seed,optuna)
     total = time.perf_counter()-start
     result = dict(status="complete",candidate_count=len(designs),online_queries=events,seed_validation_excluded=True,
                   setup_s=setup_s,tail_stage_s=total,history=selection["history"],
                   method=method,seed=seed,seed_sha256=hashlib.sha256(raw).hexdigest(),
+                  phase_objective=phase_objective,
+                  bounded_phases=bounded_phases,
                   repeat_draws=selection["repeat_draws"],random_fallbacks=selection["random_fallbacks"],
                   target_read_before_search=False,external_sota_acceptance=False)
     if target_report is not None:
         reference = json.loads(target_report.read_bytes())
-        target = [x["winner"]["edp"] for x in reference["budget_selections"]]
+        target = ([x["phase_edp"] for x in reference["selections"]] if phase_objective else
+                  [x["winner"]["edp"] for x in reference["budget_selections"]])
         qualifying = [i for i,x in enumerate(selection["history"]) if x["best_by_budget"]==target]
         result.update(target_edp=target,first_all_targets_query=qualifying[0]+1 if qualifying else None,
                       first_all_targets_s=events[qualifying[0]]["elapsed_s"] if qualifying else None)
@@ -136,7 +159,7 @@ def verify(seed_report, result_path, output):
             point = event["architecture"]
             if point!=seeds["points"][step["point"]]["architecture"]:
                 raise ValueError("online query refers to a different physical point")
-            if event["status"]=="verified":
+            if event["status"] in ("verified","bound_dominated"):
                 witness,trace,_,_ = numeric(case,point,event["witness"]["mapping"])
                 if trace!=event["independent_trace"] or price(witness,trace)!=event["corrected"]:
                     raise ValueError("reconstructed tail result differs")
@@ -144,6 +167,18 @@ def verify(seed_report, result_path, output):
                     if witness[field]!=event["witness"][field]:
                         raise ValueError(f"reconstructed {field} differs")
                 value = event["corrected"]["edp"]
+                if event["status"]=="bound_dominated":
+                    before = [old for old,b in zip(best,budgets) if point["capacity_bytes"]<=b["max_sram_bytes"]]
+                    if event["incumbents"]!=before or not all(value>old*(1+1e-12) for old in before) or step["edp"] is not None:
+                        raise ValueError("invalid dominated phase bound")
+                    if step["best_by_budget"]!=best:
+                        raise ValueError("dominated phase changed incumbent")
+                    continue
+                if report.get("phase_objective"):
+                    phase = phases(case,point,{**event,"witness":witness,"independent_trace":trace})
+                    if phase!=event["phase_accounting"]:
+                        raise ValueError("independent full/tail phase ledger differs")
+                    value = phase["phase_edp"]
                 if step["edp"]!=value:
                     raise ValueError("online score differs from independent repricing")
                 best = [min(old,value) if point["capacity_bytes"]<=budget["max_sram_bytes"]
@@ -168,16 +203,23 @@ def main():
     parser.add_argument("--method",choices=("physical","tpe","tpe-warm"),default="physical")
     parser.add_argument("--seed",type=int,default=0)
     parser.add_argument("--optuna-path",type=Path,default=Path("libraries/tail_optuna"))
+    parser.add_argument("--phase-objective",action="store_true",
+                        help="Rank verified mappings by stricter full/tail phase timing.")
+    parser.add_argument("--bounded-phases",action="store_true",
+                        help="Try the exact geometry first and skip phase checks that cannot improve a budget.")
     parser.add_argument("--target",type=Path)
     parser.add_argument("--replay",type=Path)
     parser.add_argument("--output",type=Path,required=True)
     args = parser.parse_args()
     if args.output.exists():
         raise FileExistsError(args.output)
+    if args.bounded_phases and not args.phase_objective:
+        parser.error("--bounded-phases requires --phase-objective")
     if args.replay:
         verify(args.seeds,args.replay,args.output)
     else:
-        run(args.seeds,args.queries,args.target,args.output,args.method,args.seed,args.optuna_path)
+        run(args.seeds,args.queries,args.target,args.output,args.method,args.seed,args.optuna_path,
+            args.phase_objective,args.bounded_phases)
 
 
 if __name__=="__main__":

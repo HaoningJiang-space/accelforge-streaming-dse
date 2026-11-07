@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory=$true)][string]$OutputDirectory,
     [ValidateRange(1,96)][int]$Queries=32,
-    [switch]$SkipExactAnchor
+    [switch]$SkipExactAnchor,
+    [switch]$PhaseObjective
 )
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
@@ -21,7 +22,9 @@ try {
         & $runtime -PythonArguments @('-m','research.runtime.refine_joint','--workload','3mm','--output',$seeds)
     }
     if ($LASTEXITCODE) { throw 'Native joint seed search failed.' }
-    & $runtime -PythonArguments @('-m','research.runtime.tail_online','--seeds',$seeds,
+    $tailArgs = @('-m','research.runtime.tail_online','--seeds',$seeds,
         '--queries',"$Queries",'--output',$tail)
+    if ($PhaseObjective) { $tailArgs += @('--phase-objective','--bounded-phases') }
+    & $runtime -PythonArguments $tailArgs
     if ($LASTEXITCODE) { throw 'Physical tail search failed.' }
 } finally { Pop-Location }
