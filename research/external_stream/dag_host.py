@@ -15,6 +15,7 @@ from time import perf_counter
 from stream.api import SolveOptions, evaluate_mapping
 from stream.ir.infeasibility import InfeasibleAllocationError
 from stream.workload.node import ComputationNode
+from stream.workload.normalization import expand_normalizations
 
 from research.external_stream.dag import build, verify_graph
 from research.external_stream.dag_memo import native_memo
@@ -97,12 +98,14 @@ def evaluate(workload, shape, cuts, limit):
                 edp=energy * estimate.cycles, groups=groups, wall_s=perf_counter()-t0)
 
 
-def sweep(workload, shapes, limit):
+def sweep(workload, shapes, limit, extreme_cuts=False):
     start = perf_counter()
     order = graph_order(workload)
     trials = []
     # Give the reference its unmodified full-system default at every shape.
-    for cuts in (None, *cut_sets(order)):
+    requested = (cuts for cuts in cut_sets(order)
+                 if not extreme_cuts or min(len(cuts), len(order)-1-len(cuts)) <= 1)
+    for cuts in (None, *requested):
         for shape in shapes:
             report = evaluate(workload, shape, cuts, limit)
             report["elapsed_s"] = perf_counter() - start
@@ -184,9 +187,9 @@ def check(workload, reference, factored):
                 interval_equivalence=not mismatches, mismatches=mismatches)
 
 
-def memoized(workload, shapes, limit):
+def memoized(workload, shapes, limit, extreme_cuts=False):
     with native_memo() as stats:
-        result = sweep(workload, shapes, limit)
+        result = sweep(workload, shapes, limit, extreme_cuts)
     return dict(**result, reuse=stats)
 
 
@@ -218,17 +221,20 @@ def check_memo(reference, reused):
     return dict(**controls(reference), mismatches=errors, equivalent=not errors)
 
 
-def run(names, budgets, repeats, limit, method):
+def run(names, budgets, repeats, limit, method, extreme_cuts):
     results = []
     for name in names:
         graph = CASES[name]()
-        workload = build(graph)
+        # STREAM itself applies this canonical lexical ordering before reading cut names.
+        workload = expand_normalizations(build(graph))
         manifest = verify_graph(workload, graph)
         for budget in budgets:
             shapes = tuple((x, y, budget) for x, y in GEOMETRIES)
             for trial in range(repeats):
                 methods = (sweep, method) if trial % 2 == 0 else (method, sweep)
-                outcome = {method.__name__: method(workload, shapes, limit) for method in methods}
+                outcome = {selected.__name__: (selected(workload, shapes, limit) if selected is compose
+                                                else selected(workload, shapes, limit, extreme_cuts))
+                           for selected in methods}
                 alternate = outcome[method.__name__]
                 evidence = (check(workload, outcome["sweep"], alternate) if method is compose
                             else check_memo(outcome["sweep"], alternate))
@@ -244,6 +250,7 @@ def run(names, budgets, repeats, limit, method):
     stream_path = Path(__file__).resolve().parents[2] / "libraries" / "stream"
     revision = subprocess.check_output(["git", "-C", str(stream_path), "rev-parse", "HEAD"], text=True).strip()
     return dict(stream_revision=revision, geometries=GEOMETRIES, limit_per_allocation_s=limit, repeats=repeats,
+                extreme_cuts=extreme_cuts,
                 versions={pkg: version(pkg) for pkg in ("stream-dse", "zigzag-dse", "ortools")},
                 cases=results)
 
@@ -255,12 +262,16 @@ def main():
     parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--limit", type=float, default=10)
     parser.add_argument("--method", choices=("compose", "memoized"), default="memoized")
+    parser.add_argument("--extreme-cuts", action="store_true",
+                        help="Use at most one cut or leave at most one boundary fused.")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.output.exists() or args.repeats < 1:
         raise FileExistsError("a new report and a positive repetition count are required")
     method = {"compose": compose, "memoized": memoized}[args.method]
-    result = run(args.cases, args.budgets, args.repeats, args.limit, method)
+    if args.extreme_cuts and method is compose:
+        parser.error("the isolation diagnostic requires every cut subset")
+    result = run(args.cases, args.budgets, args.repeats, args.limit, method, args.extreme_cuts)
     with args.output.open("x", encoding="utf-8", newline="\n") as file:
         file.write(json.dumps(result, indent=2, allow_nan=False) + "\n")
 

@@ -146,3 +146,11 @@ the affine graph before assigning cuts, so an input order does not enforce an
 execution order. The best accepted configuration stays on the shape chosen by
 the fixed-order control. The audit therefore does not isolate the branch-order
 mechanism measured by the independent calendar.
+
+The [near-layerwise order audit](results/dag_host_order_near_singletons_128k.json)
+includes the full per-layer plan and every plan that removes one cut. All 42
+trials produce a different ordered partition. The pinned STREAM
+[`expand_normalizations`](https://github.com/KULeuven-MICAS/stream/blob/407d373f942101895b72b3e6d2c75dbe714633a6/stream/workload/normalization.py#L250)
+pass canonicalizes nodes in lexical topological order even for this graph
+without normalization. The matched asymmetric experiment uses that canonical
+order for both methods and checks the realized groups.
