@@ -114,8 +114,32 @@ The [crossed controls](../joint_budget/results/strip_codesign_cross_ablation.jso
 ./research/runtime/run_windows.ps1 -PythonArguments @('-m','research.runtime.audit_strip_overlap','--reference','research/joint_budget/results/strip_codesign_cpsat.json','--output','research/local_strip_overlap.json')
 ```
 
-The [audit](../joint_budget/results/strip_overlap_audit.json) separately reconstructs native latency from tile shape classes and schedules address-derived traffic on one shared DRAM port, separate SRAM read and write ports, and the MAC array. It reproduces every native per-component latency and summed per-stage maximum on six square winners and three microbenchmarks. All six winner action ledgers agree. Two reduction-tail microbenchmarks reproduce the native first-read omission.
+The [audit](../joint_budget/results/strip_overlap_audit.json) separately reconstructs native latency from tile shape classes and schedules address-derived traffic on one shared DRAM port, separate SRAM read and write ports, and the MAC array. It reproduces every native per-component latency and summed per-stage maximum on six square winners and five microbenchmarks. All six winner action ledgers agree. The reduction-tail microbenchmarks reproduce the native first-read omission.
 
 Native time is below the conserved work of a single port for three of the six winners. For 3mm512 at 128 KiB, native time is 90.35 μs and the compulsory DRAM service time is 116.05 μs. The 1×64×64 microbenchmark isolates this behavior. A 32×32 tile gives a native time of 110 ns, equal to the DRAM work bound. A 48×48 tile performs the same DRAM traffic, but the native fold charges 63.33 ns. It keeps the largest shape class and loses service from the remainder.
 
 The port calendar allows DMA service at both ends of a transfer and stages row reads, MAC work, and output writes on separate ports when there is enough SRAM for a row of ingress and egress staging. It walks exact tail extents and verifies transfer conservation, per-port exclusion, ordering and capacity. It is an explicit feasible schedule under the declared analytical architecture. The native timing formula remains a diagnostic for these tail cases.
+
+The two 4×7×7 microbenchmarks have the same exact traffic and MAC cycles. The native model gives 24,576 ticks for both. Under an 84-byte SRAM ceiling, the 4×4 and 5×5 waves have different staging constraints and complete in 29,154 and 29,379 ticks respectively.
+
+## Accelerator-specific overlap benchmark
+
+```powershell
+git clone https://github.com/maestro-project/gamma.git libraries/gamma
+git -C libraries/gamma checkout 3d6caf8448b269fa25c2f224db97fcc470d0370f
+./research/runtime/run_windows.ps1 -PythonArguments @('-m','research.runtime.benchmark_strip_overlap','--gamma','libraries/gamma','--output','research/local_strip_specialized.json')
+```
+
+The [benchmark](../joint_budget/results/strip_overlap_specialized.json) extends the generated strip grammar to the explicit port calendar. It considers every feasible integer strip, reduction tile and output tile. The energy/time frontier with unbounded staging is a lower bound for all strips with the same number of bands. If that frontier can be realized, further strip widths in the class are dominated. Otherwise the search prices the whole class with the actual full and tail capacities. An exhaustive tiny-space test checks the result against the event calendar. Smaller registered SRAM capacities are dominated within each budget because capacity only expands the feasible staging options and has the same per-action costs.
+
+The FFM control calls the native `PmappingDataframe.merge_next` compatibility join and Pareto pruning at materialized boundaries. It receives the same connected-segment frontiers, hardware bound, and starting plans as the specialized search. This isolates the cost of the composition kernel in the common grammar. The external GAMMA control imports the pinned published implementation's parent selection, dimension crossover and tile mutation directly. The adapter maps those operations onto integer fanout, cuts, pin/stream and tiling genes and supplies the common evaluator. Geometry is represented by a legal fixed-PE factor-pair gene. The original MAESTRO costs and variable PE-count mutations are outside the shared contract.
+
+Five rotating single-worker trials cover eight chains and three budgets, including 3mm512, four rectangular chains and a pair of asymmetric chains in forward and reverse width order. Every recorded incumbent was checked by the independent port calendar after the timed search. The timing includes construction of the common starting plans and the search, and excludes Python imports and the independent replay of archived incumbents.
+
+On the Intel Core i7-12700 host, the two exact searches agree in all 24 cases. The specialized search proves the optimum 1.75–8.25× faster than the FFM join control, with a median of 3.29×. At 150 ms it beats the GAMMA adaptation in 71 of 120 trials and ties in 49. The largest per-case median EDP reduction at that deadline is 24.14% at 132 KiB on 3mm256. At 50 ms GAMMA is ahead in 14 trials, the specialized search in 44, and 62 tie. At 500 ms the specialized search leads in 70 trials and 50 tie.
+
+The [native replay](../joint_budget/results/strip_overlap_winner_replay.json) reconstructs all 24 new winners in AccelForge and matches their modeled per-component times with the independent formula. Six native totals fall below the independently conserved single-port work bound. Nine action ledgers agree. The other 15 differ in partial-sum SRAM reads, which the shared calendar reconstructs from the tensor events.
+
+The [control results](../joint_budget/results/strip_overlap_controls.json) freeze the 24×256 geometry selected on 3mm256 at 256 KiB. Joint search improves 22 of 24 results against this fixed geometry, up to 36.30% on the wide-output holdout. Against selecting the best geometry for singleton execution and then reoptimizing fusion and mapping, it improves 3mm256 at 132 KiB by 13.61% and ties the other 23 cases. Reranking under the overlap calendar improves seven of 18 archived serial winners on that same calendar, with a maximum reduction of 17.69%.
+
+The original research systems and comparison scope are documented in [Fast and Fusiest](https://arxiv.org/abs/2602.15166), [DiGamma](https://arxiv.org/abs/2201.11220), and the [official GAMMA code](https://github.com/maestro-project/gamma/tree/3d6caf8448b269fa25c2f224db97fcc470d0370f). The proof and quality comparison cover this dense GEMM chain grammar and explicit NVDLA port contract.

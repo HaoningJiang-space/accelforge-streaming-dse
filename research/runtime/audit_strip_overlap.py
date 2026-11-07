@@ -21,11 +21,13 @@ from research.tracking_audit.shape_capacity_audit import RAW_GB, build
 TICK = 1e-9 / 1536
 
 
-def inspect(rows, width, hardware, plan):
-    case = common.Case("matmuls", "nvdla", (plan[-1].stop, rows, width))
-    widths = (width,) * (plan[-1].stop + 1)
+def inspect(rows, widths, hardware, plan):
+    case = common.Case("matmuls", "nvdla", (plan[-1].stop, rows, widths[0]))
     spec = build(case, (hardware.px, hardware.py), hardware.capacity_bytes,
                  common.RU | common.af.Metrics.ACTIONS)
+    for i, extent in enumerate(widths):
+        rank = f"n{i}"
+        spec.workload.iteration_space_shape[rank] = f"0 <= {rank} < {extent}"
     record = encode(translate(plan, spec.arch.find("ArrayFanout")))
     components = {}
 
@@ -82,7 +84,7 @@ def run(raw):
             winner = entry["winners"]["dp"]
             hardware = Hardware(**winner["architecture"])
             plan = [Segment(**group) for group in winner["mapping"]]
-            result = inspect(workload["rows"], workload["widths"][0], hardware, plan)
+            result = inspect(workload["rows"], workload["widths"], hardware, plan)
             rows.append(dict(case=name, budget_bytes=entry["budget_bytes"], **result))
     # A 17-wide stage has independently checkable 16+1 reduction and
     # output tiles. The reduction remainder must read the running sum.
@@ -92,8 +94,15 @@ def run(raw):
         ("perfect_1x64x64", 1, 64, 1, 32, 32),
         ("tail_1x64x64", 1, 64, 1, 48, 48),
     ):
-        probe = inspect(m, k, hardware, [Segment(0, 1, b, (False,), ((p, q),))])
+        probe = inspect(m, (k, k), hardware, [Segment(0, 1, b, (False,), ((p, q),))])
         rows.append(dict(case=name, **probe))
+    paired = [inspect(4, (7, 7), Hardware(48, 128, 84),
+                      [Segment(0, 1, 4, (False,), ((size, size),))]) for size in (4, 5)]
+    a, b = (entry["calendar"] for entry in paired)
+    if a["service_ticks"] != b["service_ticks"] or not a["end_ticks"] < b["end_ticks"]:
+        raise AssertionError("paired mappings must have equal work and distinct legal overlap")
+    rows.extend(dict(case=f"equal_work_4x7x7_tile{tile}", **entry)
+                for tile, entry in zip((4, 5), paired))
     for entry in rows:
         print(json.dumps({k: entry[k] for k in ("case", "mapping_actions_agree",
                          "native_ticks", "independently_reproduced_ticks", "timing_differences",
@@ -101,14 +110,34 @@ def run(raw):
     return dict(source_sha256=hashlib.sha256(raw).hexdigest(), cases=rows)
 
 
+def inspect_selected(raw):
+    source = json.loads(raw)
+    common.af.set_n_parallel_jobs(1)
+    common.clear_switches()
+    outcomes = []
+    for name, workload in source["cases"].items():
+        for entry in workload["outcomes"]:
+            index = entry["trials"][0]["demand"]["history"][-1]["design"]
+            winner = entry["witnesses"][index]
+            point = Hardware(**winner["architecture"])
+            plan = [Segment(**item) for item in winner["mapping"]]
+            result = inspect(workload["rows"], workload["widths"], point, plan)
+            if winner["ticks"] != result["calendar"]["end_ticks"]:
+                raise AssertionError("published winner schedule changed on native replay")
+            outcomes.append(dict(case=name, budget_bytes=entry["budget_bytes"], **result))
+    return dict(source_sha256=hashlib.sha256(raw).hexdigest(), cases=outcomes)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reference", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--overlap-winners", action="store_true")
     args = parser.parse_args()
     if args.output.exists():
         raise FileExistsError(args.output)
-    result = run(args.reference.read_bytes())
+    method = inspect_selected if args.overlap_winners else run
+    result = method(args.reference.read_bytes())
     with args.output.open("x", encoding="utf-8", newline="\n") as file:
         file.write(json.dumps(result, indent=2, allow_nan=False) + "\n")
 
