@@ -256,3 +256,18 @@ from 48×128 to 32×192 and drops two pinned weights. Its DRAM traffic stays at
 106,496 words and its prefetched weight words rise from 9,288 to 46,864.
 Diamond also unpins a weight and preserves its DRAM volume. The strong
 architecture-first control and the joint optimum agree on all three graphs.
+
+The [ten-pair extension](../joint_budget/results/dag_prefetch_optimized_projection.json)
+uses the same three array shapes at both SRAM budgets. Eight pairs improve
+over the previous mappings when both sides use the executable prefetch
+evaluator. GLU and asymmetric select a different shape at both budgets.
+The chosen fusion partitions agree, and the fusion-enabled architecture-first
+control ties joint search in all ten pairs.
+
+Residual at 128 KiB gives a traffic reversal. Its previous mapping moves
+409,904 DRAM words and takes 26,376,128 ticks. The reoptimized mapping moves
+412,976 words and takes 24,048,720 ticks, lowering EDP by 8.32%. Both use the
+same array and fusion partition. On GLU, repricing the best new mapping on the
+old 48×128 shape gives EDP 1.22461e16 in the experiment's integer units.
+Switching to 32×192 gives 1.22340e16, an extra 0.10% improvement. Most of the
+14.32% reduction comes from changing the mapping on the old shape.
