@@ -57,7 +57,7 @@ def run(workload, output, reference, anchor_only):
                           edp=[r["witness"]["edp"] for r in anchor_winners])), flush=True)
     with WorkCounter() as counter:
         if not anchor_only:
-            approximations, details = search(case, rest)
+            approximations, details = search(case, rest, proposal_policy="independent" if workload=="3mm" else "feedback")
             outputs.update(approximations)
             rows.update({p: common.best_row(frame) for p, frame in approximations.items()})
         else:
@@ -117,7 +117,7 @@ def run(workload, output, reference, anchor_only):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--workload", choices=("attention", "attention256", "attention512"), required=True)
+    parser.add_argument("--workload", choices=("3mm", "attention", "attention256", "attention512"), required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--reference", type=Path)
     parser.add_argument("--anchor-only", action="store_true")
