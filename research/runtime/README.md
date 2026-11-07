@@ -143,3 +143,13 @@ The [native replay](../joint_budget/results/strip_overlap_winner_replay.json) re
 The [control results](../joint_budget/results/strip_overlap_controls.json) freeze the 24×256 geometry selected on 3mm256 at 256 KiB. Joint search improves 22 of 24 results against this fixed geometry, up to 36.30% on the wide-output holdout. Against selecting the best geometry for singleton execution and then reoptimizing fusion and mapping, it improves 3mm256 at 132 KiB by 13.61% and ties the other 23 cases. Reranking under the overlap calendar improves seven of 18 archived serial winners on that same calendar, with a maximum reduction of 17.69%.
 
 The original research systems and comparison scope are documented in [Fast and Fusiest](https://arxiv.org/abs/2602.15166), [DiGamma](https://arxiv.org/abs/2201.11220), and the [official GAMMA code](https://github.com/maestro-project/gamma/tree/3d6caf8448b269fa25c2f224db97fcc470d0370f). The proof and quality comparison cover this dense GEMM chain grammar and explicit NVDLA port contract.
+
+### Architecture-first controls at SRAM transitions
+
+```powershell
+./research/runtime/run_windows.ps1 -PythonArguments @('-m','research.runtime.strip_architecture_stress','--reference','research/joint_budget/results/strip_overlap_specialized.json','--output','research/local_strip_architecture_stress.json')
+```
+
+The [stress study](../joint_budget/results/strip_architecture_stress.json) retains every geometry tied at the exact singleton optimum and reoptimizes fusion on all of them. It also trains a single fixed geometry on the product of 3mm256 EDPs across all three budgets, which selects 48×128. For the original 24 cases, the tie-aware architecture-first control preserves the 13.61% advantage at 132 KiB on 3mm256 and ties in 23 cases. The stronger fixed-geometry control is beaten in 11 of 24 cases, by up to 7.46%.
+
+The additional sweep brackets a 3,072-byte staging target with two row extents for each of five matrix widths and three budgets. The search improves on tie-aware architecture-first in six of these 30 cases, by 0.40–7.99%. The other 24 tie. All joint and restricted designs are replayed through the independent port calendar. This locates the architecture-first failure near specific staging thresholds and preserves the cases where the simpler policy suffices.
