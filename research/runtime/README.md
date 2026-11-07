@@ -99,3 +99,11 @@ python -m research.runtime.benchmark_strip_deadlines --output research/local_str
 The [deadline comparison](../joint_budget/results/strip_codesign_deadlines.json) uses the same six workloads and three budgets. Both methods pay for generating and validating the same starting design. A new incumbent is available once its common score and wave trace pass. The 5, 20, and 100 ms snapshots are read from complete solution trajectories collected in nine alternating single-worker trials. The time thresholds were chosen after the exact-search comparison to measure the millisecond search regime. Each method still reaches the same certified endpoint.
 
 At 20 ms the specialized search found a lower EDP in 79 of 162 paired trials and tied in 83. Its median EDP was lower in nine of the 18 workload and budget pairs. The largest reduction was 25.05% on the rectangular 6mm at 132 KiB. The 132 KiB cases of 3mm256 and 3mm512 had median reductions of 7.32% and 8.66%. At 5 ms there were 26 wins, 135 ties, and one trial in which the specialized search had no validated result by the deadline. At 100 ms there were 51 wins and 111 ties. These are search-budget effects under the shared evaluator.
+
+### Crossed hardware and fusion controls
+
+```powershell
+python -m research.runtime.strip_cross_ablation --reference research/joint_budget/results/strip_codesign_cpsat.json --output research/local_strip_ablation.json
+```
+
+The [crossed controls](../joint_budget/results/strip_codesign_cross_ablation.json) fix the 48×128 geometry selected on 3mm256 at 256 KiB and test it on every budget and holdout. The fixed and free geometry settings each run with singleton or adaptive fusion, and a fifth control forces the full chain to fuse while keeping geometry free. All control plans pass the independent wave trace. Free geometry reduces EDP by 1.93–3.40% on the four holdout budget pairs where it changes the optimum under adaptive fusion. It ties the fixed geometry on the remaining 14 pairs. Adaptive partitioning improves over full-chain fusion by 9.68% and 8.62% on rectangular 5mm at 128 and 132 KiB, and by 3.65% on rectangular 6mm at 256 KiB. The largest gains against singleton execution are primarily due to avoiding intermediate DRAM traffic.
