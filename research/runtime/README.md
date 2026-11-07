@@ -64,7 +64,7 @@ The [memory trace](../joint_budget/results/memory_trace_3mm96.json) reconstructs
 
 All 96 perfect mappings match. Of the 348 accepted Event tail mappings, 170 match and 178 have a GlobalBuffer output read discrepancy. Every discrepancy adds 524,288 bits for one operator and tensor. A full tile and a nondivisible remainder in a reduction can update the same 65,536 addresses. The native path elides a first read in both groups. The independent trace elides it once. The selected 128 KiB phase winner matches, while the 132 KiB and 256 KiB phase winners have one and two affected output tensors respectively. Their archived energy and EDP values need rescoring.
 
-The audit covers the action counts of the serialized dense GEMM mappings. The phase timing and SRAM lifetime checks are separate.
+The [phase rescore](../joint_budget/results/memory_trace_phase_rescore.json) adds the missing reads to the remainder phases and checks that the corrected ledgers sum to the independent whole-mapping counts. The three archived winners score 3.76319e-10, 3.30835e-10, and 2.99011e-10 J·s at 128, 132, and 256 KiB. The missing reads increase energy at the latter two budgets. Phase delay is unchanged under the archived throughput model. This rescoring retains the original winners and does not establish a new ranking of the complete native candidate space.
 
 ## Joint row-strip synthesis
 
