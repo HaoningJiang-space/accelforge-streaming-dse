@@ -1,0 +1,1245 @@
+{
+  "status": "complete",
+  "scope": "native action counts; throughput within each isolated full/tail phase",
+  "searched_supported_candidates": true,
+  "distinct_candidates_checked": 19,
+  "external_sota_acceptance": false,
+  "selections": [
+    {
+      "budget": {
+        "max_pes": 6144,
+        "max_sram_bytes": 131072
+      },
+      "perfect_edp": 4.2887932805120005e-10,
+      "phase_edp": 3.76318592024576e-10,
+      "reduction": 0.1225536709019216,
+      "winner": {
+        "architecture": {
+          "px": 96,
+          "py": 64,
+          "capacity_bytes": 131072
+        },
+        "aggregate_edp": 3.7086469938653866e-10,
+        "changes": [
+          [
+            "Matmul1",
+            2,
+            96
+          ],
+          [
+            "Matmul2",
+            0,
+            96
+          ]
+        ],
+        "candidate_index": 5,
+        "status": "verified",
+        "phase_latency_s": 1.1776e-05,
+        "serialized_port_s": 3.2128e-05,
+        "phase_edp": 3.76318592024576e-10,
+        "fully_serialized_edp": 1.026695289110528e-09,
+        "operators": {
+          "Matmul0": {
+            "phase_count": 1,
+            "phase_latency_s": 5.12e-06
+          },
+          "Matmul1": {
+            "phase_count": 2,
+            "phases": [
+              {
+                "kind": "full",
+                "mac_cycles": 2048,
+                "latency_s": 2.048e-06,
+                "bit_actions": {
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 1179648.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 1572864.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 1048576.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 0.0,
+                  "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>read": 100663296.0,
+                  "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>write": 393216.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>read": 393216.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>write": 393216.0,
+                  "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>read": 393216.0,
+                  "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>write": 0.0,
+                  "Matmul1<SEP>action<SEP>MAC<SEP>None<SEP>compute": 12582912.0
+                }
+              },
+              {
+                "kind": "remainder",
+                "mac_cycles": 1024,
+                "latency_s": 1.024e-06,
+                "bit_actions": {
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 393216.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 524288.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 524288.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 0.0,
+                  "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>read": 33554432.0,
+                  "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>write": 131072.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>read": 131072.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>write": 131072.0,
+                  "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>read": 131072.0,
+                  "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>write": 0.0,
+                  "Matmul1<SEP>action<SEP>MAC<SEP>None<SEP>compute": 4194304.0
+                }
+              }
+            ]
+          },
+          "Matmul2": {
+            "phase_count": 2,
+            "phases": [
+              {
+                "kind": "full",
+                "mac_cycles": 2048,
+                "latency_s": 2.56e-06,
+                "bit_actions": {
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 1048576.0,
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 0.0,
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read": 1572864.0,
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>write": 1572864.0,
+                  "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>read": 0.0,
+                  "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write": 393216.0,
+                  "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>read": 100663296.0,
+                  "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>write": 393216.0,
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>read": 393216.0,
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write": 393216.0,
+                  "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read": 393216.0,
+                  "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>write": 0.0,
+                  "Matmul2<SEP>action<SEP>MAC<SEP>None<SEP>compute": 12582912.0
+                }
+              },
+              {
+                "kind": "remainder",
+                "mac_cycles": 1024,
+                "latency_s": 1.024e-06,
+                "bit_actions": {
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 524288.0,
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 0.0,
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read": 524288.0,
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>write": 524288.0,
+                  "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>read": 0.0,
+                  "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write": 131072.0,
+                  "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>read": 33554432.0,
+                  "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>write": 131072.0,
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>read": 131072.0,
+                  "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write": 131072.0,
+                  "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read": 131072.0,
+                  "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>write": 0.0,
+                  "Matmul2<SEP>action<SEP>MAC<SEP>None<SEP>compute": 4194304.0
+                }
+              }
+            ]
+          }
+        }
+      },
+      "candidate_checks": [
+        {
+          "architecture": {
+            "px": 96,
+            "py": 64,
+            "capacity_bytes": 131072
+          },
+          "aggregate_edp": 3.7086469938653866e-10,
+          "changes": [
+            [
+              "Matmul1",
+              2,
+              96
+            ],
+            [
+              "Matmul2",
+              0,
+              96
+            ]
+          ],
+          "candidate_index": 5,
+          "status": "verified",
+          "phase_latency_s": 1.1776e-05,
+          "serialized_port_s": 3.2128e-05,
+          "phase_edp": 3.76318592024576e-10,
+          "fully_serialized_edp": 1.026695289110528e-09,
+          "operators": {
+            "Matmul0": {
+              "phase_count": 1,
+              "phase_latency_s": 5.12e-06
+            },
+            "Matmul1": {
+              "phase_count": 2,
+              "phases": [
+                {
+                  "kind": "full",
+                  "mac_cycles": 2048,
+                  "latency_s": 2.048e-06,
+                  "bit_actions": {
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 1179648.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 1572864.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 1048576.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>read": 100663296.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>write": 393216.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>read": 393216.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>write": 393216.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>read": 393216.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>MAC<SEP>None<SEP>compute": 12582912.0
+                  }
+                },
+                {
+                  "kind": "remainder",
+                  "mac_cycles": 1024,
+                  "latency_s": 1.024e-06,
+                  "bit_actions": {
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 393216.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 524288.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 524288.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>read": 33554432.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>write": 131072.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>read": 131072.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>write": 131072.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>read": 131072.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>MAC<SEP>None<SEP>compute": 4194304.0
+                  }
+                }
+              ]
+            },
+            "Matmul2": {
+              "phase_count": 2,
+              "phases": [
+                {
+                  "kind": "full",
+                  "mac_cycles": 2048,
+                  "latency_s": 2.56e-06,
+                  "bit_actions": {
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 1048576.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read": 1572864.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>write": 1572864.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>read": 0.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write": 393216.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>read": 100663296.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>write": 393216.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>read": 393216.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write": 393216.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read": 393216.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>MAC<SEP>None<SEP>compute": 12582912.0
+                  }
+                },
+                {
+                  "kind": "remainder",
+                  "mac_cycles": 1024,
+                  "latency_s": 1.024e-06,
+                  "bit_actions": {
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 524288.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read": 524288.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>write": 524288.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>read": 0.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write": 131072.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>read": 33554432.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>write": 131072.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>read": 131072.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write": 131072.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read": 131072.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>MAC<SEP>None<SEP>compute": 4194304.0
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "architecture": {
+            "px": 96,
+            "py": 64,
+            "capacity_bytes": 131072
+          },
+          "aggregate_edp": 3.7086469938653866e-10,
+          "changes": [
+            [
+              "Matmul0",
+              2,
+              96
+            ],
+            [
+              "Matmul1",
+              2,
+              96
+            ],
+            [
+              "Matmul2",
+              0,
+              96
+            ]
+          ],
+          "candidate_index": 6,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul0: {'Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write': 1048576, 'Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read': 1048576}"
+        }
+      ]
+    },
+    {
+      "budget": {
+        "max_pes": 6144,
+        "max_sram_bytes": 135168
+      },
+      "perfect_edp": 3.47009735196672e-10,
+      "phase_edp": 3.2929729006796805e-10,
+      "reduction": 0.051043078427367994,
+      "winner": {
+        "architecture": {
+          "px": 64,
+          "py": 96,
+          "capacity_bytes": 135168
+        },
+        "aggregate_edp": 3.2452486557422934e-10,
+        "changes": [
+          [
+            "Matmul0",
+            0,
+            96
+          ]
+        ],
+        "candidate_index": 0,
+        "status": "verified",
+        "phase_latency_s": 1.1776e-05,
+        "serialized_port_s": 3.0421333333333333e-05,
+        "phase_edp": 3.2929729006796805e-10,
+        "fully_serialized_edp": 8.506846660089174e-10,
+        "operators": {
+          "Matmul0": {
+            "phase_count": 2,
+            "phases": [
+              {
+                "kind": "full",
+                "mac_cycles": 2048,
+                "latency_s": 2.56e-06,
+                "bit_actions": {
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 524288.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 1048576.0,
+                  "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>read": 100663296.0,
+                  "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>write": 393216.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>read": 393216.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>write": 393216.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>read": 393216.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>write": 0.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>read": 1572864.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write": 393216.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read": 393216.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>write": 0.0,
+                  "Matmul0<SEP>action<SEP>MAC<SEP>None<SEP>compute": 12582912.0
+                }
+              },
+              {
+                "kind": "remainder",
+                "mac_cycles": 1024,
+                "latency_s": 1.024e-06,
+                "bit_actions": {
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 0.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 524288.0,
+                  "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>read": 33554432.0,
+                  "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>write": 131072.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>read": 131072.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>write": 131072.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>read": 131072.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>write": 0.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>read": 524288.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write": 131072.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read": 131072.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>write": 0.0,
+                  "Matmul0<SEP>action<SEP>MAC<SEP>None<SEP>compute": 4194304.0
+                }
+              }
+            ]
+          },
+          "Matmul1": {
+            "phase_count": 1,
+            "phase_latency_s": 4.096e-06
+          },
+          "Matmul2": {
+            "phase_count": 1,
+            "phase_latency_s": 4.096e-06
+          }
+        }
+      },
+      "candidate_checks": [
+        {
+          "architecture": {
+            "px": 64,
+            "py": 96,
+            "capacity_bytes": 135168
+          },
+          "aggregate_edp": 3.0090540875776e-10,
+          "changes": [
+            [
+              "Matmul0",
+              0,
+              96
+            ],
+            [
+              "Matmul2",
+              1,
+              96
+            ]
+          ],
+          "candidate_index": 4,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul2: {'Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read': 524288, 'Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write': 524288, 'Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write': 524288, 'Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 48,
+            "py": 128,
+            "capacity_bytes": 135168
+          },
+          "aggregate_edp": 3.0274938138350935e-10,
+          "changes": [
+            [
+              "Matmul0",
+              1,
+              48
+            ],
+            [
+              "Matmul2",
+              0,
+              48
+            ]
+          ],
+          "candidate_index": 4,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul0: {'Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write': 524288, 'Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 96,
+            "py": 64,
+            "capacity_bytes": 135168
+          },
+          "aggregate_edp": 3.0711306815624534e-10,
+          "changes": [
+            [
+              "Matmul0",
+              1,
+              96
+            ],
+            [
+              "Matmul2",
+              0,
+              96
+            ]
+          ],
+          "candidate_index": 4,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul0: {'Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write': 524288, 'Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 64,
+            "py": 96,
+            "capacity_bytes": 135168
+          },
+          "aggregate_edp": 3.2452486557422934e-10,
+          "changes": [
+            [
+              "Matmul0",
+              0,
+              96
+            ]
+          ],
+          "candidate_index": 0,
+          "status": "verified",
+          "phase_latency_s": 1.1776e-05,
+          "serialized_port_s": 3.0421333333333333e-05,
+          "phase_edp": 3.2929729006796805e-10,
+          "fully_serialized_edp": 8.506846660089174e-10,
+          "operators": {
+            "Matmul0": {
+              "phase_count": 2,
+              "phases": [
+                {
+                  "kind": "full",
+                  "mac_cycles": 2048,
+                  "latency_s": 2.56e-06,
+                  "bit_actions": {
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 524288.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 1048576.0,
+                    "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>read": 100663296.0,
+                    "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>write": 393216.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>read": 393216.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>write": 393216.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>read": 393216.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>write": 0.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>read": 1572864.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write": 393216.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read": 393216.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>write": 0.0,
+                    "Matmul0<SEP>action<SEP>MAC<SEP>None<SEP>compute": 12582912.0
+                  }
+                },
+                {
+                  "kind": "remainder",
+                  "mac_cycles": 1024,
+                  "latency_s": 1.024e-06,
+                  "bit_actions": {
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 0.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 524288.0,
+                    "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>read": 33554432.0,
+                    "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>write": 131072.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>read": 131072.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>write": 131072.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>read": 131072.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>write": 0.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>read": 524288.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write": 131072.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read": 131072.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>write": 0.0,
+                    "Matmul0<SEP>action<SEP>MAC<SEP>None<SEP>compute": 4194304.0
+                  }
+                }
+              ]
+            },
+            "Matmul1": {
+              "phase_count": 1,
+              "phase_latency_s": 4.096e-06
+            },
+            "Matmul2": {
+              "phase_count": 1,
+              "phase_latency_s": 4.096e-06
+            }
+          }
+        },
+        {
+          "architecture": {
+            "px": 64,
+            "py": 96,
+            "capacity_bytes": 135168
+          },
+          "aggregate_edp": 3.2452486557422934e-10,
+          "changes": [
+            [
+              "Matmul2",
+              1,
+              96
+            ]
+          ],
+          "candidate_index": 2,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul2: {'Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read': 524288, 'Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write': 524288, 'Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write': 524288, 'Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 48,
+            "py": 128,
+            "capacity_bytes": 135168
+          },
+          "aggregate_edp": 3.247013171473067e-10,
+          "changes": [
+            [
+              "Matmul0",
+              1,
+              48
+            ]
+          ],
+          "candidate_index": 0,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul0: {'Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write': 524288, 'Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 48,
+            "py": 128,
+            "capacity_bytes": 135168
+          },
+          "aggregate_edp": 3.247013171473067e-10,
+          "changes": [
+            [
+              "Matmul2",
+              0,
+              48
+            ]
+          ],
+          "candidate_index": 2,
+          "status": "verified",
+          "phase_latency_s": 1.1904e-05,
+          "serialized_port_s": 2.8629333333333334e-05,
+          "phase_edp": 3.3305760104447997e-10,
+          "fully_serialized_edp": 8.010094992861866e-10,
+          "operators": {
+            "Matmul0": {
+              "phase_count": 1,
+              "phase_latency_s": 4.096e-06
+            },
+            "Matmul1": {
+              "phase_count": 1,
+              "phase_latency_s": 4.096e-06
+            },
+            "Matmul2": {
+              "phase_count": 2,
+              "phases": [
+                {
+                  "kind": "full",
+                  "mac_cycles": 2560,
+                  "latency_s": 3.2e-06,
+                  "bit_actions": {
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 2621440.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read": 983040.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>write": 983040.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>read": 0.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write": 491520.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>read": 125829120.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>write": 491520.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>read": 491520.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write": 491520.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read": 491520.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>MAC<SEP>None<SEP>compute": 15728640.0
+                  }
+                },
+                {
+                  "kind": "remainder",
+                  "mac_cycles": 512,
+                  "latency_s": 5.12e-07,
+                  "bit_actions": {
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 524288.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read": 65536.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>write": 65536.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>read": 0.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write": 32768.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>read": 8388608.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>write": 32768.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>read": 32768.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write": 32768.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read": 32768.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>MAC<SEP>None<SEP>compute": 1048576.0
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "architecture": {
+            "px": 96,
+            "py": 64,
+            "capacity_bytes": 135168
+          },
+          "aggregate_edp": 3.278226846296747e-10,
+          "changes": [
+            [
+              "Matmul0",
+              1,
+              96
+            ]
+          ],
+          "candidate_index": 0,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul0: {'Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write': 524288, 'Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 96,
+            "py": 64,
+            "capacity_bytes": 135168
+          },
+          "aggregate_edp": 3.278226846296747e-10,
+          "changes": [
+            [
+              "Matmul2",
+              0,
+              96
+            ]
+          ],
+          "candidate_index": 2,
+          "status": "verified",
+          "phase_latency_s": 1.1776e-05,
+          "serialized_port_s": 3.1061333333333334e-05,
+          "phase_edp": 3.3264360646246404e-10,
+          "fully_serialized_edp": 8.774077735676588e-10,
+          "operators": {
+            "Matmul0": {
+              "phase_count": 1,
+              "phase_latency_s": 4.096e-06
+            },
+            "Matmul1": {
+              "phase_count": 1,
+              "phase_latency_s": 4.096e-06
+            },
+            "Matmul2": {
+              "phase_count": 2,
+              "phases": [
+                {
+                  "kind": "full",
+                  "mac_cycles": 2048,
+                  "latency_s": 2.56e-06,
+                  "bit_actions": {
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 1048576.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read": 1572864.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>write": 1572864.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>read": 0.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write": 393216.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>read": 100663296.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>write": 393216.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>read": 393216.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write": 393216.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read": 393216.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>MAC<SEP>None<SEP>compute": 12582912.0
+                  }
+                },
+                {
+                  "kind": "remainder",
+                  "mac_cycles": 1024,
+                  "latency_s": 1.024e-06,
+                  "bit_actions": {
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 524288.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read": 524288.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>write": 524288.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>read": 0.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write": 131072.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>read": 33554432.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>write": 131072.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>read": 131072.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write": 131072.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read": 131072.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>MAC<SEP>None<SEP>compute": 4194304.0
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "budget": {
+        "max_pes": 6144,
+        "max_sram_bytes": 262144
+      },
+      "perfect_edp": 3.47009735196672e-10,
+      "phase_edp": 2.9620376174592e-10,
+      "reduction": 0.14641080147782337,
+      "winner": {
+        "architecture": {
+          "px": 64,
+          "py": 96,
+          "capacity_bytes": 262144
+        },
+        "aggregate_edp": 2.9150211473408e-10,
+        "changes": [
+          [
+            "Matmul0",
+            0,
+            96
+          ],
+          [
+            "Matmul1",
+            0,
+            96
+          ]
+        ],
+        "candidate_index": 3,
+        "status": "verified",
+        "phase_latency_s": 1.0752e-05,
+        "serialized_port_s": 2.8629333333333334e-05,
+        "phase_edp": 2.9620376174592e-10,
+        "fully_serialized_edp": 7.887012862361601e-10,
+        "operators": {
+          "Matmul0": {
+            "phase_count": 2,
+            "phases": [
+              {
+                "kind": "full",
+                "mac_cycles": 2048,
+                "latency_s": 2.56e-06,
+                "bit_actions": {
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 524288.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 1048576.0,
+                  "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>read": 100663296.0,
+                  "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>write": 393216.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>read": 393216.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>write": 393216.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>read": 393216.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>write": 0.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>read": 1572864.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write": 393216.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read": 393216.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>write": 0.0,
+                  "Matmul0<SEP>action<SEP>MAC<SEP>None<SEP>compute": 12582912.0
+                }
+              },
+              {
+                "kind": "remainder",
+                "mac_cycles": 1024,
+                "latency_s": 1.024e-06,
+                "bit_actions": {
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 0.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 524288.0,
+                  "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>read": 33554432.0,
+                  "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>write": 131072.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>read": 131072.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>write": 131072.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>read": 131072.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>write": 0.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>read": 524288.0,
+                  "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write": 131072.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read": 131072.0,
+                  "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>write": 0.0,
+                  "Matmul0<SEP>action<SEP>MAC<SEP>None<SEP>compute": 4194304.0
+                }
+              }
+            ]
+          },
+          "Matmul1": {
+            "phase_count": 2,
+            "phases": [
+              {
+                "kind": "full",
+                "mac_cycles": 2048,
+                "latency_s": 2.048e-06,
+                "bit_actions": {
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 524288.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 1048576.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 1572864.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 0.0,
+                  "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>read": 100663296.0,
+                  "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>write": 393216.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>read": 393216.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>write": 393216.0,
+                  "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>read": 393216.0,
+                  "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>write": 0.0,
+                  "Matmul1<SEP>action<SEP>MAC<SEP>None<SEP>compute": 12582912.0
+                }
+              },
+              {
+                "kind": "remainder",
+                "mac_cycles": 1024,
+                "latency_s": 1.024e-06,
+                "bit_actions": {
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 0.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 524288.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 524288.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 0.0,
+                  "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>read": 33554432.0,
+                  "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>write": 131072.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>read": 131072.0,
+                  "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>write": 131072.0,
+                  "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>read": 131072.0,
+                  "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>write": 0.0,
+                  "Matmul1<SEP>action<SEP>MAC<SEP>None<SEP>compute": 4194304.0
+                }
+              }
+            ]
+          },
+          "Matmul2": {
+            "phase_count": 1,
+            "phase_latency_s": 4.096e-06
+          }
+        }
+      },
+      "candidate_checks": [
+        {
+          "architecture": {
+            "px": 64,
+            "py": 96,
+            "capacity_bytes": 262144
+          },
+          "aggregate_edp": 2.6859043273659735e-10,
+          "changes": [
+            [
+              "Matmul0",
+              0,
+              96
+            ],
+            [
+              "Matmul1",
+              0,
+              96
+            ],
+            [
+              "Matmul2",
+              1,
+              96
+            ]
+          ],
+          "candidate_index": 6,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul2: {'Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read': 524288, 'Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write': 524288, 'Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write': 524288, 'Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 48,
+            "py": 128,
+            "capacity_bytes": 262144
+          },
+          "aggregate_edp": 2.7178213030843734e-10,
+          "changes": [
+            [
+              "Matmul0",
+              1,
+              48
+            ],
+            [
+              "Matmul1",
+              1,
+              48
+            ],
+            [
+              "Matmul2",
+              0,
+              48
+            ]
+          ],
+          "candidate_index": 6,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul0: {'Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write': 524288, 'Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 24,
+            "py": 256,
+            "capacity_bytes": 262144
+          },
+          "aggregate_edp": 2.7541540420539735e-10,
+          "changes": [
+            [
+              "Matmul0",
+              0,
+              24
+            ],
+            [
+              "Matmul1",
+              0,
+              24
+            ],
+            [
+              "Matmul2",
+              0,
+              24
+            ]
+          ],
+          "candidate_index": 6,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul0: {'Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write': 524288, 'Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 96,
+            "py": 64,
+            "capacity_bytes": 262144
+          },
+          "aggregate_edp": 2.7702896973141336e-10,
+          "changes": [
+            [
+              "Matmul0",
+              1,
+              96
+            ],
+            [
+              "Matmul1",
+              1,
+              96
+            ],
+            [
+              "Matmul2",
+              0,
+              96
+            ]
+          ],
+          "candidate_index": 6,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul0: {'Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write': 524288, 'Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 64,
+            "py": 96,
+            "capacity_bytes": 262144
+          },
+          "aggregate_edp": 2.9150211473408e-10,
+          "changes": [
+            [
+              "Matmul0",
+              0,
+              96
+            ],
+            [
+              "Matmul1",
+              0,
+              96
+            ]
+          ],
+          "candidate_index": 3,
+          "status": "verified",
+          "phase_latency_s": 1.0752e-05,
+          "serialized_port_s": 2.8629333333333334e-05,
+          "phase_edp": 2.9620376174592e-10,
+          "fully_serialized_edp": 7.887012862361601e-10,
+          "operators": {
+            "Matmul0": {
+              "phase_count": 2,
+              "phases": [
+                {
+                  "kind": "full",
+                  "mac_cycles": 2048,
+                  "latency_s": 2.56e-06,
+                  "bit_actions": {
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 524288.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 1048576.0,
+                    "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>read": 100663296.0,
+                    "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>write": 393216.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>read": 393216.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>write": 393216.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>read": 393216.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>write": 0.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>read": 1572864.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write": 393216.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read": 393216.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>write": 0.0,
+                    "Matmul0<SEP>action<SEP>MAC<SEP>None<SEP>compute": 12582912.0
+                  }
+                },
+                {
+                  "kind": "remainder",
+                  "mac_cycles": 1024,
+                  "latency_s": 1.024e-06,
+                  "bit_actions": {
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 0.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 524288.0,
+                    "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>read": 33554432.0,
+                    "Matmul0<SEP>action<SEP>Register<SEP>W0<SEP>write": 131072.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>read": 131072.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>W0<SEP>write": 131072.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>read": 131072.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>W0<SEP>write": 0.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>read": 524288.0,
+                    "Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write": 131072.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read": 131072.0,
+                    "Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>write": 0.0,
+                    "Matmul0<SEP>action<SEP>MAC<SEP>None<SEP>compute": 4194304.0
+                  }
+                }
+              ]
+            },
+            "Matmul1": {
+              "phase_count": 2,
+              "phases": [
+                {
+                  "kind": "full",
+                  "mac_cycles": 2048,
+                  "latency_s": 2.048e-06,
+                  "bit_actions": {
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 524288.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 1048576.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 1572864.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>read": 100663296.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>write": 393216.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>read": 393216.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>write": 393216.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>read": 393216.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>MAC<SEP>None<SEP>compute": 12582912.0
+                  }
+                },
+                {
+                  "kind": "remainder",
+                  "mac_cycles": 1024,
+                  "latency_s": 1.024e-06,
+                  "bit_actions": {
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 0.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 524288.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 524288.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>read": 33554432.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>write": 131072.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>read": 131072.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>write": 131072.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>read": 131072.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>MAC<SEP>None<SEP>compute": 4194304.0
+                  }
+                }
+              ]
+            },
+            "Matmul2": {
+              "phase_count": 1,
+              "phase_latency_s": 4.096e-06
+            }
+          }
+        },
+        {
+          "architecture": {
+            "px": 64,
+            "py": 96,
+            "capacity_bytes": 262144
+          },
+          "aggregate_edp": 2.9150211473408e-10,
+          "changes": [
+            [
+              "Matmul1",
+              0,
+              96
+            ],
+            [
+              "Matmul2",
+              1,
+              96
+            ]
+          ],
+          "candidate_index": 5,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul2: {'Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read': 524288, 'Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write': 524288, 'Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write': 524288, 'Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 48,
+            "py": 128,
+            "capacity_bytes": 262144
+          },
+          "aggregate_edp": 2.9328846321527466e-10,
+          "changes": [
+            [
+              "Matmul0",
+              1,
+              48
+            ],
+            [
+              "Matmul1",
+              1,
+              48
+            ]
+          ],
+          "candidate_index": 3,
+          "status": "rejected",
+          "reason": "isolated phases do not reconstruct full native actions for Matmul0: {'Matmul0<SEP>action<SEP>GlobalBuffer<SEP>T0<SEP>write': 524288, 'Matmul0<SEP>action<SEP>MainMemory<SEP>T0<SEP>read': 524288}"
+        },
+        {
+          "architecture": {
+            "px": 48,
+            "py": 128,
+            "capacity_bytes": 262144
+          },
+          "aggregate_edp": 2.9328846321527466e-10,
+          "changes": [
+            [
+              "Matmul1",
+              1,
+              48
+            ],
+            [
+              "Matmul2",
+              0,
+              48
+            ]
+          ],
+          "candidate_index": 5,
+          "status": "verified",
+          "phase_latency_s": 1.088e-05,
+          "serialized_port_s": 2.7349333333333333e-05,
+          "phase_edp": 3.015667666124799e-10,
+          "fully_serialized_edp": 7.580560682298026e-10,
+          "operators": {
+            "Matmul0": {
+              "phase_count": 1,
+              "phase_latency_s": 4.096e-06
+            },
+            "Matmul1": {
+              "phase_count": 2,
+              "phases": [
+                {
+                  "kind": "full",
+                  "mac_cycles": 2560,
+                  "latency_s": 2.56e-06,
+                  "bit_actions": {
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 491520.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 983040.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 2621440.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>read": 125829120.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>write": 491520.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>read": 491520.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>write": 491520.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>read": 491520.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>MAC<SEP>None<SEP>compute": 15728640.0
+                  }
+                },
+                {
+                  "kind": "remainder",
+                  "mac_cycles": 512,
+                  "latency_s": 5.12e-07,
+                  "bit_actions": {
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 32768.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 65536.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>read": 524288.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>T1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>read": 8388608.0,
+                    "Matmul1<SEP>action<SEP>Register<SEP>W1<SEP>write": 32768.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>read": 32768.0,
+                    "Matmul1<SEP>action<SEP>GlobalBuffer<SEP>W1<SEP>write": 32768.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>read": 32768.0,
+                    "Matmul1<SEP>action<SEP>MainMemory<SEP>W1<SEP>write": 0.0,
+                    "Matmul1<SEP>action<SEP>MAC<SEP>None<SEP>compute": 1048576.0
+                  }
+                }
+              ]
+            },
+            "Matmul2": {
+              "phase_count": 2,
+              "phases": [
+                {
+                  "kind": "full",
+                  "mac_cycles": 2560,
+                  "latency_s": 3.2e-06,
+                  "bit_actions": {
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 2621440.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read": 983040.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>write": 983040.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>read": 0.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write": 491520.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>read": 125829120.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>write": 491520.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>read": 491520.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write": 491520.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read": 491520.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>MAC<SEP>None<SEP>compute": 15728640.0
+                  }
+                },
+                {
+                  "kind": "remainder",
+                  "mac_cycles": 512,
+                  "latency_s": 5.12e-07,
+                  "bit_actions": {
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>read": 524288.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>read": 65536.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>T3<SEP>write": 65536.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>read": 0.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>T3<SEP>write": 32768.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>read": 8388608.0,
+                    "Matmul2<SEP>action<SEP>Register<SEP>W2<SEP>write": 32768.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>read": 32768.0,
+                    "Matmul2<SEP>action<SEP>GlobalBuffer<SEP>W2<SEP>write": 32768.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>read": 32768.0,
+                    "Matmul2<SEP>action<SEP>MainMemory<SEP>W2<SEP>write": 0.0,
+                    "Matmul2<SEP>action<SEP>MAC<SEP>None<SEP>compute": 1048576.0
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

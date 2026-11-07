@@ -216,6 +216,44 @@ in the extended grammar or establish a speedup over a comparator allowed
 to search that same extended grammar. The same one-site tail edits on
 Attention256/512 were rejected by the native Fusion Join.
 
+An [Event control with the same tail rule](../joint_budget/results/matched_tail_3mm96/events_tail_ports.json)
+ties the independent proposal search at 128 and 256 KiB and is 0.61% better
+at 132 KiB. The 132 KiB seed on 64×96 was missing from the heuristic.
+The [online hybrid](../joint_budget/results/refined_tail_3mm96/online_check.json)
+solves just the geometry-ordered first shape with Event, proposes maps for
+the other 92 points, and applies the same local tail rule. It found all three
+of the matched Event-tail EDPs after 26 actual calls to the native evaluator,
+without reading the target until search ended. The exact shape, native
+proposal search and tail search all incur work; the result is not a proof
+that the bounded neighborhood contains the full grammar's optimum.
+
+Whole-operator port aggregation assumes overlap. The
+[separate full/remainder phase audit](../joint_budget/results/tail_3mm96_phases_search.json)
+requires the two isolated phases to reconstruct each original per-tensor
+action count and integer MAC cycle count, then sums the two throughput times.
+It rejects candidates whose access counts do not conserve across the split.
+The best audited proposal designs improve the three perfect-tile EDPs by
+12.26%, 4.02%, and 14.64%. The
+[matched Event phase control](../joint_budget/results/matched_tail_3mm96/events_tail_phases.json)
+gets 12.26%, 5.10%, and 14.64%. These are still models of execution within
+each phase, using native tensor action counts. They do not establish an
+independent memory-traffic trace or a cycle-accurate schedule.
+
+In a [sealed 392-candidate query benchmark](../joint_budget/results/tail_3mm96_query_benchmark_shared.json),
+both methods start from the same physically evaluated seeds and get the same
+score for a queried design. Physics-based ordering hit all three aggregate
+targets after 14 queries. [Grouped Optuna TPE](https://optuna.readthedocs.io/en/stable/reference/samplers/generated/optuna.samplers.TPESampler.html)
+did not find all targets in 96 calls in five cold trials; one of five trials
+initialized from the same physics prior succeeded, at 72 calls. The warm
+control shares all observed scores across admissible budgets. This compares
+query counts over the declared neighborhood, not full search or wall time.
+
+Run the 3mm pipeline locally without a saved reference:
+
+```powershell
+./research/runtime/run_tail_codesign_windows.ps1 -OutputDirectory research/local_3mm_run
+```
+
 Separately, reallocating 64 or 128 of 6,144 compute sites to the Attention
 proxy's pointwise path reduced modeled EDP by 6.34–17.57× at fixed SRAM and
 per-action energy. All four mappings remained unchanged. This diagnoses
