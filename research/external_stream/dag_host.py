@@ -13,6 +13,7 @@ from tempfile import TemporaryDirectory
 from time import perf_counter
 
 from stream.api import SolveOptions, evaluate_mapping
+from stream.ir.allocation import AllocationIR
 from stream.ir.infeasibility import InfeasibleAllocationError
 from stream.workload.node import ComputationNode
 from stream.workload.normalization import expand_normalizations
@@ -26,6 +27,30 @@ from research.runtime.strip_codesign import add, pareto
 
 GEOMETRIES = ((32, 192), (48, 128), (64, 96))
 BUDGETS = (131072, 135168)
+
+
+class PrunedPrefix(Exception):
+    def __init__(self, costs, cutoff):
+        self.costs = tuple(costs)
+        self.cutoff = cutoff
+
+
+class PrefixBound:
+    def begin(self, incumbent):
+        self.cutoff = incumbent
+        self.costs = []
+
+    def observe(self, allocation, index, count):
+        if not isfinite(self.cutoff) or index + 1 == count:
+            return
+        ir = AllocationIR.from_internal(allocation)
+        e, t = ir.performance.energy.total_pj, allocation.estimated_cycles
+        if not (isfinite(e) and e > 0 and isfinite(t) and t > 0):
+            raise AssertionError("nonpositive allocation cost in the prefix bound")
+        self.costs.append((e, t))
+        energy, cycles = map(sum, zip(*self.costs, strict=True))
+        if energy * cycles > self.cutoff * (1 + 1e-12):
+            raise PrunedPrefix(self.costs, self.cutoff)
 
 
 def cut_sets(order):
@@ -62,6 +87,9 @@ def evaluate(workload, shape, cuts, limit):
             estimate = evaluate_mapping(str(hardware), deepcopy(workload), str(path / "out"),
                                         options=SolveOptions(time_limit_s=limit, tile_search=True,
                                                              artifacts=False, stage_options=args))
+        except PrunedPrefix as proof:
+            return dict(shape=shape, cuts=cuts, status="PRUNED", prefix=proof.costs,
+                        cutoff_edp=proof.cutoff, wall_s=perf_counter()-t0)
         except (InfeasibleAllocationError, RuntimeError) as error:
             cause = error.__cause__
             failure = error if isinstance(error, InfeasibleAllocationError) else cause
@@ -98,16 +126,24 @@ def evaluate(workload, shape, cuts, limit):
                 edp=energy * estimate.cycles, groups=groups, wall_s=perf_counter()-t0)
 
 
-def sweep(workload, shapes, limit, extreme_cuts=False):
+def sweep(workload, shapes, limit, extreme_cuts=False, seed_singletons=False, bound=None):
     start = perf_counter()
     order = graph_order(workload)
     trials = []
     # Give the reference its unmodified full-system default at every shape.
-    requested = (cuts for cuts in cut_sets(order)
-                 if not extreme_cuts or min(len(cuts), len(order)-1-len(cuts)) <= 1)
+    requested = [cuts for cuts in cut_sets(order)
+                 if not extreme_cuts or min(len(cuts), len(order)-1-len(cuts)) <= 1]
+    if seed_singletons:
+        requested.remove(order[:-1])
+        requested.insert(0, order[:-1])
+    best = float("inf")
     for cuts in (None, *requested):
         for shape in shapes:
+            if bound is not None:
+                bound.begin(best)
             report = evaluate(workload, shape, cuts, limit)
+            if report.get("feasible"):
+                best = min(best, report["edp"])
             report["elapsed_s"] = perf_counter() - start
             trials.append(report)
     return dict(wall_s=perf_counter()-start, trials=trials)
@@ -187,9 +223,16 @@ def check(workload, reference, factored):
                 interval_equivalence=not mismatches, mismatches=mismatches)
 
 
-def memoized(workload, shapes, limit, extreme_cuts=False):
+def memoized(workload, shapes, limit, extreme_cuts=False, seed_singletons=False):
     with native_memo() as stats:
-        result = sweep(workload, shapes, limit, extreme_cuts)
+        result = sweep(workload, shapes, limit, extreme_cuts, seed_singletons=seed_singletons)
+    return dict(**result, reuse=stats)
+
+
+def bounded(workload, shapes, limit, extreme_cuts=False):
+    bound = PrefixBound()
+    with native_memo(bound.observe) as stats:
+        result = sweep(workload, shapes, limit, extreme_cuts, seed_singletons=True, bound=bound)
     return dict(**result, reuse=stats)
 
 
@@ -214,13 +257,31 @@ def check_memo(reference, reused):
         raise AssertionError("the two methods searched different configurations")
     errors = []
     fields = ("feasible", "status", "cycles", "energy_pj", "groups", "expected_groups", "actual_groups")
+    pruned = 0
+    incumbent = float("inf")
+    cutoffs = {}
+    for key, row in observed.items():
+        cutoffs[key] = incumbent
+        if row.get("feasible"):
+            incumbent = min(incumbent, row["edp"])
     for key, row in expected.items():
+        candidate = observed[key]
+        if row.get("status") == "PARTITION_MISMATCH":
+            errors.append(dict(shape=key[0], cuts=key[1], fields=["requested_partition"]))
+        if candidate.get("status") == "PRUNED":
+            pruned += 1
+            prefix = candidate["prefix"]
+            e, t = map(sum, zip(*prefix, strict=True))
+            cutoff = candidate["cutoff_edp"]
+            if cutoff != cutoffs[key] or e * t <= cutoff or (row["feasible"] and (
+                    row["edp"] <= cutoff or len(prefix) >= len(row["groups"])
+                    or tuple((g["energy_pj"], g["cycles"]) for g in row["groups"][:len(prefix)]) != prefix)):
+                errors.append(dict(shape=key[0], cuts=key[1], fields=["prefix_proof"]))
+            continue
         differences = [field for field in fields if row.get(field) != observed[key].get(field)]
         if differences:
             errors.append(dict(shape=key[0], cuts=key[1], fields=differences))
-        if row.get("status") == "PARTITION_MISMATCH":
-            errors.append(dict(shape=key[0], cuts=key[1], fields=["requested_partition"]))
-    return dict(**controls(reference), mismatches=errors, equivalent=not errors)
+    return dict(**controls(reference), pruned=pruned, mismatches=errors, equivalent=not errors)
 
 
 def run(names, budgets, repeats, limit, method, extreme_cuts):
@@ -233,21 +294,35 @@ def run(names, budgets, repeats, limit, method, extreme_cuts):
         for budget in budgets:
             shapes = tuple((x, y, budget) for x, y in GEOMETRIES)
             for trial in range(repeats):
-                methods = (sweep, method) if trial % 2 == 0 else (method, sweep)
-                outcome = {selected.__name__: (selected(workload, shapes, limit) if selected is compose
-                                                else selected(workload, shapes, limit, extreme_cuts))
-                           for selected in methods}
+                methods = (sweep, memoized, bounded) if method is bounded else (sweep, method)
+                if trial % 2:
+                    methods = tuple(reversed(methods))
+                outcome = {}
+                for selected in methods:
+                    if selected is compose:
+                        result = selected(workload, shapes, limit)
+                    elif selected in (sweep, memoized):
+                        result = selected(workload, shapes, limit, extreme_cuts, seed_singletons=method is bounded)
+                    else:
+                        result = selected(workload, shapes, limit, extreme_cuts)
+                    outcome[selected.__name__] = result
                 alternate = outcome[method.__name__]
                 evidence = (check(workload, outcome["sweep"], alternate) if method is compose
                             else check_memo(outcome["sweep"], alternate))
+                if method is bounded:
+                    reuse_check = check_memo(outcome["sweep"], outcome["memoized"])
+                    evidence["memoized_mismatches"] = reuse_check["mismatches"]
+                    evidence["equivalent"] &= reuse_check["equivalent"]
                 record = dict(case=name, graph=manifest, budget=budget, trial=trial,
                               **outcome, checks=evidence)
                 results.append(record)
                 print(json.dumps(dict(case=name, budget=budget, trial=trial,
                     sweep_s=outcome["sweep"]["wall_s"], alternate_s=alternate["wall_s"],
+                    memo_s=outcome.get("memoized", {}).get("wall_s"),
                     equivalent=evidence.get("equivalent"), best_equal=evidence.get("best_equal"),
                     singleton_first_gain=evidence.get("singleton_first_gain"),
                     hits=alternate.get("reuse", {}).get("hits"),
+                    pruned=evidence.get("pruned"),
                     mismatches=len(evidence["mismatches"]))), flush=True)
     stream_path = Path(__file__).resolve().parents[2] / "libraries" / "stream"
     revision = subprocess.check_output(["git", "-C", str(stream_path), "rev-parse", "HEAD"], text=True).strip()
@@ -263,20 +338,20 @@ def main():
     parser.add_argument("--budgets", nargs="+", type=int, choices=BUDGETS, default=(131072,))
     parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--limit", type=float, default=10)
-    parser.add_argument("--method", choices=("compose", "memoized"), default="memoized")
+    parser.add_argument("--method", choices=("compose", "memoized", "bounded"), default="memoized")
     parser.add_argument("--extreme-cuts", action="store_true",
                         help="Use at most one cut or leave at most one boundary fused.")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.output.exists() or args.repeats < 1:
         raise FileExistsError("a new report and a positive repetition count are required")
-    method = {"compose": compose, "memoized": memoized}[args.method]
+    method = {"compose": compose, "memoized": memoized, "bounded": bounded}[args.method]
     if args.extreme_cuts and method is compose:
         parser.error("the isolation diagnostic requires every cut subset")
     result = run(args.cases, args.budgets, args.repeats, args.limit, method, args.extreme_cuts)
     with args.output.open("x", encoding="utf-8", newline="\n") as file:
         file.write(json.dumps(result, indent=2, allow_nan=False) + "\n")
-    if method is memoized and any(not row["checks"]["equivalent"] for row in result["cases"]):
+    if method is not compose and any(not row["checks"]["equivalent"] for row in result["cases"]):
         raise SystemExit("STREAM comparison failed the allocation-equivalence gate. See the saved report.")
 
 

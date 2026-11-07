@@ -171,3 +171,23 @@ explicit-cut winner's EDP. The per-layer-first architecture control also finds
 the winner after reopening cuts. The large gap identifies a failure of the
 automatic mapping choice in this case. The common complete sweep and the
 two-stage control both reach the same design quality.
+
+The bounded search uses the completed groups of a candidate inside the full
+STREAM driver. Because each later group adds positive energy and cycles, the
+completed groups' summed energy times their summed cycles bounds the full
+candidate's EDP. Search stops on a strict loss against the incumbent. A saved
+proof includes each prefix group's costs and the incumbent before the candidate.
+The uncached comparison reprices the complete configuration and checks the
+prefix, the incumbent and the strict inequality. It keeps ties eligible.
+
+```powershell
+& $streamPython -X utf8 -m research.external_stream.dag_host --method bounded --cases asymmetric --budgets 131072 --extreme-cuts --output research/local_stream_prefix.json
+```
+
+In the [asymmetric bound audit](results/dag_host_prefix_asymmetric_128k.json),
+the three methods use the same order, starting with automatic and per-layer
+allocations at every shape. The full run prices all 45 configurations. The
+memoized run takes 70.36 seconds versus 104.56 seconds uncached. The bounded
+run takes 69.62 seconds. It proves 14 candidates cannot win, and all 14 are
+confirmed feasible but worse by the uncached run. All three reach the same
+best EDP.

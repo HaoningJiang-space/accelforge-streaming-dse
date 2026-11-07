@@ -34,14 +34,14 @@ def group_key(workload, mapping_path):
 
 
 @contextmanager
-def native_memo():
+def native_memo(on_group=None):
     """Install a benchmark-only cache for one fixed SolveOptions contract."""
     cache = {}
     stats = dict(hits=0, misses=0, entries=0, reuse_keys={})
 
     class ReuseGroup(Stage):
         reads = ("workload", "mapping", "accelerator", "output_path", "held", "artifacts")
-        optional_reads = ("kernel_library", "families", *SOLVE_FIELDS)
+        optional_reads = ("kernel_library", "families", "group_index", "sub_workloads", *SOLVE_FIELDS)
         result_writes = ("allocation", "memory_accesses")
 
         def run(self):
@@ -62,15 +62,17 @@ def native_memo():
                 stats["hits"] += 1
                 stats["reuse_keys"][key]["hits"] += 1
                 # The vendor fusion driver reads only these two fields from a group's result.
-                yield StageContext(data={**ctx.data, **cache[key]})
-                return
-            stats["misses"] += 1
-            result, = child(rest, ctx).run()
-            allocation = result.data["allocation"]
-            solve = allocation.solution.solve_stats
-            if solve.status == "OPTIMAL" and solve.mip_gap == 0 and not allocation.mapping.edge_placements:
-                cache[key] = {name: result.data[name] for name in self.result_writes}
-                stats["reuse_keys"][key] = dict(hits=0, solve_time_s=solve.solve_time_s, mip_gap=solve.mip_gap)
+                result = StageContext(data={**ctx.data, **cache[key]})
+            else:
+                stats["misses"] += 1
+                result, = child(rest, ctx).run()
+                allocation = result.data["allocation"]
+                solve = allocation.solution.solve_stats
+                if solve.status == "OPTIMAL" and solve.mip_gap == 0 and not allocation.mapping.edge_placements:
+                    cache[key] = {name: result.data[name] for name in self.result_writes}
+                    stats["reuse_keys"][key] = dict(hits=0, solve_time_s=solve.solve_time_s, mip_gap=solve.mip_gap)
+            if on_group is not None:
+                on_group(result.data["allocation"], ctx.get("group_index"), len(ctx.get("sub_workloads")))
             yield result
 
     stages = api._ALLOCATION_STAGES

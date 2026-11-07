@@ -11,7 +11,7 @@ from stream.workload.normalization import expand_normalizations
 from stream.workload.workload import Workload
 
 from research.external_stream.dag import build, verify_graph
-from research.external_stream.dag_host import evaluate, graph_order
+from research.external_stream.dag_host import AllocationIR, PrefixBound, PrunedPrefix, evaluate, graph_order
 from research.external_stream.dag_host_order import order_choices
 from research.external_stream.dag_memo import group_key, native_memo
 from research.runtime.dag_cases import asymmetric, glu
@@ -108,3 +108,22 @@ def test_native_cuts_use_the_canonical_fork_order():
         verify_graph(workload, graph)
         canonical.add(graph_order(workload))
     assert canonical == {("Stem", "Narrow", "Right", "Wide", "Left", "Merge", "Y")}
+
+
+def test_prefix_bound_retains_ties_and_waits_for_a_proof(monkeypatch):
+    def fake_ir(group):
+        return SimpleNamespace(performance=SimpleNamespace(energy=SimpleNamespace(total_pj=group.energy)))
+
+    monkeypatch.setattr(AllocationIR, "from_internal", fake_ir)
+    a = SimpleNamespace(energy=5, estimated_cycles=4)
+    b = SimpleNamespace(energy=1, estimated_cycles=1)
+    bound = PrefixBound()
+    bound.begin(20)
+    bound.observe(a, 0, 3)
+    with pytest.raises(PrunedPrefix) as pruning:
+        bound.observe(b, 1, 3)
+    assert pruning.value.costs == ((5, 4), (1, 1))
+    assert pruning.value.cutoff == 20
+    bound.begin(20)
+    bound.observe(a, 0, 2)
+    bound.observe(b, 1, 2)
