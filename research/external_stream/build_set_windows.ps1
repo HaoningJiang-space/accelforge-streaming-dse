@@ -1,4 +1,4 @@
-param([string]$Uv = "$env:USERPROFILE/.codex/tools/uv/uv.exe", [switch]$Include3mm)
+param([string]$Uv = "$env:USERPROFILE/.codex/tools/uv/uv.exe", [switch]$Include3mm, [switch]$DagDriver)
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $checkout = Join-Path $root 'libraries/set-isca2023'
@@ -33,6 +33,7 @@ try {
     $sources = @(Get-ChildItem -LiteralPath src -Recurse -Filter '*.cpp' | Where-Object Name -ne 'bitset.cpp' |
         ForEach-Object { Resolve-Path -Relative $_.FullName })
     $sources += 'build/bitset_portable.cpp'
+    if ($DagDriver -and $Include3mm) { throw 'Choose one SET entry point.' }
     if ($Include3mm) {
         $main = Get-Content -LiteralPath src/main.cpp -Raw
         $insertion = 'static const std::unordered_map<std::string, const Network*> All_Networks = {'
@@ -53,6 +54,12 @@ static const Network native_3mm = [] {
         $sources = @($sources | Where-Object { (Split-Path $_ -Leaf) -ne 'main.cpp' })
         $sources += 'build/main_with_3mm.cpp'
     }
-    & $compiler -m ziglang c++ -std=c++17 -O2 -Iinclude -o build/stschedule.exe @sources
+    $binary = 'build/stschedule.exe'
+    if ($DagDriver) {
+        $sources = @($sources | Where-Object { (Split-Path $_ -Leaf) -ne 'main.cpp' })
+        $sources += (Join-Path $PSScriptRoot 'set_dag_driver.cpp')
+        $binary = 'build/dag_driver.exe'
+    }
+    & $compiler -m ziglang c++ -std=c++17 -O2 -Iinclude -o $binary @sources
     if ($LASTEXITCODE) { throw 'SET compilation failed.' }
 } finally { Pop-Location }
