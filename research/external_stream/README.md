@@ -98,3 +98,25 @@ candidate against the uncached vendor run before interpreting search time.
 $env:PYTHONHASHSEED = '0'
 & $streamPython -X utf8 -m research.external_stream.dag_host --cases glu diamond residual --budgets 131072 --output research/local_stream_matched.json
 ```
+
+The [128 KiB report](results/dag_host_matched_128k.json) records 129 candidate
+configurations and zero disagreements in feasibility, cycles, energy, reported
+tiling, placements and SRAM occupancy. A separate check confirms the requested
+partition, 6,144-PE peak and exact GEMM iteration count in every successful
+whole-graph evaluation. Wall times are single measurements with the same
+candidate order and include graph generation, fingerprinting and the native
+pipeline. The report predates the allocation-IR hashes added to the runner.
+
+| Workload | Configurations | Full sweep | Allocation reuse | EDP reduction vs. singleton-first |
+| --- | ---: | ---: | ---: | ---: |
+| GLU | 27 | 28.99 s | 16.67 s | 15.08% |
+| Diamond | 51 | 85.13 s | 43.45 s | 0.53% |
+| Residual | 51 | 77.04 s | 52.37 s | 15.67% |
+
+Singleton-first keeps every shape tied on the per-layer EDP and then opens
+all fusion cuts on those shapes. The quality comparison is derived from the
+same full STREAM evaluations and uses the same outer EDP criterion. The best
+original automatic STREAM allocation ties the joint result on GLU. On diamond
+and residual all automatic candidates fail allocation at this budget. The
+complete configured STREAM sweep reaches the same EDP as the memoized sweep
+on all three graphs. The gain against that reference is search time.
