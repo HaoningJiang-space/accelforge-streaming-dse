@@ -191,3 +191,9 @@ memoized run takes 70.36 seconds versus 104.56 seconds uncached. The bounded
 run takes 69.62 seconds. It proves 14 candidates cannot win, and all 14 are
 confirmed feasible but worse by the uncached run. All three reach the same
 best EDP.
+
+The [GLU bound replication](results/dag_host_prefix_glu_132k.json) verifies
+13 strict prefix losses among 27 configurations at 132 KiB. The three wall
+times are 29.38, 17.30 and 16.85 seconds. The default allocation at the first
+shape is already the EDP winner, so this experiment tests traversal cost with
+an incumbent available early.
