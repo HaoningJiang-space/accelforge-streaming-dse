@@ -172,6 +172,57 @@ runs replayed all 12 physical point mappings and three budget incumbents.
 This confirms that selecting both shape and mapping can matter, and that
 cross-operator feedback is useful on Attention but unnecessary on this 3mm slice.
 
+The [full 96-point 3mm run](../joint_budget/results/fusion_3mm96/) picked a
+64×96 array at 128 KiB and a 48×128 array at the two larger budgets. Both
+proposal variants matched the full Event reference's three perfect-tile
+costs. The independent policy materialized 2,346 native rows and evaluated
+48,306 Join pairs, compared with 441,603 and 125,484,813 for Event. Observed
+complete-search times were 46.56 s and 389.62 s, respectively, in a diagnostic
+with concurrent development. Event reached the three targets in 69.54 s.
+These timings are not another repeated formal benchmark.
+
+## Exact tails improve the 3mm energy-delay result
+
+Power-of-two perfect tiles leave lanes unused on 96-wide and 48-wide
+fanouts. A bounded refinement tries the available width at a nonshared
+temporal site feeding the spatial loop. It keeps the native Join for
+fusion/resource checks and rejects a candidate if an independent iteration
+trace disagrees with its MAC count or cycles. It does not search every
+possible tail or modify the repository's default native model.
+
+The unmodified perfect-factor assumption could report fractional cycles for
+a nondividing tile. The scoped tail evaluator explicitly checks integer
+divisibility and combines full/tail children at the same reservation depth.
+The initial symbolic timing still undercounted a shared memory port by
+taking a maximum across full/tail branches. Use the
+[corrected port ledger](../joint_budget/results/tail_3mm96_ports.json), which
+sums the replayed bit actions at each physical port and applies the same
+energy, bandwidth, and compute rates to both perfect and tail mappings.
+It reproduces the perfect scores. The initial symbolic timing reports are
+retained as diagnostics, not as the final EDP comparison.
+
+| SRAM budget | Perfect Event array | Array / SRAM with tails | Perfect EDP (J·s) | Repriced tail EDP (J·s) | Reduction |
+| --- | --- | --- | ---: | ---: | ---: |
+| 128 KiB | 64×96 | 96×64 / 128 KiB | 4.28879e-10 | 3.70865e-10 | 13.53% |
+| 132 KiB | 48×128 | 48×128 / 132 KiB | 3.47010e-10 | 3.02749e-10 | 12.75% |
+| 256 KiB | 48×128 | 64×96 / 256 KiB | 3.47010e-10 | 2.68590e-10 | 22.60% |
+
+This changes the selected hardware as well as the mapping at two budgets.
+All 96 seed points came from the independent proposal search; 364 tail
+witnesses replayed. The port calculation is independent of the native
+latency expression and uses native bit action counts. The comparison is
+against the complete *perfect-tile* search. It does not certify optimality
+in the extended grammar or establish a speedup over a comparator allowed
+to search that same extended grammar. The same one-site tail edits on
+Attention256/512 were rejected by the native Fusion Join.
+
+Separately, reallocating 64 or 128 of 6,144 compute sites to the Attention
+proxy's pointwise path reduced modeled EDP by 6.34–17.57× at fixed SRAM and
+per-action energy. All four mappings remained unchanged. This diagnoses
+the simulated scalar bottleneck; it is not an additional mapping benefit
+or a measured area/power result. Real NVDLA already includes a
+[pointwise data processor](https://nvdla.org/hwarch).
+
 External systems still require matching physical constraints and mapping scope
 under the same evaluator. Published GPU runtime, Gemmini EDP and MAESTRO
 estimates are not directly comparable to these native NVDLA scores.
