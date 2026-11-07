@@ -182,7 +182,7 @@ def segment_frontier(rows, widths, hardware, start, stop):
     return tuple(pareto(candidates))
 
 
-def dynamic_search(rows, widths, budget, geometries=GEOMETRIES, fuse=True):
+def dynamic_search(rows, widths, budget, geometries=GEOMETRIES, fuse=True, on_incumbent=None):
     """Keep the joint energy/time frontier until the final product objective."""
     capacities = [c for c in CAPACITIES if c <= budget]
     pairs = tuple(zip(widths, widths[1:]))
@@ -215,6 +215,8 @@ def dynamic_search(rows, widths, budget, geometries=GEOMETRIES, fuse=True):
             if actual != cost:
                 raise AssertionError("dynamic search disagrees with common evaluator")
             best = cost, Hardware(x, y, min(c for c in capacities if c >= peak)), plan
+            if on_incumbent is not None:
+                on_incumbent(best)
     tile_options.cache_clear()
     if best is None:
         raise ValueError("no feasible joint design")

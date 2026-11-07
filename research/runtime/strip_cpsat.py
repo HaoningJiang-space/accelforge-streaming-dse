@@ -27,7 +27,8 @@ def common_incumbent(rows, widths, capacities, geometries):
     return min(seeds, key=lambda seed: seed[0][0] * seed[0][1])
 
 
-def solve(rows, widths, budget, seconds, geometries=GEOMETRIES, seed=0):
+def solve(rows, widths, budget, seconds, geometries=GEOMETRIES, seed=0,
+          on_incumbent=None, initial_design=None):
     model = cp_model.CpModel()
     capacities = [c for c in CAPACITIES if c <= budget]
     pairs = list(zip(widths, widths[1:]))
@@ -99,7 +100,9 @@ def solve(rows, widths, budget, seconds, geometries=GEOMETRIES, seed=0):
             model.add(right[i] == 0).only_enforce_if(cuts[i+1])
             model.add(right[i] == right[i+1] + weights[i+1] * pins[i+1]).only_enforce_if(cuts[i+1].Not())
 
-    cost, hardware, (initial,) = common_incumbent(rows, widths, capacities, geometries)
+    if initial_design is None:
+        initial_design = common_incumbent(rows, widths, capacities, geometries)
+    cost, hardware, (initial,) = initial_design
     incumbent = (cost[0] // scale) * (cost[1] // scale)
     compulsory = sum(weights) + rows * (widths[0] + widths[-1])
     macs = rows * sum(weights)
@@ -124,28 +127,33 @@ def solve(rows, widths, budget, seconds, geometries=GEOMETRIES, seed=0):
         model.add_hint(cuts[i], i == 0)
     model.add_hint(cuts[-1], True)
 
+    def witness(v):
+        plan = []
+        start = 0
+        for stop in range(1, last + 2):
+            if v(cuts[stop]):
+                plan.append(Segment(start, stop, v(b_vars[start]), tuple(bool(v(pins[i])) for i in range(start, stop)),
+                                    tuple((v(p_vars[i]), v(q_vars[i])) for i in range(start, stop))))
+                start = stop
+        point = Hardware(v(px), v(py), v(cap))
+        actual, _ = evaluate(rows, widths, point, plan)
+        if actual != (v(energy) * scale, v(ticks) * scale) or actual[0] * actual[1] != v(objective) * scale**2:
+            raise AssertionError("CP-SAT result disagrees with common evaluator")
+        return actual, point, tuple(plan)
+
+    class Incumbents(cp_model.CpSolverSolutionCallback):
+        def on_solution_callback(self):
+            on_incumbent(witness(self.value))
+
     solver = cp_model.CpSolver()
     solver.parameters.num_workers = 1
     solver.parameters.random_seed = seed
     solver.parameters.max_time_in_seconds = seconds
-    status = solver.solve(model)
+    status = solver.solve(model, Incumbents() if on_incumbent is not None else None)
     stats = dict(status=solver.status_name(status), bound=solver.best_objective_bound * scale**2,
                  branches=solver.num_branches, conflicts=solver.num_conflicts)
     if status not in (cp_model.FEASIBLE, cp_model.OPTIMAL):
         if status != cp_model.UNKNOWN:
             raise ValueError(f"{stats}: {model.validate()}")
         return (cost, hardware, (initial,)), stats
-
-    v = solver.value
-    plan = []
-    start = 0
-    for stop in range(1, last + 2):
-        if v(cuts[stop]):
-            plan.append(Segment(start, stop, v(b_vars[start]), tuple(bool(v(pins[i])) for i in range(start, stop)),
-                                tuple((v(p_vars[i]), v(q_vars[i])) for i in range(start, stop))))
-            start = stop
-    hardware = Hardware(v(px), v(py), v(cap))
-    actual, _ = evaluate(rows, widths, hardware, plan)
-    if actual != (v(energy) * scale, v(ticks) * scale) or actual[0] * actual[1] != v(objective) * scale**2:
-        raise AssertionError("CP-SAT result disagrees with common evaluator")
-    return (actual, hardware, tuple(plan)), stats
+    return witness(solver.value), stats
