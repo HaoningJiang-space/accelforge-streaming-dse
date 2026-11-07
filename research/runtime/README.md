@@ -84,6 +84,12 @@ Seven single-worker trials alternate method order. Timings include model constru
 
 The connected-interval search, planned residency, and affine loop construction draw respectively on [Cascades](https://15799.courses.cs.cmu.edu/spring2025/papers/05-cascades/graefe-ieee1995.pdf), [MAGE](https://www.usenix.org/conference/osdi21/presentation/kumar), and [Pluto](https://www.csa.iisc.ac.in/~udayb/publications/uday-pldi08.pdf). The external baseline is [Google OR-Tools CP-SAT](https://developers.google.com/optimization/cp/cp_solver). The evidence covers this row-strip grammar and evaluator. STREAM and SET use different timing and mapping semantics, and there is no same-contract cross-accelerator SOTA result in this experiment.
 
+```powershell
+./research/runtime/run_windows.ps1 -PythonArguments @('-m','research.runtime.replay_strip_native','--reference','research/joint_budget/results/strip_codesign_cpsat.json','--output','research/local_strip_native.json')
+```
+
+All six selected 3mm256 and 3mm512 plans also pass AccelForge's native Fusion Join, array unfolding, integer MAC work, and exact SRAM capacity checks. The peak bytes and all per-tensor action counts agree between the wave trace, the independent projection of the serialized native mapping, and native evaluation. The [native replay](../joint_budget/results/strip_codesign_native_replay.json) checks the winning plans and does not transfer the strip evaluator's optimality proof to native timing.
+
 ### Equal wall-clock quality
 
 ```powershell
