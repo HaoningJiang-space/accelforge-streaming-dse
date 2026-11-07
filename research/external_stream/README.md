@@ -120,3 +120,13 @@ original automatic STREAM allocation ties the joint result on GLU. On diamond
 and residual all automatic candidates fail allocation at this budget. The
 complete configured STREAM sweep reaches the same EDP as the memoized sweep
 on all three graphs. The gain against that reference is search time.
+
+The [asymmetric order audit](results/dag_host_order_128k.json) offers the
+declared order and the order minimizing peak live row width, using the same
+three shapes and every zero- or one-cut partition. STREAM's original automatic
+generator is included for both. Ten of the 48 trials produce a partition
+different from the requested one and are recorded separately. STREAM rewrites
+the affine graph before assigning cuts, so an input order does not enforce an
+execution order. The best accepted configuration stays on the shape chosen by
+the fixed-order control. The audit therefore does not isolate the branch-order
+mechanism measured by the independent calendar.

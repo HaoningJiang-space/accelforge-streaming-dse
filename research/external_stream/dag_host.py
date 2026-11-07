@@ -79,7 +79,9 @@ def evaluate(workload, shape, cuts, limit):
             bounds = (0, *(order.index(cut)+1 for cut in cuts), len(order))
             expected = [set(order[a:b]) for a, b in zip(bounds, bounds[1:])]
             if [set(group["operators"]) for group in groups] != expected:
-                raise AssertionError("STREAM changed the requested partition")
+                return dict(shape=shape, cuts=cuts, feasible=False, status="PARTITION_MISMATCH",
+                            expected_groups=[sorted(names) for names in expected],
+                            actual_groups=[group["operators"] for group in groups], wall_s=perf_counter()-t0)
         for group in groups:
             on_chip = [p for p in group["memory"] if p["cores"]]
             if (len(on_chip) != 1 or on_chip[0]["capacity_bits"] != shape[2] * 8
@@ -208,7 +210,7 @@ def check_memo(reference, reused):
     if expected.keys() != observed.keys():
         raise AssertionError("the two methods searched different configurations")
     errors = []
-    fields = ("feasible", "status", "cycles", "energy_pj", "groups")
+    fields = ("feasible", "status", "cycles", "energy_pj", "groups", "expected_groups", "actual_groups")
     for key, row in expected.items():
         differences = [field for field in fields if row.get(field) != observed[key].get(field)]
         if differences:

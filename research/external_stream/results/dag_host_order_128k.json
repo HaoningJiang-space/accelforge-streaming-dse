@@ -1,0 +1,5788 @@
+{
+  "case": "asymmetric",
+  "budget_bytes": 131072,
+  "order_choices": [
+    [
+      [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      [
+        704,
+        3040
+      ]
+    ],
+    [
+      [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      [
+        640,
+        2848
+      ]
+    ]
+  ],
+  "limit_per_allocation_s": 10,
+  "wall_s": 115.82932329998584,
+  "comparison": {
+    "joint": {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Narrow"
+      ],
+      "feasible": true,
+      "energy_pj": 928169682.4319998,
+      "cycles": 380944.0,
+      "edp": 353580671504375.75,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow"
+          ],
+          "energy_pj": 13485006.336000001,
+          "cycles": 4386.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.8180935567441083,
+            "min_mac_spatial_utilization": 0.765625,
+            "total_mac_ops": 8300544.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.3080255357957136,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 395264,
+              "capacity_bits": 10000000000,
+              "utilization": 3.95264e-05,
+              "tensors": [
+                {
+                  "tensor": "Stem",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Narrow",
+                  "bits": 98816
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 912640,
+              "capacity_bits": 1048576,
+              "utilization": 0.870361328125,
+              "tensors": [
+                {
+                  "tensor": "Stem_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 247040
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "Narrow_1",
+                  "bits": 98816
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 24576
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              },
+              {
+                "dim": "z1",
+                "factor": 2
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(Stem_1)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 16
+                },
+                {
+                  "dim": "z1",
+                  "tile": 96
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 5.0
+          },
+          "allocation_sha256": "60840529114ad41816a220a16b69b2b65a431a7eaf8d47ac28e4e1681cf489fe"
+        },
+        {
+          "operators": [
+            "Right",
+            "Wide",
+            "Left",
+            "Merge",
+            "Y"
+          ],
+          "energy_pj": 914684676.0959998,
+          "cycles": 376558.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 30040064.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.012984276879878619,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 3072,
+              "capacity_bits": 10000000000,
+              "utilization": 3.072e-07,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 3072
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 965120,
+              "capacity_bits": 1048576,
+              "utilization": 0.92041015625,
+              "tensors": [
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 393216
+                },
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Y_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Stem_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                },
+                {
+                  "tensor": "Left",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Y": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "0dc4033405931f35119a17008538ebb8d4aa0689f02eae8f61493b9348d33652"
+        }
+      ],
+      "wall_s": 1.6160617000132333,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    "fixed_order": {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Stem"
+      ],
+      "feasible": true,
+      "energy_pj": 1484219955.712,
+      "cycles": 626753.0,
+      "edp": 930239309902363.1,
+      "groups": [
+        {
+          "operators": [
+            "Stem"
+          ],
+          "energy_pj": 10844454.912000047,
+          "cycles": 4564.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.8341968911917098,
+            "min_mac_spatial_utilization": 0.8341968911917098,
+            "total_mac_ops": 5928960.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2114373356704645,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Stem",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 789248,
+              "capacity_bits": 1048576,
+              "utilization": 0.752685546875,
+              "tensors": [
+                {
+                  "tensor": "Stem_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 247040
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 2
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "734836a34d6dc3bca6b99d27fb310df5869855449ef11d8afb98b502dbf8fc64"
+        },
+        {
+          "operators": [
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge",
+            "Y"
+          ],
+          "energy_pj": 1473375500.8,
+          "cycles": 622189.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 32411648.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.008478666985969429,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 3072,
+              "capacity_bits": 10000000000,
+              "utilization": 3.072e-07,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 3072
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 866816,
+              "capacity_bits": 1048576,
+              "utilization": 0.82666015625,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Y_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Stem_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Y": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "676cff38b3b31780f8be1534e5401b580fc8bbc12ef9cfa216e88169d80b2435"
+        }
+      ],
+      "wall_s": 1.5890422999800649,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    "fixed_order_architectures": [
+      [
+        64,
+        96,
+        131072
+      ]
+    ],
+    "fixed_order_then_reorder": {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Narrow"
+      ],
+      "feasible": true,
+      "energy_pj": 928169682.4319998,
+      "cycles": 380944.0,
+      "edp": 353580671504375.75,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow"
+          ],
+          "energy_pj": 13485006.336000001,
+          "cycles": 4386.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.8180935567441083,
+            "min_mac_spatial_utilization": 0.765625,
+            "total_mac_ops": 8300544.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.3080255357957136,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 395264,
+              "capacity_bits": 10000000000,
+              "utilization": 3.95264e-05,
+              "tensors": [
+                {
+                  "tensor": "Stem",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Narrow",
+                  "bits": 98816
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 912640,
+              "capacity_bits": 1048576,
+              "utilization": 0.870361328125,
+              "tensors": [
+                {
+                  "tensor": "Stem_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 247040
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "Narrow_1",
+                  "bits": 98816
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 24576
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              },
+              {
+                "dim": "z1",
+                "factor": 2
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(Stem_1)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 16
+                },
+                {
+                  "dim": "z1",
+                  "tile": 96
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 5.0
+          },
+          "allocation_sha256": "60840529114ad41816a220a16b69b2b65a431a7eaf8d47ac28e4e1681cf489fe"
+        },
+        {
+          "operators": [
+            "Right",
+            "Wide",
+            "Left",
+            "Merge",
+            "Y"
+          ],
+          "energy_pj": 914684676.0959998,
+          "cycles": 376558.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 30040064.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.012984276879878619,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 3072,
+              "capacity_bits": 10000000000,
+              "utilization": 3.072e-07,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 3072
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 965120,
+              "capacity_bits": 1048576,
+              "utilization": 0.92041015625,
+              "tensors": [
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 393216
+                },
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Y_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Stem_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                },
+                {
+                  "tensor": "Left",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Y": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "0dc4033405931f35119a17008538ebb8d4aa0689f02eae8f61493b9348d33652"
+        }
+      ],
+      "wall_s": 1.6160617000132333,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    "gain_over_fixed_order": 0.6199035369280543,
+    "gain_over_architecture_first": 0.0
+  },
+  "trials": [
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": null,
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 4.66500310000265,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": null,
+      "feasible": true,
+      "energy_pj": 1484996910.848,
+      "cycles": 660075.0,
+      "edp": 980209335927993.6,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge"
+          ],
+          "energy_pj": 1478485674.24,
+          "cycles": 657006.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.6991228070175438,
+            "min_mac_spatial_utilization": 0.5,
+            "total_mac_ops": 33597440.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.00832311018975981,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 2048,
+              "capacity_bits": 10000000000,
+              "utilization": 2.048e-07,
+              "tensors": [
+                {
+                  "tensor": "Merge",
+                  "bits": 2048
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 915456,
+              "capacity_bits": 1048576,
+              "utilization": 0.873046875,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Stem",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 2560
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "1bbc792f4deb0c79c6e8bad24d908e57cbb3a88e467bb9165c0cad6282796604"
+        },
+        {
+          "operators": [
+            "Y"
+          ],
+          "energy_pj": 6511236.608,
+          "cycles": 3069.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 4743168.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2515477354187032,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 690688,
+              "capacity_bits": 1048576,
+              "utilization": 0.65869140625,
+              "tensors": [
+                {
+                  "tensor": "Y_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Merge_1",
+                  "bits": 197632
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z1",
+                "factor": 1
+              }
+            ],
+            "inter_core": {
+              "Y": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z1",
+                  "tile": 193
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "ba53ee294c09f6fe07a6006d12c3d9eb2454f0278161db5ef2066f9f1cf08831"
+        }
+      ],
+      "wall_s": 5.690852800005814,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": null,
+      "feasible": true,
+      "energy_pj": 1482924146.432,
+      "cycles": 659152.0,
+      "edp": 977472416968945.6,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge"
+          ],
+          "energy_pj": 1475625543.9359999,
+          "cycles": 655462.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.9703504043126685,
+            "min_mac_spatial_utilization": 0.8333333333333334,
+            "total_mac_ops": 33597440.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.008342716028287426,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 2048,
+              "capacity_bits": 10000000000,
+              "utilization": 2.048e-07,
+              "tensors": [
+                {
+                  "tensor": "Merge",
+                  "bits": 2048
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 915456,
+              "capacity_bits": 1048576,
+              "utilization": 0.873046875,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Stem",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 2560
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "aae72f5276b06bad7fb063b46bf9e17efdf2cb59f46d1451b89668832f591f5e"
+        },
+        {
+          "operators": [
+            "Y"
+          ],
+          "energy_pj": 7298602.496,
+          "cycles": 3690.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 4743168.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2092140921409214,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 690688,
+              "capacity_bits": 1048576,
+              "utilization": 0.65869140625,
+              "tensors": [
+                {
+                  "tensor": "Y_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Merge_1",
+                  "bits": 197632
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 2
+              }
+            ],
+            "inter_core": {
+              "Y": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "5660a71d24f82a847be67e8450a406ae7b915c52765883a56caf5a00d7d21d20"
+        }
+      ],
+      "wall_s": 5.800130400020862,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 2.22026659999392,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [],
+      "feasible": true,
+      "energy_pj": 1493050472.1919997,
+      "cycles": 623095.0,
+      "edp": 930312283970474.0,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge",
+            "Y"
+          ],
+          "energy_pj": 1493050472.1919997,
+          "cycles": 623095.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.9035294117647059,
+            "min_mac_spatial_utilization": 0.5,
+            "total_mac_ops": 38340608.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.010015059233878194,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 3072,
+              "capacity_bits": 10000000000,
+              "utilization": 3.072e-07,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 3072
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 868608,
+              "capacity_bits": 1048576,
+              "utilization": 0.828369140625,
+              "tensors": [
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 147456
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Stem",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Y_1",
+                  "bits": 3072
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 8
+              },
+              {
+                "dim": "z5",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Y": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 48
+                },
+                {
+                  "dim": "z5",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 8.0
+          },
+          "allocation_sha256": "c0afaae1aa40bd7d22de9d6919e4b6bf89b12f9f93f6bb8eaa952d131a856e44"
+        }
+      ],
+      "wall_s": 2.8767269999952987,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 2.9953732999856584,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Stem"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 2.9433921000163537,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Stem"
+      ],
+      "feasible": true,
+      "energy_pj": 1483878482.688,
+      "cycles": 627895.0,
+      "edp": 931719879887381.8,
+      "groups": [
+        {
+          "operators": [
+            "Stem"
+          ],
+          "energy_pj": 9923920.128,
+          "cycles": 5706.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.6282552083333334,
+            "min_mac_spatial_utilization": 0.6282552083333334,
+            "total_mac_ops": 5928960.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.16912022432527166,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Stem",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 789248,
+              "capacity_bits": 1048576,
+              "utilization": 0.752685546875,
+              "tensors": [
+                {
+                  "tensor": "Stem_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 247040
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z1",
+                "factor": 1
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z1",
+                  "tile": 193
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "8b45cebdd87ea583f73defee5bc884e929b4ed9bae6e3078dfe36c459f57e6aa"
+        },
+        {
+          "operators": [
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge",
+            "Y"
+          ],
+          "energy_pj": 1473954562.56,
+          "cycles": 622189.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.7553688141923435,
+            "min_mac_spatial_utilization": 0.5,
+            "total_mac_ops": 32411648.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.008478666985969429,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 3072,
+              "capacity_bits": 10000000000,
+              "utilization": 3.072e-07,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 3072
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 866816,
+              "capacity_bits": 1048576,
+              "utilization": 0.82666015625,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Y_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Stem_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Y": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "d7aa1481b9344bb88728b16059aaf591939261b5f15529c3a14cc7d204105308"
+        }
+      ],
+      "wall_s": 2.062241700012237,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Stem"
+      ],
+      "feasible": true,
+      "energy_pj": 1484219955.712,
+      "cycles": 626753.0,
+      "edp": 930239309902363.1,
+      "groups": [
+        {
+          "operators": [
+            "Stem"
+          ],
+          "energy_pj": 10844454.912000047,
+          "cycles": 4564.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.8341968911917098,
+            "min_mac_spatial_utilization": 0.8341968911917098,
+            "total_mac_ops": 5928960.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2114373356704645,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Stem",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 789248,
+              "capacity_bits": 1048576,
+              "utilization": 0.752685546875,
+              "tensors": [
+                {
+                  "tensor": "Stem_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 247040
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 2
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "734836a34d6dc3bca6b99d27fb310df5869855449ef11d8afb98b502dbf8fc64"
+        },
+        {
+          "operators": [
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge",
+            "Y"
+          ],
+          "energy_pj": 1473375500.8,
+          "cycles": 622189.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 32411648.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.008478666985969429,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 3072,
+              "capacity_bits": 10000000000,
+              "utilization": 3.072e-07,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 3072
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 866816,
+              "capacity_bits": 1048576,
+              "utilization": 0.82666015625,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Y_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Stem_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Y": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "676cff38b3b31780f8be1534e5401b580fc8bbc12ef9cfa216e88169d80b2435"
+        }
+      ],
+      "wall_s": 1.5890422999800649,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Wide"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 1.785728899994865,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Wide"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 2.2478646999807097,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Wide"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 1.4493667999922764,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Left"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 1.6566884000203572,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Left"
+      ],
+      "feasible": false,
+      "status": "PARTITION_MISMATCH",
+      "expected_groups": [
+        [
+          "Left",
+          "Stem",
+          "Wide"
+        ],
+        [
+          "Merge",
+          "Narrow",
+          "Right",
+          "Y"
+        ]
+      ],
+      "actual_groups": [
+        [
+          "Stem",
+          "Narrow",
+          "Right",
+          "Wide",
+          "Left"
+        ],
+        [
+          "Merge",
+          "Y"
+        ]
+      ],
+      "wall_s": 1.4412396999832708,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Left"
+      ],
+      "feasible": false,
+      "status": "PARTITION_MISMATCH",
+      "expected_groups": [
+        [
+          "Left",
+          "Stem",
+          "Wide"
+        ],
+        [
+          "Merge",
+          "Narrow",
+          "Right",
+          "Y"
+        ]
+      ],
+      "actual_groups": [
+        [
+          "Stem",
+          "Narrow",
+          "Right",
+          "Wide",
+          "Left"
+        ],
+        [
+          "Merge",
+          "Y"
+        ]
+      ],
+      "wall_s": 1.3909034999960568,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Narrow"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 1.6427897000103258,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Narrow"
+      ],
+      "feasible": false,
+      "status": "PARTITION_MISMATCH",
+      "expected_groups": [
+        [
+          "Left",
+          "Narrow",
+          "Stem",
+          "Wide"
+        ],
+        [
+          "Merge",
+          "Right",
+          "Y"
+        ]
+      ],
+      "actual_groups": [
+        [
+          "Stem",
+          "Narrow"
+        ],
+        [
+          "Right",
+          "Wide",
+          "Left",
+          "Merge",
+          "Y"
+        ]
+      ],
+      "wall_s": 2.391537799994694,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Narrow"
+      ],
+      "feasible": false,
+      "status": "PARTITION_MISMATCH",
+      "expected_groups": [
+        [
+          "Left",
+          "Narrow",
+          "Stem",
+          "Wide"
+        ],
+        [
+          "Merge",
+          "Right",
+          "Y"
+        ]
+      ],
+      "actual_groups": [
+        [
+          "Stem",
+          "Narrow"
+        ],
+        [
+          "Right",
+          "Wide",
+          "Left",
+          "Merge",
+          "Y"
+        ]
+      ],
+      "wall_s": 1.6394703000260051,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Right"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 2.8070860999869183,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Right"
+      ],
+      "feasible": false,
+      "status": "PARTITION_MISMATCH",
+      "expected_groups": [
+        [
+          "Left",
+          "Narrow",
+          "Right",
+          "Stem",
+          "Wide"
+        ],
+        [
+          "Merge",
+          "Y"
+        ]
+      ],
+      "actual_groups": [
+        [
+          "Stem",
+          "Narrow",
+          "Right"
+        ],
+        [
+          "Wide",
+          "Left",
+          "Merge",
+          "Y"
+        ]
+      ],
+      "wall_s": 2.6779031999758445,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Right"
+      ],
+      "feasible": false,
+      "status": "PARTITION_MISMATCH",
+      "expected_groups": [
+        [
+          "Left",
+          "Narrow",
+          "Right",
+          "Stem",
+          "Wide"
+        ],
+        [
+          "Merge",
+          "Y"
+        ]
+      ],
+      "actual_groups": [
+        [
+          "Stem",
+          "Narrow",
+          "Right"
+        ],
+        [
+          "Wide",
+          "Left",
+          "Merge",
+          "Y"
+        ]
+      ],
+      "wall_s": 1.652638500003377,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Merge"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 1.2980442000261974,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Merge"
+      ],
+      "feasible": true,
+      "energy_pj": 1484996910.848,
+      "cycles": 660075.0,
+      "edp": 980209335927993.6,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge"
+          ],
+          "energy_pj": 1478485674.24,
+          "cycles": 657006.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.6991228070175438,
+            "min_mac_spatial_utilization": 0.5,
+            "total_mac_ops": 33597440.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.00832311018975981,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 2048,
+              "capacity_bits": 10000000000,
+              "utilization": 2.048e-07,
+              "tensors": [
+                {
+                  "tensor": "Merge",
+                  "bits": 2048
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 915456,
+              "capacity_bits": 1048576,
+              "utilization": 0.873046875,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Stem",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 2560
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "1bbc792f4deb0c79c6e8bad24d908e57cbb3a88e467bb9165c0cad6282796604"
+        },
+        {
+          "operators": [
+            "Y"
+          ],
+          "energy_pj": 6511236.608,
+          "cycles": 3069.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 4743168.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2515477354187032,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 690688,
+              "capacity_bits": 1048576,
+              "utilization": 0.65869140625,
+              "tensors": [
+                {
+                  "tensor": "Y_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Merge_1",
+                  "bits": 197632
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z1",
+                "factor": 1
+              }
+            ],
+            "inter_core": {
+              "Y": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z1",
+                  "tile": 193
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "ba53ee294c09f6fe07a6006d12c3d9eb2454f0278161db5ef2066f9f1cf08831"
+        }
+      ],
+      "wall_s": 1.5214806000003591,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Merge"
+      ],
+      "feasible": true,
+      "energy_pj": 1482924146.432,
+      "cycles": 659152.0,
+      "edp": 977472416968945.6,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge"
+          ],
+          "energy_pj": 1475625543.9359999,
+          "cycles": 655462.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.9703504043126685,
+            "min_mac_spatial_utilization": 0.8333333333333334,
+            "total_mac_ops": 33597440.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.008342716028287426,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 2048,
+              "capacity_bits": 10000000000,
+              "utilization": 2.048e-07,
+              "tensors": [
+                {
+                  "tensor": "Merge",
+                  "bits": 2048
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 915456,
+              "capacity_bits": 1048576,
+              "utilization": 0.873046875,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Stem",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 2560
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "aae72f5276b06bad7fb063b46bf9e17efdf2cb59f46d1451b89668832f591f5e"
+        },
+        {
+          "operators": [
+            "Y"
+          ],
+          "energy_pj": 7298602.496,
+          "cycles": 3690.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 4743168.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2092140921409214,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 690688,
+              "capacity_bits": 1048576,
+              "utilization": 0.65869140625,
+              "tensors": [
+                {
+                  "tensor": "Y_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Merge_1",
+                  "bits": 197632
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 2
+              }
+            ],
+            "inter_core": {
+              "Y": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "5660a71d24f82a847be67e8450a406ae7b915c52765883a56caf5a00d7d21d20"
+        }
+      ],
+      "wall_s": 1.487530099984724,
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        704,
+        3040
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": null,
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 4.640502000023844,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": null,
+      "feasible": true,
+      "energy_pj": 1484996910.848,
+      "cycles": 660075.0,
+      "edp": 980209335927993.6,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge"
+          ],
+          "energy_pj": 1478485674.24,
+          "cycles": 657006.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.6991228070175438,
+            "min_mac_spatial_utilization": 0.5,
+            "total_mac_ops": 33597440.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.00832311018975981,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 2048,
+              "capacity_bits": 10000000000,
+              "utilization": 2.048e-07,
+              "tensors": [
+                {
+                  "tensor": "Merge",
+                  "bits": 2048
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 915456,
+              "capacity_bits": 1048576,
+              "utilization": 0.873046875,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Stem",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 2560
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "1bbc792f4deb0c79c6e8bad24d908e57cbb3a88e467bb9165c0cad6282796604"
+        },
+        {
+          "operators": [
+            "Y"
+          ],
+          "energy_pj": 6511236.608,
+          "cycles": 3069.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 4743168.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2515477354187032,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 690688,
+              "capacity_bits": 1048576,
+              "utilization": 0.65869140625,
+              "tensors": [
+                {
+                  "tensor": "Y_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Merge_1",
+                  "bits": 197632
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z1",
+                "factor": 1
+              }
+            ],
+            "inter_core": {
+              "Y": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z1",
+                  "tile": 193
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "ba53ee294c09f6fe07a6006d12c3d9eb2454f0278161db5ef2066f9f1cf08831"
+        }
+      ],
+      "wall_s": 5.679925299977185,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": null,
+      "feasible": true,
+      "energy_pj": 1482924146.432,
+      "cycles": 659152.0,
+      "edp": 977472416968945.6,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge"
+          ],
+          "energy_pj": 1475625543.9359999,
+          "cycles": 655462.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.9703504043126685,
+            "min_mac_spatial_utilization": 0.8333333333333334,
+            "total_mac_ops": 33597440.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.008342716028287426,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 2048,
+              "capacity_bits": 10000000000,
+              "utilization": 2.048e-07,
+              "tensors": [
+                {
+                  "tensor": "Merge",
+                  "bits": 2048
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 915456,
+              "capacity_bits": 1048576,
+              "utilization": 0.873046875,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Stem",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 2560
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "aae72f5276b06bad7fb063b46bf9e17efdf2cb59f46d1451b89668832f591f5e"
+        },
+        {
+          "operators": [
+            "Y"
+          ],
+          "energy_pj": 7298602.496,
+          "cycles": 3690.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 4743168.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2092140921409214,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 690688,
+              "capacity_bits": 1048576,
+              "utilization": 0.65869140625,
+              "tensors": [
+                {
+                  "tensor": "Y_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Merge_1",
+                  "bits": 197632
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 2
+              }
+            ],
+            "inter_core": {
+              "Y": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "5660a71d24f82a847be67e8450a406ae7b915c52765883a56caf5a00d7d21d20"
+        }
+      ],
+      "wall_s": 5.827224500011653,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 2.1988211999996565,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [],
+      "feasible": true,
+      "energy_pj": 1493050472.1919997,
+      "cycles": 623095.0,
+      "edp": 930312283970474.0,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge",
+            "Y"
+          ],
+          "energy_pj": 1493050472.1919997,
+          "cycles": 623095.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.9035294117647059,
+            "min_mac_spatial_utilization": 0.5,
+            "total_mac_ops": 38340608.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.010015059233878194,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 3072,
+              "capacity_bits": 10000000000,
+              "utilization": 3.072e-07,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 3072
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 868608,
+              "capacity_bits": 1048576,
+              "utilization": 0.828369140625,
+              "tensors": [
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 147456
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Stem",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Y_1",
+                  "bits": 3072
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 8
+              },
+              {
+                "dim": "z5",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Y": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 48
+                },
+                {
+                  "dim": "z5",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 8.0
+          },
+          "allocation_sha256": "c0afaae1aa40bd7d22de9d6919e4b6bf89b12f9f93f6bb8eaa952d131a856e44"
+        }
+      ],
+      "wall_s": 2.89074289999553,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 2.9385267999896314,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Stem"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 2.9285161000152584,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Stem"
+      ],
+      "feasible": true,
+      "energy_pj": 1483878482.688,
+      "cycles": 627895.0,
+      "edp": 931719879887381.8,
+      "groups": [
+        {
+          "operators": [
+            "Stem"
+          ],
+          "energy_pj": 9923920.128,
+          "cycles": 5706.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.6282552083333334,
+            "min_mac_spatial_utilization": 0.6282552083333334,
+            "total_mac_ops": 5928960.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.16912022432527166,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Stem",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 789248,
+              "capacity_bits": 1048576,
+              "utilization": 0.752685546875,
+              "tensors": [
+                {
+                  "tensor": "Stem_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 247040
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z1",
+                "factor": 1
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z1",
+                  "tile": 193
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "8b45cebdd87ea583f73defee5bc884e929b4ed9bae6e3078dfe36c459f57e6aa"
+        },
+        {
+          "operators": [
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge",
+            "Y"
+          ],
+          "energy_pj": 1473954562.56,
+          "cycles": 622189.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.7553688141923435,
+            "min_mac_spatial_utilization": 0.5,
+            "total_mac_ops": 32411648.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.008478666985969429,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 3072,
+              "capacity_bits": 10000000000,
+              "utilization": 3.072e-07,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 3072
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 866816,
+              "capacity_bits": 1048576,
+              "utilization": 0.82666015625,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Y_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Stem_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Y": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "d7aa1481b9344bb88728b16059aaf591939261b5f15529c3a14cc7d204105308"
+        }
+      ],
+      "wall_s": 2.007237100013299,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Stem"
+      ],
+      "feasible": true,
+      "energy_pj": 1484219955.712,
+      "cycles": 626753.0,
+      "edp": 930239309902363.1,
+      "groups": [
+        {
+          "operators": [
+            "Stem"
+          ],
+          "energy_pj": 10844454.912000047,
+          "cycles": 4564.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.8341968911917098,
+            "min_mac_spatial_utilization": 0.8341968911917098,
+            "total_mac_ops": 5928960.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2114373356704645,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Stem",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 789248,
+              "capacity_bits": 1048576,
+              "utilization": 0.752685546875,
+              "tensors": [
+                {
+                  "tensor": "Stem_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 247040
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 2
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "734836a34d6dc3bca6b99d27fb310df5869855449ef11d8afb98b502dbf8fc64"
+        },
+        {
+          "operators": [
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge",
+            "Y"
+          ],
+          "energy_pj": 1473375500.8,
+          "cycles": 622189.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 32411648.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.008478666985969429,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 3072,
+              "capacity_bits": 10000000000,
+              "utilization": 3.072e-07,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 3072
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 866816,
+              "capacity_bits": 1048576,
+              "utilization": 0.82666015625,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Y_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Stem_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Y": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "676cff38b3b31780f8be1534e5401b580fc8bbc12ef9cfa216e88169d80b2435"
+        }
+      ],
+      "wall_s": 1.6411236000130884,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Narrow"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 1.6572977000032552,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Narrow"
+      ],
+      "feasible": true,
+      "energy_pj": 1480975300.3520005,
+      "cycles": 627245.0,
+      "edp": 928934352269290.5,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow"
+          ],
+          "energy_pj": 13086662.399999999,
+          "cycles": 5280.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.6657175577309238,
+            "min_mac_spatial_utilization": 0.6282552083333334,
+            "total_mac_ops": 8300544.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2558712121212121,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 345856,
+              "capacity_bits": 10000000000,
+              "utilization": 3.45856e-05,
+              "tensors": [
+                {
+                  "tensor": "Stem",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Narrow",
+                  "bits": 49408
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 887808,
+              "capacity_bits": 1048576,
+              "utilization": 0.8466796875,
+              "tensors": [
+                {
+                  "tensor": "Stem_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 247040
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "Narrow_1",
+                  "bits": 49408
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 49152
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(Stem_1)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 16
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 5.0
+          },
+          "allocation_sha256": "05494227a8d189d1119a7c129520a5c0c2e98a6a3bccf0d30f544043ee58cb5b"
+        },
+        {
+          "operators": [
+            "Right",
+            "Wide",
+            "Left",
+            "Merge",
+            "Y"
+          ],
+          "energy_pj": 1467888637.9520004,
+          "cycles": 621965.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.8125,
+            "min_mac_spatial_utilization": 0.375,
+            "total_mac_ops": 30040064.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.00786110686828573,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 3072,
+              "capacity_bits": 10000000000,
+              "utilization": 3.072e-07,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 3072
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 932864,
+              "capacity_bits": 1048576,
+              "utilization": 0.8896484375,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 393216
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 262144
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Y_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Stem_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                },
+                {
+                  "tensor": "Wide",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 3
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Y": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 128
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "03963d4f6b4af8c87d64548e1f59c3510f6833953dd3cceda44947110beb122f"
+        }
+      ],
+      "wall_s": 2.3284305999986827,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Narrow"
+      ],
+      "feasible": true,
+      "energy_pj": 928169682.4319998,
+      "cycles": 380944.0,
+      "edp": 353580671504375.75,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow"
+          ],
+          "energy_pj": 13485006.336000001,
+          "cycles": 4386.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.8180935567441083,
+            "min_mac_spatial_utilization": 0.765625,
+            "total_mac_ops": 8300544.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.3080255357957136,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 395264,
+              "capacity_bits": 10000000000,
+              "utilization": 3.95264e-05,
+              "tensors": [
+                {
+                  "tensor": "Stem",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Narrow",
+                  "bits": 98816
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 912640,
+              "capacity_bits": 1048576,
+              "utilization": 0.870361328125,
+              "tensors": [
+                {
+                  "tensor": "Stem_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 247040
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "Narrow_1",
+                  "bits": 98816
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 24576
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              },
+              {
+                "dim": "z1",
+                "factor": 2
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(Stem_1)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 16
+                },
+                {
+                  "dim": "z1",
+                  "tile": 96
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 5.0
+          },
+          "allocation_sha256": "60840529114ad41816a220a16b69b2b65a431a7eaf8d47ac28e4e1681cf489fe"
+        },
+        {
+          "operators": [
+            "Right",
+            "Wide",
+            "Left",
+            "Merge",
+            "Y"
+          ],
+          "energy_pj": 914684676.0959998,
+          "cycles": 376558.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 30040064.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.012984276879878619,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 3072,
+              "capacity_bits": 10000000000,
+              "utilization": 3.072e-07,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 3072
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 965120,
+              "capacity_bits": 1048576,
+              "utilization": 0.92041015625,
+              "tensors": [
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 393216
+                },
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Y_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Stem_1",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                },
+                {
+                  "tensor": "Left",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Y": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "0dc4033405931f35119a17008538ebb8d4aa0689f02eae8f61493b9348d33652"
+        }
+      ],
+      "wall_s": 1.6160617000132333,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Wide"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 1.8096722000045702,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Wide"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 2.2254286999814212,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Wide"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 1.4660421999869868,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Left"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 1.6592143999878317,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Left"
+      ],
+      "feasible": false,
+      "status": "PARTITION_MISMATCH",
+      "expected_groups": [
+        [
+          "Left",
+          "Narrow",
+          "Stem",
+          "Wide"
+        ],
+        [
+          "Merge",
+          "Right",
+          "Y"
+        ]
+      ],
+      "actual_groups": [
+        [
+          "Stem",
+          "Narrow",
+          "Right",
+          "Wide",
+          "Left"
+        ],
+        [
+          "Merge",
+          "Y"
+        ]
+      ],
+      "wall_s": 1.4017023000051267,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Left"
+      ],
+      "feasible": false,
+      "status": "PARTITION_MISMATCH",
+      "expected_groups": [
+        [
+          "Left",
+          "Narrow",
+          "Stem",
+          "Wide"
+        ],
+        [
+          "Merge",
+          "Right",
+          "Y"
+        ]
+      ],
+      "actual_groups": [
+        [
+          "Stem",
+          "Narrow",
+          "Right",
+          "Wide",
+          "Left"
+        ],
+        [
+          "Merge",
+          "Y"
+        ]
+      ],
+      "wall_s": 1.3861533000017516,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Right"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 2.8124508000037167,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Right"
+      ],
+      "feasible": false,
+      "status": "PARTITION_MISMATCH",
+      "expected_groups": [
+        [
+          "Left",
+          "Narrow",
+          "Right",
+          "Stem",
+          "Wide"
+        ],
+        [
+          "Merge",
+          "Y"
+        ]
+      ],
+      "actual_groups": [
+        [
+          "Stem",
+          "Narrow",
+          "Right"
+        ],
+        [
+          "Wide",
+          "Left",
+          "Merge",
+          "Y"
+        ]
+      ],
+      "wall_s": 2.6968934000178706,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Right"
+      ],
+      "feasible": false,
+      "status": "PARTITION_MISMATCH",
+      "expected_groups": [
+        [
+          "Left",
+          "Narrow",
+          "Right",
+          "Stem",
+          "Wide"
+        ],
+        [
+          "Merge",
+          "Y"
+        ]
+      ],
+      "actual_groups": [
+        [
+          "Stem",
+          "Narrow",
+          "Right"
+        ],
+        [
+          "Wide",
+          "Left",
+          "Merge",
+          "Y"
+        ]
+      ],
+      "wall_s": 1.6715708999836352,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        32,
+        192,
+        131072
+      ],
+      "cuts": [
+        "Merge"
+      ],
+      "feasible": false,
+      "status": "INFEASIBLE",
+      "reason": "No tile candidate was priced: none is feasible.",
+      "wall_s": 1.28296759998193,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        48,
+        128,
+        131072
+      ],
+      "cuts": [
+        "Merge"
+      ],
+      "feasible": true,
+      "energy_pj": 1484996910.848,
+      "cycles": 660075.0,
+      "edp": 980209335927993.6,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge"
+          ],
+          "energy_pj": 1478485674.24,
+          "cycles": 657006.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.6991228070175438,
+            "min_mac_spatial_utilization": 0.5,
+            "total_mac_ops": 33597440.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.00832311018975981,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 2048,
+              "capacity_bits": 10000000000,
+              "utilization": 2.048e-07,
+              "tensors": [
+                {
+                  "tensor": "Merge",
+                  "bits": 2048
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 915456,
+              "capacity_bits": 1048576,
+              "utilization": 0.873046875,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Stem",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 2560
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "1bbc792f4deb0c79c6e8bad24d908e57cbb3a88e467bb9165c0cad6282796604"
+        },
+        {
+          "operators": [
+            "Y"
+          ],
+          "energy_pj": 6511236.608,
+          "cycles": 3069.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 4743168.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2515477354187032,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 690688,
+              "capacity_bits": 1048576,
+              "utilization": 0.65869140625,
+              "tensors": [
+                {
+                  "tensor": "Y_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Merge_1",
+                  "bits": 197632
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z1",
+                "factor": 1
+              }
+            ],
+            "inter_core": {
+              "Y": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z1",
+                  "tile": 193
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "ba53ee294c09f6fe07a6006d12c3d9eb2454f0278161db5ef2066f9f1cf08831"
+        }
+      ],
+      "wall_s": 1.548833700013347,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    },
+    {
+      "shape": [
+        64,
+        96,
+        131072
+      ],
+      "cuts": [
+        "Merge"
+      ],
+      "feasible": true,
+      "energy_pj": 1482924146.432,
+      "cycles": 659152.0,
+      "edp": 977472416968945.6,
+      "groups": [
+        {
+          "operators": [
+            "Stem",
+            "Narrow",
+            "Right",
+            "Wide",
+            "Left",
+            "Merge"
+          ],
+          "energy_pj": 1475625543.9359999,
+          "cycles": 655462.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 0.9703504043126685,
+            "min_mac_spatial_utilization": 0.8333333333333334,
+            "total_mac_ops": 33597440.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.008342716028287426,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 2048,
+              "capacity_bits": 10000000000,
+              "utilization": 2.048e-07,
+              "tensors": [
+                {
+                  "tensor": "Merge",
+                  "bits": 2048
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 915456,
+              "capacity_bits": 1048576,
+              "utilization": 0.873046875,
+              "tensors": [
+                {
+                  "tensor": "W_Wide_1",
+                  "bits": 294912
+                },
+                {
+                  "tensor": "W_Stem_1",
+                  "bits": 245760
+                },
+                {
+                  "tensor": "W_Left_1",
+                  "bits": 196608
+                },
+                {
+                  "tensor": "W_Narrow_1",
+                  "bits": 98304
+                },
+                {
+                  "tensor": "W_Right_1",
+                  "bits": 65536
+                },
+                {
+                  "tensor": "Stem",
+                  "bits": 3072
+                },
+                {
+                  "tensor": "X_1",
+                  "bits": 2560
+                },
+                {
+                  "tensor": "Right",
+                  "bits": 2048
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z3",
+                "factor": 4
+              },
+              {
+                "dim": "z4",
+                "factor": 193
+              }
+            ],
+            "inter_core": {
+              "Stem": [],
+              "Narrow": [],
+              "Right": [],
+              "Wide": [],
+              "Left": [],
+              "Merge": [],
+              "Transfer(X)": [],
+              "Transfer(W_Stem)": [],
+              "Transfer(Stem)": [],
+              "Transfer(W_Narrow)": [],
+              "Transfer(Narrow)": [],
+              "Transfer(W_Right)": [],
+              "Transfer(Right)": [],
+              "Transfer(W_Wide)": [],
+              "Transfer(Wide)": [],
+              "Transfer(W_Left)": [],
+              "Transfer(Left)": [],
+              "Transfer(Merge_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z3",
+                  "tile": 96
+                },
+                {
+                  "dim": "z4",
+                  "tile": 1
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 7.0
+          },
+          "allocation_sha256": "aae72f5276b06bad7fb063b46bf9e17efdf2cb59f46d1451b89668832f591f5e"
+        },
+        {
+          "operators": [
+            "Y"
+          ],
+          "energy_pj": 7298602.496,
+          "cycles": 3690.0,
+          "work": {
+            "compute_cores_available": 1,
+            "compute_cores_used": 1,
+            "latency_weighted_mac_spatial_utilization": 1.0,
+            "min_mac_spatial_utilization": 1.0,
+            "total_mac_ops": 4743168.0,
+            "peak_macs_per_cycle": 6144.0,
+            "mac_capable_cores": 1,
+            "end_to_end_mac_utilization": 0.2092140921409214,
+            "degenerate": false,
+            "degenerate_nodes": []
+          },
+          "memory": [
+            {
+              "memory": "dram",
+              "cores": [],
+              "resident_bits": 296448,
+              "capacity_bits": 10000000000,
+              "utilization": 2.96448e-05,
+              "tensors": [
+                {
+                  "tensor": "Y",
+                  "bits": 296448
+                }
+              ]
+            },
+            {
+              "memory": "gb",
+              "cores": [
+                0
+              ],
+              "resident_bits": 690688,
+              "capacity_bits": 1048576,
+              "utilization": 0.65869140625,
+              "tensors": [
+                {
+                  "tensor": "Y_1",
+                  "bits": 296448
+                },
+                {
+                  "tensor": "Merge_1",
+                  "bits": 197632
+                },
+                {
+                  "tensor": "W_Y_1",
+                  "bits": 196608
+                }
+              ]
+            }
+          ],
+          "placements": {},
+          "tiling": {
+            "fusion_splits": [
+              {
+                "dim": "z2",
+                "factor": 2
+              }
+            ],
+            "inter_core": {
+              "Y": [],
+              "Transfer(Merge)": [],
+              "Transfer(W_Y)": [],
+              "Transfer(Y_1)": []
+            },
+            "intra_core": {
+              "Fused_Group_1": [
+                {
+                  "dim": "z2",
+                  "tile": 96
+                }
+              ]
+            }
+          },
+          "solve": {
+            "status": "OPTIMAL",
+            "mip_gap": 0.0,
+            "objective": 3.0
+          },
+          "allocation_sha256": "5660a71d24f82a847be67e8450a406ae7b915c52765883a56caf5a00d7d21d20"
+        }
+      ],
+      "wall_s": 1.503521600010572,
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "live_width": [
+        640,
+        2848
+      ]
+    }
+  ]
+}

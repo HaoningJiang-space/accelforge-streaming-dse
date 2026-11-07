@@ -22,13 +22,14 @@ from research.external_stream.run import core_mappings
 from research.runtime.dag_cases import CASES
 
 
-def build(graph):
+def build(graph, order=None):
     tensors = {name: Tensor.create(name, i8, (graph.rows, width)) for name, width in graph.inputs}
     nodes = [InEdge(name=name, outputs=(tensor,)) for name, tensor in tensors.items()]
     gemm_maps = tuple(AffineMap.from_callable(fn) for fn in (
         lambda m, k, n: (m, k), lambda m, k, n: (k, n), lambda m, k, n: (m, n)
     ))
-    for op in graph.ops:
+    ops = graph.ops if order is None else (graph.operators[name] for name in order)
+    for op in ops:
         inputs = [tensors[name] for name in op.inputs]
         out = Tensor.create(op.name, i8, (graph.rows, op.width))
         if op.kind == "gemm":

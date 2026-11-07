@@ -10,7 +10,7 @@ from stream import api
 from stream.stages.context import StageContext
 from stream.stages.generation.placement_generation import PlacementGenerationStage
 from stream.stages.stage import Stage
-from stream.workload.node import HasIterationSpace, InEdge, OutEdge
+from stream.workload.node import ComputationNode, InEdge, OutEdge
 
 
 def group_key(workload, mapping_path):
@@ -19,7 +19,7 @@ def group_key(workload, mapping_path):
     for node in workload.nodes:
         tensors = (*getattr(node, "inputs", ()), *getattr(node, "outputs", ()))
         views = tuple((t.name, str(t.operand_type), str(t.subview)) for t in tensors)
-        if isinstance(node, HasIterationSpace):
+        if isinstance(node, ComputationNode):
             fields = tuple(str(m) for m in node.operand_mapping), node.fused_kernel, node.window_extents
         elif isinstance(node, (InEdge, OutEdge)):
             fields = getattr(node, "parameter", None), node.declared
@@ -63,7 +63,7 @@ def native_memo():
             result, = child(rest, ctx).run()
             allocation = result.data["allocation"]
             solve = allocation.solution.solve_stats
-            if solve.status == "OPTIMAL" and not allocation.mapping.edge_placements:
+            if solve.status == "OPTIMAL" and solve.mip_gap == 0 and not allocation.mapping.edge_placements:
                 cache[key] = {name: result.data[name] for name in self.result_writes}
                 stats["reuse_keys"][key] = dict(hits=0, solve_time_s=solve.solve_time_s, mip_gap=solve.mip_gap)
             yield result
