@@ -232,3 +232,27 @@ DMA ticks. EDP decreases on nine of ten workload-budget pairs, with a maximum
 decrease of 27.23% for 3mm at 128 KiB. GLU and asymmetric select different
 members of this fixed pool with prefetch. The test covers feasibility and
 reranking in this pool. It does not search every prefetch-enabled mapping.
+
+The next experiment chooses the cheaper of overlapping rows and running
+them serially in each wave, after accounting for how much DMA each mode can
+hide. Prefetch uses only complete words that fit in the write-port gaps.
+The replay constructs the two legal timelines and checks the selected
+timeline. The analytical search prices their row, reduction and output-tail
+classes separately. Each wave decision changes only the synchronous remainder
+of its immediate successor, so this policy composes additively across waves.
+The optimizer enumerates every row band and integer spatial tile within the
+same DAG grammar, with a lower bound allowing weight DMA to overlap MAC service
+but never the register fill. Exactness applies to this one-wave lookahead
+policy. The test does not explore DMA across operator or group boundaries.
+
+```powershell
+./research/runtime/run_windows.ps1 -PythonArguments @('-m','research.runtime.dag_prefetch_search','--projection','--cases','3mm','glu','diamond','--budgets','135168','--output','research/local_prefetch_opt.json')
+```
+
+At [132 KiB over the three common array shapes](../joint_budget/results/dag_prefetch_optimized_132k.json),
+reoptimizing GLU and diamond lowers EDP by 14.32% and 14.51% relative to
+the previous mappings replayed with the same prefetch policy. GLU changes
+from 48×128 to 32×192 and drops two pinned weights. Its DRAM traffic stays at
+106,496 words and its prefetched weight words rise from 9,288 to 46,864.
+Diamond also unpins a weight and preserves its DRAM volume. The strong
+architecture-first control and the joint optimum agree on all three graphs.

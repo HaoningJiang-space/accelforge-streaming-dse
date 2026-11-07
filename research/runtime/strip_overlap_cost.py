@@ -6,6 +6,7 @@ import numpy as np
 
 from research.runtime.strip_codesign import COMPUTE, DRAM, GB_READ, GB_WRITE, ceildiv, stage_cost
 from research.runtime.strip_native_timing import shape_classes
+from research.runtime.strip_prefetch_cost import credit
 
 
 def boundary(rows, k, n):
@@ -40,6 +41,8 @@ def stage(rows, k, n, b, p, q, pin, room, live_width=None, overlap="finite"):
         for wave, staging, savings in wave_classes(k, n, p, q):
             if wave and (overlap == "free_staging" or staging + (0 if pin else wave) <= slack):
                 t -= (band - 1) * count * savings
+        if overlap == "prefetch" and not pin:
+            t -= count * int(credit(band, k, n, p, q, slack))
     return e, t
 
 
@@ -79,12 +82,13 @@ def stage_frontier(rows, k, n, b, x, y, pin, room, live_width=None, overlap="fin
     time = time - k * n * (1 if pin else bands) * GB_WRITE[1]
     if overlap != "serial":
         for band, count in shape_classes(rows, b):
-            if band == 1:
-                continue
             slack = room - band * live_width
-            for wave, staging, savings in waves:
-                fits = overlap == "free_staging" or staging + (0 if pin else wave) <= slack
-                time -= np.where(fits, savings, 0) * (band - 1) * count
+            if band > 1:
+                for wave, staging, savings in waves:
+                    fits = overlap == "free_staging" or staging + (0 if pin else wave) <= slack
+                    time -= np.where(fits, savings, 0) * (band - 1) * count
+            if overlap == "prefetch" and not pin:
+                time -= count * credit(band, k, n, p, q, slack)
 
     valid = np.flatnonzero((p * q <= room - b * live_width).ravel()) if not pin else np.arange(time.size)
     energy, time = energy.ravel()[valid], time.ravel()[valid]

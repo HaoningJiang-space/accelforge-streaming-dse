@@ -87,12 +87,23 @@ def test_retained_branch_values_compete_with_prefetch():
         plain = replay(graph, hardware, schedule, numeric=True)
         ahead = replay(graph, hardware, schedule, numeric=True, prefetch=True)
         assert plain["actions"] == ahead["actions"]
-        assert plain["ticks"]-ahead["ticks"] == 40*ahead["prefetched_weight_words"]
+        assert 0 < plain["ticks"]-ahead["ticks"] <= 40*ahead["prefetched_weight_words"]
+        assert score(graph, hardware, (group,), "prefetch") == (ahead["energy"], ahead["ticks"])
         outcomes.append(ahead)
     retained, compact = outcomes
-    assert retained["prefetch_blocked"]["B"] > 0
-    assert compact["prefetched_weight_words"] > retained["prefetched_weight_words"]
+    assert retained["serial_prefetch_waves"] > 0
+    assert compact["serial_prefetch_waves"] == 0
+    assert compact["prefetched_weight_words"] == retained["prefetched_weight_words"]
     assert compact["ticks"] < retained["ticks"]
+
+
+def test_prefetch_pricing_with_tail_rows_and_both_tile_tails():
+    graph = Graph(7, (("X", 5),), (Op("Y", ("X",), 7),))
+    for b, p, q, capacity in product((2, 3, 4), (2, 3, 4), (2, 3, 4), (70, 90)):
+        hardware = Hardware(4, 4, capacity)
+        group = Group(("Y",), b, ((p, q),), (False,))
+        result = replay(graph, hardware, events(graph, hardware, (group,)), numeric=True, prefetch=True)
+        assert score(graph, hardware, (group,), "prefetch") == (result["energy"], result["ticks"])
 
 
 def test_verifier_rejects_premature_free_partial_output_and_capacity():
@@ -124,7 +135,21 @@ def test_dag_order_pruning_matches_unpruned_search(monkeypatch):
         assert opts[0] == opts[1]
 
 
-@pytest.mark.parametrize("overlap", ("finite", "free_staging", "serial", "roofline"))
+def test_prefetch_search_preserves_all_tied_shapes(monkeypatch):
+    graph = diamond()
+    monkeypatch.setattr(search, "CAPACITIES", (45,))
+    geometries = ((2, 3), (3, 2))
+    costs = {}
+    for geometry in geometries:
+        (cost, _, _), _ = search.exact_search(graph, 45, (geometry,), overlap="prefetch")
+        costs[geometry] = cost[0]*cost[1]
+    tied = set()
+    (cost, _, _), _ = search.exact_search(graph, 45, geometries, overlap="prefetch", tied_shapes=tied)
+    assert cost[0]*cost[1] == min(costs.values())
+    assert tied == {shape for shape, edp in costs.items() if edp == min(costs.values())}
+
+
+@pytest.mark.parametrize("overlap", ("finite", "free_staging", "serial", "roofline", "prefetch"))
 def test_all_tiny_dag_mappings_agree_with_exact_search(monkeypatch, overlap):
     graph = Graph(2, (("X", 2),), (
         Op("A", ("X",), 1), Op("B", ("X",), 1), Op("J", ("A", "B"), 1, "mul"),
@@ -145,7 +170,7 @@ def test_all_tiny_dag_mappings_agree_with_exact_search(monkeypatch, overlap):
             ])
         for plan in product(*domains):
             try:
-                result = replay(graph, hardware, events(graph, hardware, plan), numeric=True)
+                result = replay(graph, hardware, events(graph, hardware, plan), numeric=True, prefetch=overlap=="prefetch")
             except ValueError as error:
                 assert "SRAM" in str(error)
             else:

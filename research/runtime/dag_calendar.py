@@ -170,6 +170,7 @@ def replay(graph, hardware, schedule, numeric=False, staging_report=False, prefe
     counts = Counter()
     blocked = Counter()
     prefetch_blocked = Counter()
+    serial_prefetch = 0
     resident = {}
     pinned = {}
     produced = Counter()
@@ -319,19 +320,30 @@ def replay(graph, hardware, schedule, numeric=False, staging_report=False, prefe
                 if occupied() + scratch + staging > hardware.capacity_bytes:
                     blocked[name] += 1
             extra = scratch + (staging if event.overlap else 0)
-            live(extra)
             counts["write", name, "write"] += len(band) * len(ns)
             counts["mac", name, "cycles"] += len(band)
             counts["ops", name, "compute"] += operations
             wanted = 0
+            overlap = event.overlap
             if (prefetch and kind == "gemm" and following is not None and following.kind == "gemm"
                     and following.name == name and name not in pinned):
                 next_weights = len(following.inner)*len(following.columns)
-                if occupied() + extra + next_weights <= hardware.capacity_bytes:
+                room = hardware.capacity_bytes - occupied()
+                if extra + next_weights <= room:
                     wanted = next_weights
-                else:
+                if overlap and scratch + next_weights <= room:
+                    def duration(use_overlap, next_tile):
+                        trial = CheckedCalendar()
+                        hidden = trial.wave(len(band), read_inputs, len(ns), prior, use_overlap, next_tile)
+                        return trial.now-hidden*max(RATES["dram"], RATES["write"])
+
+                    if duration(False, next_weights) < duration(True, wanted):
+                        overlap, extra, wanted = False, scratch, next_weights
+                        serial_prefetch += 1
+                if not wanted:
                     prefetch_blocked[name] += 1
-            carried = cal.wave(len(band), read_inputs, len(ns), prior, event.overlap, wanted)
+            live(extra)
+            carried = cal.wave(len(band), read_inputs, len(ns), prior, overlap, wanted)
             if carried:
                 # Reserve the full destination tile until the following wave,
                 # even if the last bytes will still arrive synchronously.
@@ -364,5 +376,6 @@ def replay(graph, hardware, schedule, numeric=False, staging_report=False, prefe
     if staging_report:
         result.update(staging_blocked=dict(blocked), overlapped_ticks=cal.overlapped_ticks)
     if prefetch:
-        result.update(prefetched_weight_words=prefetched, prefetch_blocked=dict(prefetch_blocked))
+        result.update(prefetched_weight_words=prefetched, prefetch_blocked=dict(prefetch_blocked),
+                      serial_prefetch_waves=serial_prefetch)
     return result

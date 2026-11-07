@@ -29,8 +29,9 @@ def run(source):
             plain = replay(graph, hardware, witness)
             ahead = replay(graph, hardware, witness, prefetch=True)
             per_word = max(RATES["dram"], RATES["write"])
+            hidden = per_word*ahead["prefetched_weight_words"]
             if (plain["actions"] != ahead["actions"] or plain["energy"] != ahead["energy"]
-                    or plain["ticks"]-ahead["ticks"] != per_word*ahead["prefetched_weight_words"]
+                    or not 0 <= plain["ticks"]-ahead["ticks"] <= hidden
                     or plain["ticks"] != design["ticks"]):
                 raise AssertionError("prefetch replay changed the workload or its traffic")
             candidates.append(dict(source=label, architecture=design["architecture"], groups=design["groups"],
