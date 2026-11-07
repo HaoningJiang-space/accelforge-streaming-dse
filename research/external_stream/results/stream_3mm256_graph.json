@@ -1,0 +1,109 @@
+{
+  "workload": "3mm",
+  "size": 256,
+  "affine_workload": [
+    {
+      "name": "Matmul0",
+      "stream_op": "MatMul",
+      "iterations": 16777216,
+      "inputs": [
+        "T0",
+        "W0"
+      ],
+      "outputs": [
+        "T1"
+      ],
+      "shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "affine_projections": [
+        "(d0, d1, d2) -> (d0, d1)",
+        "(d0, d1, d2) -> (d1, d2)",
+        "(d0, d1, d2) -> (d0, d2)"
+      ]
+    },
+    {
+      "name": "Matmul1",
+      "stream_op": "MatMul",
+      "iterations": 16777216,
+      "inputs": [
+        "T1",
+        "W1"
+      ],
+      "outputs": [
+        "T2"
+      ],
+      "shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "affine_projections": [
+        "(d0, d1, d2) -> (d0, d1)",
+        "(d0, d1, d2) -> (d1, d2)",
+        "(d0, d1, d2) -> (d0, d2)"
+      ]
+    },
+    {
+      "name": "Matmul2",
+      "stream_op": "MatMul",
+      "iterations": 16777216,
+      "inputs": [
+        "T2",
+        "W2"
+      ],
+      "outputs": [
+        "T3"
+      ],
+      "shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "affine_projections": [
+        "(d0, d1, d2) -> (d0, d1)",
+        "(d0, d1, d2) -> (d1, d2)",
+        "(d0, d1, d2) -> (d0, d2)"
+      ]
+    }
+  ],
+  "stream_version": "2.3.0",
+  "zigzag_version": "3.10.0",
+  "ortools_version": "9.15.6755",
+  "python": "3.12.12",
+  "stream_revision": "407d373f942101895b72b3e6d2c75dbe714633a6",
+  "hardware": "eyeriss_like_single_core",
+  "cost_model": "official STREAM/ZigZag hardware and cost model",
+  "matched_native_costs": false,
+  "external_sota_acceptance": false,
+  "status": "workload_validated"
+}
