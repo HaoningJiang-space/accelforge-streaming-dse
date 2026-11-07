@@ -107,3 +107,15 @@ python -m research.runtime.strip_cross_ablation --reference research/joint_budge
 ```
 
 The [crossed controls](../joint_budget/results/strip_codesign_cross_ablation.json) fix the 48×128 geometry selected on 3mm256 at 256 KiB and test it on every budget and holdout. The fixed and free geometry settings each run with singleton or adaptive fusion, and a fifth control forces the full chain to fuse while keeping geometry free. All control plans pass the independent wave trace. Free geometry reduces EDP by 1.93–3.40% on the four holdout budget pairs where it changes the optimum under adaptive fusion. It ties the fixed geometry on the remaining 14 pairs. Adaptive partitioning improves over full-chain fusion by 9.68% and 8.62% on rectangular 5mm at 128 and 132 KiB, and by 3.65% on rectangular 6mm at 256 KiB. The largest gains against singleton execution are primarily due to avoiding intermediate DRAM traffic.
+
+## Native timing and port overlap audit
+
+```powershell
+./research/runtime/run_windows.ps1 -PythonArguments @('-m','research.runtime.audit_strip_overlap','--reference','research/joint_budget/results/strip_codesign_cpsat.json','--output','research/local_strip_overlap.json')
+```
+
+The [audit](../joint_budget/results/strip_overlap_audit.json) separately reconstructs native latency from tile shape classes and schedules address-derived traffic on one shared DRAM port, separate SRAM read and write ports, and the MAC array. It reproduces every native per-component latency and summed per-stage maximum on six square winners and three microbenchmarks. All six winner action ledgers agree. Two reduction-tail microbenchmarks reproduce the native first-read omission.
+
+Native time is below the conserved work of a single port for three of the six winners. For 3mm512 at 128 KiB, native time is 90.35 μs and the compulsory DRAM service time is 116.05 μs. The 1×64×64 microbenchmark isolates this behavior. A 32×32 tile gives a native time of 110 ns, equal to the DRAM work bound. A 48×48 tile performs the same DRAM traffic, but the native fold charges 63.33 ns. It keeps the largest shape class and loses service from the remainder.
+
+The port calendar allows DMA service at both ends of a transfer and stages row reads, MAC work, and output writes on separate ports when there is enough SRAM for a row of ingress and egress staging. It walks exact tail extents and verifies transfer conservation, per-port exclusion, ordering and capacity. It is an explicit feasible schedule under the declared analytical architecture. The native timing formula remains a diagnostic for these tail cases.
