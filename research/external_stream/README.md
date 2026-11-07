@@ -74,3 +74,27 @@ for the observed inter-iteration overlap, so this export is a translation audit.
 $streamPython = './libraries/stream/.venv/Scripts/python.exe'
 & $streamPython -X utf8 -m research.external_stream.dag --case glu --geometry 48 128 131072 --tile-search --output research/local_stream_glu.json
 ```
+
+The next experiment uses STREAM's own evaluator for both methods. The shared
+domain is a single 6,144-PE array with shapes 32×192, 48×128 and 64×96, a shared
+128 or 132 KiB SRAM, a single DRAM and a fixed topological order per workload.
+For each shape the search includes the original STREAM mapping generator's
+default and every explicit fusion cut subset. Each call runs the vendor's
+mapping, tiling, ZigZag estimation and GSCIP allocation pipeline. Both outer
+searches rank the sum of group energies times the sum of group cycles. STREAM
+keeps its latency objective inside the allocator. This enumerates the shared
+outer domain with STREAM's chosen inner mappings.
+
+Solving extracted subgraphs independently breaks equivalence. The
+[isolation audit](results/dag_host_first.json) records 15 group disagreements
+on GLU and 32 on diamond across feasibility, energy and cycles. The replacement
+keeps the whole graph inside the pipeline, and reuses a successful allocation
+only for matching hardware, native group graph, tensor views, mapping YAML and
+solver options. The experiment rejects explicit placements and held state in
+this single-DRAM domain. It keeps failed solves uncached. Compare every complete
+candidate against the uncached vendor run before interpreting search time.
+
+```powershell
+$env:PYTHONHASHSEED = '0'
+& $streamPython -X utf8 -m research.external_stream.dag_host --cases glu diamond residual --budgets 131072 --output research/local_stream_matched.json
+```
