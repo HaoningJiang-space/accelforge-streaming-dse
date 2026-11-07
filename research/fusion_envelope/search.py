@@ -58,7 +58,8 @@ def problem(workload,domain_name):
         domain = registered_domain() if domain_name=='original12' else factor_domain()
         budgets = registered_budgets()
     else:
-        case = common.Case('attention','nvdla',(128,1,64))
+        tokens = {'attention':128,'attention256':256,'attention512':512}[workload]
+        case = common.Case('attention','nvdla',(tokens,1,64))
         capacities = (4096,8192,16384,32768)
         domain = factor_domain(capacities=capacities)
         if domain_name=='original12':
@@ -220,7 +221,7 @@ def run(method,workload,domain_name,output,reference_path=None,policy='original'
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--method',choices=('events','shape','lp','correlated'),required=True)
-    parser.add_argument('--workload',choices=('3mm','attention'),default='attention')
+    parser.add_argument('--workload',choices=('3mm','attention','attention256','attention512'),default='attention')
     parser.add_argument('--domain',choices=('original12','factors96'),default='factors96')
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--reference',type=Path)

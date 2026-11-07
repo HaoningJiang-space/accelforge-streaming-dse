@@ -235,7 +235,7 @@ class Relaxation:
         c = np.zeros(len(self.upper))
         for i,value in objective.terms.items():
             c[i] = float(value)
-        result = linprog(c,A_ub=self.matrix,b_ub=[float(b) for b in self.target_rhs(point)],method='highs')
+        result = linprog(c,A_ub=self.matrix,b_ub=[float(b) for b in self.target_rhs(point)],method='highs',options={'threads':1})
         if result.success:
             dual = tuple(min(F(),F(round(float(y)*2**40),2**40)) for y in result.ineqlin.marginals)
             bound,residual = self.check_dual(objective,dual,point)
@@ -245,7 +245,7 @@ class Relaxation:
         # phase-I dual and verify an exact contradiction for t=0 instead.
         phase = linprog(np.r_[np.zeros(len(c)),1.],
             A_ub=np.column_stack((self.matrix,-np.ones(len(self.rows)))),
-            b_ub=[float(b) for b in self.target_rhs(point)],method='highs')
+            b_ub=[float(b) for b in self.target_rhs(point)],method='highs',options={'threads':1})
         if phase.success:
             dual = tuple(min(F(),F(round(float(y)*2**40),2**40)) for y in phase.ineqlin.marginals)
             contradiction,residual = self.check_dual(Affine(F(),{}),dual,point)

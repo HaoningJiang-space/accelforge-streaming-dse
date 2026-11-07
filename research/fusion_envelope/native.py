@@ -99,6 +99,11 @@ class NativeEnvelope:
             fingerprint.update(path.name.encode()+b'\0'+path.read_bytes().replace(b'\r\n',b'\n'))
         if fingerprint.hexdigest()!='197e5e3c7b1373a2579c20c613d02605fedc4b5f9fa59e2575c9a1c61bef97db':
             raise ValueError('raw-template family invariance lemma requires re-review')
+        core = hashlib.sha256()
+        for path in sorted((common.ROOT/'accelforge').rglob('*.py')):
+            core.update(path.relative_to(common.ROOT).as_posix().encode()+b'\0'+path.read_bytes().replace(b'\r\n',b'\n'))
+        if core.hexdigest()!='cbb0b5a94e84234a12f1a23781f99b4ec4fcd67b8032c518008f22b4e7609ea1':
+            raise ValueError('native-model inclusion proof requires re-review after core changes')
 
     def prepare(self, shape, capacity_bytes):
         """Native raw catalog at each physical shape; reuse only fixed-cost formulas.
