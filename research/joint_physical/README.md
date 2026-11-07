@@ -147,6 +147,23 @@ model rows and 809,218 Join pairs, compared with 137.83 s, 274,408 rows and
 show a time-to-target advantage over Event's first shape or certify any other
 shape's optimal mapping.
 
+On [Attention512](../joint_budget/results/holdout_attention512/), the same
+hybrid matched all four Event targets without retuning (73.65 s vs 120.49 s
+complete search). The anchor still supplied all winners. The timings are
+diagnostic, with other validation work active; the trial does not establish
+faster first attainment. The separate correlated-bound exact-policy search
+used 14 native shape solves, cut 44 hardware points, and reproduced all four
+costs in an independent replay of 3,823 dual functions and 49,209 reference
+vectors. It took 106.12 s.
+
+An observation-only [continuation audit](../joint_budget/results/continuation_attention256_targets.json)
+measured the max-plus resource contract on the 12-point Attention256 slice.
+Of 2,164 prefix/hardware instances, 1,233 already had no consumer at the same
+native numeric equality key. Among the 931 that did, evaluating the compiled
+terminal resource response at componentwise minima did not exclude any more.
+This audit used the generated candidate subset and never deleted a native
+row. It does not support deploying the capacity filter as a speed claim.
+
 External systems still require matching physical constraints and mapping scope
 under the same evaluator. Published GPU runtime, Gemmini EDP and MAESTRO
 estimates are not directly comparable to these native NVDLA scores.

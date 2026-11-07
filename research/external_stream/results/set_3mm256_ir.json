@@ -1,0 +1,428 @@
+{
+   "-1" : {
+      "in" : [
+         {
+            "core_id" : 1,
+            "lower" : [ 0, 0, 0, 0 ],
+            "related_ofmap" : [ 5 ],
+            "transfer_id" : 6,
+            "upper" : [ 0, 255, 255, 0 ],
+            "workload_id" : 1
+         },
+         {
+            "core_id" : 1,
+            "lower" : [ 0, 0, 0, 0 ],
+            "related_ofmap" : [],
+            "transfer_id" : 7,
+            "upper" : [ 0, 255, 255, 0 ],
+            "workload_id" : 2
+         }
+      ],
+      "out" : [
+         {
+            "destination" : [
+               {
+                  "id" : 1,
+                  "type" : "core",
+                  "workload_id" : 0
+               }
+            ],
+            "layer_name" : "Matmul0",
+            "lower" : 0,
+            "related_ifmap" : [],
+            "size" : 524288,
+            "transfer_id" : 0,
+            "type" : "weight",
+            "upper" : 255
+         },
+         {
+            "destination" : [
+               {
+                  "id" : 1,
+                  "type" : "core",
+                  "workload_id" : 0
+               }
+            ],
+            "layer_name" : "Matmul0",
+            "lower" : [ 0, 0, 0, 0 ],
+            "related_ifmap" : [],
+            "size" : 524288,
+            "transfer_id" : 1,
+            "type" : "fmap",
+            "upper" : [ 0, 255, 255, 0 ]
+         },
+         {
+            "destination" : [
+               {
+                  "id" : 1,
+                  "type" : "core",
+                  "workload_id" : 1
+               }
+            ],
+            "layer_name" : "Matmul1",
+            "lower" : 0,
+            "related_ifmap" : [],
+            "size" : 524288,
+            "transfer_id" : 2,
+            "type" : "weight",
+            "upper" : 255
+         },
+         {
+            "destination" : [
+               {
+                  "id" : 1,
+                  "type" : "core",
+                  "workload_id" : 2
+               }
+            ],
+            "layer_name" : "Matmul2",
+            "lower" : 0,
+            "related_ifmap" : [],
+            "size" : 524288,
+            "transfer_id" : 4,
+            "type" : "weight",
+            "upper" : 255
+         },
+         {
+            "destination" : [
+               {
+                  "id" : 1,
+                  "type" : "core",
+                  "workload_id" : 2
+               }
+            ],
+            "layer_name" : "Matmul2",
+            "lower" : [ 0, 0, 0, 0 ],
+            "related_ifmap" : [ 6 ],
+            "size" : 524288,
+            "transfer_id" : 5,
+            "type" : "fmap",
+            "upper" : [ 0, 255, 255, 0 ]
+         }
+      ]
+   },
+   "1" : [
+      {
+         "buffer" : [
+            {
+               "block" : 64,
+               "layer" : "Matmul1",
+               "lower" : [ 0, 0, 0, 0 ],
+               "source" : [
+                  {
+                     "channel" : [ 0, 255 ],
+                     "id" : 1,
+                     "layer_name" : "Matmul0",
+                     "lower" : [ 0, 0, 0, 0 ],
+                     "size" : 524288,
+                     "transfer_id" : 3,
+                     "type" : "core",
+                     "upper" : [ 0, 255, 255, 0 ]
+                  }
+               ],
+               "transfer_id" : [ 3 ],
+               "type" : "ifmap",
+               "upper" : [ 0, 255, 255, 0 ],
+               "workload_id" : 1
+            },
+            {
+               "block" : 64,
+               "layer" : "Matmul0",
+               "lower" : 0,
+               "source" : [
+                  {
+                     "id" : 0,
+                     "lower" : 0,
+                     "size" : 524288,
+                     "transfer_id" : 0,
+                     "type" : "DRAM",
+                     "upper" : 255
+                  }
+               ],
+               "transfer_id" : [
+                  [ 0 ]
+               ],
+               "type" : "weight",
+               "upper" : 255
+            },
+            {
+               "block" : 64,
+               "layer" : "Matmul1",
+               "lower" : 0,
+               "source" : [
+                  {
+                     "id" : 0,
+                     "lower" : 0,
+                     "size" : 524288,
+                     "transfer_id" : 2,
+                     "type" : "DRAM",
+                     "upper" : 255
+                  }
+               ],
+               "transfer_id" : [
+                  [ 2 ]
+               ],
+               "type" : "weight",
+               "upper" : 255
+            },
+            {
+               "block" : 64,
+               "layer" : "Matmul0",
+               "lower" : [ 0, 0, 0, 0 ],
+               "source" : [
+                  {
+                     "channel" : [ 0, 255 ],
+                     "id" : 0,
+                     "layer_name" : "input",
+                     "lower" : [ 0, 0, 0, 0 ],
+                     "size" : 524288,
+                     "transfer_id" : 1,
+                     "type" : "DRAM",
+                     "upper" : [ 0, 255, 255, 0 ]
+                  }
+               ],
+               "transfer_id" : [ 1 ],
+               "type" : "ifmap",
+               "upper" : [ 0, 255, 255, 0 ],
+               "workload_id" : 0
+            }
+         ],
+         "ifmap" : {
+            "lower" : [ 0, 0, 0, 0 ],
+            "max_workload_id" : 0,
+            "transfer_id" : [ 1 ],
+            "upper" : [ 0, 255, 255, 0 ]
+         },
+         "layer_name" : "Matmul0",
+         "layer_type" : "conv2d",
+         "ofmap" : [
+            {
+               "destination" : [
+                  {
+                     "id" : 1,
+                     "layer_name" : "Matmul1",
+                     "type" : "core",
+                     "workload_id" : 1
+                  }
+               ],
+               "lower" : [ 0, 0, 0, 0 ],
+               "size" : 524288,
+               "transfer_id" : 3,
+               "upper" : [ 0, 255, 255, 0 ]
+            }
+         ],
+         "ofmap_size" : 524288,
+         "time" : 16384,
+         "weight" : {
+            "lower" : 0,
+            "transfer_id" : [ 0 ],
+            "upper" : 255
+         },
+         "workload" : [
+            [ 0, 0, 0, 0 ],
+            [ 0, 255, 255, 0 ]
+         ],
+         "workload_id" : 0
+      },
+      {
+         "buffer" : [
+            {
+               "block" : 64,
+               "layer" : "Matmul1",
+               "lower" : [ 0, 0, 0, 0 ],
+               "source" : [
+                  {
+                     "channel" : [ 0, 255 ],
+                     "id" : 1,
+                     "layer_name" : "Matmul0",
+                     "lower" : [ 0, 0, 0, 0 ],
+                     "size" : 524288,
+                     "transfer_id" : 3,
+                     "type" : "core",
+                     "upper" : [ 0, 255, 255, 0 ]
+                  }
+               ],
+               "transfer_id" : [ 3 ],
+               "type" : "ifmap",
+               "upper" : [ 0, 255, 255, 0 ],
+               "workload_id" : 1
+            },
+            {
+               "block" : 64,
+               "layer" : "Matmul1",
+               "lower" : 0,
+               "source" : [
+                  {
+                     "id" : 0,
+                     "lower" : 0,
+                     "size" : 524288,
+                     "transfer_id" : 2,
+                     "type" : "DRAM",
+                     "upper" : 255
+                  }
+               ],
+               "transfer_id" : [
+                  [ 2 ]
+               ],
+               "type" : "weight",
+               "upper" : 255
+            },
+            {
+               "block" : 10,
+               "layer" : "Matmul1",
+               "lower" : [ 0, 0, 0, 0 ],
+               "size" : 524288,
+               "type" : "ofmap",
+               "upper" : [ 0, 255, 255, 0 ]
+            },
+            {
+               "block" : 64,
+               "layer" : "Matmul2",
+               "lower" : [ 0, 0, 0, 0 ],
+               "source" : [
+                  {
+                     "channel" : [ 0, 255 ],
+                     "id" : 0,
+                     "layer_name" : "Matmul1",
+                     "lower" : [ 0, 0, 0, 0 ],
+                     "size" : 524288,
+                     "transfer_id" : 5,
+                     "type" : "DRAM",
+                     "upper" : [ 0, 255, 255, 0 ]
+                  }
+               ],
+               "transfer_id" : [ 5 ],
+               "type" : "ifmap",
+               "upper" : [ 0, 255, 255, 0 ],
+               "workload_id" : 2
+            }
+         ],
+         "ifmap" : {
+            "lower" : [ 0, 0, 0, 0 ],
+            "max_workload_id" : 0,
+            "transfer_id" : [ 3 ],
+            "upper" : [ 0, 255, 255, 0 ]
+         },
+         "layer_name" : "Matmul1",
+         "layer_type" : "conv2d",
+         "ofmap" : [
+            {
+               "destination" : [
+                  {
+                     "id" : 0,
+                     "layer_name" : "Matmul2",
+                     "type" : "DRAM"
+                  }
+               ],
+               "lower" : [ 0, 0, 0, 0 ],
+               "size" : 524288,
+               "transfer_id" : 6,
+               "upper" : [ 0, 255, 255, 0 ]
+            }
+         ],
+         "ofmap_size" : 524288,
+         "time" : 16384,
+         "weight" : {
+            "lower" : 0,
+            "transfer_id" : [ 2 ],
+            "upper" : 255
+         },
+         "workload" : [
+            [ 0, 0, 0, 0 ],
+            [ 0, 255, 255, 0 ]
+         ],
+         "workload_id" : 1
+      },
+      {
+         "buffer" : [
+            {
+               "block" : 64,
+               "layer" : "Matmul2",
+               "lower" : 0,
+               "source" : [
+                  {
+                     "id" : 0,
+                     "lower" : 0,
+                     "size" : 524288,
+                     "transfer_id" : 4,
+                     "type" : "DRAM",
+                     "upper" : 255
+                  }
+               ],
+               "transfer_id" : [
+                  [ 4 ]
+               ],
+               "type" : "weight",
+               "upper" : 255
+            },
+            {
+               "block" : 10,
+               "layer" : "Matmul2",
+               "lower" : [ 0, 0, 0, 0 ],
+               "size" : 524288,
+               "type" : "ofmap",
+               "upper" : [ 0, 255, 255, 0 ]
+            },
+            {
+               "block" : 64,
+               "layer" : "Matmul2",
+               "lower" : [ 0, 0, 0, 0 ],
+               "source" : [
+                  {
+                     "channel" : [ 0, 255 ],
+                     "id" : 0,
+                     "layer_name" : "Matmul1",
+                     "lower" : [ 0, 0, 0, 0 ],
+                     "size" : 524288,
+                     "transfer_id" : 5,
+                     "type" : "DRAM",
+                     "upper" : [ 0, 255, 255, 0 ]
+                  }
+               ],
+               "transfer_id" : [ 5 ],
+               "type" : "ifmap",
+               "upper" : [ 0, 255, 255, 0 ],
+               "workload_id" : 2
+            }
+         ],
+         "ifmap" : {
+            "lower" : [ 0, 0, 0, 0 ],
+            "max_workload_id" : 1,
+            "transfer_id" : [ 5 ],
+            "upper" : [ 0, 255, 255, 0 ]
+         },
+         "layer_name" : "Matmul2",
+         "layer_type" : "conv2d",
+         "ofmap" : [
+            {
+               "destination" : [
+                  {
+                     "id" : 0,
+                     "layer_name" : "output",
+                     "type" : "DRAM"
+                  }
+               ],
+               "lower" : [ 0, 0, 0, 0 ],
+               "size" : 524288,
+               "transfer_id" : 7,
+               "upper" : [ 0, 255, 255, 0 ]
+            }
+         ],
+         "ofmap_size" : 524288,
+         "time" : 16384,
+         "weight" : {
+            "lower" : 0,
+            "transfer_id" : [ 4 ],
+            "upper" : 255
+         },
+         "workload" : [
+            [ 0, 0, 0, 0 ],
+            [ 0, 255, 255, 0 ]
+         ],
+         "workload_id" : 2
+      }
+   ],
+   "top_batch_cut" : 1,
+   "xlen" : 1,
+   "ylen" : 1
+}
