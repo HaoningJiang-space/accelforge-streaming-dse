@@ -1,0 +1,28 @@
+import pytest
+
+from research.tracking_audit import common
+from research.joint_search.validation import CandidateTrace, reference, compare, validate_sources
+from research.joint_budget.protocol import Hardware, Domain
+from research.joint_budget.native_shared import search, prepare
+
+
+def test_three_operator_nondyadic_control_matches_physical_policy_and_frontiers():
+    case = common.Case('matmuls', 'nvdla', (3, 16, 16))
+    domain = Domain(tuple(Hardware(x, y, c) for x, y in ((2, 6), (4, 3)) for c in (68, 96)))
+    expected, _, traces, _ = reference(case, domain, trace=True)
+    capture = CandidateTrace(domain)
+    actual, details = search(case, domain, capture=capture.capture)
+    for index, point in enumerate(domain.points):
+        assert capture.compare_point(traces[point], index)['exact_policy_tile_sets']
+        assert compare(actual[point], expected[point])['exact_full_etr_frontier']
+        assert all(row['ok'] for row in validate_sources(case, point, actual[point]))
+    assert details['shared_generation_calls'] == details['shared_join_calls'] == 1
+    assert not details['graph_constraint_pruning_enabled']
+
+
+def test_shared_control_rejects_spatial_boundary_that_changes_native_grammar():
+    common.af.set_n_parallel_jobs(1)
+    case = common.Case('matmuls', 'nvdla', (3, 4, 8))
+    domain = Domain((Hardware(2, 6, 96), Hardware(4, 3, 96)))
+    with pytest.raises(ValueError, match='template catalog changes'):
+        prepare(case, domain)

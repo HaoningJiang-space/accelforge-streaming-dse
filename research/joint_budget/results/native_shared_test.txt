@@ -1,0 +1,901 @@
+F
+================================== FAILURES ===================================
+_ test_three_operator_nondyadic_control_matches_physical_policy_and_frontiers _
+
+    def test_three_operator_nondyadic_control_matches_physical_policy_and_frontiers():
+        case = common.Case('matmuls', 'nvdla', (3, 16, 16))
+        domain = Domain(tuple(Hardware(x, y, c) for x, y in ((2, 6), (4, 3)) for c in (68, 96)))
+        expected, _, traces, _ = reference(case, domain, trace=True)
+        capture = CandidateTrace(domain)
+        actual, details = search(case, domain, capture=capture.capture)
+        for index, point in enumerate(domain.points):
+>           assert capture.compare_point(traces[point], index)['exact_policy_tile_sets']
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+research\joint_budget\test_native_shared.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <research.joint_search.validation.CandidateTrace object at 0x000001FAFED74620>
+native = <research.joint_search.validation.CandidateTrace object at 0x000001FA8C7DE870>
+index = 0
+
+    def compare_point(self, native, index):
+        if self.tables.keys()!=native.tables.keys():
+>           raise AssertionError('template catalogs differ')
+E           AssertionError: template catalogs differ
+
+research\joint_search\validation.py:78: AssertionError
+---------------------------- Captured stdout call -----------------------------
+Skipped 6 of 24 Matmul1 templates that keep a copy of a fusable tensor above a fused loop.
+
+Skipped 6 of 24 Matmul1 templates that keep a copy of a fusable tensor above a fused loop.
+Skipped 6 of 24 Matmul1 templates that keep a copy of a fusable tensor above a fused loop.
+Skipped 6 of 24 Matmul1 templates that keep a copy of a fusable tensor above a fused loop.
+Skipped 6 of 24 Matmul1 templates that keep a copy of a fusable tensor above a fused loop.
+Skipped 6 of 24 Matmul1 templates that keep a copy of a fusable tensor above a fused loop.
+---------------------------- Captured stderr call -----------------------------
+
+Getting energy, latency, and leak power for components running :   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul0:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul1:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul1:  67%|██████▋   | 2/3 [00:00<00:00, 18.55it/s]
+Getting energy, latency, and leak power for components running Matmul2:  67%|██████▋   | 2/3 [00:00<00:00, 18.55it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 19.80it/s]
+
+Generating jobs:   0%|          | 0/3 [00:00<?, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul0: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul1: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul2: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul1: 11it [00:00, 90.45it/s]
+Generating pmapping templates for compute MAC Einsum Matmul0: 11it [00:00, 78.07it/s]
+Generating pmapping templates for compute MAC Einsum Matmul2: 11it [00:00, 76.98it/s]
+Generating pmapping templates for compute MAC Einsum Matmul0: 12it [00:00, 77.22it/s]
+
+
+Generating pmapping templates for compute MAC Einsum Matmul2: 12it [00:00, 76.61it/s]
+
+
+Generating jobs:  33%|███▎      | 1/3 [00:02<00:05,  2.82s/it]
+Generating pmapping templates for compute MAC Einsum Matmul1: 24it [00:00, 118.80it/s]
+
+
+Generating jobs: 100%|██████████| 3/3 [00:02<00:00,  1.04it/s]
+
+Generating pmappings:   0%|          | 0/42 [00:00<?, ?it/s]
+Generating pmappings:   2%|▏         | 1/42 [00:02<01:22,  2.02s/it]
+Generating pmappings:   7%|▋         | 3/42 [00:02<00:22,  1.75it/s]
+Generating pmappings:  10%|▉         | 4/42 [00:06<01:12,  1.90s/it]
+Generating pmappings:  12%|█▏        | 5/42 [00:10<01:37,  2.64s/it]
+Generating pmappings:  14%|█▍        | 6/42 [00:10<01:05,  1.83s/it]
+Generating pmappings:  17%|█▋        | 7/42 [00:10<00:46,  1.31s/it]
+Generating pmappings:  19%|█▉        | 8/42 [00:12<00:42,  1.24s/it]
+Generating pmappings:  21%|██▏       | 9/42 [00:12<00:36,  1.10s/it]
+Generating pmappings:  24%|██▍       | 10/42 [00:13<00:27,  1.17it/s]
+Generating pmappings:  40%|████      | 17/42 [00:13<00:06,  4.09it/s]
+Generating pmappings:  57%|█████▋    | 24/42 [00:13<00:02,  7.71it/s]
+Generating pmappings:  62%|██████▏   | 26/42 [00:13<00:01,  8.08it/s]
+Generating pmappings:  67%|██████▋   | 28/42 [00:13<00:01,  9.03it/s]
+Generating pmappings:  71%|███████▏  | 30/42 [00:14<00:01,  7.37it/s]
+Generating pmappings:  76%|███████▌  | 32/42 [00:14<00:01,  7.58it/s]
+Generating pmappings:  81%|████████  | 34/42 [00:14<00:00,  8.71it/s]
+Generating pmappings:  86%|████████▌ | 36/42 [00:14<00:00,  9.50it/s]
+Generating pmappings:  90%|█████████ | 38/42 [00:15<00:00,  8.80it/s]
+Generating pmappings:  95%|█████████▌| 40/42 [00:15<00:00, 10.39it/s]
+Generating pmappings: 100%|██████████| 42/42 [00:15<00:00, 11.36it/s]
+Generating pmappings: 100%|██████████| 42/42 [00:15<00:00,  2.73it/s]
+
+Grouping pmappings for Matmul0:   0%|          | 0/8 [00:00<?, ?it/s]
+Grouping pmappings for Matmul0:  12%|█▎        | 1/8 [00:00<00:05,  1.27it/s]
+Grouping pmappings for Matmul0: 100%|██████████| 8/8 [00:00<00:00, 10.17it/s]
+
+Grouping pmappings for Matmul1:   0%|          | 0/9 [00:00<?, ?it/s]
+Grouping pmappings for Matmul1:  11%|█         | 1/9 [00:00<00:06,  1.28it/s]
+Grouping pmappings for Matmul1: 100%|██████████| 9/9 [00:00<00:00, 11.50it/s]
+
+Grouping pmappings for Matmul2:   0%|          | 0/3 [00:00<?, ?it/s]
+Grouping pmappings for Matmul2: 100%|██████████| 3/3 [00:00<00:00, 136.34it/s]
+
+Compressing pmappings:   0%|          | 0/3 [00:00<?, ?it/s]
+Compressing pmappings: 100%|██████████| 3/3 [00:00<00:00, 52.02it/s]
+
+Joining pmappings for Matmul0 <--> Matmul1 (2/3):   0%|          | 0/15 [00:00<?, ?it/s]
+Joining pmappings for Matmul0 <--> Matmul1 (2/3): 100%|██████████| 15/15 [00:00<00:00, 285.10it/s]
+
+Grouping pmappings:   0%|          | 0/2 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 2/2 [00:00<00:00, 87.04it/s]
+
+Joining pmappings for Matmul1 <--> Matmul2 (3/3):   0%|          | 0/8 [00:00<?, ?it/s]
+Joining pmappings for Matmul1 <--> Matmul2 (3/3):  12%|█▎        | 1/8 [00:00<00:06,  1.16it/s]
+Joining pmappings for Matmul1 <--> Matmul2 (3/3): 100%|██████████| 8/8 [00:00<00:00,  9.25it/s]
+
+Final consolidate:   0%|          | 0/8 [00:00<?, ?it/s]
+Final consolidate: 100%|██████████| 8/8 [00:00<00:00, 695.15it/s]
+
+Grouping pmappings:   0%|          | 0/1 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 1/1 [00:02<00:00,  2.84s/it]
+Grouping pmappings: 100%|██████████| 1/1 [00:02<00:00,  2.84s/it]
+
+Getting energy, latency, and leak power for components running :   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul0:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul1:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 20.36it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 20.36it/s]
+
+Generating jobs:   0%|          | 0/3 [00:00<?, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul0: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul1: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul2: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul0: 12it [00:00, 167.14it/s]
+
+
+Generating pmapping templates for compute MAC Einsum Matmul2: 12it [00:00, 149.29it/s]
+
+
+Generating jobs:  33%|███▎      | 1/3 [00:00<00:00,  8.64it/s]
+Generating pmapping templates for compute MAC Einsum Matmul1: 19it [00:00, 179.78it/s]
+Generating pmapping templates for compute MAC Einsum Matmul1: 24it [00:00, 189.36it/s]
+
+
+Generating jobs: 100%|██████████| 3/3 [00:00<00:00, 16.50it/s]
+
+Generating pmappings:   0%|          | 0/42 [00:00<?, ?it/s]
+Generating pmappings:   2%|▏         | 1/42 [00:00<00:06,  6.64it/s]
+Generating pmappings:   7%|▋         | 3/42 [00:00<00:03, 12.97it/s]
+Generating pmappings:  12%|█▏        | 5/42 [00:00<00:05,  6.71it/s]
+Generating pmappings:  19%|█▉        | 8/42 [00:00<00:03, 11.12it/s]
+Generating pmappings:  26%|██▌       | 11/42 [00:00<00:02, 15.17it/s]
+Generating pmappings:  33%|███▎      | 14/42 [00:01<00:02, 10.87it/s]
+Generating pmappings:  48%|████▊     | 20/42 [00:01<00:01, 18.29it/s]
+Generating pmappings:  55%|█████▍    | 23/42 [00:01<00:01, 15.67it/s]
+Generating pmappings:  67%|██████▋   | 28/42 [00:01<00:00, 21.25it/s]
+Generating pmappings:  76%|███████▌  | 32/42 [00:02<00:00, 16.35it/s]
+Generating pmappings:  86%|████████▌ | 36/42 [00:02<00:00, 19.83it/s]
+Generating pmappings:  93%|█████████▎| 39/42 [00:02<00:00, 18.04it/s]
+Generating pmappings: 100%|██████████| 42/42 [00:02<00:00, 13.73it/s]
+Generating pmappings: 100%|██████████| 42/42 [00:02<00:00, 14.75it/s]
+
+Grouping pmappings for Matmul0:   0%|          | 0/8 [00:00<?, ?it/s]
+Grouping pmappings for Matmul0:  12%|█▎        | 1/8 [00:00<00:05,  1.23it/s]
+Grouping pmappings for Matmul0: 100%|██████████| 8/8 [00:00<00:00,  9.83it/s]
+
+Grouping pmappings for Matmul1:   0%|          | 0/11 [00:00<?, ?it/s]
+Grouping pmappings for Matmul1: 100%|██████████| 11/11 [00:00<00:00, 229.37it/s]
+
+Grouping pmappings for Matmul2:   0%|          | 0/8 [00:00<?, ?it/s]
+Grouping pmappings for Matmul2: 100%|██████████| 8/8 [00:00<00:00, 146.59it/s]
+
+Compressing pmappings:   0%|          | 0/3 [00:00<?, ?it/s]
+Compressing pmappings: 100%|██████████| 3/3 [00:00<00:00, 33.17it/s]
+
+Joining pmappings for Matmul0 <--> Matmul1 (2/3):   0%|          | 0/25 [00:00<?, ?it/s]
+Joining pmappings for Matmul0 <--> Matmul1 (2/3):  12%|█▏        | 3/25 [00:00<00:06,  3.62it/s]
+Joining pmappings for Matmul0 <--> Matmul1 (2/3): 100%|██████████| 25/25 [00:00<00:00, 30.19it/s]
+
+Grouping pmappings:   0%|          | 0/2 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 2/2 [00:00<00:00, 86.58it/s]
+
+Joining pmappings for Matmul1 <--> Matmul2 (3/3):   0%|          | 0/15 [00:00<?, ?it/s]
+Joining pmappings for Matmul1 <--> Matmul2 (3/3): 100%|██████████| 15/15 [00:00<00:00, 330.01it/s]
+
+Final consolidate:   0%|          | 0/15 [00:00<?, ?it/s]
+Final consolidate: 100%|██████████| 15/15 [00:00<00:00, 660.71it/s]
+
+Grouping pmappings:   0%|          | 0/1 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 1/1 [00:00<00:00, 83.33it/s]
+
+Getting energy, latency, and leak power for components running :   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul0:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul0:  33%|███▎      | 1/3 [00:00<00:00,  7.24it/s]
+Getting energy, latency, and leak power for components running Matmul1:  33%|███▎      | 1/3 [00:00<00:00,  7.24it/s]
+Getting energy, latency, and leak power for components running Matmul2:  33%|███▎      | 1/3 [00:00<00:00,  7.24it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 13.69it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 12.57it/s]
+
+Generating jobs:   0%|          | 0/3 [00:00<?, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul0: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul2: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul1: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul0: 12it [00:00, 162.25it/s]
+
+
+Generating pmapping templates for compute MAC Einsum Matmul2: 12it [00:00, 163.89it/s]
+
+
+Generating jobs:  33%|███▎      | 1/3 [00:00<00:00,  8.51it/s]
+Generating pmapping templates for compute MAC Einsum Matmul1: 20it [00:00, 198.52it/s]
+Generating pmapping templates for compute MAC Einsum Matmul1: 24it [00:00, 199.81it/s]
+
+
+Generating jobs: 100%|██████████| 3/3 [00:00<00:00, 17.64it/s]
+
+Generating pmappings:   0%|          | 0/42 [00:00<?, ?it/s]
+Generating pmappings:   2%|▏         | 1/42 [00:00<00:06,  6.35it/s]
+Generating pmappings:  12%|█▏        | 5/42 [00:00<00:03, 12.28it/s]
+Generating pmappings:  17%|█▋        | 7/42 [00:00<00:02, 14.09it/s]
+Generating pmappings:  21%|██▏       | 9/42 [00:00<00:02, 11.94it/s]
+Generating pmappings:  29%|██▊       | 12/42 [00:00<00:01, 15.46it/s]
+Generating pmappings:  38%|███▊      | 16/42 [00:01<00:01, 19.77it/s]
+Generating pmappings:  55%|█████▍    | 23/42 [00:01<00:00, 26.99it/s]
+Generating pmappings:  64%|██████▍   | 27/42 [00:01<00:00, 28.60it/s]
+Generating pmappings:  71%|███████▏  | 30/42 [00:01<00:00, 24.90it/s]
+Generating pmappings:  79%|███████▊  | 33/42 [00:01<00:00, 22.03it/s]
+Generating pmappings:  86%|████████▌ | 36/42 [00:01<00:00, 23.40it/s]
+Generating pmappings:  93%|█████████▎| 39/42 [00:01<00:00, 24.50it/s]
+Generating pmappings: 100%|██████████| 42/42 [00:02<00:00, 19.65it/s]
+Generating pmappings: 100%|██████████| 42/42 [00:02<00:00, 20.08it/s]
+
+Grouping pmappings for Matmul0:   0%|          | 0/3 [00:00<?, ?it/s]
+Grouping pmappings for Matmul0: 100%|██████████| 3/3 [00:00<00:00, 137.11it/s]
+
+Grouping pmappings for Matmul1:   0%|          | 0/9 [00:00<?, ?it/s]
+Grouping pmappings for Matmul1:  11%|█         | 1/9 [00:00<00:06,  1.30it/s]
+Grouping pmappings for Matmul1: 100%|██████████| 9/9 [00:00<00:00, 11.66it/s]
+
+Grouping pmappings for Matmul2:   0%|          | 0/8 [00:00<?, ?it/s]
+Grouping pmappings for Matmul2: 100%|██████████| 8/8 [00:00<00:00, 234.33it/s]
+
+Compressing pmappings:   0%|          | 0/3 [00:00<?, ?it/s]
+Compressing pmappings: 100%|██████████| 3/3 [00:00<00:00, 42.45it/s]
+
+Joining pmappings for Matmul0 <--> Matmul1 (2/3):   0%|          | 0/13 [00:00<?, ?it/s]
+Joining pmappings for Matmul0 <--> Matmul1 (2/3): 100%|██████████| 13/13 [00:00<00:00, 226.98it/s]
+
+Grouping pmappings:   0%|          | 0/2 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 2/2 [00:00<00:00, 60.17it/s]
+
+Joining pmappings for Matmul1 <--> Matmul2 (3/3):   0%|          | 0/10 [00:00<?, ?it/s]
+Joining pmappings for Matmul1 <--> Matmul2 (3/3): 100%|██████████| 10/10 [00:00<00:00, 170.50it/s]
+
+Final consolidate:   0%|          | 0/10 [00:00<?, ?it/s]
+Final consolidate: 100%|██████████| 10/10 [00:00<00:00, 426.16it/s]
+
+Grouping pmappings:   0%|          | 0/1 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 1/1 [00:00<00:00, 138.21it/s]
+
+Getting energy, latency, and leak power for components running :   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul0:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul1:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul1:  67%|██████▋   | 2/3 [00:00<00:00, 19.72it/s]
+Getting energy, latency, and leak power for components running Matmul2:  67%|██████▋   | 2/3 [00:00<00:00, 19.72it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 20.12it/s]
+
+Generating jobs:   0%|          | 0/3 [00:00<?, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul2: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul0: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul1: 0it [00:00, ?it/s]
+Generating pmapping templates for compute MAC Einsum Matmul0: 12it [00:00, 165.57it/s]
+
+
+Generating pmapping templates for compute MAC Einsum Matmul2: 12it [00:00, 163.31it/s]
+
+
+Generating jobs:  33%|███▎      | 1/3 [00:00<00:00,  8.60it/s]
+Generating pmapping templates for compute MAC Einsum Matmul1: 21it [00:00, 201.68it/s]
+Generating pmapping templates for compute MAC Einsum Matmul1: 24it [00:00, 206.60it/s]
+
+
+Generating jobs: 100%|██████████| 3/3 [00:00<00:00, 17.69it/s]
+
+Generating pmappings:   0%|          | 0/42 [00:00<?, ?it/s]
+Generating pmappings:   2%|▏         | 1/42 [00:00<00:07,  5.19it/s]
+Generating pmappings:  12%|█▏        | 5/42 [00:00<00:01, 19.72it/s]
+Generating pmappings:  21%|██▏       | 9/42 [00:00<00:02, 15.29it/s]
+Generating pmappings:  31%|███       | 13/42 [00:00<00:01, 20.08it/s]
+Generating pmappings:  38%|███▊      | 16/42 [00:01<00:02, 12.74it/s]
+Generating pmappings:  71%|███████▏  | 30/42 [00:01<00:00, 32.24it/s]
+Generating pmappings:  86%|████████▌ | 36/42 [00:01<00:00, 29.71it/s]
+Generating pmappings:  98%|█████████▊| 41/42 [00:02<00:00, 15.41it/s]
+Generating pmappings: 100%|██████████| 42/42 [00:02<00:00, 17.25it/s]
+
+Grouping pmappings for Matmul0:   0%|          | 0/8 [00:00<?, ?it/s]
+Grouping pmappings for Matmul0: 100%|██████████| 8/8 [00:00<00:00, 235.83it/s]
+
+Grouping pmappings for Matmul1:   0%|          | 0/11 [00:00<?, ?it/s]
+Grouping pmappings for Matmul1:   9%|▉         | 1/11 [00:00<00:09,  1.06it/s]
+Grouping pmappings for Matmul1: 100%|██████████| 11/11 [00:00<00:00, 11.69it/s]
+
+Grouping pmappings for Matmul2:   0%|          | 0/8 [00:00<?, ?it/s]
+Grouping pmappings for Matmul2: 100%|██████████| 8/8 [00:00<00:00, 173.78it/s]
+
+Compressing pmappings:   0%|          | 0/3 [00:00<?, ?it/s]
+Compressing pmappings: 100%|██████████| 3/3 [00:00<00:00, 34.33it/s]
+
+Joining pmappings for Matmul0 <--> Matmul1 (2/3):   0%|          | 0/23 [00:00<?, ?it/s]
+Joining pmappings for Matmul0 <--> Matmul1 (2/3): 100%|██████████| 23/23 [00:00<00:00, 407.98it/s]
+
+Grouping pmappings:   0%|          | 0/2 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 2/2 [00:00<00:00, 84.60it/s]
+
+Joining pmappings for Matmul1 <--> Matmul2 (3/3):   0%|          | 0/16 [00:00<?, ?it/s]
+Joining pmappings for Matmul1 <--> Matmul2 (3/3): 100%|██████████| 16/16 [00:00<00:00, 474.70it/s]
+
+Final consolidate:   0%|          | 0/16 [00:00<?, ?it/s]
+Final consolidate: 100%|██████████| 16/16 [00:00<00:00, 1276.10it/s]
+
+Grouping pmappings:   0%|          | 0/1 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 1/1 [00:00<00:00, 150.56it/s]
+
+Getting energy, latency, and leak power for components running :   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul0:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul1:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 22.43it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 22.43it/s]
+
+Generating jobs:   0%|          | 0/3 [00:00<?, ?it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul0: 0it [00:00, ?it/s][A
+
+Generating pmapping templates for compute MAC Einsum Matmul0: 8it [00:00, 52.61it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul0: 12it [00:00, 72.90it/s]
+
+Generating jobs:  33%|███▎      | 1/3 [00:00<00:00,  5.01it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul1: 0it [00:00, ?it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul1: 24it [00:00, 209.25it/s]
+
+Generating jobs:  67%|██████▋   | 2/3 [00:00<00:00,  5.87it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul2: 0it [00:00, ?it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul2: 12it [00:00, 170.33it/s]
+
+Generating jobs: 100%|██████████| 3/3 [00:00<00:00,  6.75it/s]
+Generating jobs: 100%|██████████| 3/3 [00:00<00:00,  6.37it/s]
+
+Getting energy, latency, and leak power for components running :   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul0:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul1:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 30.69it/s]
+
+Generating jobs:   0%|          | 0/3 [00:00<?, ?it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul0: 0it [00:00, ?it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul0: 12it [00:00, 168.85it/s]
+
+
+Generating pmapping templates for compute MAC Einsum Matmul1: 0it [00:00, ?it/s][A
+
+Generating pmapping templates for compute MAC Einsum Matmul1: 22it [00:00, 216.66it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul1: 24it [00:00, 230.56it/s]
+
+Generating jobs:  67%|██████▋   | 2/3 [00:00<00:00,  8.62it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul2: 0it [00:00, ?it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul2: 12it [00:00, 180.10it/s]
+
+Generating jobs: 100%|██████████| 3/3 [00:00<00:00,  9.05it/s]
+
+Getting energy, latency, and leak power for components running :   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul0:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul1:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 25.59it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 25.59it/s]
+
+Generating jobs:   0%|          | 0/3 [00:00<?, ?it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul0: 0it [00:00, ?it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul0: 12it [00:00, 174.26it/s]
+
+Generating jobs:  33%|███▎      | 1/3 [00:00<00:00,  9.80it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul1: 0it [00:00, ?it/s][A
+
+Generating pmapping templates for compute MAC Einsum Matmul1: 23it [00:00, 218.57it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul1: 24it [00:00, 213.46it/s]
+
+Generating jobs:  67%|██████▋   | 2/3 [00:00<00:00,  8.08it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul2: 0it [00:00, ?it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul2: 12it [00:00, 154.54it/s]
+
+Generating jobs: 100%|██████████| 3/3 [00:00<00:00,  8.87it/s]
+
+Getting energy, latency, and leak power for components running :   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul0:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul1:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 27.61it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 27.61it/s]
+
+Generating jobs:   0%|          | 0/3 [00:00<?, ?it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul0: 0it [00:00, ?it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul0: 12it [00:00, 165.55it/s]
+
+Generating jobs:  33%|███▎      | 1/3 [00:00<00:00,  9.46it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul1: 0it [00:00, ?it/s][A
+
+Generating pmapping templates for compute MAC Einsum Matmul1: 1it [00:00,  8.64it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul1: 24it [00:00, 109.80it/s]
+
+Generating jobs:  67%|██████▋   | 2/3 [00:00<00:00,  5.25it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul2: 0it [00:00, ?it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul2: 12it [00:00, 163.09it/s]
+
+Generating jobs: 100%|██████████| 3/3 [00:00<00:00,  6.37it/s]
+Generating jobs: 100%|██████████| 3/3 [00:00<00:00,  6.35it/s]
+
+Getting energy, latency, and leak power for components running :   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul0:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul1:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2:   0%|          | 0/3 [00:00<?, ?it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 20.77it/s]
+Getting energy, latency, and leak power for components running Matmul2: 100%|██████████| 3/3 [00:00<00:00, 20.77it/s]
+
+Generating jobs:   0%|          | 0/3 [00:00<?, ?it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul0: 0it [00:00, ?it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul0: 12it [00:00, 169.34it/s]
+
+Generating jobs:  33%|███▎      | 1/3 [00:00<00:00,  9.45it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul1: 0it [00:00, ?it/s][A
+
+Generating pmapping templates for compute MAC Einsum Matmul1: 22it [00:00, 217.07it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul1: 24it [00:00, 215.54it/s]
+
+Generating jobs:  67%|██████▋   | 2/3 [00:00<00:00,  7.84it/s]
+
+Generating pmapping templates for compute MAC Einsum Matmul2: 0it [00:00, ?it/s][A
+Generating pmapping templates for compute MAC Einsum Matmul2: 12it [00:00, 165.41it/s]
+
+Generating jobs: 100%|██████████| 3/3 [00:00<00:00,  8.50it/s]
+Generating jobs: 100%|██████████| 3/3 [00:00<00:00,  8.47it/s]
+
+Grouping pmappings:   0%|          | 0/7 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 7/7 [00:00<00:00, 41.19it/s]
+Grouping pmappings: 100%|██████████| 7/7 [00:00<00:00, 41.19it/s]
+
+Grouping pmappings:   0%|          | 0/9 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 9/9 [00:00<00:00, 234.27it/s]
+
+Grouping pmappings:   0%|          | 0/7 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 7/7 [00:00<00:00, 158.57it/s]
+
+Compressing pmappings:   0%|          | 0/3 [00:00<?, ?it/s]
+Compressing pmappings: 100%|██████████| 3/3 [00:00<00:00, 85.63it/s]
+
+Joining pmappings for Matmul0 <--> Matmul1 (2/3):   0%|          | 0/27 [00:00<?, ?it/s]
+Joining pmappings for Matmul0 <--> Matmul1 (2/3):  63%|██████▎   | 17/27 [00:00<00:00, 161.85it/s]
+Joining pmappings for Matmul0 <--> Matmul1 (2/3): 100%|██████████| 27/27 [00:00<00:00, 138.85it/s]
+
+Grouping pmappings:   0%|          | 0/2 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 2/2 [00:00<00:00, 158.10it/s]
+
+Joining pmappings for Matmul1 <--> Matmul2 (3/3):   0%|          | 0/16 [00:00<?, ?it/s]
+Joining pmappings for Matmul1 <--> Matmul2 (3/3):  69%|██████▉   | 11/16 [00:00<00:00, 105.46it/s]
+Joining pmappings for Matmul1 <--> Matmul2 (3/3): 100%|██████████| 16/16 [00:00<00:00, 112.04it/s]
+
+Final consolidate:   0%|          | 0/16 [00:00<?, ?it/s]
+Final consolidate: 100%|██████████| 16/16 [00:00<?, ?it/s]
+
+Grouping pmappings:   0%|          | 0/1 [00:00<?, ?it/s]
+Grouping pmappings: 100%|██████████| 1/1 [00:00<00:00, 124.83it/s]
+------------------------------ Captured log call ------------------------------
+WARNING  root:config.py:30 Loading configuration file from C:\Users\hjiangbq\Desktop\GitHub仓库\accelforge-streaming-dse\research\runtime\windows_config.yaml
+WARNING  root:make_pmappings.py:171 Einsum Matmul0 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:171 Einsum Matmul1 has 18 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:171 Einsum Matmul2 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:540 Insufficient jobs available to utilize available threads. Splitting jobs into smaller chunks.
+WARNING  root:config.py:30 Loading configuration file from C:\Users\hjiangbq\Desktop\GitHub仓库\accelforge-streaming-dse\research\runtime\windows_config.yaml
+WARNING  root:make_pmappings.py:171 Einsum Matmul0 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:171 Einsum Matmul1 has 18 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:171 Einsum Matmul2 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:540 Insufficient jobs available to utilize available threads. Splitting jobs into smaller chunks.
+WARNING  root:config.py:30 Loading configuration file from C:\Users\hjiangbq\Desktop\GitHub仓库\accelforge-streaming-dse\research\runtime\windows_config.yaml
+WARNING  root:make_pmappings.py:171 Einsum Matmul0 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:171 Einsum Matmul1 has 18 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:171 Einsum Matmul2 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:540 Insufficient jobs available to utilize available threads. Splitting jobs into smaller chunks.
+WARNING  root:config.py:30 Loading configuration file from C:\Users\hjiangbq\Desktop\GitHub仓库\accelforge-streaming-dse\research\runtime\windows_config.yaml
+WARNING  root:make_pmappings.py:171 Einsum Matmul0 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:171 Einsum Matmul1 has 18 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:171 Einsum Matmul2 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:540 Insufficient jobs available to utilize available threads. Splitting jobs into smaller chunks.
+WARNING  root:config.py:30 Loading configuration file from C:\Users\hjiangbq\Desktop\GitHub仓库\accelforge-streaming-dse\research\runtime\windows_config.yaml
+WARNING  root:make_pmappings.py:171 Einsum Matmul0 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:171 Einsum Matmul1 has 18 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:171 Einsum Matmul2 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:config.py:30 Loading configuration file from C:\Users\hjiangbq\Desktop\GitHub仓库\accelforge-streaming-dse\research\runtime\windows_config.yaml
+WARNING  root:make_pmappings.py:171 Einsum Matmul0 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:171 Einsum Matmul1 has 18 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:171 Einsum Matmul2 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:config.py:30 Loading configuration file from C:\Users\hjiangbq\Desktop\GitHub仓库\accelforge-streaming-dse\research\runtime\windows_config.yaml
+WARNING  root:make_pmappings.py:171 Einsum Matmul0 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:171 Einsum Matmul1 has 18 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:171 Einsum Matmul2 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:config.py:30 Loading configuration file from C:\Users\hjiangbq\Desktop\GitHub仓库\accelforge-streaming-dse\research\runtime\windows_config.yaml
+WARNING  root:make_pmappings.py:171 Einsum Matmul0 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:171 Einsum Matmul1 has 18 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:171 Einsum Matmul2 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:config.py:30 Loading configuration file from C:\Users\hjiangbq\Desktop\GitHub仓库\accelforge-streaming-dse\research\runtime\windows_config.yaml
+WARNING  root:make_pmappings.py:171 Einsum Matmul0 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T0 in MainMemory] T-m  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  [W0 in GlobalBuffer] S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n0  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T0 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n0  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:174 	[W0,T1,T0 in MainMemory] T-n0  T-n1  [W0 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n0  [T0 in GlobalBuffer] T-n1  S-reuse_output-n0  S-reuse_input-n1  [W0 in Register] T-m  MAC computes Matmul0
+WARNING  root:make_pmappings.py:171 Einsum Matmul1 has 18 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T1 in GlobalBuffer] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [T2 in GlobalBuffer] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1 in MainMemory] T-m  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T1 in MainMemory] T-m  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2 in MainMemory] T-m  T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-m  T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  [W1 in GlobalBuffer] S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n1  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T1 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n1  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:174 	[W1,T2,T1 in MainMemory] T-n1  T-n2  [W1 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n1  [T1 in GlobalBuffer] T-n2  S-reuse_output-n1  S-reuse_input-n2  [W1 in Register] T-m  MAC computes Matmul1
+WARNING  root:make_pmappings.py:171 Einsum Matmul2 has 12 pmapping templates:
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-m  T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3 in MainMemory] T-m  T-n2  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n2  T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  [W2 in GlobalBuffer] S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-m  T-n3  [T3 in GlobalBuffer] T-n2  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T2 in GlobalBuffer] T-n3  [T3 in GlobalBuffer] T-n2  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+WARNING  root:make_pmappings.py:174 	[W2,T3,T2 in MainMemory] T-n2  T-n3  [W2 in GlobalBuffer] T-m  [T3 in GlobalBuffer] T-n2  [T2 in GlobalBuffer] T-n3  S-reuse_output-n2  S-reuse_input-n3  [W2 in Register] T-m  MAC computes Matmul2
+=========================== short test summary info ===========================
+FAILED research/joint_budget/test_native_shared.py::test_three_operator_nondyadic_control_matches_physical_policy_and_frontiers
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 793 warnings in 51.77s

@@ -1,0 +1,107 @@
+"""Shared native preparation control for NVDLA MatMul chains.
+
+This extends the engineering Stage 0-2 control to the research protocol. It is
+explicitly NOT the proposed new search algorithm: original FFM numeric Join,
+ordered Tile policy and packed architecture membership are preserved.
+"""
+import os
+import time
+from unittest.mock import patch
+
+from accelforge.mapper.FFM._join_pmappings.pmapping_group import PmappingGroup
+from accelforge.mapper.FFM.generation_contract import GenerationContract
+from research.tracking_audit import common
+from research.tracking_audit.shape_capacity_audit import build
+from research.joint_search import ffm_backend as backend
+from research.joint_search.conditional_generator import ArchitectureEnumerator, JointGenerationContract
+from research.joint_search.conditional_composer import compose, query_architecture
+
+
+def prepare(case, domain):
+    if case.workload != 'matmuls' or case.arch != 'nvdla' or case.params[0] < 2:
+        raise ValueError('NVDLA MatMul chain with at least two operators required')
+    if any(x & (x - 1) for x in case.params[1:]):
+        raise ValueError('perfect power-of-two matrix dimensions required')
+    if backend.tiles.IMPERFECT or backend.tiles.pareto_module.TOLERANCE != 0:
+        raise ValueError('perfect tiling and zero Pareto tolerance required')
+    _ = domain.labels  # Validate transport size before preparing anything.
+    upper = domain.upper
+    spec = build(case, (upper.px, upper.py), upper.capacity_bytes, common.RU)
+    evaluated = spec._spec_eval_expressions(eval_arch=False, eval_non_arch=True)
+    jobs = backend.pmapper.get_jobs(evaluated, common.RU, evaluated.workload.einsum_names, True)
+    def catalog(prepared):
+        return {str(name): sorted(job.mapping.compact_str() for group in groups.values() for job in group)
+                for name, groups in prepared.items()}
+    expected_catalog = catalog(jobs)
+    # Raw template grammar can change at spatial/rank boundaries. A virtual
+    # envelope is valid only when it has exactly each physical target's catalog.
+    # Charge these checks to preparation; do not silently change the grammar.
+    for point in domain.points:
+        physical = build(case, (point.px, point.py), point.capacity_bytes, common.RU)
+        physical = physical._spec_eval_expressions(eval_arch=False, eval_non_arch=True)
+        target_jobs = backend.pmapper.get_jobs(physical, common.RU, physical.workload.einsum_names, True)
+        if catalog(target_jobs) != expected_catalog:
+            raise ValueError('native template catalog changes across the shared domain')
+    backend.pmapper._fill_jobs_with_memories_to_track(jobs, evaluated, common.RU, False)
+    for groups in jobs.values():
+        for values in groups.values():
+            for job in values:
+                if any(float(getattr(node, 'leak_power', 0)) != 0 for node in job.flattened_arch):
+                    raise ValueError('shared fixed Tile costs require zero leakage')
+                job.capacity_fractions = ('JointArchitectureDomain', domain.labels)
+                job.capacity_target_bits = {}
+    return spec, jobs
+
+
+def search(case, domain, capture=None):
+    saved = {key: value for key, value in os.environ.items() if key.startswith('AF_')}
+    try:
+        common.clear_switches()
+        os.environ['AF_CAPACITY_MEMBERSHIP'] = 'bitset'
+        common.af.set_n_parallel_jobs(1)
+        started = time.perf_counter()
+        spec, jobs = prepare(case, domain)
+        preparation_s = time.perf_counter() - started
+        groups, objects, returned_jobs, enumeration = {}, {}, {}, []
+
+        def enumerate_joint(**kwargs):
+            for key in ('capacity_targets', 'capacity_exact', 'membership_format'):
+                kwargs.pop(key, None)
+            engine = ArchitectureEnumerator(kwargs.pop('objectives'), domain, **kwargs)
+            result = engine.run()
+            if capture is not None:
+                capture(engine.job, kwargs['symbols'], *result)
+            enumeration.append(dict(einsum=engine.job.einsum_name,
+                                    model_rows=len(result[0]), **engine.stats))
+            return result
+
+        phase = time.perf_counter()
+        with patch.object(backend.tiles, 'get_tile_shape_choices_for_targets', enumerate_joint):
+            for name, by_compatibility in jobs.items():
+                local_groups, local_objects, local_jobs = [], {}, []
+                for same in by_compatibility.values():
+                    _, gs, obs, js = backend.templates.make_pmappings_from_templates(same)
+                    local_groups.extend(gs)
+                    local_objects.update(obs)
+                    local_jobs.extend(js)
+                groups[name] = PmappingGroup.combine_combineable(local_groups, 'All')
+                objects[name], returned_jobs[name] = local_objects, local_jobs
+        generation_s = time.perf_counter() - phase
+        contract = JointGenerationContract(GenerationContract.capture(common.RU), domain,
+                                          version='native-chain-control-v1')
+        candidates = backend.package(spec, groups, objects, returned_jobs, contract)
+        phase = time.perf_counter()
+        result = compose(candidates)
+        join_s = time.perf_counter() - phase
+        phase = time.perf_counter()
+        outputs = {point: query_architecture(result, domain, point) for point in domain.points}
+        return outputs, dict(preparation_s=preparation_s, generation_s=generation_s,
+            join_s=join_s, query_s=time.perf_counter() - phase,
+            total_s=time.perf_counter() - started, enumeration=enumeration,
+            generated_rows=sum(len(group.mappings.data) for values in groups.values() for group in values),
+            shared_generation_calls=1, shared_join_calls=1,
+            method_kind='shared-preparation control; original native Join',
+            graph_constraint_pruning_enabled=False, new_algorithm_claim=False)
+    finally:
+        common.clear_switches()
+        os.environ.update(saved)

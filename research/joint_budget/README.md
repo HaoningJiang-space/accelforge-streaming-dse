@@ -2,9 +2,15 @@
 
 **SOTA acceptance remains unmet.** The native reference is reproduced, but the
 first graph-support abstraction certifies no useful nonlocal family elimination.
-There is no new BCGE optimizer or new-method speedup claim in these results.
+There is no BCGE optimizer in the initial graph-support results.
 
-The final Chat review accepts the infrastructure evidence and marks the research
+**Continued exploration:** [REGION_SEARCH.md](REGION_SEARCH.md) describes the new
+on-demand global EDP route, its admissibility audit and controls. The first native
+96-point diagnostic skips 14/24 shape solves and 56/96 hardware points, preserving
+all three global EDP optima exactly. This is a geometry-bound control, not an
+external SOTA or novel buffer/fusion optimization result.
+
+The initial Chat review accepts the infrastructure evidence and marks that research
 gate **FAIL**. Both user SOTA criteria remain unfulfilled. The unresolved proof
 obligation is one sound, nontrivial pre-expansion predicate together with bucket
 closedness: deleting it must preserve pooled Pareto, ordered fallback and native
