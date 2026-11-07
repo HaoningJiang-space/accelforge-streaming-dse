@@ -239,6 +239,18 @@ gets 12.26%, 5.10%, and 14.64%. These are still models of execution within
 each phase, using native tensor action counts. They do not establish an
 independent memory-traffic trace or a cycle-accurate schedule.
 
+The [bounded online phase search](../joint_budget/results/refined_tail_3mm96/online_bounded_phase.json)
+matched all three Event phase costs by query 22. The hardware was 96×64,
+64×96 and 64×96 at the three budgets, compared with 64×96, 48×128 and
+48×128 in the perfect Event run. The algorithm considers the exact
+geometry first, then uses the physical prior to select among the remaining
+geometry/SRAM/tail choices. After evaluating the bit actions, the
+whole-operator port result is a lower bound on the sum of phase times
+provided that their counts conserve. It safely avoids 30 isolated-phase
+checks when this bound already loses to every applicable incumbent.
+This result compares the same bounded refinement and phase objective; it
+does not certify the complete imperfect grammar.
+
 In a [sealed 392-candidate query benchmark](../joint_budget/results/tail_3mm96_query_benchmark_shared.json),
 both methods start from the same physically evaluated seeds and get the same
 score for a queried design. Physics-based ordering hit all three aggregate
@@ -252,6 +264,12 @@ Run the 3mm pipeline locally without a saved reference:
 
 ```powershell
 ./research/runtime/run_tail_codesign_windows.ps1 -OutputDirectory research/local_3mm_run
+```
+
+For the stricter phase objective:
+
+```powershell
+./research/runtime/run_tail_codesign_windows.ps1 -OutputDirectory research/local_3mm_phases -PhaseObjective -Queries 64
 ```
 
 Separately, reallocating 64 or 128 of 6,144 compute sites to the Attention
