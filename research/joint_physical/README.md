@@ -111,6 +111,42 @@ instance; the complete Event and heuristic searches have different
 completeness guarantees. The seed pass is charged again when the full
 search revisits that hardware.
 
+## Feedback ablation and scale holdout
+
+In a separate one-run ablation, all three proposal policies used the same
+physical domain, mapper, LP objective weights, numeric Join, and relaxed policy.
+Removing producer/consumer feedback from proxy generation reduced work a little
+but hurt all four budgets. An independent single-axis sweep recovered no EDP
+despite materializing 76 more rows and solving 156 more LPs than feedback:
+
+| Proposal policy | Native model rows | LP solves | Worst EDP / Event | Search, s |
+| --- | ---: | ---: | ---: | ---: |
+| Fusion property feedback | 4,131 | 5,244 | 1.000 | 39.17 |
+| Independent | 4,057 | 5,016 | 2.754 | 32.01 |
+| Independent single-axis sweep | 4,207 | 5,400 | 2.754 | 44.31 |
+
+These controls do not prove that all graph-blind samplers lose. They show the
+observed cost advantage cannot be attributed solely to more rows or LP solves.
+The [replays](../joint_budget/results/ablation_attention128/) cover all 96
+selected points and four budget incumbents for each method, with native
+action counts and exact reservations checked at each point.
+
+The [unretuned Attention256 holdout](../joint_budget/results/holdout_attention256/)
+finished in 54.24 s vs 137.83 s for Event, but EDP was worse by 0.34%, 0%,
+3.02%, and 6.06%. Feeding live properties from the actual numeric QK→proxy
+prefix to AV did not repair those gaps and raised the time to 95.97 s. That
+heuristic is retained as a diagnostic; it is not the default.
+
+The [exact-anchor control and hybrid](../joint_budget/results/refine_attention256/)
+first exhaustively solve the same geometry-ordered first shape as Event. The
+hybrid then generates mappings conditioned on all other 92 physical points.
+Both matched all four Event targets. The hybrid used 55.91 s, 17,625 native
+model rows and 809,218 Join pairs, compared with 137.83 s, 274,408 rows and
+9,291,036 pairs for Event. All improvements came from the anchor itself
+(21.71 s on its own). This repairs the tested holdout's quality, but does not
+show a time-to-target advantage over Event's first shape or certify any other
+shape's optimal mapping.
+
 External systems still require matching physical constraints and mapping scope
 under the same evaluator. Published GPU runtime, Gemmini EDP and MAESTRO
 estimates are not directly comparable to these native NVDLA scores.
