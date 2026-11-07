@@ -121,6 +121,22 @@ and residual all automatic candidates fail allocation at this budget. The
 complete configured STREAM sweep reaches the same EDP as the memoized sweep
 on all three graphs. The gain against that reference is search time.
 
+The [132 KiB replication](results/dag_host_matched_132k.json) matches all 78
+configurations, including stable allocation-IR fingerprints and native solver
+statuses. The full sweep takes 29.56 and 79.43 seconds for GLU and diamond.
+Reuse takes 16.99 and 40.20 seconds. GLU retains its 15.08% advantage over
+singleton-first. Diamond changes from a 48×128 array cut after `Merge` at
+128 KiB to a 32×192 array cut after `Right` at 132 KiB. The two-stage control
+also finds the latter design. On diamond, the two methods reach the best EDP
+at nearly the same time at both budgets, even with the full-sweep speedup.
+
+The 128 KiB residual result exhibits a feasibility interaction. A 64×96
+array wins on the per-layer plan. STREAM rejects its `Merge`–`Y` fusion
+under the shared generator and solve contract. The same fusion succeeds at
+32×192 and lowers total EDP from 1.968e12 to 1.659e12 pJ·cycles relative to
+the two-stage control. This is a comparison of the shared evaluator's
+allocations at this budget.
+
 The [asymmetric order audit](results/dag_host_order_128k.json) offers the
 declared order and the order minimizing peak live row width, using the same
 three shapes and every zero- or one-cut partition. STREAM's original automatic

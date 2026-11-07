@@ -238,7 +238,8 @@ def run(names, budgets, repeats, limit, method):
                 print(json.dumps(dict(case=name, budget=budget, trial=trial,
                     sweep_s=outcome["sweep"]["wall_s"], alternate_s=alternate["wall_s"],
                     equivalent=evidence.get("equivalent"), best_equal=evidence.get("best_equal"),
-                    singleton_first_gain=evidence.get("singleton_first_gain"), reuse=alternate.get("reuse"),
+                    singleton_first_gain=evidence.get("singleton_first_gain"),
+                    hits=alternate.get("reuse", {}).get("hits"),
                     mismatches=len(evidence["mismatches"]))), flush=True)
     stream_path = Path(__file__).resolve().parents[2] / "libraries" / "stream"
     revision = subprocess.check_output(["git", "-C", str(stream_path), "rev-parse", "HEAD"], text=True).strip()
