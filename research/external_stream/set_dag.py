@@ -6,6 +6,7 @@ from itertools import combinations, product
 import json
 from math import ceil, isclose
 from pathlib import Path
+from random import Random
 import subprocess
 from time import perf_counter
 
@@ -161,16 +162,20 @@ def guided_seeds(graph, shape, capacity, pool, count):
     return result
 
 
-def search(graph, capacity, rounds, seed, guided):
+def search(graph, capacity, rounds, seed, policy, anchors, pool):
     start = perf_counter()
-    initial = {"type": "T", "children": [{"layer": i} for i in range(len(graph.ops))]}
-    pool = tuple(seed_pool(graph)) if guided else ()
+    count = min(rounds//4, 16, rounds+1-len(anchors)-30, len(pool))
+    if count < 0:
+        raise ValueError("search budget cannot price the common anchors and run native SA")
     trials = []
     for shape in SHAPES:
-        if guided:
-            seeds = [initial, *guided_seeds(graph, shape, capacity, pool, min(rounds//4, 16))]
+        if policy == "guided":
+            candidates = guided_seeds(graph, shape, capacity, pool, count)
+        elif policy == "uniform":
+            candidates = [record[-1] for record in Random(seed).sample(pool, count)]
         else:
-            seeds = [initial]
+            candidates = []
+        seeds = [*anchors, *candidates]
         remaining = rounds+1-len(seeds)
         result = evaluate(graph, shape, capacity, seeds, remaining, seed)
         if not result["feasible"]:
@@ -184,7 +189,8 @@ def search(graph, capacity, rounds, seed, guided):
     budget_used = sum(row["evaluations"] for row in trials)
     if budget_used != len(SHAPES) * (rounds+1):
         raise ValueError("SET searches did not use equal candidate budgets")
-    return dict(best=best, replay=replay, evaluations=budget_used, wall_s=wall, trials=trials)
+    return dict(best=best, replay=replay, evaluations=budget_used, wall_s=wall, trials=trials,
+                common_anchors=len(anchors), extra_seeds=len(candidates))
 
 
 def main():
@@ -201,12 +207,19 @@ def main():
     cases = []
     for name, capacity, seed in product(args.cases, args.capacities, args.seeds):
         graph = CASES[name]()
+        start = perf_counter()
+        all_seeds = tuple(seed_pool(graph))
+        initial = {"type": "T", "children": [{"layer": i} for i in range(len(graph.ops))]}
+        anchors = [initial, *(candidate[-1] for candidate in all_seeds if len(candidate[0]) == 1)]
+        pool = tuple(candidate for candidate in all_seeds if 1 < len(candidate[0]) < len(graph.ops))
+        domain_s = perf_counter()-start
         # Reverse method order on alternate seeds to limit process warm-up bias.
-        methods = (False, True) if len(cases) % 2 == 0 else (True, False)
-        outcomes = {"guided" if mode else "set": search(graph, capacity, args.rounds, seed, mode)
-                    for mode in methods}
-        gain = 1 - outcomes["guided"]["best"]["edp"]/outcomes["set"]["best"]["edp"]
-        record = dict(case=name, capacity_bytes=capacity, seed=seed, edp_reduction=gain, **outcomes)
+        methods = ("native", "uniform", "guided") if len(cases) % 2 == 0 else ("guided", "uniform", "native")
+        outcomes = {mode: search(graph, capacity, args.rounds, seed, mode, anchors, pool) for mode in methods}
+        reference = min(outcomes[mode]["best"]["edp"] for mode in ("native", "uniform"))
+        gain = 1 - outcomes["guided"]["best"]["edp"]/reference
+        record = dict(case=name, capacity_bytes=capacity, seed=seed, edp_reduction=gain,
+                      common_domain_s=domain_s, seed_pool_size=len(all_seeds), **outcomes)
         cases.append(record)
         print(name, capacity, seed, gain, flush=True)
     with args.output.open("x", encoding="utf-8", newline="\n") as file:

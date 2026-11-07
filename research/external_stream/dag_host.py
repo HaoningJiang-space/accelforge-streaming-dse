@@ -339,12 +339,29 @@ def main():
     parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--limit", type=float, default=10)
     parser.add_argument("--method", choices=("compose", "memoized", "bounded"), default="memoized")
+    parser.add_argument("--reference-only", action="store_true", help="Run the full native STREAM sweep alone.")
     parser.add_argument("--extreme-cuts", action="store_true",
                         help="Use at most one cut or leave at most one boundary fused.")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.output.exists() or args.repeats < 1:
         raise FileExistsError("a new report and a positive repetition count are required")
+    if args.reference_only:
+        records = []
+        for name in args.cases:
+            graph = CASES[name]()
+            workload = expand_normalizations(build(graph))
+            for budget in args.budgets:
+                shapes = tuple((x, y, budget) for x, y in GEOMETRIES)
+                for _ in range(args.repeats):
+                    record = sweep(workload, shapes, args.limit, args.extreme_cuts)
+                    if any(row.get("status") == "PARTITION_MISMATCH" for row in record["trials"]):
+                        raise ValueError("STREAM did not honor the shared partition domain")
+                    records.append(dict(case=name, graph=verify_graph(workload, graph), budget=budget,
+                                        comparison=controls(record), **record))
+        with args.output.open("x", encoding="utf-8", newline="\n") as file:
+            file.write(json.dumps(records, indent=2, allow_nan=False) + "\n")
+        return
     method = {"compose": compose, "memoized": memoized, "bounded": bounded}[args.method]
     if args.extreme_cuts and method is compose:
         parser.error("the isolation diagnostic requires every cut subset")

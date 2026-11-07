@@ -215,3 +215,15 @@ fractional activity in the representative iteration. These reports establish
 the ordering and aggregate native costs. An exact port-event replay would
 require the unamortized firings and their actual transfer intervals. The audit
 therefore does not admit the allocations into the AccelForge port calendar.
+
+The [complete canonical asymmetric sweep](results/dag_full_cuts_asymmetric_128k.json)
+prices all 64 explicit cut subsets plus the stock automatic mapping on each of
+the three shapes. It records 170 successful allocations, 25 native rejections
+and no partition mismatches. The best configuration cuts after `Narrow` and
+`Merge` on a 32×192 array. Its 6.575e11 pJ·cycles is 40.5% lower than the
+earlier restricted-cut result. The tie-aware architecture-first control also
+finds this same design. These are native STREAM model costs.
+
+```powershell
+& $streamPython -X utf8 -m research.external_stream.dag_host --reference-only --cases asymmetric --budgets 131072 --output research/local_asymmetric_full.json
+```

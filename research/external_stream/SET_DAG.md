@@ -6,12 +6,13 @@
 ```
 
 The driver links the pinned official SET sources. Both searches call its
-`SchNode` allocator and cost model for complete RA-trees. The reference uses
-the native unconstrained `SA_search` starting from per-layer execution. The
-guided search spends part of its budget pricing ordered DAG partitions with
-temporal or spatial children, then runs the same native `SA_search` starting
-from its best seed. All legal topological orders and cut subsets enter the
-seed ranking. Subsequent annealing can produce deeper RA-trees in both arms.
+`SchNode` allocator and cost model for complete RA-trees. Every method prices
+the per-layer anchor and every zero-cut temporal and spatial anchor. One
+reference spends the remaining budget on native `SA_search`. A second prices
+uniformly sampled DAG partitions before native search. The guided method
+ranks the same pool of ordered DAG partitions before native search. All legal
+topological orders and cut subsets enter the common pool. Subsequent
+annealing can produce deeper RA-trees in all methods.
 The seed score uses estimated edge traffic, live SRAM, and array geometry.
 Only native SET EDP selects incumbents. Every seed and annealing candidate
 counts toward the same per-shape budget, including infeasible candidates.
@@ -32,9 +33,14 @@ energy components and whole-graph EDP. SET supplies native aggregate timing,
 including NoC and DRAM bounds. This experiment prices both methods within
 SET's model and does not establish per-port event equivalence to AccelForge.
 
-At [195 candidate evaluations per method](results/set_dag_equal_64.json),
-diamond improves in all five paired runs, with 40.0–61.5% lower EDP. Both
-methods choose the same array geometry for those runs. GLU improves in one
-run and ties in four, residual ties in all five, and asymmetric improves in
-one and ties in four. The raw records include search wall time and array
-choices. Candidate evaluations define the search budget in this experiment.
+The [initial diagnostic](results/set_dag_equal_64.json) seeded the reference
+only with the per-layer tree. SET's native parent-creation mutation excludes
+grouping all siblings, so a search started with multiple root children
+cannot reach a zero-cut tree. The guided arm could seed that component. The
+reported diagnostic gains therefore fail the common mapping-space gate.
+
+With common anchors and 195 native evaluations per method, the guided method
+ties or loses to the better control on every trial. The
+[512 KiB report](results/set_dag_common_64_512k.json) covers all four DAGs;
+the [256 KiB report](results/set_dag_common_64_256k.json) covers GLU and diamond.
+The reports retain wall times and the independently replayed winners.
