@@ -68,6 +68,13 @@ def model_from_capture(data, shape):
         model.spatial(factor,1,name)
     energy = model.lower(objectives['Total<SEP>energy'].formula,F(10**6))
     latency = model.lower(objectives['Total<SEP>latency'].formula,F(10**6))
+    model.source_contract = dict(symbols=[str(s) for s in symbols],
+        energy=sp.srepr(objectives['Total<SEP>energy'].formula),
+        latency=sp.srepr(objectives['Total<SEP>latency'].formula),
+        memory={name:sp.srepr(obj.formula) for name,obj in objectives.items()
+                if name.startswith('usage<SEP>memory<SEP>')},
+        spatial={name:sp.srepr(sp.cancel(expr)) for name,expr in spatial_factors.items()},
+        factor_relations=[(str(a),str(b)) for a,b in data['what_tiles_symbol'].what_tiles_symbol])
     model.finalize()
     return model,energy,latency
 

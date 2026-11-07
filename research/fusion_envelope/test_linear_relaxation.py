@@ -3,6 +3,7 @@ from itertools import product
 from types import SimpleNamespace
 
 import sympy as sp
+import pytest
 
 from .linear_relaxation import Relaxation, Affine, power_two
 
@@ -54,3 +55,10 @@ def test_constant_cost_proxy_has_no_symbolic_decisions():
     point = SimpleNamespace(px=1,py=1,capacity_bytes=1)
     cert = model.solve(Affine(F(5),{}),point)
     assert cert['bound'] == 5 and not cert['infeasible']
+
+
+def test_negative_max_cannot_use_a_nonnegative_auxiliary():
+    x = sp.Symbol('x',positive=True)
+    model = Relaxation((x,),{x:16})
+    with pytest.raises(ValueError,match='nonnegative Max'):
+        model.lower(sp.Max(-x,-2*x,evaluate=False))

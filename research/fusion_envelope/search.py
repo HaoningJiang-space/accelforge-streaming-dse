@@ -24,6 +24,7 @@ from research.joint_search.validation import frontier
 from research.tracking_audit import common
 from research.tracking_audit.shape_capacity_audit import validate_pick
 from .native import NativeEnvelope
+from research.joint_physical.replay import encode
 
 
 class PolicyOracle(EventOracle):
@@ -46,7 +47,7 @@ class PolicyOracle(EventOracle):
 
 def digest():
     value = hashlib.sha256()
-    for root in ('accelforge','research/tracking_audit','research/joint_search','research/joint_budget','research/fusion_envelope'):
+    for root in ('accelforge','research/tracking_audit','research/joint_search','research/joint_budget','research/fusion_envelope','research/joint_physical'):
         for path in sorted(Path(root).rglob('*.py')):
             value.update(path.as_posix().encode()+b'\0'+path.read_bytes())
     return value.hexdigest()
@@ -135,6 +136,7 @@ def run(method,workload,domain_name,output,reference_path=None,policy='original'
                         witness = validate_pick(case,shape,point.capacity_bytes,row)
                         if not witness['ok'] or not witness['feasible']:
                             raise AssertionError('physical incumbent validation failed')
+                        witness['mapping'] = encode(row['Total<SEP>mapping']())
                         cutoff = F.from_float(max(e,witness['energy']))*F.from_float(max(t,witness['latency']))*F(1000001,1000000)**2
                         record = dict(architecture=asdict(point),energy=e,latency=t,edp=edp,
                             cutoff=cutoff,witness=witness,witness_index=len(report['trajectory']))

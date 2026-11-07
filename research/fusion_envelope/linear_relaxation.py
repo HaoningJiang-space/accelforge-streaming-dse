@@ -110,6 +110,8 @@ class Relaxation:
     def lower(self, expression, scale=F(1)):
         expression = sp.sympify(expression)
         if expression.func.__name__ == 'Max':
+            if max(self.interval_lower(arg) for arg in expression.args)<0:
+                raise ValueError('nonnegative Max auxiliary is not proved for this expression')
             branches = [self.lower(arg, scale) for arg in expression.args]
             upper = max(self.interval_upper(arg)*scale for arg in expression.args)
             result = self.variable(max(0,upper))
@@ -142,6 +144,16 @@ class Relaxation:
         value = F()
         for c, exponent in self.parse_terms(expression):
             bound = int(sum((max if c>=0 else min)(0,e*u) for e,u in zip(exponent,self.upper)))
+            value += c*power_two(bound)
+        return value
+
+    def interval_lower(self, expression):
+        expression = sp.sympify(expression)
+        if expression.func.__name__=='Max':
+            return max(self.interval_lower(arg) for arg in expression.args)
+        value = F()
+        for c,exponent in self.parse_terms(expression):
+            bound = int(sum((min if c>=0 else max)(0,e*u) for e,u in zip(exponent,self.upper)))
             value += c*power_two(bound)
         return value
 

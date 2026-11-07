@@ -12,7 +12,20 @@ from types import SimpleNamespace
 
 from research.joint_budget.analytic_bounds import lower_bound
 from research.joint_budget.protocol import Hardware, ResourceBudget
-from .correlated import minimum_product
+
+def independent_product_bound(energy,latency,lines):
+    # Independent one-dimensional envelope: E(T)=max(E0,L_i-lambda_i*T).
+    energy = max([F(energy)]+[F(v) for w,v in lines if not w])
+    latency = F(latency)
+    descending = [(F(w),F(v)) for w,v in lines if w>0]
+    times = {latency}
+    for weight,value in descending:
+        times.add(max(latency,(value-energy)/weight))
+    for i,(a,b) in enumerate(descending):
+        for c,d in descending[i+1:]:
+            if a!=c and (b-d)/(a-c)>=latency:
+                times.add((b-d)/(a-c))
+    return min(t*max([energy]+[v-w*t for w,v in descending]) for t in times)
 
 
 def log2_floor(value):
@@ -117,7 +130,7 @@ def verify(path,reference_path):
             energy = max(analytic.energy,total[0]/10**6*F(99,100))
             latency = max(analytic.latency,total[1]/10**6*F(99,100))
             lines = [(w,v/10**6*F(99,100)) for w,v in zip(weights,total[2:])]
-            bound,_,_ = minimum_product(energy,latency,lines)
+            bound = independent_product_bound(energy,latency,lines)
             if energy<F(saved['energy']) or latency<F(saved['latency']) or bound<F(saved['edp']):
                 raise AssertionError('saved lower bound exceeds independently reconstructed proof')
     lookup = {tuple(r['architecture'].values()):r['vectors'] for r in ref['points']}
@@ -153,6 +166,9 @@ def verify(path,reference_path):
             raise AssertionError('global EDP changed')
     return dict(status='verified',dual_functions=dual_count,hardware_bounds=len(report['bounds']),
         full_native_vectors=vectors,physical_incumbent_cuts=len(report['certificates']),
+        exact_lp_dual_verified=True,independent_polygon_replay=True,
+        native_symbolic_inclusion_proved=False,floating_model_rounding_certified=False,
+        finite_reference_audited=True,
         global_edp_exact=True,scope='finite native-policy experiment; model inclusion proof remains separate')
 
 
