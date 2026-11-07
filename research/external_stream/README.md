@@ -60,3 +60,17 @@ tile is 524,288 bits (64 KiB). SET uses its own Polar core's storage
 hierarchy and costing; the export does not give a complete native
 loop/storage/lifetime mapping. Its IR was reproduced, but there is no valid
 common-cost witness from this run.
+
+## Branched DAGs
+
+The shared graph adapter checks dependencies, operator work and 8-bit tensor
+precision for each GEMM or pointwise operator. On GLU at 48×128 and 128 KiB,
+[the complete STREAM run](results/stream_dag_glu.json) finishes in 4,162 vendor
+cycles, with 278 cycles of inter-iteration overlap. The local DAG calendar
+issues each operator to completion for a row band. Its timing has no equivalent
+for the observed inter-iteration overlap, so this export is a translation audit.
+
+```powershell
+$streamPython = './libraries/stream/.venv/Scripts/python.exe'
+& $streamPython -X utf8 -m research.external_stream.dag --case glu --geometry 48 128 131072 --tile-search --output research/local_stream_glu.json
+```
