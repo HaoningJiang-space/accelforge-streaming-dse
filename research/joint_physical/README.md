@@ -164,6 +164,14 @@ terminal resource response at componentwise minima did not exclude any more.
 This audit used the generated candidate subset and never deleted a native
 row. It does not support deploying the capacity filter as a speed claim.
 
+On [native 3mm](../joint_budget/results/fusion_3mm12/), both proposal variants
+matched all three Event targets. The 12-point reference changes optimal
+array shape from 64×96 at 128 KiB to 32×192 at 132 KiB. Event took 73.96 s;
+feedback took 25.55 s, and independent proposals took 17.84 s. Both proposal
+runs replayed all 12 physical point mappings and three budget incumbents.
+This confirms that selecting both shape and mapping can matter, and that
+cross-operator feedback is useful on Attention but unnecessary on this 3mm slice.
+
 External systems still require matching physical constraints and mapping scope
 under the same evaluator. Published GPU runtime, Gemmini EDP and MAESTRO
 estimates are not directly comparable to these native NVDLA scores.

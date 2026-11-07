@@ -30,10 +30,12 @@ from .generator import PhysicalDomain,prepare
 
 
 class Proposer:
-    def __init__(self,domain,completion_limit=0,proposal_policy='feedback'):
+    def __init__(self,domain,completion_limit=0,proposal_policy='feedback',middle='QK_softmax'):
         self.domain = domain
         self.policy = proposal_policy
+        self.middle = middle
         self.properties = {p:set() for p in domain.points}
+        self.per_operator = {p:{} for p in domain.points}
         self.cache = {}
         self.processed = {}
         self.round = 0
@@ -42,6 +44,23 @@ class Proposer:
             proposed_integer_rows=0,feasible_integer_rows=0,materialized_rows=0,
             cartesian_tile_expansions=0,proxy_demands=0,complete_factor_assignments=0,
             native_hard_objectives=0)
+
+    def demand_properties(self,point):
+        if self.middle!='Matmul1':
+            return self.properties[point]
+        before = self.per_operator[point].get('Matmul0',set())
+        after = self.per_operator[point].get('Matmul2',set())
+        left = [dict(prop) for prop in sorted(before)]
+        right = [dict(prop) for prop in sorted(after)]
+        result = set(before | after)
+        # 3mm has two distinct boundary ranks n1 and n2, plus shared m.
+        # Propose both interface values only when their common assignments
+        # agree. This is a hint; the native Join still checks scope and order.
+        for a in left:
+            for b in right:
+                if a.keys() & b.keys() and all(a[key]==b[key] for key in a.keys() & b.keys()):
+                    result.add(tuple(sorted((a | b).items())))
+        return result
 
     def __call__(self,**data):
         for key in ('capacity_targets','capacity_exact','membership_format'):
@@ -211,8 +230,8 @@ class Proposer:
                     selected.setdefault(tuple(int(v) for v in row),set()).add(target)
                 continue
             demand_sets = [{}]
-            if self.policy in ('feedback','prefix') and (str(job.einsum_name)=='QK_softmax' or self.round>0):
-                for prop in sorted(self.properties[point]):
+            if self.policy in ('feedback','prefix') and (str(job.einsum_name)==self.middle or self.round>0):
+                for prop in sorted(self.demand_properties(point)):
                     prop = dict(prop)
                     fixed = {}
                     compatible = True
@@ -227,7 +246,7 @@ class Proposer:
                     if compatible and fixed:
                         demand_sets.append(fixed)
                         self.stats['proxy_demands'] += 1
-            elif self.policy=='independent-wide' and str(job.einsum_name)=='QK_softmax':
+            elif self.policy=='independent-wide' and str(job.einsum_name)==self.middle:
                 # A stronger graph-blind control: independently sweep each
                 # fused dimension's legal factor coordinates, without sibling
                 # proposals, their properties, or any reference result.
@@ -266,7 +285,9 @@ class Proposer:
                 for rank,symbol in fused:
                     prop.setdefault(rank,int(values[symbol] if symbol in values else symbol))
                 if prop:
-                    self.properties[point].add(tuple(sorted(prop.items())))
+                    prop = tuple(sorted(prop.items()))
+                    self.properties[point].add(prop)
+                    self.per_operator[point].setdefault(str(job.einsum_name),set()).add(prop)
         rows = sorted(selected)
         choices = np.asarray(rows,dtype=np.int64).reshape((-1,n)) if n else np.empty((len(rows),0),dtype=np.int64)
         membership = build_target_membership(len(rows),len(self.domain.points),
@@ -276,9 +297,10 @@ class Proposer:
 
 
 def search(case,domain,rounds=1,completion_limit=0,proposal_policy='feedback',audit_join=False):
-    if case.workload!='attention':
-        raise ValueError('first demand-driven gate supports the actual Attention graph')
-    if completion_limit and (rounds!=1 or case.params[0]>16):
+    if case.workload!='attention' and (case.workload!='matmuls' or case.params[0]!=3):
+        raise ValueError('demand generation supports Attention and the native 3mm chain')
+    middle = 'QK_softmax' if case.workload=='attention' else 'Matmul1'
+    if completion_limit and (case.workload!='attention' or rounds!=1 or case.params[0]>16):
         raise ValueError('factor completion is only a bounded small native verification mode')
     domain = PhysicalDomain(domain.points)
     saved = {k:v for k,v in os.environ.items() if k.startswith('AF_')}
@@ -292,9 +314,9 @@ def search(case,domain,rounds=1,completion_limit=0,proposal_policy='feedback',au
         preparation_s = time.perf_counter()-started
         if proposal_policy not in ('feedback','independent','independent-wide','prefix'):
             raise ValueError(f'unknown proposal policy: {proposal_policy}')
-        if proposal_policy=='prefix' and (rounds!=1 or completion_limit):
-            raise ValueError('numeric prefix proposal is a separate one-wave policy')
-        proposer = Proposer(domain,completion_limit,proposal_policy)
+        if proposal_policy=='prefix' and (case.workload!='attention' or rounds!=1 or completion_limit):
+            raise ValueError('numeric prefix proposal is a separate Attention-only one-wave policy')
+        proposer = Proposer(domain,completion_limit,proposal_policy,middle)
         groups,objects,returned_jobs = {},{},{}
         phase = time.perf_counter()
         def forbid_cartesian(*args,**kwargs):
@@ -317,8 +339,8 @@ def search(case,domain,rounds=1,completion_limit=0,proposal_policy='feedback',au
                 proposer.round = stage
                 if stage:
                     spec,jobs = prepare(case,domain)
-                for name in sorted(jobs,key=lambda n:str(n)=='QK_softmax'):
-                    if rounds>1 and stage==0 and str(name)=='QK_softmax':
+                for name in sorted(jobs,key=lambda n:str(n)==middle):
+                    if rounds>1 and stage==0 and str(name)==middle:
                         continue
                     materialize(name,jobs[name])
             if proposal_policy=='prefix':

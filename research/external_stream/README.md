@@ -26,7 +26,13 @@ The current runner exports STREAM's original allocation IR and costs on its exam
 
 On Windows with Python 3.12.12, STREAM 2.3.0, ZigZag 3.10.0, and OR-Tools 9.15.6755, both unmodified vendor tests passed (2Conv and SwiGLU). Use UTF-8 mode for the vendor's SVG writer. The official pipeline solved the 256-sized 3mm chain as one fusion group on its Eyeriss example; the original allocation is in [stream_3mm256.json](results/stream_3mm256.json).
 
-With `--nvdla-geometry 64 96 32768 --local-objective edp --tile-search`, STREAM solved the same 3mm workload using a single array with the requested dimensions and 32 KiB buffer. The allocation split the chain into three fusion groups and overlapped transfers with later iterations. Its local ZigZag search ranks EDP, while the outer STREAM scheduler uses its own latency objective and costs. The exported local mapping is for the final group, and the full allocation IR covers all three groups. The [intersection audit](results/stream_3mm256_projected_intersection.json) rejects the result as a native comparison; it would be wrong to ignore the overlapped schedule and compare the reported costs.
+With `--nvdla-geometry 64 96 32768 --local-objective edp --tile-search`, STREAM solved the same 3mm workload using a single array with the requested dimensions and a 32 KiB stress-test buffer, smaller than the registered native 3mm budgets. The allocation split the chain into three fusion groups and overlapped transfers with later iterations. Its local ZigZag search ranks EDP, while the outer STREAM scheduler uses its own latency objective and costs. The exported local mapping is for the final group, and the full allocation IR covers all three groups. The [intersection audit](results/stream_3mm256_projected_intersection.json) rejects the result as a native comparison; it would be wrong to ignore the overlapped schedule and compare the reported costs.
+
+The runs at [64×96, 128 KiB](results/stream_3mm256_matched_geometry_128k_intersection.json)
+and [32×192, 132 KiB](results/stream_3mm256_matched_geometry_132k_intersection.json)
+use the winning geometries of the 12-point native 3mm reference. Both still
+use overlapped transfers. The 128 KiB run also uses factors outside the
+native perfect power-of-two space. Neither run passes common evaluation.
 
 To enter a comparison, define a shared schedule subset before scoring. For each external allocation, export all spatial and temporal loops (including their order and tail policy), storage level and lifetime for every tensor, fusion scope, and execution order. Reject external inter-core transfers, overlapping execution, asynchronous DMA or any other scheduling decision not expressible by the native IR. If an exporter cannot recover a decision, report a rejection rather than filling it in using a native optimum. Then check the same two fanout bounds and capacity, and score every successfully translated mapping with the native evaluator. Track generated, translated, and physically feasible candidates separately. Compare both methods on this fixed subset with the same EDP objective, and charge adapter time. If translation removes the external mapper's defining capability, report the standalone reproduction separately.
 
@@ -50,6 +56,7 @@ try {
 
 The [exported SET schedule](results/set_3mm256_ir.json) retains the first
 intermediate on the same core and sends the second through DRAM. The retained
-tile is 524,288 bits (64 KiB), exceeding the 32 KiB native search cap. SET
-also uses its own Polar core's storage hierarchy and costing. Its IR was
-reproduced, but there is no valid common-cost witness from this run.
+tile is 524,288 bits (64 KiB). SET uses its own Polar core's storage
+hierarchy and costing; the export does not give a complete native
+loop/storage/lifetime mapping. Its IR was reproduced, but there is no valid
+common-cost witness from this run.

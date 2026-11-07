@@ -1,0 +1,4445 @@
+{
+  "workload": "3mm",
+  "size": 256,
+  "affine_workload": [
+    {
+      "name": "Matmul0",
+      "stream_op": "MatMul",
+      "iterations": 16777216,
+      "inputs": [
+        "T0",
+        "W0"
+      ],
+      "outputs": [
+        "T1"
+      ],
+      "shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "affine_projections": [
+        "(d0, d1, d2) -> (d0, d1)",
+        "(d0, d1, d2) -> (d1, d2)",
+        "(d0, d1, d2) -> (d0, d2)"
+      ]
+    },
+    {
+      "name": "Matmul1",
+      "stream_op": "MatMul",
+      "iterations": 16777216,
+      "inputs": [
+        "T1",
+        "W1"
+      ],
+      "outputs": [
+        "T2"
+      ],
+      "shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "affine_projections": [
+        "(d0, d1, d2) -> (d0, d1)",
+        "(d0, d1, d2) -> (d1, d2)",
+        "(d0, d1, d2) -> (d0, d2)"
+      ]
+    },
+    {
+      "name": "Matmul2",
+      "stream_op": "MatMul",
+      "iterations": 16777216,
+      "inputs": [
+        "T2",
+        "W2"
+      ],
+      "outputs": [
+        "T3"
+      ],
+      "shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "affine_projections": [
+        "(d0, d1, d2) -> (d0, d1)",
+        "(d0, d1, d2) -> (d1, d2)",
+        "(d0, d1, d2) -> (d0, d2)"
+      ]
+    }
+  ],
+  "stream_version": "2.3.0",
+  "zigzag_version": "3.10.0",
+  "ortools_version": "9.15.6755",
+  "python": "3.12.12",
+  "stream_revision": "407d373f942101895b72b3e6d2c75dbe714633a6",
+  "hardware": "single-core NVDLA geometry projection; STREAM costs",
+  "cost_model": "official STREAM/ZigZag hardware and cost model",
+  "matched_native_costs": false,
+  "external_sota_acceptance": false,
+  "status": "official_stream_solved",
+  "projected_hardware": {
+    "px": 64,
+    "py": 96,
+    "capacity_bytes": 131072
+  },
+  "wall_s": 1.4165785000077449,
+  "solver": "ortools_gscip",
+  "group_cycles": [
+    61925.0
+  ],
+  "cycles": 61925.0,
+  "tile_search": true,
+  "allocation_ir": {
+    "0": {
+      "schema_version": "3.2",
+      "latency": {
+        "total": 61925,
+        "per_iteration": 292,
+        "overlap_between_iterations": 57,
+        "fill": 1708
+      },
+      "backend": "ORTOOLS_GSCIP",
+      "solve": {
+        "status": "OPTIMAL",
+        "solver": "gscip",
+        "mip_gap": 0.0,
+        "objective": 5.0,
+        "solve_time_s": 0.003368,
+        "node_count": null,
+        "iteration_count": null
+      },
+      "cost_models": {
+        "intra_core": "ZigZag analytical (per-node latency & energy, MAC-array spatial utilization)",
+        "scheduler": "AllocationModel (steady-state pipeline latency, compute vs transfer bottleneck)",
+        "solver": "ORTOOLS_GSCIP"
+      },
+      "families": [
+        {
+          "name": "placement",
+          "options": {}
+        },
+        {
+          "name": "path_choice",
+          "options": {}
+        },
+        {
+          "name": "reuse_rates",
+          "options": {}
+        },
+        {
+          "name": "memory_capacity",
+          "options": {}
+        },
+        {
+          "name": "object_fifo_depth",
+          "options": {}
+        },
+        {
+          "name": "buffer_descriptors",
+          "options": {}
+        },
+        {
+          "name": "slot_latency",
+          "options": {}
+        },
+        {
+          "name": "link_contention",
+          "options": {}
+        },
+        {
+          "name": "reuse_levels",
+          "options": {}
+        },
+        {
+          "name": "output_reuse",
+          "options": {}
+        },
+        {
+          "name": "reuse_compatibility",
+          "options": {}
+        },
+        {
+          "name": "spatial_reuse",
+          "options": {}
+        },
+        {
+          "name": "overlap",
+          "options": {}
+        },
+        {
+          "name": "memory_ports",
+          "options": {}
+        },
+        {
+          "name": "dma_channels",
+          "options": {}
+        },
+        {
+          "name": "offchip_traffic",
+          "options": {}
+        },
+        {
+          "name": "energy",
+          "options": {}
+        }
+      ],
+      "fusion_splits": {
+        "z0": 2,
+        "z1": 4,
+        "z2": 2,
+        "z3": 16
+      },
+      "mapping_nodes": {
+        "Matmul0": {
+          "resource_allocation": [
+            [
+              {
+                "type": "core",
+                "id": 0
+              }
+            ]
+          ],
+          "inter_core_tiling": [
+            []
+          ],
+          "memory_allocation": []
+        },
+        "Matmul1": {
+          "resource_allocation": [
+            [
+              {
+                "type": "core",
+                "id": 0
+              }
+            ]
+          ],
+          "inter_core_tiling": [
+            []
+          ],
+          "memory_allocation": []
+        },
+        "Matmul2": {
+          "resource_allocation": [
+            [
+              {
+                "type": "core",
+                "id": 0
+              }
+            ]
+          ],
+          "inter_core_tiling": [
+            []
+          ],
+          "memory_allocation": []
+        },
+        "Transfer(T0)": {
+          "resource_allocation": [
+            [
+              {
+                "type": "path",
+                "sources": [
+                  "dram"
+                ],
+                "targets": [
+                  "gb"
+                ],
+                "hops": 1
+              }
+            ]
+          ],
+          "inter_core_tiling": [],
+          "memory_allocation": [
+            [
+              "gb"
+            ]
+          ]
+        },
+        "Transfer(W0)": {
+          "resource_allocation": [
+            [
+              {
+                "type": "path",
+                "sources": [
+                  "dram"
+                ],
+                "targets": [
+                  "gb"
+                ],
+                "hops": 1
+              }
+            ]
+          ],
+          "inter_core_tiling": [],
+          "memory_allocation": [
+            [
+              "gb"
+            ]
+          ]
+        },
+        "Transfer(T1)": {
+          "resource_allocation": [
+            [
+              {
+                "type": "path",
+                "sources": [
+                  "gb"
+                ],
+                "targets": [
+                  "gb"
+                ],
+                "hops": 0
+              }
+            ]
+          ],
+          "inter_core_tiling": [],
+          "memory_allocation": []
+        },
+        "Transfer(W1)": {
+          "resource_allocation": [
+            [
+              {
+                "type": "path",
+                "sources": [
+                  "dram"
+                ],
+                "targets": [
+                  "gb"
+                ],
+                "hops": 1
+              }
+            ]
+          ],
+          "inter_core_tiling": [],
+          "memory_allocation": [
+            [
+              "gb"
+            ]
+          ]
+        },
+        "Transfer(T2)": {
+          "resource_allocation": [
+            [
+              {
+                "type": "path",
+                "sources": [
+                  "gb"
+                ],
+                "targets": [
+                  "gb"
+                ],
+                "hops": 0
+              }
+            ]
+          ],
+          "inter_core_tiling": [],
+          "memory_allocation": []
+        },
+        "Transfer(W2)": {
+          "resource_allocation": [
+            [
+              {
+                "type": "path",
+                "sources": [
+                  "dram"
+                ],
+                "targets": [
+                  "gb"
+                ],
+                "hops": 1
+              }
+            ]
+          ],
+          "inter_core_tiling": [],
+          "memory_allocation": [
+            [
+              "gb"
+            ]
+          ]
+        },
+        "Transfer(T3_1)": {
+          "resource_allocation": [
+            [
+              {
+                "type": "path",
+                "sources": [
+                  "gb"
+                ],
+                "targets": [
+                  "dram"
+                ],
+                "hops": 1
+              }
+            ]
+          ],
+          "inter_core_tiling": [],
+          "memory_allocation": [
+            [
+              "gb"
+            ]
+          ]
+        }
+      },
+      "fused_groups": [
+        {
+          "name": "Fused_Group_1",
+          "layers": [
+            "Matmul0",
+            "Matmul1",
+            "Matmul2"
+          ],
+          "intra_core_tiling": [
+            [
+              "z0",
+              128
+            ],
+            [
+              "z1",
+              64
+            ],
+            [
+              "z2",
+              128
+            ],
+            [
+              "z3",
+              16
+            ]
+          ]
+        }
+      ],
+      "runtime_args": {},
+      "edge_placements": {},
+      "edge_tensors": {
+        "T0": {
+          "tensor": "T0",
+          "shape": [
+            256,
+            256
+          ],
+          "axes": [
+            0,
+            1
+          ],
+          "element_bits": 8,
+          "direction": "in"
+        },
+        "W0": {
+          "tensor": "W0",
+          "shape": [
+            256,
+            256
+          ],
+          "axes": [
+            0,
+            1
+          ],
+          "element_bits": 8,
+          "direction": "in"
+        },
+        "W1": {
+          "tensor": "W1",
+          "shape": [
+            256,
+            256
+          ],
+          "axes": [
+            0,
+            1
+          ],
+          "element_bits": 8,
+          "direction": "in"
+        },
+        "W2": {
+          "tensor": "W2",
+          "shape": [
+            256,
+            256
+          ],
+          "axes": [
+            0,
+            1
+          ],
+          "element_bits": 8,
+          "direction": "in"
+        },
+        "output": {
+          "tensor": "T3",
+          "shape": [
+            256,
+            256
+          ],
+          "axes": [
+            0,
+            1
+          ],
+          "element_bits": 8,
+          "direction": "out"
+        }
+      },
+      "offchip_holdings": {
+        "dram": {
+          "T0": 524288.0,
+          "W0": 524288.0,
+          "W1": 524288.0,
+          "W2": 524288.0,
+          "T3": 524288.0
+        }
+      },
+      "performance": {
+        "schema_version": "2.0",
+        "latency": {
+          "total": 61925,
+          "per_iteration": 292,
+          "overlap_between_iterations": 57,
+          "fill": 1708
+        },
+        "bottleneck": {
+          "compute_bound_cycles": 0,
+          "transfer_bound_cycles": 292,
+          "compute_bound_pct": 0.0,
+          "transfer_bound_pct": 100.0
+        },
+        "aggregate": {
+          "compute_cores_available": 1,
+          "compute_cores_used": 1,
+          "latency_weighted_mac_spatial_utilization": 0.7580467372134039,
+          "min_mac_spatial_utilization": 0.6875,
+          "total_mac_ops": 50331648.0,
+          "peak_macs_per_cycle": 6144.0,
+          "mac_capable_cores": 1,
+          "end_to_end_mac_utilization": 0.13228905934598303,
+          "degenerate": false,
+          "degenerate_nodes": []
+        },
+        "nodes": {
+          "Matmul0": {
+            "kind": "compute",
+            "n_cores": 1,
+            "latency_cycles": 39.0,
+            "ideal_compute_cycles": 22.0,
+            "mac_spatial_utilization": 0.6875,
+            "compute_efficiency": 0.28205128205128205,
+            "fallback": false
+          },
+          "Matmul1": {
+            "kind": "compute",
+            "n_cores": 1,
+            "latency_cycles": 23.5,
+            "ideal_compute_cycles": 22.0,
+            "mac_spatial_utilization": 0.6875,
+            "compute_efficiency": 0.46808510638297873,
+            "fallback": false
+          },
+          "Matmul2": {
+            "kind": "compute",
+            "n_cores": 1,
+            "latency_cycles": 32.0,
+            "ideal_compute_cycles": 86.0,
+            "mac_spatial_utilization": 0.8958333333333334,
+            "compute_efficiency": 0.3359375,
+            "fallback": false
+          }
+        },
+        "overlap": {
+          "overlap_cycles": 57,
+          "binding_resources": [
+            "Bus(gb,dram, bw=307.2)"
+          ],
+          "per_resource_slack": [
+            {
+              "resource": "Bus(gb,dram, bw=307.2)",
+              "kind": "link",
+              "slack_cycles": 57
+            },
+            {
+              "resource": "Core(0, zigzag.compute)",
+              "kind": "core",
+              "slack_cycles": 128
+            }
+          ],
+          "recurrence_bound_cycles": 0
+        },
+        "tensor_reuse": [
+          {
+            "tensor": "W2",
+            "size_bits": 262144,
+            "reuse_factor": 16,
+            "reuse_stop_level": 1,
+            "on_chip_tiles": 2,
+            "loop_nest_out_to_in": [
+              "T(z3,16,I)",
+              "T(z2,2,V)",
+              "T(z1,4,A)",
+              "T(z0,2,A)",
+              "K(z4,256,V)",
+              "K(z3,16,I)",
+              "K(z2,128,V)",
+              "K(z1,64,I)",
+              "K(z0,128,I)"
+            ]
+          },
+          {
+            "tensor": "W2_1",
+            "size_bits": 262144,
+            "reuse_factor": 16,
+            "reuse_stop_level": 1,
+            "on_chip_tiles": 2,
+            "loop_nest_out_to_in": [
+              "T(z3,16,I)",
+              "T(z2,2,V)",
+              "T(z1,4,A)",
+              "T(z0,2,A)",
+              "K(z4,256,V)",
+              "K(z3,16,I)",
+              "K(z2,128,V)",
+              "K(z1,64,I)",
+              "K(z0,128,I)"
+            ]
+          },
+          {
+            "tensor": "W0",
+            "size_bits": 65536,
+            "reuse_factor": 16,
+            "reuse_stop_level": 2,
+            "on_chip_tiles": 8,
+            "loop_nest_out_to_in": [
+              "T(z3,16,I)",
+              "T(z2,2,A)",
+              "T(z1,4,V)",
+              "T(z0,2,V)",
+              "K(z4,256,I)",
+              "K(z3,16,I)",
+              "K(z2,128,I)",
+              "K(z1,64,V)",
+              "K(z0,128,V)"
+            ]
+          },
+          {
+            "tensor": "W1",
+            "size_bits": 65536,
+            "reuse_factor": 16,
+            "reuse_stop_level": 2,
+            "on_chip_tiles": 8,
+            "loop_nest_out_to_in": [
+              "T(z3,16,I)",
+              "T(z2,2,V)",
+              "T(z1,4,V)",
+              "T(z0,2,A)",
+              "K(z4,256,I)",
+              "K(z3,16,I)",
+              "K(z2,128,V)",
+              "K(z1,64,V)",
+              "K(z0,128,I)"
+            ]
+          },
+          {
+            "tensor": "W0_1",
+            "size_bits": 65536,
+            "reuse_factor": 1,
+            "reuse_stop_level": -1,
+            "on_chip_tiles": 2,
+            "loop_nest_out_to_in": [
+              "T(z3,16,I)",
+              "T(z2,2,A)",
+              "T(z1,4,V)",
+              "T(z0,2,V)",
+              "K(z4,256,I)",
+              "K(z3,16,I)",
+              "K(z2,128,I)",
+              "K(z1,64,V)",
+              "K(z0,128,V)"
+            ]
+          },
+          {
+            "tensor": "W1_1",
+            "size_bits": 65536,
+            "reuse_factor": 1,
+            "reuse_stop_level": -1,
+            "on_chip_tiles": 2,
+            "loop_nest_out_to_in": [
+              "T(z3,16,I)",
+              "T(z2,2,V)",
+              "T(z1,4,V)",
+              "T(z0,2,A)",
+              "K(z4,256,I)",
+              "K(z3,16,I)",
+              "K(z2,128,V)",
+              "K(z1,64,V)",
+              "K(z0,128,I)"
+            ]
+          },
+          {
+            "tensor": "T3_1",
+            "size_bits": 32768,
+            "reuse_factor": 2,
+            "reuse_stop_level": 0,
+            "on_chip_tiles": 1,
+            "loop_nest_out_to_in": [
+              "T(z3,16,V)",
+              "T(z2,2,I)",
+              "T(z1,4,A)",
+              "T(z0,2,A)",
+              "K(z4,256,V)",
+              "K(z3,16,V)",
+              "K(z2,128,I)",
+              "K(z1,64,I)",
+              "K(z0,128,I)"
+            ]
+          },
+          {
+            "tensor": "T3",
+            "size_bits": 32768,
+            "reuse_factor": 2,
+            "reuse_stop_level": 0,
+            "on_chip_tiles": 1,
+            "loop_nest_out_to_in": [
+              "T(z3,16,V)",
+              "T(z2,2,I)",
+              "T(z1,4,A)",
+              "T(z0,2,A)",
+              "K(z4,256,V)",
+              "K(z3,16,V)",
+              "K(z2,128,I)",
+              "K(z1,64,I)",
+              "K(z0,128,I)"
+            ]
+          },
+          {
+            "tensor": "T0",
+            "size_bits": 16384,
+            "reuse_factor": 4,
+            "reuse_stop_level": 1,
+            "on_chip_tiles": 2,
+            "loop_nest_out_to_in": [
+              "T(z3,16,V)",
+              "T(z2,2,A)",
+              "T(z1,4,I)",
+              "T(z0,2,V)",
+              "K(z4,256,I)",
+              "K(z3,16,V)",
+              "K(z2,128,I)",
+              "K(z1,64,I)",
+              "K(z0,128,V)"
+            ]
+          },
+          {
+            "tensor": "T2",
+            "size_bits": 16384,
+            "reuse_factor": 4,
+            "reuse_stop_level": 0,
+            "on_chip_tiles": 1,
+            "loop_nest_out_to_in": [
+              "T(z3,16,V)",
+              "T(z2,2,V)",
+              "T(z1,4,I)",
+              "T(z0,2,A)",
+              "K(z4,256,I)",
+              "K(z3,16,V)",
+              "K(z2,128,V)",
+              "K(z1,64,I)",
+              "K(z0,128,I)"
+            ]
+          },
+          {
+            "tensor": "T0_1",
+            "size_bits": 16384,
+            "reuse_factor": 4,
+            "reuse_stop_level": 1,
+            "on_chip_tiles": 2,
+            "loop_nest_out_to_in": [
+              "T(z3,16,V)",
+              "T(z2,2,A)",
+              "T(z1,4,I)",
+              "T(z0,2,V)",
+              "K(z4,256,I)",
+              "K(z3,16,V)",
+              "K(z2,128,I)",
+              "K(z1,64,I)",
+              "K(z0,128,V)"
+            ]
+          },
+          {
+            "tensor": "T2_1",
+            "size_bits": 16384,
+            "reuse_factor": 4,
+            "reuse_stop_level": 0,
+            "on_chip_tiles": 1,
+            "loop_nest_out_to_in": [
+              "T(z3,16,V)",
+              "T(z2,2,V)",
+              "T(z1,4,I)",
+              "T(z0,2,A)",
+              "K(z4,256,I)",
+              "K(z3,16,V)",
+              "K(z2,128,V)",
+              "K(z1,64,I)",
+              "K(z0,128,I)"
+            ]
+          },
+          {
+            "tensor": "T1",
+            "size_bits": 8192,
+            "reuse_factor": 2,
+            "reuse_stop_level": 0,
+            "on_chip_tiles": 1,
+            "loop_nest_out_to_in": [
+              "T(z3,16,V)",
+              "T(z2,2,A)",
+              "T(z1,4,V)",
+              "T(z0,2,I)",
+              "K(z4,256,I)",
+              "K(z3,16,V)",
+              "K(z2,128,I)",
+              "K(z1,64,V)",
+              "K(z0,128,I)"
+            ]
+          },
+          {
+            "tensor": "T1_1",
+            "size_bits": 8192,
+            "reuse_factor": 4,
+            "reuse_stop_level": 2,
+            "on_chip_tiles": 4,
+            "loop_nest_out_to_in": [
+              "T(z3,16,V)",
+              "T(z2,2,I)",
+              "T(z1,4,V)",
+              "T(z0,2,I)",
+              "K(z4,256,I)",
+              "K(z3,16,V)",
+              "K(z2,128,I)",
+              "K(z1,64,V)",
+              "K(z0,128,I)"
+            ]
+          }
+        ],
+        "memory_occupancy": [
+          {
+            "memory": "dram",
+            "cores": [],
+            "resident_bits": 65536,
+            "capacity_bits": 10000000000,
+            "utilization": 6.5536e-06,
+            "tensors": [
+              {
+                "tensor": "T3",
+                "bits": 65536
+              }
+            ]
+          },
+          {
+            "memory": "gb",
+            "cores": [
+              0
+            ],
+            "resident_bits": 950272,
+            "capacity_bits": 1048576,
+            "utilization": 0.90625,
+            "tensors": [
+              {
+                "tensor": "W2_1",
+                "bits": 524288
+              },
+              {
+                "tensor": "W0_1",
+                "bits": 131072
+              },
+              {
+                "tensor": "W1_1",
+                "bits": 131072
+              },
+              {
+                "tensor": "T3_1",
+                "bits": 65536
+              },
+              {
+                "tensor": "T2",
+                "bits": 32768
+              },
+              {
+                "tensor": "T0_1",
+                "bits": 32768
+              },
+              {
+                "tensor": "T1",
+                "bits": 16384
+              },
+              {
+                "tensor": "T1_1",
+                "bits": 16384
+              }
+            ]
+          }
+        ],
+        "memory_ports": [
+          {
+            "kind": "memory_port",
+            "resource": "dram.rw",
+            "core_ids": [],
+            "core_types": [],
+            "bw_bits_per_cycle": 307.2,
+            "bits_per_iteration": 71680.0,
+            "req_bw_aver": 305.02127659574467,
+            "real_cycle": 233.33333333333334,
+            "allowed_cycle": 235.0,
+            "stall_or_slack": -1.6666666666666572,
+            "utilization": 0.9929078014184397,
+            "burst_utilization": 0.9968847352024921,
+            "burst_slot": 2
+          },
+          {
+            "kind": "link",
+            "resource": "bus gb,dram",
+            "core_ids": [
+              0
+            ],
+            "core_types": [
+              "zigzag.compute"
+            ],
+            "bw_bits_per_cycle": 307.2,
+            "bits_per_iteration": 71680.0,
+            "req_bw_aver": 305.02127659574467,
+            "real_cycle": 233.33333333333334,
+            "allowed_cycle": 235.0,
+            "stall_or_slack": -1.6666666666666572,
+            "utilization": 0.9929078014184397,
+            "burst_utilization": null,
+            "burst_slot": null
+          },
+          {
+            "kind": "memory_port",
+            "resource": "gb.write",
+            "core_ids": [
+              0
+            ],
+            "core_types": [
+              "zigzag.compute"
+            ],
+            "bw_bits_per_cycle": 1024.0,
+            "bits_per_iteration": 114688.0,
+            "req_bw_aver": 488.0340425531915,
+            "real_cycle": 112.0,
+            "allowed_cycle": 235.0,
+            "stall_or_slack": -123.0,
+            "utilization": 0.4765957446808511,
+            "burst_utilization": 0.6666666666666666,
+            "burst_slot": 5
+          },
+          {
+            "kind": "memory_port",
+            "resource": "gb.read",
+            "core_ids": [
+              0
+            ],
+            "core_types": [
+              "zigzag.compute"
+            ],
+            "bw_bits_per_cycle": 4096.0,
+            "bits_per_iteration": 396288.0,
+            "req_bw_aver": 1686.331914893617,
+            "real_cycle": 96.75,
+            "allowed_cycle": 235.0,
+            "stall_or_slack": -138.25,
+            "utilization": 0.4117021276595745,
+            "burst_utilization": 1.0,
+            "burst_slot": 5
+          }
+        ],
+        "layouts": [
+          {
+            "transfer": "Transfer(T0)",
+            "tensor": "T0",
+            "tile_shape": [
+              16,
+              128
+            ],
+            "full_shape": [
+              256,
+              256
+            ],
+            "element_bits": 8,
+            "source_memories": [
+              "dram"
+            ],
+            "target_memories": [
+              "gb"
+            ],
+            "source_order": [
+              0,
+              1
+            ],
+            "target_order": [
+              0,
+              1
+            ],
+            "converts": false,
+            "read_run_bytes": 128.0,
+            "write_run_bytes": 2048.0,
+            "streams_in": "source",
+            "axes": {
+              "node": "Matmul0",
+              "dims": [
+                "D0",
+                "D1"
+              ]
+            },
+            "iterations": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 0,
+                "step": 16
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 1,
+                "step": 128
+              }
+            ],
+            "read": {
+              "extent": [
+                256,
+                256
+              ],
+              "strides": [
+                256,
+                1
+              ],
+              "access": [
+                [
+                  16,
+                  256
+                ],
+                [
+                  128,
+                  1
+                ]
+              ],
+              "memory": "dram",
+              "port": "rw",
+              "bits_per_cycle": 307.2,
+              "burst_bytes": null,
+              "banks": null
+            },
+            "write": {
+              "extent": [
+                16,
+                128
+              ],
+              "strides": [
+                128,
+                1
+              ],
+              "access": [
+                [
+                  2048,
+                  1
+                ]
+              ],
+              "memory": "gb",
+              "port": "write",
+              "bits_per_cycle": 1024.0,
+              "burst_bytes": null,
+              "banks": null
+            }
+          },
+          {
+            "transfer": "Transfer(W0)",
+            "tensor": "W0",
+            "tile_shape": [
+              128,
+              64
+            ],
+            "full_shape": [
+              256,
+              256
+            ],
+            "element_bits": 8,
+            "source_memories": [
+              "dram"
+            ],
+            "target_memories": [
+              "gb"
+            ],
+            "source_order": [
+              1,
+              0
+            ],
+            "target_order": [
+              1,
+              0
+            ],
+            "converts": false,
+            "read_run_bytes": 128.0,
+            "write_run_bytes": 8192.0,
+            "streams_in": "source",
+            "axes": {
+              "node": "Matmul0",
+              "dims": [
+                "D1",
+                "D2"
+              ]
+            },
+            "iterations": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 1,
+                "step": 64
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 0,
+                "step": 128
+              }
+            ],
+            "read": {
+              "extent": [
+                256,
+                256
+              ],
+              "strides": [
+                1,
+                256
+              ],
+              "access": [
+                [
+                  64,
+                  256
+                ],
+                [
+                  128,
+                  1
+                ]
+              ],
+              "memory": "dram",
+              "port": "rw",
+              "bits_per_cycle": 307.2,
+              "burst_bytes": null,
+              "banks": null
+            },
+            "write": {
+              "extent": [
+                128,
+                64
+              ],
+              "strides": [
+                1,
+                128
+              ],
+              "access": [
+                [
+                  8192,
+                  1
+                ]
+              ],
+              "memory": "gb",
+              "port": "write",
+              "bits_per_cycle": 1024.0,
+              "burst_bytes": null,
+              "banks": null
+            }
+          },
+          {
+            "transfer": "Transfer(T1)",
+            "tensor": "T1",
+            "tile_shape": [
+              16,
+              64
+            ],
+            "full_shape": [
+              256,
+              256
+            ],
+            "element_bits": 8,
+            "source_memories": [
+              "gb"
+            ],
+            "target_memories": [
+              "gb"
+            ],
+            "source_order": [
+              0,
+              1
+            ],
+            "target_order": [
+              0,
+              1
+            ],
+            "converts": false,
+            "read_run_bytes": 1024.0,
+            "write_run_bytes": 1024.0,
+            "streams_in": "source",
+            "axes": {
+              "node": "Matmul1",
+              "dims": [
+                "D0",
+                "D1"
+              ]
+            },
+            "iterations": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 0,
+                "step": 16
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 1,
+                "step": 64
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              }
+            ],
+            "read": {
+              "extent": [
+                16,
+                64
+              ],
+              "strides": [
+                64,
+                1
+              ],
+              "access": [
+                [
+                  1024,
+                  1
+                ]
+              ],
+              "memory": "gb",
+              "port": null,
+              "bits_per_cycle": null,
+              "burst_bytes": null,
+              "banks": null
+            },
+            "write": {
+              "extent": [
+                16,
+                64
+              ],
+              "strides": [
+                64,
+                1
+              ],
+              "access": [
+                [
+                  1024,
+                  1
+                ]
+              ],
+              "memory": "gb",
+              "port": null,
+              "bits_per_cycle": null,
+              "burst_bytes": null,
+              "banks": null
+            }
+          },
+          {
+            "transfer": "Transfer(W1)",
+            "tensor": "W1",
+            "tile_shape": [
+              64,
+              128
+            ],
+            "full_shape": [
+              256,
+              256
+            ],
+            "element_bits": 8,
+            "source_memories": [
+              "dram"
+            ],
+            "target_memories": [
+              "gb"
+            ],
+            "source_order": [
+              0,
+              1
+            ],
+            "target_order": [
+              0,
+              1
+            ],
+            "converts": false,
+            "read_run_bytes": 128.0,
+            "write_run_bytes": 8192.0,
+            "streams_in": "source",
+            "axes": {
+              "node": "Matmul1",
+              "dims": [
+                "D1",
+                "D2"
+              ]
+            },
+            "iterations": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 1,
+                "step": 128
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 0,
+                "step": 64
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              }
+            ],
+            "read": {
+              "extent": [
+                256,
+                256
+              ],
+              "strides": [
+                256,
+                1
+              ],
+              "access": [
+                [
+                  64,
+                  256
+                ],
+                [
+                  128,
+                  1
+                ]
+              ],
+              "memory": "dram",
+              "port": "rw",
+              "bits_per_cycle": 307.2,
+              "burst_bytes": null,
+              "banks": null
+            },
+            "write": {
+              "extent": [
+                64,
+                128
+              ],
+              "strides": [
+                128,
+                1
+              ],
+              "access": [
+                [
+                  8192,
+                  1
+                ]
+              ],
+              "memory": "gb",
+              "port": "write",
+              "bits_per_cycle": 1024.0,
+              "burst_bytes": null,
+              "banks": null
+            }
+          },
+          {
+            "transfer": "Transfer(T2)",
+            "tensor": "T2",
+            "tile_shape": [
+              16,
+              128
+            ],
+            "full_shape": [
+              256,
+              256
+            ],
+            "element_bits": 8,
+            "source_memories": [
+              "gb"
+            ],
+            "target_memories": [
+              "gb"
+            ],
+            "source_order": [
+              0,
+              1
+            ],
+            "target_order": [
+              0,
+              1
+            ],
+            "converts": false,
+            "read_run_bytes": 2048.0,
+            "write_run_bytes": 2048.0,
+            "streams_in": "source",
+            "axes": {
+              "node": "Matmul2",
+              "dims": [
+                "D0",
+                "D1"
+              ]
+            },
+            "iterations": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 0,
+                "step": 16
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 1,
+                "step": 128
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              }
+            ],
+            "read": {
+              "extent": [
+                16,
+                128
+              ],
+              "strides": [
+                128,
+                1
+              ],
+              "access": [
+                [
+                  2048,
+                  1
+                ]
+              ],
+              "memory": "gb",
+              "port": null,
+              "bits_per_cycle": null,
+              "burst_bytes": null,
+              "banks": null
+            },
+            "write": {
+              "extent": [
+                16,
+                128
+              ],
+              "strides": [
+                128,
+                1
+              ],
+              "access": [
+                [
+                  2048,
+                  1
+                ]
+              ],
+              "memory": "gb",
+              "port": null,
+              "bits_per_cycle": null,
+              "burst_bytes": null,
+              "banks": null
+            }
+          },
+          {
+            "transfer": "Transfer(W2)",
+            "tensor": "W2",
+            "tile_shape": [
+              128,
+              256
+            ],
+            "full_shape": [
+              256,
+              256
+            ],
+            "element_bits": 8,
+            "source_memories": [
+              "dram"
+            ],
+            "target_memories": [
+              "gb"
+            ],
+            "source_order": [
+              0,
+              1
+            ],
+            "target_order": [
+              0,
+              1
+            ],
+            "converts": false,
+            "read_run_bytes": 32768.0,
+            "write_run_bytes": 32768.0,
+            "streams_in": "source",
+            "axes": {
+              "node": "Matmul2",
+              "dims": [
+                "D1",
+                "D2"
+              ]
+            },
+            "iterations": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 0,
+                "step": 128
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              }
+            ],
+            "read": {
+              "extent": [
+                256,
+                256
+              ],
+              "strides": [
+                256,
+                1
+              ],
+              "access": [
+                [
+                  32768,
+                  1
+                ]
+              ],
+              "memory": "dram",
+              "port": "rw",
+              "bits_per_cycle": 307.2,
+              "burst_bytes": null,
+              "banks": null
+            },
+            "write": {
+              "extent": [
+                128,
+                256
+              ],
+              "strides": [
+                256,
+                1
+              ],
+              "access": [
+                [
+                  32768,
+                  1
+                ]
+              ],
+              "memory": "gb",
+              "port": "write",
+              "bits_per_cycle": 1024.0,
+              "burst_bytes": null,
+              "banks": null
+            }
+          },
+          {
+            "transfer": "Transfer(T3_1)",
+            "tensor": "T3_1",
+            "tile_shape": [
+              16,
+              256
+            ],
+            "full_shape": [
+              256,
+              256
+            ],
+            "element_bits": 8,
+            "source_memories": [
+              "gb"
+            ],
+            "target_memories": [
+              "dram"
+            ],
+            "source_order": [
+              0,
+              1
+            ],
+            "target_order": [
+              0,
+              1
+            ],
+            "converts": false,
+            "read_run_bytes": 4096.0,
+            "write_run_bytes": 4096.0,
+            "streams_in": "source",
+            "axes": {
+              "node": "Matmul2",
+              "dims": [
+                "D0",
+                "D2"
+              ]
+            },
+            "iterations": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": 0,
+                "step": 16
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0,
+                "axis": null,
+                "step": null
+              }
+            ],
+            "read": {
+              "extent": [
+                16,
+                256
+              ],
+              "strides": [
+                256,
+                1
+              ],
+              "access": [
+                [
+                  4096,
+                  1
+                ]
+              ],
+              "memory": "gb",
+              "port": "read",
+              "bits_per_cycle": 4096.0,
+              "burst_bytes": null,
+              "banks": null
+            },
+            "write": {
+              "extent": [
+                256,
+                256
+              ],
+              "strides": [
+                256,
+                1
+              ],
+              "access": [
+                [
+                  4096,
+                  1
+                ]
+              ],
+              "memory": "dram",
+              "port": "rw",
+              "bits_per_cycle": 307.2,
+              "burst_bytes": null,
+              "banks": null
+            }
+          }
+        ],
+        "energy": {
+          "node_pj_per_iteration": 127882.23999999999,
+          "transfer_pj_per_iteration": 524822.528,
+          "per_iteration_pj": 652704.768,
+          "total_pj": 167092420.608,
+          "components": [
+            {
+              "kind": "port",
+              "resource": "dram.rw",
+              "core_ids": [],
+              "pj_per_iteration": 503910.39999999997
+            },
+            {
+              "kind": "memory",
+              "resource": "global_buffer",
+              "core_ids": [
+                0
+              ],
+              "pj_per_iteration": 111367.16800000002
+            },
+            {
+              "kind": "port",
+              "resource": "gb.write",
+              "core_ids": [
+                0
+              ],
+              "pj_per_iteration": 20402.175999999992
+            },
+            {
+              "kind": "mac",
+              "resource": "MAC",
+              "core_ids": [
+                0
+              ],
+              "pj_per_iteration": 16515.072
+            },
+            {
+              "kind": "port",
+              "resource": "gb.read",
+              "core_ids": [
+                0
+              ],
+              "pj_per_iteration": 509.95199999999994
+            }
+          ]
+        }
+      },
+      "steady_state": {
+        "operators": [
+          {
+            "name": "Matmul0",
+            "op": "MatMul",
+            "tensors": [
+              {
+                "name": "T0",
+                "shape": [
+                  16,
+                  128
+                ]
+              },
+              {
+                "name": "W0",
+                "shape": [
+                  128,
+                  64
+                ]
+              },
+              {
+                "name": "T1",
+                "shape": [
+                  16,
+                  64
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Matmul1",
+            "op": "MatMul",
+            "tensors": [
+              {
+                "name": "T1",
+                "shape": [
+                  16,
+                  64
+                ]
+              },
+              {
+                "name": "W1",
+                "shape": [
+                  64,
+                  128
+                ]
+              },
+              {
+                "name": "T2",
+                "shape": [
+                  16,
+                  128
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Matmul2",
+            "op": "MatMul",
+            "tensors": [
+              {
+                "name": "T2",
+                "shape": [
+                  16,
+                  128
+                ]
+              },
+              {
+                "name": "W2",
+                "shape": [
+                  128,
+                  256
+                ]
+              },
+              {
+                "name": "T3",
+                "shape": [
+                  16,
+                  256
+                ]
+              }
+            ]
+          }
+        ],
+        "loops": [
+          {
+            "dim": "z0",
+            "size": 2,
+            "type": "temporal",
+            "node": null
+          },
+          {
+            "dim": "z1",
+            "size": 4,
+            "type": "temporal",
+            "node": null
+          },
+          {
+            "dim": "z2",
+            "size": 2,
+            "type": "temporal",
+            "node": null
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul0"
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul0"
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul0"
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul0"
+          },
+          {
+            "dim": "D1",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul0"
+          },
+          {
+            "dim": "D2",
+            "size": 64,
+            "type": "core_spatial",
+            "node": "Matmul0"
+          },
+          {
+            "dim": "D1",
+            "size": 64,
+            "type": "core_spatial",
+            "node": "Matmul0"
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul1"
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul1"
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul1"
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul1"
+          },
+          {
+            "dim": "D2",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul1"
+          },
+          {
+            "dim": "D1",
+            "size": 64,
+            "type": "core_spatial",
+            "node": "Matmul1"
+          },
+          {
+            "dim": "D2",
+            "size": 64,
+            "type": "core_spatial",
+            "node": "Matmul1"
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul2"
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul2"
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul2"
+          },
+          {
+            "dim": "D0",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul2"
+          },
+          {
+            "dim": "D2",
+            "size": 3,
+            "type": "core_temporal",
+            "node": "Matmul2"
+          },
+          {
+            "dim": "D1",
+            "size": 2,
+            "type": "core_temporal",
+            "node": "Matmul2"
+          },
+          {
+            "dim": "D1",
+            "size": 64,
+            "type": "core_spatial",
+            "node": "Matmul2"
+          },
+          {
+            "dim": "D2",
+            "size": 85,
+            "type": "core_spatial",
+            "node": "Matmul2"
+          }
+        ],
+        "tiled_graph": {
+          "nodes": [
+            {
+              "name": "Matmul0",
+              "kind": "compute",
+              "op": "MatMul",
+              "dims": [
+                "z3",
+                "z0",
+                "z1"
+              ],
+              "loops": [
+                {
+                  "dim": "z3",
+                  "size": 16,
+                  "type": "temporal",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z2",
+                  "size": 2,
+                  "type": "temporal",
+                  "effect": "absent",
+                  "reuse": "not_applicable",
+                  "halo": 0
+                },
+                {
+                  "dim": "z1",
+                  "size": 4,
+                  "type": "temporal",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z0",
+                  "size": 2,
+                  "type": "temporal",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z4",
+                  "size": 256,
+                  "type": "kernel",
+                  "effect": "invariant",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z3",
+                  "size": 16,
+                  "type": "kernel",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z2",
+                  "size": 128,
+                  "type": "kernel",
+                  "effect": "invariant",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z1",
+                  "size": 64,
+                  "type": "kernel",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z0",
+                  "size": 128,
+                  "type": "kernel",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                }
+              ],
+              "cores": [
+                0
+              ],
+              "tiles": [
+                [
+                  16,
+                  64
+                ]
+              ],
+              "waited_on": false,
+              "work": {},
+              "warmup": null
+            },
+            {
+              "name": "Matmul1",
+              "kind": "compute",
+              "op": "MatMul",
+              "dims": [
+                "z3",
+                "z1",
+                "z2"
+              ],
+              "loops": [
+                {
+                  "dim": "z3",
+                  "size": 16,
+                  "type": "temporal",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z2",
+                  "size": 2,
+                  "type": "temporal",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z1",
+                  "size": 4,
+                  "type": "temporal",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z0",
+                  "size": 2,
+                  "type": "temporal",
+                  "effect": "absent",
+                  "reuse": "not_applicable",
+                  "halo": 0
+                },
+                {
+                  "dim": "z4",
+                  "size": 256,
+                  "type": "kernel",
+                  "effect": "invariant",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z3",
+                  "size": 16,
+                  "type": "kernel",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z2",
+                  "size": 128,
+                  "type": "kernel",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z1",
+                  "size": 64,
+                  "type": "kernel",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z0",
+                  "size": 128,
+                  "type": "kernel",
+                  "effect": "invariant",
+                  "reuse": "not_set",
+                  "halo": 0
+                }
+              ],
+              "cores": [
+                0
+              ],
+              "tiles": [
+                [
+                  16,
+                  128
+                ]
+              ],
+              "waited_on": false,
+              "work": {},
+              "warmup": null
+            },
+            {
+              "name": "Matmul2",
+              "kind": "compute",
+              "op": "MatMul",
+              "dims": [
+                "z3",
+                "z2",
+                "z4"
+              ],
+              "loops": [
+                {
+                  "dim": "z3",
+                  "size": 16,
+                  "type": "temporal",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z2",
+                  "size": 2,
+                  "type": "temporal",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z1",
+                  "size": 4,
+                  "type": "temporal",
+                  "effect": "absent",
+                  "reuse": "not_applicable",
+                  "halo": 0
+                },
+                {
+                  "dim": "z0",
+                  "size": 2,
+                  "type": "temporal",
+                  "effect": "absent",
+                  "reuse": "not_applicable",
+                  "halo": 0
+                },
+                {
+                  "dim": "z4",
+                  "size": 256,
+                  "type": "kernel",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z3",
+                  "size": 16,
+                  "type": "kernel",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z2",
+                  "size": 128,
+                  "type": "kernel",
+                  "effect": "varying",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z1",
+                  "size": 64,
+                  "type": "kernel",
+                  "effect": "invariant",
+                  "reuse": "not_set",
+                  "halo": 0
+                },
+                {
+                  "dim": "z0",
+                  "size": 128,
+                  "type": "kernel",
+                  "effect": "invariant",
+                  "reuse": "not_set",
+                  "halo": 0
+                }
+              ],
+              "cores": [
+                0
+              ],
+              "tiles": [
+                [
+                  16,
+                  256
+                ]
+              ],
+              "waited_on": true,
+              "work": {},
+              "warmup": null
+            },
+            {
+              "name": "Transfer(T0)",
+              "kind": "transfer",
+              "transfer_type": "MEM_TO_COMPUTE",
+              "tensor": "T0_1",
+              "copies": 1,
+              "elements": 2048,
+              "sources": [
+                "dram"
+              ],
+              "targets": [
+                "gb"
+              ],
+              "links": [
+                "bus gb,dram"
+              ],
+              "windows": [
+                [
+                  16,
+                  128
+                ]
+              ],
+              "moved": [
+                [
+                  16,
+                  128
+                ]
+              ],
+              "halos": [],
+              "handed": [],
+              "moved_bits": 16384.0,
+              "route_cycles": 54,
+              "reuse_factor": 4.0,
+              "work": {},
+              "warmup": null
+            },
+            {
+              "name": "Transfer(W0)",
+              "kind": "transfer",
+              "transfer_type": "MEM_TO_COMPUTE",
+              "tensor": "W0_1",
+              "copies": 1,
+              "elements": 8192,
+              "sources": [
+                "dram"
+              ],
+              "targets": [
+                "gb"
+              ],
+              "links": [
+                "bus gb,dram"
+              ],
+              "windows": [
+                [
+                  128,
+                  64
+                ]
+              ],
+              "moved": [
+                [
+                  128,
+                  64
+                ]
+              ],
+              "halos": [],
+              "handed": [],
+              "moved_bits": 65536.0,
+              "route_cycles": 214,
+              "reuse_factor": 1.0,
+              "work": {},
+              "warmup": null
+            },
+            {
+              "name": "Transfer(T1)",
+              "kind": "transfer",
+              "transfer_type": "COMPUTE_TO_COMPUTE",
+              "tensor": "T1_1",
+              "copies": 1,
+              "elements": 1024,
+              "sources": [
+                "gb"
+              ],
+              "targets": [
+                "gb"
+              ],
+              "links": [],
+              "windows": [
+                [
+                  16,
+                  64
+                ]
+              ],
+              "moved": [
+                [
+                  16,
+                  64
+                ]
+              ],
+              "halos": [],
+              "handed": [],
+              "moved_bits": 0,
+              "route_cycles": 0,
+              "reuse_factor": 4.0,
+              "work": {},
+              "warmup": null
+            },
+            {
+              "name": "Transfer(W1)",
+              "kind": "transfer",
+              "transfer_type": "MEM_TO_COMPUTE",
+              "tensor": "W1_1",
+              "copies": 1,
+              "elements": 8192,
+              "sources": [
+                "dram"
+              ],
+              "targets": [
+                "gb"
+              ],
+              "links": [
+                "bus gb,dram"
+              ],
+              "windows": [
+                [
+                  64,
+                  128
+                ]
+              ],
+              "moved": [
+                [
+                  64,
+                  128
+                ]
+              ],
+              "halos": [],
+              "handed": [],
+              "moved_bits": 65536.0,
+              "route_cycles": 214,
+              "reuse_factor": 1.0,
+              "work": {},
+              "warmup": null
+            },
+            {
+              "name": "Transfer(T2)",
+              "kind": "transfer",
+              "transfer_type": "COMPUTE_TO_COMPUTE",
+              "tensor": "T2_1",
+              "copies": 1,
+              "elements": 2048,
+              "sources": [
+                "gb"
+              ],
+              "targets": [
+                "gb"
+              ],
+              "links": [],
+              "windows": [
+                [
+                  16,
+                  128
+                ]
+              ],
+              "moved": [
+                [
+                  16,
+                  128
+                ]
+              ],
+              "halos": [],
+              "handed": [],
+              "moved_bits": 0,
+              "route_cycles": 0,
+              "reuse_factor": 4.0,
+              "work": {},
+              "warmup": null
+            },
+            {
+              "name": "Transfer(W2)",
+              "kind": "transfer",
+              "transfer_type": "MEM_TO_COMPUTE",
+              "tensor": "W2_1",
+              "copies": 1,
+              "elements": 32768,
+              "sources": [
+                "dram"
+              ],
+              "targets": [
+                "gb"
+              ],
+              "links": [
+                "bus gb,dram"
+              ],
+              "windows": [
+                [
+                  128,
+                  256
+                ]
+              ],
+              "moved": [
+                [
+                  128,
+                  256
+                ]
+              ],
+              "halos": [],
+              "handed": [],
+              "moved_bits": 262144.0,
+              "route_cycles": 854,
+              "reuse_factor": 16.0,
+              "work": {},
+              "warmup": null
+            },
+            {
+              "name": "Transfer(T3_1)",
+              "kind": "transfer",
+              "transfer_type": "COMPUTE_TO_MEM",
+              "tensor": "T3",
+              "copies": 1,
+              "elements": 4096,
+              "sources": [
+                "gb"
+              ],
+              "targets": [
+                "dram"
+              ],
+              "links": [
+                "bus gb,dram"
+              ],
+              "windows": [
+                [
+                  16,
+                  256
+                ]
+              ],
+              "moved": [
+                [
+                  16,
+                  256
+                ]
+              ],
+              "halos": [],
+              "handed": [],
+              "moved_bits": 32768.0,
+              "route_cycles": 107,
+              "reuse_factor": 2.0,
+              "work": {},
+              "warmup": null
+            }
+          ],
+          "edges": [
+            {
+              "source": "T0",
+              "target": "Transfer(T0)"
+            },
+            {
+              "source": "W0",
+              "target": "Transfer(W0)"
+            },
+            {
+              "source": "Matmul0",
+              "target": "Transfer(T1)"
+            },
+            {
+              "source": "W1",
+              "target": "Transfer(W1)"
+            },
+            {
+              "source": "Matmul1",
+              "target": "Transfer(T2)"
+            },
+            {
+              "source": "W2",
+              "target": "Transfer(W2)"
+            },
+            {
+              "source": "Matmul2",
+              "target": "Transfer(T3_1)"
+            },
+            {
+              "source": "Transfer(T0)",
+              "target": "Matmul0"
+            },
+            {
+              "source": "Transfer(W0)",
+              "target": "Matmul0"
+            },
+            {
+              "source": "Transfer(T1)",
+              "target": "Matmul1"
+            },
+            {
+              "source": "Transfer(W1)",
+              "target": "Matmul1"
+            },
+            {
+              "source": "Transfer(T2)",
+              "target": "Matmul2"
+            },
+            {
+              "source": "Transfer(W2)",
+              "target": "Matmul2"
+            },
+            {
+              "source": "Transfer(T3_1)",
+              "target": "output"
+            }
+          ]
+        },
+        "iterations": 256,
+        "axes": [
+          {
+            "dim": "z0",
+            "size": 128,
+            "split": 2,
+            "sliding": false
+          },
+          {
+            "dim": "z1",
+            "size": 64,
+            "split": 4,
+            "sliding": false
+          },
+          {
+            "dim": "z2",
+            "size": 128,
+            "split": 2,
+            "sliding": false
+          },
+          {
+            "dim": "z3",
+            "size": 16,
+            "split": 16,
+            "sliding": false
+          },
+          {
+            "dim": "z4",
+            "size": 256,
+            "split": 1,
+            "sliding": false
+          }
+        ],
+        "tensors": [
+          {
+            "name": "T0",
+            "shape": [
+              16,
+              128
+            ],
+            "bits": 16384,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "dram"
+            ],
+            "reuse_level": 1,
+            "depth": 2,
+            "single_buffered": false
+          },
+          {
+            "name": "W0",
+            "shape": [
+              128,
+              64
+            ],
+            "bits": 65536,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "dram"
+            ],
+            "reuse_level": 2,
+            "depth": 8,
+            "single_buffered": false
+          },
+          {
+            "name": "W1",
+            "shape": [
+              64,
+              128
+            ],
+            "bits": 65536,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "dram"
+            ],
+            "reuse_level": 2,
+            "depth": 8,
+            "single_buffered": false
+          },
+          {
+            "name": "W2",
+            "shape": [
+              128,
+              256
+            ],
+            "bits": 262144,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "dram"
+            ],
+            "reuse_level": 1,
+            "depth": 2,
+            "single_buffered": false
+          },
+          {
+            "name": "T1",
+            "shape": [
+              16,
+              64
+            ],
+            "bits": 8192,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "gb"
+            ],
+            "reuse_level": 0,
+            "depth": 1,
+            "single_buffered": false
+          },
+          {
+            "name": "T2",
+            "shape": [
+              16,
+              128
+            ],
+            "bits": 16384,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "gb"
+            ],
+            "reuse_level": 0,
+            "depth": 1,
+            "single_buffered": false
+          },
+          {
+            "name": "T3_1",
+            "shape": [
+              16,
+              256
+            ],
+            "bits": 32768,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "gb"
+            ],
+            "reuse_level": 0,
+            "depth": 1,
+            "single_buffered": false
+          },
+          {
+            "name": "T0_1",
+            "shape": [
+              16,
+              128
+            ],
+            "bits": 16384,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "gb"
+            ],
+            "reuse_level": 1,
+            "depth": 2,
+            "single_buffered": false
+          },
+          {
+            "name": "W0_1",
+            "shape": [
+              128,
+              64
+            ],
+            "bits": 65536,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "gb"
+            ],
+            "reuse_level": -1,
+            "depth": 2,
+            "single_buffered": false
+          },
+          {
+            "name": "T1_1",
+            "shape": [
+              16,
+              64
+            ],
+            "bits": 8192,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "gb"
+            ],
+            "reuse_level": 2,
+            "depth": 4,
+            "single_buffered": false
+          },
+          {
+            "name": "W1_1",
+            "shape": [
+              64,
+              128
+            ],
+            "bits": 65536,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "gb"
+            ],
+            "reuse_level": -1,
+            "depth": 2,
+            "single_buffered": false
+          },
+          {
+            "name": "T2_1",
+            "shape": [
+              16,
+              128
+            ],
+            "bits": 16384,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "gb"
+            ],
+            "reuse_level": 0,
+            "depth": 1,
+            "single_buffered": true
+          },
+          {
+            "name": "W2_1",
+            "shape": [
+              128,
+              256
+            ],
+            "bits": 262144,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "gb"
+            ],
+            "reuse_level": 1,
+            "depth": 2,
+            "single_buffered": false
+          },
+          {
+            "name": "T3",
+            "shape": [
+              16,
+              256
+            ],
+            "bits": 32768,
+            "loops": [
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "temporal",
+                "effect": "varying",
+                "reuse": "no_reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 2,
+                "type": "temporal",
+                "effect": "invariant",
+                "reuse": "reuse",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 4,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 2,
+                "type": "temporal",
+                "effect": "absent",
+                "reuse": "not_applicable",
+                "halo": 0
+              },
+              {
+                "dim": "z4",
+                "size": 256,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z3",
+                "size": 16,
+                "type": "kernel",
+                "effect": "varying",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z2",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z1",
+                "size": 64,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              },
+              {
+                "dim": "z0",
+                "size": 128,
+                "type": "kernel",
+                "effect": "invariant",
+                "reuse": "not_set",
+                "halo": 0
+              }
+            ],
+            "placement": [
+              "dram"
+            ],
+            "reuse_level": 0,
+            "depth": 1,
+            "single_buffered": false
+          }
+        ]
+      },
+      "roofline": {
+        "layers": [
+          "Matmul0",
+          "Matmul1",
+          "Matmul2"
+        ],
+        "operators": [
+          "MatMul"
+        ],
+        "roof": "MAC",
+        "macs": 50331648.0,
+        "operations": 50331648.0,
+        "latency_cycles": 61925,
+        "fill_cycles": 1708,
+        "iterations": 256,
+        "ops_per_cycle": 812.7839806217198,
+        "levels": [
+          {
+            "name": "off-chip memory",
+            "bytes": 2293760.0,
+            "intensity": 21.942857142857143,
+            "attainable": 842.6057142857143,
+            "busiest": {
+              "resource": "dram.rw",
+              "utilization": 0.9929078014184397
+            }
+          },
+          {
+            "name": "off-chip links",
+            "bytes": 2293760.0,
+            "intensity": 21.942857142857143,
+            "attainable": 842.6057142857143,
+            "busiest": {
+              "resource": "bus gb,dram",
+              "utilization": 0.9929078014184397
+            }
+          },
+          {
+            "name": "on-chip memory",
+            "bytes": 16351232.0,
+            "intensity": 3.0781563126252505,
+            "attainable": 1970.0200400801602,
+            "busiest": {
+              "resource": "gb.write",
+              "utilization": 0.4765957446808511
+            }
+          }
+        ],
+        "bound": "off-chip memory",
+        "attainable": 842.6057142857143,
+        "efficiency": 0.9646077243977931,
+        "spatial_utilization": 0.7580467372134039,
+        "limiter": "off-chip memory",
+        "limit": 842.6057142857143,
+        "diagnosis": [
+          {
+            "code": "memory_bound",
+            "level": "off-chip memory"
+          },
+          {
+            "code": "resource_saturated",
+            "level": "off-chip links",
+            "resource": "bus gb,dram",
+            "utilization": 0.9929078014184397
+          }
+        ],
+        "signature": "([('MatMul', [16, 128, 64], [0]), ('MatMul', [16, 64, 128], [0]), ('MatMul', [16, 128, 256], [0])], 61925, [2293760, 2293760, 16351232])"
+      },
+      "fusion": {
+        "n_groups": 1,
+        "groups": [
+          {
+            "name": "Fused_Group_1",
+            "layers": [
+              "Matmul0",
+              "Matmul1",
+              "Matmul2"
+            ],
+            "intra_core_tiling": [
+              [
+                "z0",
+                128
+              ],
+              [
+                "z1",
+                64
+              ],
+              [
+                "z2",
+                128
+              ],
+              [
+                "z3",
+                16
+              ]
+            ]
+          }
+        ]
+      },
+      "tiling": {
+        "fusion_splits": [
+          {
+            "dim": "z0",
+            "factor": 2
+          },
+          {
+            "dim": "z1",
+            "factor": 4
+          },
+          {
+            "dim": "z2",
+            "factor": 2
+          },
+          {
+            "dim": "z3",
+            "factor": 16
+          }
+        ],
+        "inter_core": {
+          "Matmul0": [],
+          "Matmul1": [],
+          "Matmul2": [],
+          "Transfer(T0)": [],
+          "Transfer(W0)": [],
+          "Transfer(T1)": [],
+          "Transfer(W1)": [],
+          "Transfer(T2)": [],
+          "Transfer(W2)": [],
+          "Transfer(T3_1)": []
+        },
+        "intra_core": {
+          "Fused_Group_1": [
+            {
+              "dim": "z0",
+              "tile": 128
+            },
+            {
+              "dim": "z1",
+              "tile": 64
+            },
+            {
+              "dim": "z2",
+              "tile": 128
+            },
+            {
+              "dim": "z3",
+              "tile": 16
+            }
+          ]
+        }
+      },
+      "overlays": []
+    }
+  },
+  "local_objective": "edp",
+  "last_group_core_mappings": [
+    {
+      "node": "Matmul0",
+      "core": 0,
+      "temporal_inner_to_outer": {
+        "A": [
+          [
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D1",
+              2.0
+            ]
+          ]
+        ],
+        "B": [
+          [
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ]
+          ],
+          [
+            [
+              "D1",
+              2.0
+            ]
+          ]
+        ],
+        "O": [
+          [
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D1",
+              2.0
+            ]
+          ]
+        ]
+      },
+      "spatial_by_axis": {
+        "D1": [
+          [
+            "D2",
+            64.0
+          ]
+        ],
+        "D2": [
+          [
+            "D1",
+            96.0
+          ]
+        ]
+      }
+    },
+    {
+      "node": "Matmul1",
+      "core": 0,
+      "temporal_inner_to_outer": {
+        "A": [
+          [
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D2",
+              2.0
+            ]
+          ]
+        ],
+        "B": [
+          [
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ]
+          ],
+          [
+            [
+              "D2",
+              2.0
+            ]
+          ]
+        ],
+        "O": [
+          [
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D2",
+              2.0
+            ]
+          ]
+        ]
+      },
+      "spatial_by_axis": {
+        "D1": [
+          [
+            "D1",
+            64.0
+          ]
+        ],
+        "D2": [
+          [
+            "D2",
+            96.0
+          ]
+        ]
+      }
+    },
+    {
+      "node": "Matmul2",
+      "core": 0,
+      "temporal_inner_to_outer": {
+        "A": [
+          [
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D2",
+              3.0
+            ],
+            [
+              "D1",
+              2.0
+            ]
+          ]
+        ],
+        "B": [
+          [
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ]
+          ],
+          [
+            [
+              "D2",
+              3.0
+            ],
+            [
+              "D1",
+              2.0
+            ]
+          ]
+        ],
+        "O": [
+          [
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D0",
+              2.0
+            ],
+            [
+              "D2",
+              3.0
+            ],
+            [
+              "D1",
+              2.0
+            ]
+          ]
+        ]
+      },
+      "spatial_by_axis": {
+        "D1": [
+          [
+            "D1",
+            64.0
+          ]
+        ],
+        "D2": [
+          [
+            "D2",
+            96.0
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 param(
-    [ValidateSet('attention','attention256')][string]$Workload,
+    [ValidateSet('3mm','attention','attention256','attention512')][string]$Workload,
+    [ValidateSet('original12','factors96')][string]$Domain = 'factors96',
     [Parameter(Mandatory=$true)][string]$Reference,
     [Parameter(Mandatory=$true)][string]$OutputDirectory,
     [ValidateSet('feedback','independent','independent-wide','prefix')][string[]]$Policies,
@@ -23,7 +24,7 @@ try {
         $check = "$OutputDirectory/${policy}_check.json"
         if (Test-Path -LiteralPath $result) { throw "Refusing to overwrite $result" }
         & $runtime -PythonArguments @('-m','research.joint_physical.run','--method','demand','--workload',$Workload,
-            '--domain','factors96','--proposal-policy',$policy,'--allow-quality-gap','--reference',$Reference,
+            '--domain',$Domain,'--proposal-policy',$policy,'--allow-quality-gap','--reference',$Reference,
             '--output',$result) *> "$OutputDirectory/$policy.log"
         if ($LASTEXITCODE) { throw "Proposal search failed: $policy" }
         & $runtime -PythonArguments @('-m','research.joint_physical.replay','--report',$result,'--reference',$Reference,
