@@ -7,12 +7,14 @@ from xdsl.dialects.memref import AllocOp, SubviewOp
 
 from stream import api
 from stream.stages.context import StageContext
+from stream.workload.normalization import expand_normalizations
 from stream.workload.workload import Workload
 
-from research.external_stream.dag import build
-from research.external_stream.dag_host import evaluate
+from research.external_stream.dag import build, verify_graph
+from research.external_stream.dag_host import evaluate, graph_order
+from research.external_stream.dag_host_order import order_choices
 from research.external_stream.dag_memo import group_key, native_memo
-from research.runtime.dag_cases import glu
+from research.runtime.dag_cases import asymmetric, glu
 
 
 @pytest.mark.parametrize("held,placements,memories", [
@@ -94,3 +96,15 @@ def test_equal_cost_allocations_with_different_placements_are_never_cached(tmp_p
         assert next(stage.run()).get("allocation").mapping.edge_placements["skip"] == "gb"
         assert next(stage.run()).get("allocation").mapping.edge_placements["skip"] == "dram"
     assert stats["hits"] == stats["entries"] == 0
+
+
+def test_native_cuts_use_the_canonical_fork_order():
+    graph = asymmetric()
+    orders = order_choices(graph)
+    assert len(orders) == 2
+    canonical = set()
+    for order, _ in orders:
+        workload = expand_normalizations(build(graph, order))
+        verify_graph(workload, graph)
+        canonical.add(graph_order(workload))
+    assert canonical == {("Stem", "Narrow", "Right", "Wide", "Left", "Merge", "Y")}

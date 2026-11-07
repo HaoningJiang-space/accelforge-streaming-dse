@@ -13,6 +13,10 @@ from stream.stages.stage import Stage
 from stream.workload.node import ComputationNode, InEdge, OutEdge
 
 
+SOLVE_FIELDS = ("backend", "time_limit_s", "route_alternatives", "temporal_mapping_type",
+                "loma_lpf_limit", "tile_search", "nb_cols_to_use")
+
+
 def group_key(workload, mapping_path):
     # The general IR omits affine maps, tensor views and the input edge's parameter flag.
     nodes = []
@@ -37,20 +41,21 @@ def native_memo():
 
     class ReuseGroup(Stage):
         reads = ("workload", "mapping", "accelerator", "output_path", "held", "artifacts")
+        optional_reads = ("kernel_library", "families", *SOLVE_FIELDS)
         result_writes = ("allocation", "memory_accesses")
 
         def run(self):
             ctx = self.ctx
             child, *rest = self.list_of_callables
-            if (ctx.get("artifacts") or ctx.get("held") or ctx.get("mapping").edge_placements
+            if (ctx.get("artifacts") or ctx.get("kernel_library") or ctx.get("held")
+                    or ctx.get("mapping").edge_placements
                     or len(ctx.get("accelerator").offchip_memories) != 1):
                 raise ValueError("allocation memo requires a single DRAM and no external SRAM placements")
             group_path = Path(ctx.get("output_path"))
             spec_path = group_path.parent.parent
             hardware = tuple((spec_path / name).read_bytes() for name in ("nvdla_geometry.yaml", "core.yaml"))
-            options = tuple(ctx.data[name] for name in ("backend", "time_limit_s", "route_alternatives",
-                            "temporal_mapping_type", "loma_lpf_limit", "tile_search", "nb_cols_to_use"))
-            families = ctx.data["families"].specs()
+            options = tuple(ctx.get(name) for name in SOLVE_FIELDS)
+            families = ctx.get("families").specs()
             signature = (hardware, options, families, *group_key(ctx.get("workload"), group_path / "mapping.yaml"))
             key = sha256(repr(signature).encode()).hexdigest()
             if key in cache:

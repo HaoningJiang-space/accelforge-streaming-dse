@@ -218,6 +218,8 @@ def check_memo(reference, reused):
         differences = [field for field in fields if row.get(field) != observed[key].get(field)]
         if differences:
             errors.append(dict(shape=key[0], cuts=key[1], fields=differences))
+        if row.get("status") == "PARTITION_MISMATCH":
+            errors.append(dict(shape=key[0], cuts=key[1], fields=["requested_partition"]))
     return dict(**controls(reference), mismatches=errors, equivalent=not errors)
 
 
@@ -274,6 +276,8 @@ def main():
     result = run(args.cases, args.budgets, args.repeats, args.limit, method, args.extreme_cuts)
     with args.output.open("x", encoding="utf-8", newline="\n") as file:
         file.write(json.dumps(result, indent=2, allow_nan=False) + "\n")
+    if method is memoized and any(not row["checks"]["equivalent"] for row in result["cases"]):
+        raise SystemExit("STREAM comparison failed the allocation-equivalence gate. See the saved report.")
 
 
 if __name__ == "__main__":
