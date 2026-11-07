@@ -2,7 +2,7 @@
 
 from collections import Counter
 from dataclasses import dataclass
-from itertools import product
+from itertools import chain, pairwise, product
 
 from research.runtime.dag_model import lifetimes, validate_plan
 from research.runtime.strip_codesign import COMPUTE, DRAM, GB_READ, GB_WRITE
@@ -57,23 +57,43 @@ class CheckedCalendar(Calendar):
             raise AssertionError("invalid RF fill interval")
         self.slots.clear()
 
-    def wave(self, rows, k, n, prior, overlap):
+    def wave(self, rows, k, n, prior, overlap, prefetch_words=0):
         wave_start = self.previous
         super().wave(rows, k, n, prior, overlap)
+        compute_slots = tuple(self.slots)
+        prefetched = 0
+        if prefetch_words:
+            # Each DMA chunk occupies DRAM and the SRAM write port together.
+            # Pack complete words into gaps left by the current output writes.
+            available = wave_start
+            unit = max(RATES["dram"], RATES["write"])
+            writes = [slot for slot in compute_slots if slot[0] == "write"]
+            for _, start, stop, _ in writes:
+                count = min(prefetch_words-prefetched, (start-available)//unit)
+                if count > 0:
+                    end = available+count*unit
+                    for port in ("dram", "write"):
+                        self.slots.append((port, available, end, count))
+                        self.words[port] += count
+                    self.end["dram"] = end
+                    prefetched += count
+                available = stop
+            self.slots.sort(key=lambda slot: slot[1])
         self.check()
         last_write = wave_start
         did_overlap = False
-        for read, mac, write in zip(self.slots[::3], self.slots[1::3], self.slots[2::3], strict=True):
+        for read, mac, write in zip(compute_slots[::3], compute_slots[1::3], compute_slots[2::3], strict=True):
             if ((read[0], mac[0], write[0]) != ("read", "mac", "write")
                     or read[2] > mac[1] or mac[2] > write[1]
                     or (read[3], mac[3], write[3]) != (k + n * prior, 1, n)):
                 raise AssertionError("invalid read/compute/write dependency")
             did_overlap |= read[1] < last_write
             last_write = write[2]
-        if len(self.slots) != 3 * rows or (did_overlap and not overlap):
+        if len(compute_slots) != 3 * rows or (did_overlap and not overlap):
             raise AssertionError("calendar overlaps rows without SRAM staging")
         self.verified_overlap += did_overlap
         self.slots.clear()
+        return prefetched
 
 
 def intervals(extent, step):
@@ -144,11 +164,12 @@ def scalar_graph(graph):
     return {name: values[name] for name in graph.outputs}
 
 
-def replay(graph, hardware, schedule, numeric=False, staging_report=False):
+def replay(graph, hardware, schedule, numeric=False, staging_report=False, prefetch=False):
     """Check address versions, local SRAM ownership and exclusive port intervals."""
     cal = CheckedCalendar()
     counts = Counter()
     blocked = Counter()
+    prefetch_blocked = Counter()
     resident = {}
     pinned = {}
     produced = Counter()
@@ -159,11 +180,14 @@ def replay(graph, hardware, schedule, numeric=False, staging_report=False):
                 for name, w in graph.inputs}
     values, coverage = {}, {}
     peak = 0
+    prefetched = carried = 0
+
+    def occupied():
+        return sum(len(band) * graph.widths[name] for name, band in resident.items()) + sum(pinned.values())
 
     def live(scratch=0):
         nonlocal peak
-        used = sum(len(band) * graph.widths[name] for name, band in resident.items())
-        used += sum(pinned.values()) + scratch
+        used = occupied() + scratch
         peak = max(peak, used)
         if used > hardware.capacity_bytes:
             raise ValueError("address replay exceeds SRAM capacity")
@@ -182,12 +206,13 @@ def replay(graph, hardware, schedule, numeric=False, staging_report=False):
         if resident.get(name) != band or any(part != -1 for part in coverage[name]):
             raise ValueError(f"read of unavailable tensor {name}")
 
-    def dma(name, words, direction):
+    def dma(name, words, direction, *, booked=False):
         counts["dram", name, "read" if direction == "write" else "write"] += words
         counts[direction, name, direction] += words
-        cal.transfer(words, direction)
+        if not booked:
+            cal.transfer(words, direction)
 
-    for event in schedule:
+    for event, following in pairwise(chain(schedule, (None,))):
         kind, name, band, ks, ns = event.kind, event.name, event.band, event.inner, event.columns
         if kind == "pin":
             if name in pinned or resident:
@@ -254,7 +279,11 @@ def replay(graph, hardware, schedule, numeric=False, staging_report=False):
                 wave = len(ks) * len(ns)
                 scratch = 0 if name in pinned else wave
                 if name not in pinned:
-                    dma("W:" + name, wave, "write")
+                    if carried > wave:
+                        raise ValueError("weight prefetch exceeded its target tile")
+                    if wave > carried:
+                        dma("W:" + name, wave-carried, "write")
+                    carried = 0
                 counts["read", "W:" + name, "read"] += wave
                 counts["rf", "W:" + name, "write"] += wave
                 counts["rf", "W:" + name, "read"] += wave * len(band)
@@ -287,19 +316,33 @@ def replay(graph, hardware, schedule, numeric=False, staging_report=False):
             prior = bool(ks.start)
             staging = read_inputs + len(ns) * (1 + prior)
             if staging_report and not event.overlap and len(band) > 1:
-                occupied = sum(len(rows) * graph.widths[tensor] for tensor, rows in resident.items())
-                if occupied + sum(pinned.values()) + scratch + staging > hardware.capacity_bytes:
+                if occupied() + scratch + staging > hardware.capacity_bytes:
                     blocked[name] += 1
-            live(scratch + (staging if event.overlap else 0))
+            extra = scratch + (staging if event.overlap else 0)
+            live(extra)
             counts["write", name, "write"] += len(band) * len(ns)
             counts["mac", name, "cycles"] += len(band)
             counts["ops", name, "compute"] += operations
-            cal.wave(len(band), read_inputs, len(ns), prior, event.overlap)
+            wanted = 0
+            if (prefetch and kind == "gemm" and following is not None and following.kind == "gemm"
+                    and following.name == name and name not in pinned):
+                next_weights = len(following.inner)*len(following.columns)
+                if occupied() + extra + next_weights <= hardware.capacity_bytes:
+                    wanted = next_weights
+                else:
+                    prefetch_blocked[name] += 1
+            carried = cal.wave(len(band), read_inputs, len(ns), prior, event.overlap, wanted)
+            if carried:
+                # Reserve the full destination tile until the following wave,
+                # even if the last bytes will still arrive synchronously.
+                live(extra + wanted)
+                dma("W:" + name, carried, "write", booked=True)
+                prefetched += carried
             if all(x == -1 for x in coverage[name]):
                 produced[name] |= bitrows(band)
 
     complete = (1 << graph.rows) - 1
-    if resident or pinned or any(produced[op.name] != complete for op in graph.ops):
+    if resident or pinned or carried or any(produced[op.name] != complete for op in graph.ops):
         raise ValueError("unfinished compute or SRAM lifetime")
     if any(stored.get(name, 0) != complete for name in graph.outputs):
         raise ValueError("missing output writeback")
@@ -320,4 +363,6 @@ def replay(graph, hardware, schedule, numeric=False, staging_report=False):
                   actions={"/".join(key): value for key, value in sorted(counts.items())})
     if staging_report:
         result.update(staging_blocked=dict(blocked), overlapped_ticks=cal.overlapped_ticks)
+    if prefetch:
+        result.update(prefetched_weight_words=prefetched, prefetch_blocked=dict(prefetch_blocked))
     return result

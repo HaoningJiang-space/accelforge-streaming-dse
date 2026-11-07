@@ -74,6 +74,27 @@ def test_port_replay_rejects_compute_before_ingress(monkeypatch):
         CheckedCalendar().wave(2, 3, 2, False, True)
 
 
+def test_retained_branch_values_compete_with_prefetch():
+    graph = Graph(4, (("X", 4),), (
+        Op("A", ("X",), 6), Op("Left", ("A",), 2), Op("B", ("X",), 6),
+        Op("Right", ("B",), 2), Op("J", ("Left", "Right"), 2, "add"),
+    ))
+    hardware = Hardware(2, 2, 60)
+    outcomes = []
+    for order in (("A", "B", "Left", "Right", "J"), ("A", "Left", "B", "Right", "J")):
+        group = Group(order, 3, ((2, 2),)*4 + ((0, 2),), (False,)*5)
+        schedule = tuple(events(graph, hardware, (group,)))
+        plain = replay(graph, hardware, schedule, numeric=True)
+        ahead = replay(graph, hardware, schedule, numeric=True, prefetch=True)
+        assert plain["actions"] == ahead["actions"]
+        assert plain["ticks"]-ahead["ticks"] == 40*ahead["prefetched_weight_words"]
+        outcomes.append(ahead)
+    retained, compact = outcomes
+    assert retained["prefetch_blocked"]["B"] > 0
+    assert compact["prefetched_weight_words"] > retained["prefetched_weight_words"]
+    assert compact["ticks"] < retained["ticks"]
+
+
 def test_verifier_rejects_premature_free_partial_output_and_capacity():
     graph, h = diamond(), Hardware(2, 3, 45)
     group = Group(("S", "A", "B", "J"), 3, ((3, 2), (3, 2), (3, 2), (0, 2)), (False,) * 4)

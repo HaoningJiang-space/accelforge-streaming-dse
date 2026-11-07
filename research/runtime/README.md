@@ -215,3 +215,20 @@ stage-frontier cache misses from 95 to 49 at 128 KiB and 144 to 74 at
 132 KiB. Its median end-to-end speedups are 1.61× and 1.78×. The other graphs
 show little timing difference. The report includes time to the common optimum
 and quality at fixed deadlines, with phase construction included in the timer.
+
+### Executable next-wave weight prefetch
+
+The next-wave policy can put part or all of a following streamed weight tile
+into otherwise idle SRAM-write intervals of the current GEMM wave. It reserves
+the whole next tile alongside the current tile, all live activations and the
+current wave's staging. Each prefetched word books both the DRAM and SRAM-write
+ports. The following wave fetches any remainder before its register fill.
+The policy looks ahead only to the next wave of the same operator.
+
+The [fixed-pool replay](../joint_budget/results/dag_prefetch_decision.json)
+uses the distinct choices made by the preceding pricing models. It checks
+identical action counts and energy and accounts for all removed synchronous
+DMA ticks. EDP decreases on nine of ten workload-budget pairs, with a maximum
+decrease of 27.23% for 3mm at 128 KiB. GLU and asymmetric select different
+members of this fixed pool with prefetch. The test covers feasibility and
+reranking in this pool. It does not search every prefetch-enabled mapping.
