@@ -154,3 +154,20 @@ trials produce a different ordered partition. The pinned STREAM
 pass canonicalizes nodes in lexical topological order even for this graph
 without normalization. The matched asymmetric experiment uses that canonical
 order for both methods and checks the realized groups.
+
+```powershell
+& $streamPython -X utf8 -m research.external_stream.dag_host --cases asymmetric --budgets 131072 --extreme-cuts --output research/local_stream_asymmetric.json
+```
+
+The [matched asymmetric report](results/dag_host_asymmetric_128k.json) offers
+automatic STREAM, every zero- or one-cut partition, the per-layer plan, and
+each plan that removes one boundary from it. All 45 configurations match,
+including 34 successful allocations and 11 vendor rejections. Full sweep and
+reuse take 106.02 and 70.13 seconds. Both choose a 32×192 array, with `Merge`
+and `Y` fused and the preceding operators separated. The best automatic
+allocation uses 193-way splitting on a fused group, which uses less than 1%
+of the peak MAC rate over that group. Its whole-graph EDP is 884.5 times the
+explicit-cut winner's EDP. The per-layer-first architecture control also finds
+the winner after reopening cuts. The large gap identifies a failure of the
+automatic mapping choice in this case. The common complete sweep and the
+two-stage control both reach the same design quality.
