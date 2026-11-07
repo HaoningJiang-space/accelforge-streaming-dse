@@ -4,7 +4,7 @@ from itertools import product
 import pytest
 
 from research.joint_budget.protocol import Hardware
-from research.runtime.dag_calendar import events, replay
+from research.runtime.dag_calendar import CheckedCalendar, events, replay
 from research.runtime.dag_model import Graph, Group, Op
 from research.runtime.dag_overlap_cost import score
 from research.runtime import dag_overlap_search as search
@@ -42,6 +42,36 @@ def test_spilled_edges_cross_independent_row_bands():
     for tensor, words in (("S", 20), ("A", 10)):
         assert result["actions"][f"dram/{tensor}/write"] == words
         assert result["actions"][f"dram/{tensor}/read"] == words
+
+
+def test_three_consumer_fanout_spills_once():
+    graph = Graph(7, (("X", 3),), (
+        Op("S", ("X",), 4), Op("A", ("S",), 2), Op("B", ("S",), 2), Op("C", ("S",), 2),
+        Op("J", ("A", "B"), 2, "add"), Op("Y", ("J", "C"), 2, "mul"),
+    ))
+    h = Hardware(2, 3, 64)
+    plan = (
+        Group(("S", "A"), 2, ((3, 2), (3, 2)), (False, False)),
+        Group(("B",), 4, ((3, 2),), (False,)),
+        Group(("C", "J", "Y"), 3, ((3, 2), (0, 2), (0, 2)), (False,) * 3),
+    )
+    result = replay(graph, h, events(graph, h, plan), numeric=True)
+    assert score(graph, h, plan) == (result["energy"], result["ticks"])
+    assert result["actions"]["dram/S/write"] == 28
+    assert result["actions"]["dram/S/read"] == 56
+
+
+def test_port_replay_rejects_compute_before_ingress(monkeypatch):
+    book = CheckedCalendar.reserve
+
+    def early_compute(self, port, start, elapsed, actions):
+        if port == "mac":
+            start -= 1
+        book(self, port, start, elapsed, actions)
+
+    monkeypatch.setattr(CheckedCalendar, "reserve", early_compute)
+    with pytest.raises(AssertionError, match="read/compute/write dependency"):
+        CheckedCalendar().wave(2, 3, 2, False, True)
 
 
 def test_verifier_rejects_premature_free_partial_output_and_capacity():

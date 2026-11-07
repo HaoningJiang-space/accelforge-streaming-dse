@@ -19,6 +19,63 @@ class Event:
     overlap: bool = False
 
 
+class CheckedCalendar(Calendar):
+    """Audit the actual intervals booked by the calendar after each transaction."""
+
+    def __init__(self):
+        super().__init__()
+        self.slots = []
+        self.previous = 0
+        self.verified_overlap = 0
+
+    def reserve(self, port, start, elapsed, actions):
+        super().reserve(port, start, elapsed, actions)
+        self.slots.append((port, start, start + elapsed, actions))
+
+    def check(self):
+        ends = {}
+        for port, start, stop, words in self.slots:
+            if start < ends.get(port, self.previous) or stop > self.now or stop - start < words * RATES[port]:
+                raise AssertionError(f"invalid physical {port} interval")
+            ends[port] = stop
+        if max(ends.values()) != self.now:
+            raise AssertionError("calendar does not end at the last completion")
+        self.previous = self.now
+
+    def transfer(self, words, direction):
+        super().transfer(words, direction)
+        self.check()
+        source, target = self.slots
+        if source[0] != "dram" or target[0] != direction or source[1:] != target[1:] or source[3] != words:
+            raise AssertionError("DMA endpoints disagree")
+        self.slots.clear()
+
+    def rf_fill(self, words):
+        super().rf_fill(words)
+        self.check()
+        if len(self.slots) != 1 or self.slots[0][0] != "read" or self.slots[0][3] != words:
+            raise AssertionError("invalid RF fill interval")
+        self.slots.clear()
+
+    def wave(self, rows, k, n, prior, overlap):
+        wave_start = self.previous
+        super().wave(rows, k, n, prior, overlap)
+        self.check()
+        last_write = wave_start
+        did_overlap = False
+        for read, mac, write in zip(self.slots[::3], self.slots[1::3], self.slots[2::3], strict=True):
+            if ((read[0], mac[0], write[0]) != ("read", "mac", "write")
+                    or read[2] > mac[1] or mac[2] > write[1]
+                    or (read[3], mac[3], write[3]) != (k + n * prior, 1, n)):
+                raise AssertionError("invalid read/compute/write dependency")
+            did_overlap |= read[1] < last_write
+            last_write = write[2]
+        if len(self.slots) != 3 * rows or (did_overlap and not overlap):
+            raise AssertionError("calendar overlaps rows without SRAM staging")
+        self.verified_overlap += did_overlap
+        self.slots.clear()
+
+
 def intervals(extent, step):
     for start in range(0, extent, step):
         yield range(start, min(extent, start + step))
@@ -89,7 +146,7 @@ def scalar_graph(graph):
 
 def replay(graph, hardware, schedule, numeric=False):
     """Check address versions, local SRAM ownership and exclusive port intervals."""
-    cal = Calendar()
+    cal = CheckedCalendar()
     counts = Counter()
     resident = {}
     pinned = {}
@@ -180,14 +237,16 @@ def replay(graph, hardware, schedule, numeric=False):
                 del values[name]
         else:
             op = graph.operators[name]
-            if kind != op.kind or resident.get(name) != band or not 0 <= ns.start < ns.stop <= width:
+            if (kind != op.kind or resident.get(name) != band or ns.step != 1
+                    or not 0 <= ns.start < ns.stop <= width):
                 raise ValueError("invalid compute event")
             for source in op.inputs:
                 ready(source, band)
             if kind == "gemm":
                 source = op.inputs[0]
                 k = graph.widths[source]
-                if not 0 <= ks.start < ks.stop <= k or any(coverage[name][j] != ks.start for j in ns):
+                if (ks.step != 1 or not 0 <= ks.start < ks.stop <= k
+                        or any(coverage[name][j] != ks.start for j in ns)):
                     raise ValueError("overlapping, missing or uninitialized partial sum")
                 if len(ks) > hardware.py or len(ns) > hardware.px:
                     raise ValueError("physical GEMM wave fanout exceeded")
@@ -249,7 +308,7 @@ def replay(graph, hardware, schedule, numeric=False):
     energy = (totals["dram"] * DRAM[0] + totals["read"] * GB_READ[0]
               + totals["write"] * GB_WRITE[0] + totals["ops"] * COMPUTE[0])
     service = {level: totals[level] * rate for level, rate in RATES.items()}
-    if cal.now < max(service.values()):
+    if cal.now < max(service.values()) or cal.verified_overlap != cal.overlapped_waves:
         raise AssertionError("schedule exceeds a physical port")
     return dict(energy=energy, ticks=cal.now, peak_bytes=peak, service_ticks=service,
                 overlapped_waves=cal.overlapped_waves,
