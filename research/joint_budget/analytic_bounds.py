@@ -67,12 +67,23 @@ def lower_bound(case, point, mode='shape'):
     """
     if case.arch != 'nvdla' or mode not in ('configured', 'shape'):
         raise ValueError('frozen NVDLA and configured/shape bound required')
-    if any(n & (n - 1) for n in case.params[1:]):
+    ranks = case.params[1:] if case.workload == 'matmuls' else case.params
+    if any(n & (n - 1) for n in ranks):
         raise ValueError('perfect power-of-two rank extents required')
     if case.workload == 'matmuls':
         n, m, k = case.params
         phases = [(m*k*k, k, k)] * n
         bits = 8 * (2*m*k + n*k*k)
+    elif case.workload == 'attention':
+        tokens, heads, depth = case.params
+        # QK: input-invariant P and output-invariant E. AV: input-invariant F
+        # and output-invariant P. The repository's elementwise softmax proxy
+        # has no input- or output-invariant nontrivial rank, so its parallelism
+        # in this frozen reuse grammar is one, not the array's PE count.
+        phases = [(heads*tokens*tokens*depth, tokens, depth),
+                  (heads*tokens*tokens, 1, 1),
+                  (heads*tokens*tokens*depth, depth, tokens)]
+        bits = 8 * 4*tokens*heads*depth  # Q, K, V and final AV; no intermediate I/O
     else:
         raise ValueError('bound is not yet proved for this workload')
     parallelism = tuple(point.px * point.py if mode == 'configured' else

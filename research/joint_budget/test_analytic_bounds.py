@@ -23,11 +23,22 @@ def test_geometry_accounts_for_undivisible_fanout_and_rank_limits():
 def test_unsupported_workload_cannot_enable_cuts():
     point = Hardware(8, 8, 1024)
     with pytest.raises(ValueError):
-        lower_bound(SimpleNamespace(arch='nvdla', workload='attention', params=(128,1,64)), point)
+        lower_bound(SimpleNamespace(arch='nvdla', workload='glu', params=(128,64,64)), point)
     with pytest.raises(ValueError):
         lower_bound(SimpleNamespace(arch='nvdla', workload='matmuls', params=(3,7,8)), point)
     with pytest.raises(ValueError):
         floor_power_two(0)
+
+
+def test_attention_uses_phase_specific_geometry_and_serial_elementwise_proxy():
+    case = SimpleNamespace(arch='nvdla', workload='attention', params=(128,1,64))
+    central = lower_bound(case, Hardware(64,96,4096))
+    extreme = lower_bound(case, Hardware(1,6144,4096))
+    assert central.phase_parallelism == (4096,1,4096)
+    assert extreme.phase_parallelism == (64,1,128)
+    assert central.compute_ops == 2*128*128*64+128*128
+    assert central.compulsory_dram_bits == 4*128*64*8
+    assert central.latency == Fraction('16.896e-6')*Fraction(99,100)
 
 
 def test_full_reference_audit_detects_a_bound_violation():

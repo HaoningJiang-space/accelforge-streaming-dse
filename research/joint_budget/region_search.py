@@ -23,7 +23,7 @@ from research.joint_search.ffm_backend import tiles
 from research.tracking_audit import common
 from research.tracking_audit.shape_capacity_audit import build, validate_pick
 from .analytic_bounds import lower_bound, check_frozen_inputs, factor_domain, factor_budgets, audit_vectors
-from .protocol import registered_domain, registered_budgets
+from .protocol import Domain, Hardware, ResourceBudget, registered_domain, registered_budgets
 
 
 def source_digest():
@@ -143,10 +143,19 @@ def search(case, domain, budgets, method='shape', progress=None):
         peak_rss_gib_before_validation=common.peak_rss_gb())
 
 
-def run(method, domain_name, output, reference_path=None):
-    case = common.Case('matmuls', 'nvdla', (3, 256, 256))
-    domain = registered_domain() if domain_name == 'original12' else factor_domain()
-    budgets = registered_budgets() if domain_name == 'original12' else factor_budgets()
+def run(method, domain_name, output, reference_path=None, workload='3mm'):
+    if workload == '3mm':
+        case = common.Case('matmuls', 'nvdla', (3, 256, 256))
+        domain = registered_domain() if domain_name == 'original12' else factor_domain()
+        budgets = registered_budgets() if domain_name == 'original12' else factor_budgets()
+    elif workload == 'attention':
+        case = common.Case('attention', 'nvdla', (128,1,64))
+        capacities = (4096,8192,16384,32768)
+        domain = factor_domain(capacities=capacities) if domain_name == 'factors96' else Domain(tuple(
+            Hardware(x,y,c) for x,y in ((16,384),(32,192),(64,96)) for c in capacities))
+        budgets = tuple(ResourceBudget(6144,c) for c in capacities)
+    else:
+        raise ValueError('3mm/attention workload required')
     report = dict(status='running', domain_name=domain_name, case=asdict(case),
         domain=[asdict(p) for p in domain.points], method=method, workers=1,
         python=sys.version, platform=platform.platform(),
@@ -170,6 +179,8 @@ def run(method, domain_name, output, reference_path=None):
             frozen = json.loads(reference_path.read_text(encoding='utf-8'))
             if frozen['status'] != 'complete' or frozen['domain'] != report['domain'] or len(frozen['points']) != len(domain.points):
                 raise ValueError('complete exhaustive reference on identical domain required')
+            if frozen.get('case') and frozen['case'] != json.loads(json.dumps(asdict(case))):
+                raise ValueError('reference workload differs')
             audits = audit_vectors(case, domain, frozen['points'], 'configured' if method == 'configured' else 'shape')
             report['bound_audit'] = audits
             lookup = {tuple(p['architecture'].values()): p for p in frozen['points']}
@@ -224,10 +235,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--method', choices=('events','configured','shape'), required=True)
     parser.add_argument('--domain', choices=('original12','factors96'), default='original12')
+    parser.add_argument('--workload', choices=('3mm','attention'), default='3mm')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--reference', type=Path)
     args = parser.parse_args()
-    run(args.method, args.domain, args.output, args.reference)
+    run(args.method, args.domain, args.output, args.reference, args.workload)
 
 
 if __name__ == '__main__':
