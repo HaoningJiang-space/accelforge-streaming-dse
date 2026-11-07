@@ -30,8 +30,9 @@ from .generator import PhysicalDomain,prepare
 
 
 class Proposer:
-    def __init__(self,domain,completion_limit=0):
+    def __init__(self,domain,completion_limit=0,proposal_policy='feedback'):
         self.domain = domain
+        self.policy = proposal_policy
         self.properties = {p:set() for p in domain.points}
         self.cache = {}
         self.processed = {}
@@ -39,7 +40,8 @@ class Proposer:
         self.completion_limit = completion_limit
         self.stats = dict(symbolic_models=0,lp_requests=0,lp_solves=0,lp_cache_hits=0,
             proposed_integer_rows=0,feasible_integer_rows=0,materialized_rows=0,
-            cartesian_tile_expansions=0,proxy_demands=0,complete_factor_assignments=0)
+            cartesian_tile_expansions=0,proxy_demands=0,complete_factor_assignments=0,
+            native_hard_objectives=0)
 
     def __call__(self,**data):
         for key in ('capacity_targets','capacity_exact','membership_format'):
@@ -63,6 +65,27 @@ class Proposer:
                 previous[node.rank_variable] = node.tile_shape
         compiled = {name:backend.tiles.compile_objective(symbols,obj.formula)
                     for name,obj in objectives.items() if name in ('Total<SEP>energy','Total<SEP>latency')}
+        fixed_constraints = []
+        for obj in data['objectives']:
+            if obj.try_best_if_none_reaches_min:
+                if not obj.name.startswith('min_usage_') or obj.min_value!=0 or obj.max_value is not None:
+                    raise ValueError(f'unsupported native fallback policy: {obj.name}')
+                continue
+            if obj.min_value is None and obj.max_value is None:
+                continue
+            if obj.name in {f'usage<SEP>spatial<SEP>ArrayFanout<SEP>{name}' for name in spatial}:
+                if obj.max_value!=1 or obj.min_value is not None or not obj.inclusive:
+                    raise ValueError(f'unsupported spatial objective: {obj.name}')
+                continue  # Evaluate the same bound in exact, unnormalized fanout units.
+            memory = obj.name.split('<SEP>')[-1] if obj.name.startswith('usage<SEP>memory<SEP>') else None
+            dynamic = memory=='GlobalBuffer'
+            if dynamic and (not obj.exact or obj.min_value is not None or not obj.inclusive):
+                raise ValueError(f'GlobalBuffer must use exact physical bits: {obj.name}')
+            evaluate = None if obj.exact else backend.tiles.compile_objective(symbols,obj.formula)
+            fixed_constraints.append((obj,dynamic,evaluate))
+        self.stats['native_hard_objectives'] += len(fixed_constraints)+len(spatial)
+        bounds_by_symbol = {s:(int(lo),int(hi)) for s,lo,hi in data['what_tiles_symbol'].bounds}
+        symbol_limits = tuple(bounds_by_symbol[s] for s in symbols)
 
         def costs(choices,name):
             values = backend.tiles.call_compiled_objective(compiled[name],*choices.astype(common.af.util.NUMPY_FLOAT_TYPE).T)
@@ -73,6 +96,8 @@ class Proposer:
                 return choices
             valid = np.ones(len(choices),dtype=bool)
             env = dict(zip(symbols,choices.T))
+            for values,(lo,hi) in zip(choices.T,symbol_limits):
+                valid &= (lo<=values)&(values<=hi)
             for outer,inner in data['what_tiles_symbol'].what_tiles_symbol:
                 a = env[outer] if outer in env else outer
                 b = env[inner] if inner in env else inner
@@ -82,14 +107,19 @@ class Proposer:
                 return choices
             valid = np.ones(len(choices),dtype=bool)
             env = dict(zip(symbols,choices.T))
-            for name,obj in objectives.items():
-                if name.startswith('usage<SEP>memory<SEP>'):
-                    memory = name.split('<SEP>')[-1]
-                    bound = point.capacity_bytes*8 if memory=='GlobalBuffer' else job.resource_capacities.get(memory)
-                    if bound is None:
-                        continue
+            for obj,dynamic,evaluate in fixed_constraints:
+                if obj.exact:
                     values = exact.bit_array(obj.formula,env,len(choices))
-                    valid &= values<=bound
+                else:
+                    values = backend.tiles.call_compiled_objective(
+                        evaluate,*choices.astype(common.af.util.NUMPY_FLOAT_TYPE).T)
+                    values = np.asarray(values)
+                upper = point.capacity_bytes*8 if dynamic else obj.max_value
+                if upper is not None:
+                    bound = int(upper) if obj.exact and int(upper)==upper else float(upper)
+                    valid &= values<=bound if obj.inclusive else values<bound
+                if obj.min_value is not None:
+                    valid &= values>=float(obj.min_value) if obj.inclusive else values>float(obj.min_value)
             for name,formula in spatial.items():
                 values = exact.bit_array(formula,env,len(choices))
                 valid &= values <= (point.px if name=='reuse_input' else point.py)
@@ -181,7 +211,7 @@ class Proposer:
                     selected.setdefault(tuple(int(v) for v in row),set()).add(target)
                 continue
             demand_sets = [{}]
-            if str(job.einsum_name)=='QK_softmax' or self.round>0:
+            if self.policy in ('feedback','prefix') and (str(job.einsum_name)=='QK_softmax' or self.round>0):
                 for prop in sorted(self.properties[point]):
                     prop = dict(prop)
                     fixed = {}
@@ -197,6 +227,14 @@ class Proposer:
                     if compatible and fixed:
                         demand_sets.append(fixed)
                         self.stats['proxy_demands'] += 1
+            elif self.policy=='independent-wide' and str(job.einsum_name)=='QK_softmax':
+                # A stronger graph-blind control: independently sweep each
+                # fused dimension's legal factor coordinates, without sibling
+                # proposals, their properties, or any reference result.
+                for _,symbol in fused:
+                    if symbol in indices:
+                        idx = indices[symbol]
+                        demand_sets.extend({idx:k} for k in range(int(model.upper[idx])+1))
             candidates = []
             processed = self.processed.setdefault((source_key,point),set())
             for fixed in demand_sets:
@@ -237,7 +275,7 @@ class Proposer:
         return choices,membership
 
 
-def search(case,domain,rounds=1,completion_limit=0):
+def search(case,domain,rounds=1,completion_limit=0,proposal_policy='feedback',audit_join=False):
     if case.workload!='attention':
         raise ValueError('first demand-driven gate supports the actual Attention graph')
     if completion_limit and (rounds!=1 or case.params[0]>16):
@@ -252,11 +290,25 @@ def search(case,domain,rounds=1,completion_limit=0):
         NativeEnvelope(case)  # Guards frozen model, architecture and source assumptions.
         spec,jobs = prepare(case,domain)
         preparation_s = time.perf_counter()-started
-        proposer = Proposer(domain,completion_limit)
+        if proposal_policy not in ('feedback','independent','independent-wide','prefix'):
+            raise ValueError(f'unknown proposal policy: {proposal_policy}')
+        if proposal_policy=='prefix' and (rounds!=1 or completion_limit):
+            raise ValueError('numeric prefix proposal is a separate one-wave policy')
+        proposer = Proposer(domain,completion_limit,proposal_policy)
         groups,objects,returned_jobs = {},{},{}
         phase = time.perf_counter()
         def forbid_cartesian(*args,**kwargs):
             raise AssertionError('demand generator attempted full native Cartesian Tile expansion')
+        def materialize(name, templates):
+            groups.setdefault(name,[])
+            objects.setdefault(name,{})
+            returned_jobs.setdefault(name,[])
+            for same in templates.values():
+                _,pg,po,pj = backend.templates.make_pmappings_from_templates(same)
+                groups[name].extend(pg)
+                objects[name].update(po)
+                returned_jobs[name].extend(pj)
+        prefix_stats = None
         with patch.object(backend.tiles,'get_tile_shape_choices_for_targets',proposer),patch.object(
                 backend.tiles,'_compute_symbol_choices',forbid_cartesian):
             # Numerical properties come from both heavy operators before proxy
@@ -268,28 +320,41 @@ def search(case,domain,rounds=1,completion_limit=0):
                 for name in sorted(jobs,key=lambda n:str(n)=='QK_softmax'):
                     if rounds>1 and stage==0 and str(name)=='QK_softmax':
                         continue
-                    groups.setdefault(name,[])
-                    objects.setdefault(name,{})
-                    returned_jobs.setdefault(name,[])
-                    for same in jobs[name].values():
-                        _,pg,po,pj = backend.templates.make_pmappings_from_templates(same)
-                        groups[name].extend(pg)
-                        objects[name].update(po)
-                        returned_jobs[name].extend(pj)
+                    materialize(name,jobs[name])
+            if proposal_policy=='prefix':
+                from .prefix_feedback import extract
+                names = tuple(spec.workload.einsum_names)
+                initial = {name:PmappingGroup.combine_combineable(groups[name],'All') for name in names}
+                hints, prefix_rows = extract(spec,initial,domain,'QK_softmax')
+                prefix_stats = dict(native_prefix_rows=prefix_rows,target_hints=sum(map(len,hints.values())))
+                if prefix_stats['target_hints']:
+                    proposer.properties = hints
+                    proposer.round = 1
+                    _,fresh = prepare(case,domain)
+                    materialize(names[-1],fresh[names[-1]])
             groups = {name:PmappingGroup.combine_combineable(gs,'All') for name,gs in groups.items()}
         generation_s = time.perf_counter()-phase
-        candidates = backend.package(spec,groups,objects,returned_jobs,
-            JointGenerationContract(GenerationContract.capture(common.RU),domain,version='lp-demand-tiles-v1'))
+        contract = JointGenerationContract(GenerationContract.capture(common.RU),domain,version='lp-demand-tiles-v1')
+        candidates = backend.package(spec,groups,objects,returned_jobs,contract)
         phase = time.perf_counter()
         result = compose(candidates)
         join_s = time.perf_counter()-phase
         outputs = {p:query_architecture(result,domain,p) for p in domain.points}
-        return outputs,dict(preparation_s=preparation_s,generation_s=generation_s,join_s=join_s,
+        details = dict(preparation_s=preparation_s,generation_s=generation_s,join_s=join_s,
             total_s=time.perf_counter()-started,proposer=proposer.stats,
             generated_rows=sum(len(g.mappings.data) for gs in groups.values() for g in gs),
             global_hardware_variable=True,native_numeric_join=True,heuristic=True,
             full_cartesian_tile_enumeration=False,proposal_rounds=rounds,
-            bounded_factor_completion=bool(completion_limit))
+            bounded_factor_completion=bool(completion_limit),proposal_policy=proposal_policy)
+        if prefix_stats is not None:
+            details['prefix_feedback'] = prefix_stats
+        if audit_join:
+            from .isolated_join import audit
+            points = [domain.points[i] for i in sorted({0,len(domain.points)//2,len(domain.points)-1})]
+            details['isolated_join_audit'] = audit(spec,groups,objects,returned_jobs,contract,domain,outputs,points)
+            if not all(r['equal'] for r in details['isolated_join_audit']):
+                raise AssertionError(f"hardware membership changed isolated native Join: {details['isolated_join_audit']}")
+        return outputs,details
     finally:
         common.clear_switches()
         os.environ.update(saved)

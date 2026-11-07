@@ -3,6 +3,7 @@ import argparse
 from dataclasses import asdict
 import hashlib
 import json
+import math
 from pathlib import Path
 import time
 
@@ -23,13 +24,15 @@ def source_digest():
     return value.hexdigest()
 
 
-def run(workload,domain_name,output,reference_path,collect_differences=False,method='direct',rounds=1,seed_wave=False):
+def run(workload,domain_name,output,reference_path,collect_differences=False,method='direct',rounds=1,
+        seed_wave=False,proposal_policy='feedback',allow_quality_gap=False,audit_join=False):
     case,domain,budgets = problem(workload,domain_name)
     report = dict(status='running',case=asdict(case),domain=[asdict(p) for p in domain.points],
         method=method+' joint physical generation',policy='relaxed',points=[],workers=1,
         external_sota_acceptance=False,physical_mapspace_optimality=False,
         reference_read_before_search=False,frontier_differences=[],source_before=source_digest(),
         timing_scope='all symbolic preparation, LP proposals, integer feasibility/ranking, selected-row materialization, native Join, architecture queries and final budget witness reevaluation')
+    report['case']['params'] = list(case.params)
     def save():
         output.parent.mkdir(parents=True,exist_ok=True)
         temporary = output.with_suffix(output.suffix+'.tmp')
@@ -41,7 +44,7 @@ def run(workload,domain_name,output,reference_path,collect_differences=False,met
         search_fn = search
         if method=='demand':
             from .demand import search as demand_search
-            search_fn = lambda c,d:demand_search(c,d,rounds=rounds)
+            search_fn = lambda c,d:demand_search(c,d,rounds=rounds,proposal_policy=proposal_policy,audit_join=audit_join)
         seed_details = None
         with WorkCounter() as counter:
             if seed_wave:
@@ -60,6 +63,8 @@ def run(workload,domain_name,output,reference_path,collect_differences=False,met
                         continue
                     p,row = min(eligible,key=lambda pair:float(pair[1]['Total<SEP>energy'])*float(pair[1][common.LATENCY]))
                     witness = validate_pick(case,(p.px,p.py),p.capacity_bytes,row)
+                    if not witness['ok'] or not witness['feasible']:
+                        raise AssertionError('seed physical budget witness failed')
                     witness['mapping'] = encode(row['Total<SEP>mapping']())
                     seeds.append(dict(architecture=asdict(p),budget=asdict(budget),witness=witness,
                                       elapsed_s=time.perf_counter()-started))
@@ -88,8 +93,8 @@ def run(workload,domain_name,output,reference_path,collect_differences=False,met
             report['work']['model_rows'] += seed_details['proposer']['materialized_rows']
             report['work']['model_templates'] += seed_details['proposer']['symbolic_models']
         frozen = json.loads(reference_path.read_text(encoding='utf-8'))
-        if frozen['status']!='complete' or frozen['domain']!=report['domain']:
-            raise ValueError('complete same-domain reference required')
+        if frozen['status']!='complete' or any(frozen[key]!=report[key] for key in ('case','domain','policy')):
+            raise ValueError('complete same-case/domain/policy reference required')
         for point,row in zip(domain.points,frozen['points']):
             data = outputs[point]
             vectors = frontier(data).to_dict('records')
@@ -99,12 +104,17 @@ def run(workload,domain_name,output,reference_path,collect_differences=False,met
                 if not collect_differences and method!='demand':
                     raise AssertionError(f'complete native relaxed-policy frontier differs: {point}')
             selected = selected_rows[point]
-            witness = validate_pick(case,(point.px,point.py),point.capacity_bytes,selected)
-            if not witness['ok'] or (not witness['feasible'] and method!='demand'):
-                raise AssertionError('physical source reconstruction failed')
-            if selected is not None:
-                witness['mapping'] = encode(selected['Total<SEP>mapping']())
-            report['points'].append(dict(architecture=asdict(point),vectors=vectors,witness=witness))
+            record = dict(architecture=asdict(point),vectors=vectors,point_status='no_candidate')
+            report['points'].append(record)
+            if selected is None:
+                continue
+            record['point_status'] = 'invalid'
+            witness = validate_pick(case,(point.px,point.py),point.capacity_bytes,selected,capture_actions=True)
+            record['witness'] = witness
+            if not witness['ok'] or not witness['feasible']:
+                raise AssertionError(f'physical source reconstruction failed: {point}')
+            witness['mapping'] = encode(selected['Total<SEP>mapping']())
+            record['point_status'] = 'feasible'
         report['budget_selections'] = []
         for budget_index,budget in enumerate(budgets):
             point,row,winning_witness = winners[budget_index]
@@ -118,10 +128,15 @@ def run(workload,domain_name,output,reference_path,collect_differences=False,met
             report['budget_selections'].append(dict(budget=asdict(budget),architecture=asdict(point),
                 reported_edp=float(row['Total<SEP>energy'])*float(row[common.LATENCY]),reference_edp=baseline_edp,
                 canonical_edp=canonical,reference_canonical_edp=baseline_canonical,witness=winning_witness))
-        report['quality_gate_passed'] = all(b['canonical_edp']<=b['reference_canonical_edp'] for b in report['budget_selections'])
+        report['quality_gate_passed'] = all(b['canonical_edp']<=b['reference_canonical_edp'] or
+            math.isclose(b['canonical_edp'],b['reference_canonical_edp'],rel_tol=1e-12,abs_tol=0)
+            for b in report['budget_selections'])
+        if not report['quality_gate_passed'] and not allow_quality_gap:
+            raise AssertionError('canonical quality regressed versus the complete Event reference')
         report['quality_comparison'] = 'canonical native physical reevaluation; raw float32 reported values retained separately'
         report.update(status='complete',all_declared_full_frontiers_exact=not report['frontier_differences'],
-            all_selected_physical_sources_valid=True,reference_sha256=hashlib.sha256(reference_path.read_bytes()).hexdigest())
+            all_selected_physical_sources_valid=all(r['point_status']=='feasible' for r in report['points']),
+            reference_sha256=hashlib.sha256(reference_path.read_bytes()).hexdigest())
         report['source_after'] = source_digest()
         if report['source_before']!=report['source_after']:
             raise AssertionError('source changed during experiment')
@@ -145,8 +160,12 @@ def main():
     parser.add_argument('--method',choices=('direct','demand'),default='direct')
     parser.add_argument('--rounds',type=int,choices=(1,2),default=1)
     parser.add_argument('--seed-wave',action='store_true')
+    parser.add_argument('--proposal-policy',choices=('feedback','independent','independent-wide','prefix'),default='feedback')
+    parser.add_argument('--allow-quality-gap',action='store_true',help='Record a quality gap for a diagnostic control.')
+    parser.add_argument('--audit-join',action='store_true',help='Diagnostic only: charge separate isolated-hardware Joins.')
     args = parser.parse_args()
-    run(args.workload,args.domain,args.output,args.reference,args.collect_differences,args.method,args.rounds,args.seed_wave)
+    run(args.workload,args.domain,args.output,args.reference,args.collect_differences,args.method,args.rounds,
+        args.seed_wave,args.proposal_policy,args.allow_quality_gap,args.audit_join)
 
 
 if __name__=='__main__':

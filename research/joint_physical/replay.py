@@ -5,6 +5,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import time
 
 from accelforge.frontend import mapping as af_mapping
 from research.tracking_audit import common
@@ -13,7 +14,7 @@ from research.joint_budget.protocol import Hardware,ResourceBudget
 
 
 NODE_TYPES = {name:getattr(af_mapping,name) for name in (
-    'Mapping','Nested','Sequential','Storage','Temporal','Spatial','Compute','Reservation')}
+    'Mapping','Nested','Sequential','Pipeline','Storage','Temporal','Spatial','Compute','Reservation')}
 
 
 def encode(mapping):
@@ -25,7 +26,10 @@ def encode(mapping):
                 iterations=None if node.tile_pattern.calculated_n_iterations is None else
                            str(node.tile_pattern.calculated_n_iterations))
         if isinstance(node,af_mapping.TensorHolder):
-            out['native_storage'] = dict(lower=bool(node._lower),must_be_here=bool(node._must_be_here))
+            out['native_storage'] = dict(lower=bool(node._lower),must_be_here=bool(node._must_be_here),
+                                         backing=sorted(map(str,node._backing)))
+        if isinstance(node,af_mapping.Reservation):
+            out['native_reservation'] = dict(backing=sorted(map(str,node._backing)))
         if hasattr(node,'nodes'):
             for child,value in zip(node.nodes,out['nodes']):
                 annotate(child,value)
@@ -46,7 +50,7 @@ def decode(record,component_for,einsum=None):
             einsum = next(iter(names))
     fields = {}
     for name,value in record.items():
-        if name in ('type','native_loop','native_storage'):
+        if name in ('type','native_loop','native_storage','native_reservation'):
             continue
         if name=='nodes':
             fields[name] = [decode(node,component_for,einsum) for node in value]
@@ -71,6 +75,9 @@ def decode(record,component_for,einsum=None):
         native = record['native_storage']
         node._lower = native['lower']
         node._must_be_here = native['must_be_here']
+        node._backing = set(native.get('backing',()))
+    if isinstance(node,af_mapping.Reservation):
+        node._backing = set(record.get('native_reservation',{}).get('backing',()))
     return node
 
 
@@ -84,22 +91,46 @@ def replay(case,architecture,witness):
     mapping = decode(witness['mapping'],component_for)
     row = {'Total<SEP>mapping':lambda:mapping,'Total<SEP>energy':witness['energy'],
            'Total<SEP>latency':witness['latency']}
-    actual = validate_pick(case,(architecture['px'],architecture['py']),architecture['capacity_bytes'],row)
+    if 'actions' in witness and encode(mapping)!=witness['mapping']:
+        raise AssertionError('serialized mapping structure or native metadata changed')
+    actual = validate_pick(case,(architecture['px'],architecture['py']),architecture['capacity_bytes'],row,
+                           capture_actions='actions' in witness)
     if not actual['ok'] or not actual['feasible']:
         raise AssertionError('serialized witness is not physically feasible')
     for field in ('energy','latency','edp','gb_bytes'):
         if not math.isclose(actual[field],witness[field],rel_tol=1e-12,abs_tol=0):
             raise AssertionError(f'physical witness changed {field}: {actual[field]} vs {witness[field]}')
+    for field in ('actions','reservation_bits'):
+        if field in witness and actual[field]!=witness[field]:
+            raise AssertionError(f'physical witness changed {field}')
     return actual['edp']
 
 
-def verify(path,reference_path=None):
+def verify(path,reference_path=None,allow_quality_gap=False):
+    started = time.perf_counter()
     common.af.set_n_parallel_jobs(1)
     report = json.loads(path.read_text(encoding='utf-8'))
     if report['status']!='complete':
         raise ValueError('complete result required')
     case = common.Case(report['case']['workload'],report['case']['arch'],tuple(report['case']['params']))
-    records = [r for r in report['points'] if r.get('witness',{}).get('feasible')]
+    known = {tuple(sorted(point.items())) for point in report['domain']}
+    listed = [tuple(sorted(point['architecture'].items())) for point in report['points']]
+    if set(listed)!=known or len(listed)!=len(known):
+        raise AssertionError('report has missing or duplicate hardware points')
+    records, gaps = [], []
+    for point in report['points']:
+        status = point.get('point_status')
+        if status is None and 'witness' not in point and 'oracle_details' in report:
+            continue  # The Event report records budget incumbents, not a witness per architecture.
+        witness = point.get('witness',{})
+        if status=='no_candidate' and not witness and not point['vectors']:
+            gaps.append(point['architecture'])
+        elif status in (None,'feasible') and witness.get('feasible') and witness.get('ok'):
+            records.append(point)
+        else:
+            raise AssertionError(f"invalid or undeclared point witness: {point['architecture']}")
+    if report.get('all_selected_physical_sources_valid') and len(records)!=len(known):
+        raise AssertionError('point coverage does not match the search report')
     for record in records:
         replay(case,record['architecture'],record['witness'])
     for selected in report['budget_selections']+report.get('seed_budget_selections',[]):
@@ -110,18 +141,22 @@ def verify(path,reference_path=None):
     seed = [replay(case,r['architecture'],r['witness']) if r else None
             for r in report.get('seed_budget_selections',[])]
     reference_edp = []
+    quality_pass = None
     if reference_path:
         reference = json.loads(reference_path.read_text(encoding='utf-8'))
         if reference['case']!=report['case'] or reference['domain']!=report['domain'] or reference.get('policy')!=report.get('policy'):
             raise ValueError('reference case/domain/policy differs')
         for selected in reference['budget_selections']:
             reference_edp.append(replay(case,selected['architecture'],selected['witness']))
-        if any(a>b and not math.isclose(a,b,rel_tol=1e-12,abs_tol=0) for a,b in zip(selections,reference_edp)):
+        quality_pass = len(selections)==len(reference_edp) and all(a<=b or math.isclose(a,b,rel_tol=1e-12,abs_tol=0)
+                                                                  for a,b in zip(selections,reference_edp))
+        if not quality_pass and not allow_quality_gap:
             raise AssertionError('canonical quality regressed versus fair reference')
     return dict(status='verified',serialized_physical_witnesses=len(records)+len(selections)+sum(v is not None for v in seed),
                 canonical_edp=selections,reference_canonical_edp=reference_edp,
                 seed_canonical_edp=seed,
-                canonical_quality_no_regression=True if reference_path else None,
+                canonical_quality_no_regression=quality_pass,points_replayed=len(records),no_candidate=gaps,
+                replay_s=time.perf_counter()-started,
                 report_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
                 physical_mapspace_completeness_claim=False,external_sota_acceptance=False)
 
@@ -131,8 +166,9 @@ def main():
     parser.add_argument('--report',type=Path,required=True)
     parser.add_argument('--reference',type=Path)
     parser.add_argument('--output',type=Path)
+    parser.add_argument('--allow-quality-gap',action='store_true')
     args = parser.parse_args()
-    result = verify(args.report,args.reference)
+    result = verify(args.report,args.reference,args.allow_quality_gap)
     if args.output:
         args.output.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
     print(json.dumps(result),flush=True)

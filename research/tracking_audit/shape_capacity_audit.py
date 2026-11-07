@@ -66,12 +66,13 @@ def rows_fitting(data, capacity_bytes):
     return data[data[RAW_GB] <= capacity_bytes * 8]
 
 
-def validate_pick(case, shape, capacity_bytes, row, gb_latency_scale=1.0):
+def validate_pick(case, shape, capacity_bytes, row, gb_latency_scale=1.0, capture_actions=False):
     if row is None:
         return {'feasible': False, 'ok': True}
     mapping = row['Total<SEP>mapping']()
-    spec = build(case, shape, capacity_bytes, common.RU, gb_latency_scale)
-    spec.model.metrics = common.RU
+    metrics = common.RU | common.af.Metrics.ACTIONS if capture_actions else common.RU
+    spec = build(case, shape, capacity_bytes, metrics, gb_latency_scale)
+    spec.model.metrics = metrics
     spec.mapping = copy.deepcopy(mapping)
     common.clear_switches()
     ev = common.evaluate_mapping(spec).data
@@ -125,10 +126,14 @@ def validate_pick(case, shape, capacity_bytes, row, gb_latency_scale=1.0):
                     raise ValueError(f'spatial unfolding {used} does not fit {shape}')
                 usage.append({'einsum': node.einsum, 'used': used})
     walk(list(mapping.nodes), [])
-    return {'feasible': True, 'ok': True, 'energy': energy, 'latency': latency,
+    result = {'feasible': True, 'ok': True, 'energy': energy, 'latency': latency,
             'edp': energy * latency, 'gb_bytes': int(ev[RAW_GB].iloc[0]) / 8,
             'mapping_id': common.mapping_identity(mapping), 'spatial': usage,
             'mapping': mapping_structure(mapping)}
+    if capture_actions:
+        result['actions'] = {c: float(ev[c].iloc[0]) for c in ev if '<SEP>action<SEP>' in c}
+        result['reservation_bits'] = {c: int(ev[c].iloc[0]) for c in ev if c.startswith('reservation_bits<SEP>')}
+    return result
 
 
 def save(path, report):
