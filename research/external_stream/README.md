@@ -197,3 +197,21 @@ The [GLU bound replication](results/dag_host_prefix_glu_132k.json) verifies
 times are 29.38, 17.30 and 16.85 seconds. The default allocation at the first
 shape is already the EDP winner, so this experiment tests traversal cost with
 an incumbent available early.
+
+## Native issue order and timing
+
+The [GLU issue-order audit](results/dag_native_order_glu.json) records actual
+compute slots for both legal branch orders. For already-normalized affine
+graphs the adapter preserves input order during grouping and adds precedence
+only to a temporary copy of the lowered scheduling graph. STREAM's tensor
+dependencies, routes, tile search, allocation and cost families are retained.
+The stock witness uses the original order and scheduling rules.
+
+All three witnesses reconstruct the vendor cycle total from slots, initiation
+interval, iteration count and fill, and satisfy the reported bandwidth bounds.
+Repeating the representative slots at the solved initiation interval yields
+overlapping bookings on the single DRAM link. Three operators also have
+fractional activity in the representative iteration. These reports establish
+the ordering and aggregate native costs. An exact port-event replay would
+require the unamortized firings and their actual transfer intervals. The audit
+therefore does not admit the allocations into the AccelForge port calendar.

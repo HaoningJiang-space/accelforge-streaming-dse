@@ -1,0 +1,1031 @@
+[
+  {
+    "requested_order": null,
+    "shape": [
+      32,
+      192,
+      131072
+    ],
+    "cuts": [],
+    "feasible": true,
+    "energy_pj": 10147823.615999999,
+    "cycles": 3730.0,
+    "edp": 37851382087.67999,
+    "groups": [
+      {
+        "operators": [
+          "Gate",
+          "Up",
+          "Mix",
+          "Y"
+        ],
+        "energy_pj": 10147823.615999999,
+        "cycles": 3730.0,
+        "work": {
+          "compute_cores_available": 1,
+          "compute_cores_used": 1,
+          "latency_weighted_mac_spatial_utilization": 0.7572327044025157,
+          "min_mac_spatial_utilization": 0.6666666666666666,
+          "total_mac_ops": 9437184.0,
+          "peak_macs_per_cycle": 6144.0,
+          "mac_capable_cores": 1,
+          "end_to_end_mac_utilization": 0.41179624664879355,
+          "degenerate": false,
+          "degenerate_nodes": []
+        },
+        "memory": [
+          {
+            "memory": "dram",
+            "cores": [],
+            "resident_bits": 16384,
+            "capacity_bits": 10000000000,
+            "utilization": 1.6384e-06,
+            "tensors": [
+              {
+                "tensor": "Y",
+                "bits": 16384
+              }
+            ]
+          },
+          {
+            "memory": "gb",
+            "cores": [
+              0
+            ],
+            "resident_bits": 966656,
+            "capacity_bits": 1048576,
+            "utilization": 0.921875,
+            "tensors": [
+              {
+                "tensor": "W_Gate_1",
+                "bits": 196608
+              },
+              {
+                "tensor": "W_Up_1",
+                "bits": 196608
+              },
+              {
+                "tensor": "W_Y_1",
+                "bits": 196608
+              },
+              {
+                "tensor": "Gate",
+                "bits": 98304
+              },
+              {
+                "tensor": "Up",
+                "bits": 98304
+              },
+              {
+                "tensor": "Mix",
+                "bits": 98304
+              },
+              {
+                "tensor": "X_1",
+                "bits": 65536
+              },
+              {
+                "tensor": "Y_1",
+                "bits": 16384
+              }
+            ]
+          }
+        ],
+        "placements": {},
+        "tiling": {
+          "fusion_splits": [
+            {
+              "dim": "z3",
+              "factor": 4
+            },
+            {
+              "dim": "z2",
+              "factor": 4
+            }
+          ],
+          "inter_core": {
+            "Gate": [],
+            "Up": [],
+            "Mix": [],
+            "Y": [],
+            "Transfer(X)": [],
+            "Transfer(W_Gate)": [],
+            "Transfer(Gate)": [],
+            "Transfer(W_Up)": [],
+            "Transfer(Up)": [],
+            "Transfer(Mix)": [],
+            "Transfer(W_Y)": [],
+            "Transfer(Y_1)": []
+          },
+          "intra_core": {
+            "Fused_Group_1": [
+              {
+                "dim": "z3",
+                "tile": 32
+              },
+              {
+                "dim": "z2",
+                "tile": 32
+              }
+            ]
+          }
+        },
+        "solve": {
+          "status": "OPTIMAL",
+          "mip_gap": 0.0,
+          "objective": 5.0
+        },
+        "allocation_sha256": "0567db9f85dc73dd3320499cdde4c7ff2feeaa50fd8ed3b9347e41f08327a9b1"
+      }
+    ],
+    "wall_s": 0.6491554999956861,
+    "issue_order": [
+      [
+        "Gate",
+        "Up",
+        "Mix",
+        "Y"
+      ]
+    ],
+    "timing": [
+      {
+        "issue_order": [
+          "Gate",
+          "Up",
+          "Mix",
+          "Y"
+        ],
+        "iterations": 16,
+        "cycles": 3730,
+        "fill": 640,
+        "period": 184,
+        "overlap": 146,
+        "slots": [
+          [
+            0,
+            -0.0
+          ],
+          [
+            1,
+            40.0
+          ],
+          [
+            2,
+            40.0
+          ],
+          [
+            3,
+            40.0
+          ],
+          [
+            4,
+            27.0
+          ],
+          [
+            5,
+            50.0
+          ],
+          [
+            6,
+            50.0
+          ],
+          [
+            7,
+            -0.0
+          ],
+          [
+            8,
+            12.0
+          ],
+          [
+            9,
+            -0.0
+          ],
+          [
+            10,
+            44.0
+          ],
+          [
+            11,
+            27.0
+          ],
+          [
+            12,
+            -0.0
+          ]
+        ],
+        "compute": [
+          [
+            5,
+            "Gate",
+            48.25,
+            0.25
+          ],
+          [
+            6,
+            "Up",
+            48.25,
+            0.25
+          ],
+          [
+            8,
+            "Mix",
+            3.0,
+            0.25
+          ],
+          [
+            10,
+            "Y",
+            33.0,
+            1
+          ]
+        ],
+        "transfers": [
+          [
+            1,
+            "Transfer(W_Gate)",
+            40
+          ],
+          [
+            2,
+            "Transfer(W_Up)",
+            40
+          ],
+          [
+            3,
+            "Transfer(W_Y)",
+            40
+          ],
+          [
+            4,
+            "Transfer(X)",
+            26.75
+          ],
+          [
+            11,
+            "Transfer(Y_1)",
+            27
+          ]
+        ],
+        "ports": [
+          [
+            "memory_port",
+            "gb.write",
+            1024.0,
+            188416.0,
+            1.0
+          ],
+          [
+            "memory_port",
+            "dram.rw",
+            307.2,
+            53248.0,
+            1.0
+          ],
+          [
+            "link",
+            "bus gb,dram",
+            307.2,
+            53248.0,
+            null
+          ],
+          [
+            "memory_port",
+            "gb.read",
+            4096.0,
+            622592.0,
+            1.0
+          ]
+        ],
+        "fractional_compute": 3,
+        "representative_core_conflicts": [],
+        "representative_link_conflicts": [
+          [
+            [
+              1,
+              "Transfer(W_Y)"
+            ],
+            [
+              0,
+              "Transfer(Y_1)"
+            ]
+          ],
+          [
+            [
+              0,
+              "Transfer(Y_1)"
+            ],
+            [
+              1,
+              "Transfer(X)"
+            ]
+          ],
+          [
+            [
+              2,
+              "Transfer(W_Y)"
+            ],
+            [
+              1,
+              "Transfer(Y_1)"
+            ]
+          ],
+          [
+            [
+              1,
+              "Transfer(Y_1)"
+            ],
+            [
+              2,
+              "Transfer(X)"
+            ]
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "requested_order": [
+      "Gate",
+      "Up",
+      "Mix",
+      "Y"
+    ],
+    "shape": [
+      32,
+      192,
+      131072
+    ],
+    "cuts": [],
+    "feasible": true,
+    "energy_pj": 10147823.615999999,
+    "cycles": 3670.0,
+    "edp": 37242512670.71999,
+    "groups": [
+      {
+        "operators": [
+          "Gate",
+          "Up",
+          "Mix",
+          "Y"
+        ],
+        "energy_pj": 10147823.615999999,
+        "cycles": 3670.0,
+        "work": {
+          "compute_cores_available": 1,
+          "compute_cores_used": 1,
+          "latency_weighted_mac_spatial_utilization": 0.7572327044025157,
+          "min_mac_spatial_utilization": 0.6666666666666666,
+          "total_mac_ops": 9437184.0,
+          "peak_macs_per_cycle": 6144.0,
+          "mac_capable_cores": 1,
+          "end_to_end_mac_utilization": 0.41852861035422345,
+          "degenerate": false,
+          "degenerate_nodes": []
+        },
+        "memory": [
+          {
+            "memory": "dram",
+            "cores": [],
+            "resident_bits": 16384,
+            "capacity_bits": 10000000000,
+            "utilization": 1.6384e-06,
+            "tensors": [
+              {
+                "tensor": "Y",
+                "bits": 16384
+              }
+            ]
+          },
+          {
+            "memory": "gb",
+            "cores": [
+              0
+            ],
+            "resident_bits": 966656,
+            "capacity_bits": 1048576,
+            "utilization": 0.921875,
+            "tensors": [
+              {
+                "tensor": "W_Gate_1",
+                "bits": 196608
+              },
+              {
+                "tensor": "W_Up_1",
+                "bits": 196608
+              },
+              {
+                "tensor": "W_Y_1",
+                "bits": 196608
+              },
+              {
+                "tensor": "Gate",
+                "bits": 98304
+              },
+              {
+                "tensor": "Up",
+                "bits": 98304
+              },
+              {
+                "tensor": "Mix",
+                "bits": 98304
+              },
+              {
+                "tensor": "X_1",
+                "bits": 65536
+              },
+              {
+                "tensor": "Y_1",
+                "bits": 16384
+              }
+            ]
+          }
+        ],
+        "placements": {},
+        "tiling": {
+          "fusion_splits": [
+            {
+              "dim": "z3",
+              "factor": 4
+            },
+            {
+              "dim": "z2",
+              "factor": 4
+            }
+          ],
+          "inter_core": {
+            "Gate": [],
+            "Up": [],
+            "Mix": [],
+            "Y": [],
+            "Transfer(X)": [],
+            "Transfer(W_Gate)": [],
+            "Transfer(Gate)": [],
+            "Transfer(W_Up)": [],
+            "Transfer(Up)": [],
+            "Transfer(Mix)": [],
+            "Transfer(W_Y)": [],
+            "Transfer(Y_1)": []
+          },
+          "intra_core": {
+            "Fused_Group_1": [
+              {
+                "dim": "z3",
+                "tile": 32
+              },
+              {
+                "dim": "z2",
+                "tile": 32
+              }
+            ]
+          }
+        },
+        "solve": {
+          "status": "OPTIMAL",
+          "mip_gap": 0.0,
+          "objective": 5.0
+        },
+        "allocation_sha256": "3739c1df6fbf48c62a7c2fa64de0af35d2c1a156744fb5c4b1e6523daf3faad2"
+      }
+    ],
+    "wall_s": 0.4573773000156507,
+    "issue_order": [
+      [
+        "Gate",
+        "Up",
+        "Mix",
+        "Y"
+      ]
+    ],
+    "timing": [
+      {
+        "issue_order": [
+          "Gate",
+          "Up",
+          "Mix",
+          "Y"
+        ],
+        "iterations": 16,
+        "cycles": 3670,
+        "fill": 640,
+        "period": 184,
+        "overlap": 86,
+        "slots": [
+          [
+            0,
+            -0.0
+          ],
+          [
+            1,
+            27.0
+          ],
+          [
+            2,
+            40.0
+          ],
+          [
+            3,
+            60.0
+          ],
+          [
+            4,
+            60.0
+          ],
+          [
+            5,
+            -0.0
+          ],
+          [
+            6,
+            12.0
+          ],
+          [
+            7,
+            -0.0
+          ],
+          [
+            8,
+            44.0
+          ],
+          [
+            9,
+            27.0
+          ],
+          [
+            10,
+            -0.0
+          ]
+        ],
+        "compute": [
+          [
+            3,
+            "Gate",
+            48.25,
+            0.25
+          ],
+          [
+            4,
+            "Up",
+            48.25,
+            0.25
+          ],
+          [
+            6,
+            "Mix",
+            3.0,
+            0.25
+          ],
+          [
+            8,
+            "Y",
+            33.0,
+            1
+          ]
+        ],
+        "transfers": [
+          [
+            1,
+            "Transfer(X)",
+            26.75
+          ],
+          [
+            2,
+            "Transfer(W_Gate)",
+            40
+          ],
+          [
+            3,
+            "Transfer(W_Up)",
+            40
+          ],
+          [
+            4,
+            "Transfer(W_Y)",
+            40
+          ],
+          [
+            9,
+            "Transfer(Y_1)",
+            27
+          ]
+        ],
+        "ports": [
+          [
+            "memory_port",
+            "gb.write",
+            1024.0,
+            188416.0,
+            1.0
+          ],
+          [
+            "memory_port",
+            "dram.rw",
+            307.2,
+            53248.0,
+            1.0
+          ],
+          [
+            "link",
+            "bus gb,dram",
+            307.2,
+            53248.0,
+            null
+          ],
+          [
+            "memory_port",
+            "gb.read",
+            4096.0,
+            622592.0,
+            1.0
+          ]
+        ],
+        "fractional_compute": 3,
+        "representative_core_conflicts": [],
+        "representative_link_conflicts": [
+          [
+            [
+              1,
+              "Transfer(W_Gate)"
+            ],
+            [
+              0,
+              "Transfer(Y_1)"
+            ]
+          ],
+          [
+            [
+              0,
+              "Transfer(Y_1)"
+            ],
+            [
+              1,
+              "Transfer(W_Up)"
+            ]
+          ],
+          [
+            [
+              2,
+              "Transfer(W_Gate)"
+            ],
+            [
+              1,
+              "Transfer(Y_1)"
+            ]
+          ],
+          [
+            [
+              1,
+              "Transfer(Y_1)"
+            ],
+            [
+              2,
+              "Transfer(W_Up)"
+            ]
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "requested_order": [
+      "Up",
+      "Gate",
+      "Mix",
+      "Y"
+    ],
+    "shape": [
+      32,
+      192,
+      131072
+    ],
+    "cuts": [],
+    "feasible": true,
+    "energy_pj": 10147823.615999999,
+    "cycles": 3670.0,
+    "edp": 37242512670.71999,
+    "groups": [
+      {
+        "operators": [
+          "Up",
+          "Gate",
+          "Mix",
+          "Y"
+        ],
+        "energy_pj": 10147823.615999999,
+        "cycles": 3670.0,
+        "work": {
+          "compute_cores_available": 1,
+          "compute_cores_used": 1,
+          "latency_weighted_mac_spatial_utilization": 0.7572327044025157,
+          "min_mac_spatial_utilization": 0.6666666666666666,
+          "total_mac_ops": 9437184.0,
+          "peak_macs_per_cycle": 6144.0,
+          "mac_capable_cores": 1,
+          "end_to_end_mac_utilization": 0.41852861035422345,
+          "degenerate": false,
+          "degenerate_nodes": []
+        },
+        "memory": [
+          {
+            "memory": "dram",
+            "cores": [],
+            "resident_bits": 16384,
+            "capacity_bits": 10000000000,
+            "utilization": 1.6384e-06,
+            "tensors": [
+              {
+                "tensor": "Y",
+                "bits": 16384
+              }
+            ]
+          },
+          {
+            "memory": "gb",
+            "cores": [
+              0
+            ],
+            "resident_bits": 966656,
+            "capacity_bits": 1048576,
+            "utilization": 0.921875,
+            "tensors": [
+              {
+                "tensor": "W_Up_1",
+                "bits": 196608
+              },
+              {
+                "tensor": "W_Gate_1",
+                "bits": 196608
+              },
+              {
+                "tensor": "W_Y_1",
+                "bits": 196608
+              },
+              {
+                "tensor": "Up",
+                "bits": 98304
+              },
+              {
+                "tensor": "Gate",
+                "bits": 98304
+              },
+              {
+                "tensor": "Mix",
+                "bits": 98304
+              },
+              {
+                "tensor": "X_1",
+                "bits": 65536
+              },
+              {
+                "tensor": "Y_1",
+                "bits": 16384
+              }
+            ]
+          }
+        ],
+        "placements": {},
+        "tiling": {
+          "fusion_splits": [
+            {
+              "dim": "z3",
+              "factor": 4
+            },
+            {
+              "dim": "z2",
+              "factor": 4
+            }
+          ],
+          "inter_core": {
+            "Up": [],
+            "Gate": [],
+            "Mix": [],
+            "Y": [],
+            "Transfer(X)": [],
+            "Transfer(W_Up)": [],
+            "Transfer(Up)": [],
+            "Transfer(W_Gate)": [],
+            "Transfer(Gate)": [],
+            "Transfer(Mix)": [],
+            "Transfer(W_Y)": [],
+            "Transfer(Y_1)": []
+          },
+          "intra_core": {
+            "Fused_Group_1": [
+              {
+                "dim": "z3",
+                "tile": 32
+              },
+              {
+                "dim": "z2",
+                "tile": 32
+              }
+            ]
+          }
+        },
+        "solve": {
+          "status": "OPTIMAL",
+          "mip_gap": 0.0,
+          "objective": 5.0
+        },
+        "allocation_sha256": "159823ebf1609e0e85fbe027ae084433d4f23a6500b997a6d02301407eb52fa1"
+      }
+    ],
+    "wall_s": 0.4940113000047859,
+    "issue_order": [
+      [
+        "Up",
+        "Gate",
+        "Mix",
+        "Y"
+      ]
+    ],
+    "timing": [
+      {
+        "issue_order": [
+          "Up",
+          "Gate",
+          "Mix",
+          "Y"
+        ],
+        "iterations": 16,
+        "cycles": 3670,
+        "fill": 640,
+        "period": 184,
+        "overlap": 86,
+        "slots": [
+          [
+            0,
+            -0.0
+          ],
+          [
+            1,
+            27.0
+          ],
+          [
+            2,
+            40.0
+          ],
+          [
+            3,
+            60.0
+          ],
+          [
+            4,
+            60.0
+          ],
+          [
+            5,
+            -0.0
+          ],
+          [
+            6,
+            12.0
+          ],
+          [
+            7,
+            -0.0
+          ],
+          [
+            8,
+            44.0
+          ],
+          [
+            9,
+            27.0
+          ],
+          [
+            10,
+            -0.0
+          ]
+        ],
+        "compute": [
+          [
+            3,
+            "Up",
+            48.25,
+            0.25
+          ],
+          [
+            4,
+            "Gate",
+            48.25,
+            0.25
+          ],
+          [
+            6,
+            "Mix",
+            3.0,
+            0.25
+          ],
+          [
+            8,
+            "Y",
+            33.0,
+            1
+          ]
+        ],
+        "transfers": [
+          [
+            1,
+            "Transfer(X)",
+            26.75
+          ],
+          [
+            2,
+            "Transfer(W_Up)",
+            40
+          ],
+          [
+            3,
+            "Transfer(W_Gate)",
+            40
+          ],
+          [
+            4,
+            "Transfer(W_Y)",
+            40
+          ],
+          [
+            9,
+            "Transfer(Y_1)",
+            27
+          ]
+        ],
+        "ports": [
+          [
+            "memory_port",
+            "gb.write",
+            1024.0,
+            188416.0,
+            1.0
+          ],
+          [
+            "memory_port",
+            "dram.rw",
+            307.2,
+            53248.0,
+            1.0
+          ],
+          [
+            "link",
+            "bus gb,dram",
+            307.2,
+            53248.0,
+            null
+          ],
+          [
+            "memory_port",
+            "gb.read",
+            4096.0,
+            622592.0,
+            1.0
+          ]
+        ],
+        "fractional_compute": 3,
+        "representative_core_conflicts": [],
+        "representative_link_conflicts": [
+          [
+            [
+              1,
+              "Transfer(W_Up)"
+            ],
+            [
+              0,
+              "Transfer(Y_1)"
+            ]
+          ],
+          [
+            [
+              0,
+              "Transfer(Y_1)"
+            ],
+            [
+              1,
+              "Transfer(W_Gate)"
+            ]
+          ],
+          [
+            [
+              2,
+              "Transfer(W_Up)"
+            ],
+            [
+              1,
+              "Transfer(Y_1)"
+            ]
+          ],
+          [
+            [
+              1,
+              "Transfer(Y_1)"
+            ],
+            [
+              2,
+              "Transfer(W_Gate)"
+            ]
+          ]
+        ]
+      }
+    ]
+  }
+]
