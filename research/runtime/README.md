@@ -153,3 +153,16 @@ The original research systems and comparison scope are documented in [Fast and F
 The [stress study](../joint_budget/results/strip_architecture_stress.json) retains every geometry tied at the exact singleton optimum and reoptimizes fusion on all of them. It also trains a single fixed geometry on the product of 3mm256 EDPs across all three budgets, which selects 48×128. For the original 24 cases, the tie-aware architecture-first control preserves the 13.61% advantage at 132 KiB on 3mm256 and ties in 23 cases. The stronger fixed-geometry control is beaten in 11 of 24 cases, by up to 7.46%.
 
 The additional sweep brackets a 3,072-byte staging target with two row extents for each of five matrix widths and three budgets. The search improves on tie-aware architecture-first in six of these 30 cases, by 0.40–7.99%. The other 24 tie. All joint and restricted designs are replayed through the independent port calendar. This locates the architecture-first failure near specific staging thresholds and preserves the cases where the simpler policy suffices.
+
+## Branched DAG port calendar
+
+```powershell
+./research/runtime/run_windows.ps1 -PythonArguments @('-m','pytest','-q','research/runtime/test_dag_calendar.py','research/runtime/test_strip_overlap.py')
+./research/runtime/run_windows.ps1 -PythonArguments @('-m','research.runtime.benchmark_dag_calendar','--output','research/local_dag_calendar.json')
+```
+
+The DAG grammar covers row-local dense GEMMs and elementwise binary joins. A mapping selects any topological order and partition into fusion groups, integer row bands and spatial waves, and weight residency per GEMM. An input into a group enters SRAM at first use. Produced rows remain live through the last local consumer. A cut value is written to DRAM once and a later group can fetch it with a different row-band partition. The same SRAM ceiling includes live activation rows, pinned weights, the streamed weight tile and capacity-gated row staging. The array issues one operator at a time. DMA can use both ends of its transfer simultaneously, and independent SRAM/MAC ports overlap within eligible row waves.
+
+The compiler computes static intervals. The event replayer independently maintains live allocations, DRAM row coverage and per-column reduction progress. It checks that each read has a complete producer, every output is written once, and SRAM and port intervals stay within their bounds. Tiny replay also checks actual modulo-256 tensor values against a scalar implementation. Tests deliberately corrupt a release, remove a reduction remainder, and lower capacity. A separate exhaustive tiny DAG checks the exact result.
+
+The search composes Pareto frontiers at topological ideals. A group order dominates another order of the same operators if it never increases per-operator live bytes. Both orders have the same cut transfers. With this dominance rule, the [DAG experiment](../joint_budget/results/dag_calendar_joint.json) verifies 12 joint designs and their controls on GLU, diamond, residual and asymmetric forks. Free ordering lowers EDP by 38.31% relative to the declared fixed order on the asymmetric fork at 128 and 132 KiB. Architecture-first ties in the 12 initial cases. This result isolates an ordering and SRAM-lifetime effect under the common calendar.
