@@ -148,21 +148,26 @@ def proposals(paths, bounds, point):
                 yield operator,previous_idx,next_extent
 
 
-def run(reference, output):
+def run(reference, output, all_points=False):
     raw = reference.read_bytes()
     reference = json.loads(raw)
     case = common.Case(reference["case"]["workload"],reference["case"]["arch"],tuple(reference["case"]["params"]))
     common.af.set_n_parallel_jobs(1)
     common.clear_switches()
     entries = []
+    source = reference["points"] if all_points else reference["budget_selections"]
     with exact_tail_evaluation():
-        for selected in reference["budget_selections"]:
+        for selected in source:
+            if not selected.get("witness",{}).get("feasible"):
+                raise ValueError("each search seed must carry a physical mapping")
             point,witness = selected["architecture"],selected["witness"]
             original = witness["mapping"]
             baseline,trace,paths,bounds = numeric(case,point,original)
             if not isclose(baseline["edp"],witness["edp"],rel_tol=1e-12):
                 raise ValueError("scoped model changed the perfect reference")
             candidates = list(proposals(paths,bounds,point))
+            if len(candidates)>8:
+                raise ValueError("too many changed loop sites for bounded tail refinement")
             record = dict(architecture=point,baseline=baseline["edp"],baseline_trace=trace,
                           candidates=[],proposals=candidates)
             for size in range(1,len(candidates)+1):
@@ -182,6 +187,16 @@ def run(reference, output):
     report = dict(status="complete",scope="retile existing budget witnesses; independent trace; no full grammar search",
                   reference_sha256=hashlib.sha256(raw).hexdigest(),
                   case=reference["case"],entries=entries,external_sota_acceptance=False)
+    if all_points:
+        report["scope"] = "retile one independently generated physical witness at every hardware point"
+        report["budget_best"] = []
+        for selection in reference["budget_selections"]:
+            budget = selection["budget"]
+            eligible = [e for e in entries if e["architecture"]["capacity_bytes"]<=budget["max_sram_bytes"]
+                        and e["architecture"]["px"]*e["architecture"]["py"]<=budget["max_pes"]]
+            best = min(eligible,key=lambda e:e["best_edp"])
+            report["budget_best"].append(dict(budget=budget,architecture=best["architecture"],
+                                             edp=best["best_edp"],perfect_edp=selection["witness"]["edp"]))
     output.write_text(json.dumps(report,indent=2,allow_nan=False)+"\n",encoding="utf-8",newline="\n")
 
 
@@ -194,6 +209,7 @@ def verify(path,output):
     replayed = 0
     with exact_tail_evaluation():
         for entry in report["entries"]:
+            accepted = [entry["baseline"]]
             for candidate in entry["candidates"]:
                 if candidate["status"]!="verified":
                     continue
@@ -204,9 +220,21 @@ def verify(path,output):
                 for field in ("edp","energy","latency","gb_bytes","actions","reservation_bits","mapping"):
                     if actual[field]!=expected[field]:
                         raise ValueError(f"independent tail witness changed {field}")
+                accepted.append(actual["edp"])
                 replayed += 1
+            if min(accepted)!=entry["best_edp"]:
+                raise ValueError("reported best EDP differs from the checked candidates")
+    for selection in report.get("budget_best",()):
+        budget = selection["budget"]
+        eligible = [e for e in report["entries"] if e["architecture"]["capacity_bytes"]<=budget["max_sram_bytes"]
+                    and e["architecture"]["px"]*e["architecture"]["py"]<=budget["max_pes"]]
+        best = min(eligible,key=lambda e:e["best_edp"])
+        if best["best_edp"]!=selection["edp"] or best["architecture"]!=selection["architecture"]:
+            raise ValueError("reported budget winner differs from the checked candidates")
+    reductions = ([1-e["edp"]/e["perfect_edp"] for e in report["budget_best"]] if "budget_best" in report
+                  else [1-e["best_edp"]/e["baseline"] for e in report["entries"]])
     result = dict(status="verified",physical_witnesses=replayed,report_sha256=hashlib.sha256(raw).hexdigest(),
-                  edp_reduction=[1-e["best_edp"]/e["baseline"] for e in report["entries"]],
+                  edp_reduction=reductions,
                   same_native_action_costs=True,external_sota_acceptance=False)
     output.write_text(json.dumps(result,indent=2)+"\n",encoding="utf-8",newline="\n")
     print(json.dumps(result),flush=True)
@@ -217,6 +245,7 @@ def main():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--reference",type=Path)
     group.add_argument("--replay",type=Path)
+    parser.add_argument("--all-point-witnesses",action="store_true")
     parser.add_argument("--output",type=Path,required=True)
     args = parser.parse_args()
     if args.output.exists():
@@ -224,7 +253,7 @@ def main():
     if args.replay:
         verify(args.replay,args.output)
     else:
-        run(args.reference,args.output)
+        run(args.reference,args.output,args.all_point_witnesses)
 
 
 if __name__=="__main__":
