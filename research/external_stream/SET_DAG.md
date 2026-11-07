@@ -44,3 +44,25 @@ ties or loses to the better control on every trial. The
 [512 KiB report](results/set_dag_common_64_512k.json) covers all four DAGs;
 the [256 KiB report](results/set_dag_common_64_256k.json) covers GLU and diamond.
 The reports retain wall times and the independently replayed winners.
+
+A [root-basin portfolio](results/set_dag_portfolio_64_512k.json) holds the
+layerwise, one-segment spatial and one-segment temporal starts separately.
+It spends the same total budget on actual shape–basin states. Against the
+strongest included control per seed at 512 KiB, it wins four, ties twelve
+and loses four. At [256 KiB](results/set_dag_portfolio_64_256k.json) it wins
+two and ties eight. Different array selections explain part of the asymmetric
+variation, but its median paired result is unfavorable.
+
+The [topology experiment](results/set_dag_topology_64_512k.json) adds mesh
+orientation and DRAM attachment locations. All candidates keep six cores,
+6,144 MACs, seven NoC links, four DRAM attachments and the same buffer and
+bandwidth budgets. The tie-aware architecture-first control spends its
+remaining budget on the shapes tied on per-layer cost. Joint budget
+allocation ties the best control in sixteen pairs and loses in four.
+
+The [nested experiment](results/set_dag_nested_64_512k.json) offers each
+seed policy the same nested templates. The driver exports SET's direct
+predecessors and DRAM writeback flags. An independent tree walk derives the
+spills from the closest common ancestor and checks the complete winner trees.
+Guided search ties in thirteen cases and loses in seven. These findings apply
+to the stated SET resource model and evaluation budget.

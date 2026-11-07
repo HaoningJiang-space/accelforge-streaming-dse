@@ -52,7 +52,15 @@ Network read_graph() {
 void print_tree(LTreeNode& tree) {
     if (tree.get_type() == Type::L) {
         const auto layer = tree.layers().first();
-        std::cout << "{\"layer\":" << layer << ",\"drain\":" << tree.get_to_dram() << '}';
+        std::cout << "{\"layer\":" << layer << ",\"drain\":" << tree.get_to_dram() << ",\"direct\":[";
+        const auto& direct = tree.get_dirp_set();
+        bool first = true;
+        FOR_BITSET(pred, direct) {
+            if (!first) std::cout << ',';
+            std::cout << pred;
+            first = false;
+        }
+        std::cout << "]}";
         return;
     }
     std::cout << "{\"type\":\"" << (tree.get_type() == Type::T ? 'T' : 'S') << "\",\"children\":[";
@@ -105,21 +113,28 @@ WholeSch read_seed(const Cluster& cluster) {
 
 int main(int argc, char** argv) {
     try {
-        if (argc != 6) throw std::invalid_argument("expected array_x array_y global_sram_bytes rounds seed");
+        if (argc != 6 && argc != 7) {
+            throw std::invalid_argument("expected array_x array_y global_sram_bytes rounds seed [topology]");
+        }
         const auto x = std::stoi(argv[1]), y = std::stoi(argv[2]);
         const auto capacity = std::stoull(argv[3]);
         const auto rounds = std::stoi(argv[4]);
         const auto seed = std::stoul(argv[5]);
+        const auto topology = argc == 7 ? std::stoi(argv[6]) : 0;
         if (x < 1 || y < 1 || x > 255 || y > 255 || x*y*cores != 6144 || capacity < cores ||
-            (rounds != 0 && rounds < 30)) throw std::invalid_argument("invalid SET resource or search budget");
+            topology < 0 || topology > 2 || (rounds != 0 && rounds < 30)) {
+            throw std::invalid_argument("invalid SET resource or search budget");
+        }
         auto graph = read_graph();
         network = &graph;
-        Cluster::xlen = 3;
-        Cluster::ylen = 2;
+        Cluster::xlen = topology == 0 ? 3 : 2;
+        Cluster::ylen = topology == 0 ? 2 : 3;
         Cluster::stride = 1;
         Cluster::min_util = 0.75;
         const Cluster cluster(0, cores);
-        NoC::dram_list = {{0, 0}, {0, 1}, {2, 0}, {2, 1}};
+        const auto last_x = static_cast<mlen_t>(Cluster::xlen-1);
+        const auto bottom = static_cast<mlen_t>(topology == 2 ? 1 : Cluster::ylen-1);
+        NoC::dram_list = {{0, 0}, {0, bottom}, {last_x, 0}, {last_x, bottom}};
         NoC::DRAM_acc_cost = 7.5 * 8;
         NoC::hop_cost = 0.7 * 8;
         NoC::DRAM_bw = 6;
@@ -178,6 +193,8 @@ int main(int argc, char** argv) {
                   << ",\"local_energy\":" << schedule.sch->get_ubuf_energy() + schedule.sch->get_buf_energy()
                                                 + schedule.sch->get_bus_energy() + schedule.sch->get_mac_energy()
                   << ",\"cores\":" << cluster.num_cores() << ",\"macs_per_core\":" << core.mac_num
+                  << ",\"topology\":" << topology << ",\"dram_ports\":" << NoC::dram_list.size()
+                  << ",\"noc_links\":" << ((Cluster::xlen-1)*Cluster::ylen + (Cluster::ylen-1)*Cluster::xlen)
                   << ",\"sram_per_core\":" << core.ubuf().Size << ",\"tree\":";
         print_tree(*schedule.tree);
         std::cout << "}\n";

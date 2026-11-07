@@ -38,10 +38,10 @@ def compare(graph, budget):
     joint, _ = exact_search(graph, budget)
     finite = audited(graph, joint)
     by_model = {}
-    for mode in ("free_staging", "serial"):
+    for mode in ("free_staging", "serial", "roofline"):
         winner, _ = exact_search(graph, budget, overlap=mode)
         result = audited(graph, winner)
-        if (mode == "free_staging" and result["predicted_ticks"] > result["ticks"]
+        if (mode in ("free_staging", "roofline") and result["predicted_ticks"] > result["ticks"]
                 or mode == "serial" and result["predicted_ticks"] < result["ticks"]):
             raise AssertionError("control pricing violates the intended latency bound")
         by_model[mode] = result

@@ -4,6 +4,7 @@ from collections import defaultdict
 from itertools import product
 
 from research.joint_budget.protocol import Hardware
+from research.runtime import dag_roofline
 from research.runtime.dag_model import Group, lifetimes
 from research.runtime.dag_overlap_cost import boundary, pointwise_frontier, score
 from research.runtime.strip_codesign import (
@@ -145,8 +146,8 @@ def lower_geometry(graph, hardware, profile):
 
 
 def exact_search(graph, budget, geometries=GEOMETRIES, *, prune_orders=True, singleton=False,
-                 fixed_order=None, on_incumbent=None, overlap="finite"):
-    if overlap not in {"finite", "free_staging", "serial"}:
+                 fixed_order=None, on_incumbent=None, overlap="finite", stats=None):
+    if overlap not in {"finite", "free_staging", "serial", "roofline"}:
         raise ValueError("unknown overlap pricing mode")
     hardware = [Hardware(x, y, max(c for c in CAPACITIES if c <= budget)) for x, y in geometries]
     transitions, profiles, terminal = transition_orders(graph, prune_orders and fixed_order is None)
@@ -162,8 +163,12 @@ def exact_search(graph, budget, geometries=GEOMETRIES, *, prune_orders=True, sin
         order_prefixes.add(done)
     best = None
     examined = 0
-    for h in sorted(hardware, key=lambda hw: lower_geometry(graph, hw, complete)):
-        bound = lower_geometry(graph, h, complete)
+    group_prices = 0
+    cache_functions = (tile_grid, ideal_stage, stage_frontier, pointwise_frontier)
+    before = {cache.__name__: cache.cache_info() for cache in cache_functions} if stats is not None else {}
+    geometry_bound = dag_roofline.lower_geometry if overlap == "roofline" else lower_geometry
+    for h in sorted(hardware, key=lambda hw: geometry_bound(graph, hw, complete)):
+        bound = geometry_bound(graph, h, complete)
         if best is not None and bound >= best[0][0] * best[0][1]:
             break
         examined += 1
@@ -180,18 +185,27 @@ def exact_search(graph, budget, geometries=GEOMETRIES, *, prune_orders=True, sin
                                     fixed_order[done.bit_count():target.bit_count()] != order):
                     continue
                 if order not in groups:
-                    groups[order] = group_frontier(graph, h, order, profiles[order], overlap)
+                    groups[order] = (dag_roofline.frontier(graph, h, order, profiles[order]) if overlap == "roofline"
+                                     else group_frontier(graph, h, order, profiles[order], overlap))
+                    group_prices += 1
                 states.setdefault(target, []).extend(
                     (add(a, b), left + (right,)) for a, left in states[done] for b, right in groups[order]
                 )
         for cost, plan in states.get(terminal, ()):
             if best is None or cost[0] * cost[1] < best[0][0] * best[0][1]:
-                if score(graph, h, plan, overlap) != cost:
+                priced = dag_roofline.score(graph, h, plan) if overlap == "roofline" else score(graph, h, plan, overlap)
+                if priced != cost:
                     raise AssertionError("DAG frontier disagrees with analytical evaluator")
                 best = cost, h, plan
                 if on_incumbent is not None:
                     on_incumbent(best)
-    for cache in (tile_grid, ideal_stage, stage_frontier, pointwise_frontier):
+    if stats is not None:
+        stats.update(examined_geometries=examined, group_prices=group_prices,
+                     transitions=sum(map(len, transitions.values())))
+        for cache in cache_functions:
+            start, end = before[cache.__name__], cache.cache_info()
+            stats[cache.__name__] = dict(hits=end.hits-start.hits, misses=end.misses-start.misses)
+    for cache in cache_functions:
         cache.cache_clear()
     if best is None:
         raise ValueError("no feasible DAG mapping")

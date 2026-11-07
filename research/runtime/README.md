@@ -195,3 +195,23 @@ with a maximum regret of 18.43%, and selects a different array shape in three.
 All selected fusion partitions agree. The fusion-enabled architecture-first
 control ties throughout. This test covers wave-local overlap and its SRAM
 cost. Off-chip DMA stays at its existing phase boundaries.
+
+The [perfect-overlap control](../joint_budget/results/dag_roofline_decision.json)
+prices each group by the maximum of its DRAM, SRAM-read, SRAM-write and MAC
+service times. The search composes additive resource vectors before taking the
+maximum, and uses the same base allocation constraints. This is a test of the
+lower-bound assumption motivated by [Cocco's latency formulation](https://arxiv.org/html/2402.00629v1).
+It is evaluated within our grammar. On 3mm at 132 KiB the predicted 18.87
+million ticks become 42.60 million on replay, while the finite optimizer
+selects a 34.98-million-tick mapping. The lower-bound optimizer selects a
+different array in three of ten pairs and raises executable EDP in four.
+
+The [search ablation](../joint_budget/results/dag_structure_gate.json) repeats
+the same finite search with and without topological-order dominance. Both
+use the same grammar, geometry bounds, pricing functions and cold caches.
+All 140 runs reach the same corresponding optimum and replay their winner.
+Dominance reduces asymmetric's group prices from 102 to 67, and its dense
+stage-frontier cache misses from 95 to 49 at 128 KiB and 144 to 74 at
+132 KiB. Its median end-to-end speedups are 1.61× and 1.78×. The other graphs
+show little timing difference. The report includes time to the common optimum
+and quality at fixed deadlines, with phase construction included in the timer.

@@ -7,7 +7,7 @@ from research.joint_budget.protocol import Hardware
 from research.runtime.dag_calendar import CheckedCalendar, events, replay
 from research.runtime.dag_model import Graph, Group, Op
 from research.runtime.dag_overlap_cost import score
-from research.runtime import dag_overlap_search as search
+from research.runtime import dag_overlap_search as search, dag_roofline
 
 
 def diamond(rows=5):
@@ -103,7 +103,7 @@ def test_dag_order_pruning_matches_unpruned_search(monkeypatch):
         assert opts[0] == opts[1]
 
 
-@pytest.mark.parametrize("overlap", ("finite", "free_staging", "serial"))
+@pytest.mark.parametrize("overlap", ("finite", "free_staging", "serial", "roofline"))
 def test_all_tiny_dag_mappings_agree_with_exact_search(monkeypatch, overlap):
     graph = Graph(2, (("X", 2),), (
         Op("A", ("X",), 1), Op("B", ("X",), 1), Op("J", ("A", "B"), 1, "mul"),
@@ -128,9 +128,9 @@ def test_all_tiny_dag_mappings_agree_with_exact_search(monkeypatch, overlap):
             except ValueError as error:
                 assert "SRAM" in str(error)
             else:
-                e, t = score(graph, hardware, plan, overlap)
+                e, t = dag_roofline.score(graph, hardware, plan) if overlap == "roofline" else score(graph, hardware, plan, overlap)
                 assert e == result["energy"]
-                if overlap == "free_staging":
+                if overlap in ("free_staging", "roofline"):
                     assert t <= result["ticks"]
                 elif overlap == "serial":
                     assert t >= result["ticks"]
