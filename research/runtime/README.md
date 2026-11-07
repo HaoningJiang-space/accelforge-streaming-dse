@@ -168,3 +168,30 @@ The compiler computes static intervals. The event replayer independently maintai
 The search composes Pareto frontiers at topological ideals. A group order dominates another order of the same operators if it never increases per-operator live bytes. Both orders have the same cut transfers. With this dominance rule, the [DAG experiment](../joint_budget/results/dag_calendar_joint.json) verifies 12 joint designs and their controls on GLU, diamond, residual and asymmetric forks. Free ordering lowers EDP by 38.31% relative to the declared fixed order on the asymmetric fork at 128 and 132 KiB. Architecture-first ties in the 12 initial cases. This result isolates an ordering and SRAM-lifetime effect under the common calendar.
 
 A [separate threshold experiment](../joint_budget/results/dag_architecture_gate.json) uses 24 synthetic fork and residual cases at row counts around a live-SRAM transition. Both architecture-first controls retain every tied architecture before reopening the mapping search. Joint search lowers EDP in seven cases versus selecting geometry on singleton groups first, with a maximum reduction of 4.84%. Selecting geometry with the fixed topological order ties joint search throughout this threshold experiment. Every reported design and control is replayed with the DAG event verifier.
+
+## How finite staging changes design choices
+
+```powershell
+./research/runtime/run_windows.ps1 -PythonArguments @('-m','research.runtime.dag_staging_gate','--output','research/local_staging_decision.json')
+./research/runtime/run_windows.ps1 -PythonArguments @('-m','research.runtime.dag_staging_gate','--thresholds','--output','research/local_staging_thresholds.json')
+```
+
+All searches have the same graph, 6,144-PE shapes, SRAM ceiling and mapping
+grammar. The optimistic control charges the live activations and weights but
+allows read, compute and write to overlap without charging staging bytes. The
+serial control disables that overlap. Each selected mapping is replayed with
+the finite staging calendar, so measured regret includes the resulting design
+choice and is separate from the model's prediction error. The architecture-
+first control permits all fusion cuts while choosing the shape under the
+declared order. It retains every tied shape before allowing all orders.
+
+At 132 KiB on 3mm, the optimistic model picks 128×32 waves that leave zero
+staging bytes. The finite model chooses 86×43 waves on the same 48×128 array.
+Both plans move 327,680 DRAM words. All 48 waves of the first plan run serially
+in replay, and its actual EDP is 21.49% higher. Free staging changes actual EDP
+on one of the [ten workload-budget pairs](../joint_budget/results/dag_staging_decision.json).
+It changes actual EDP on 19 of the [24 registered synthetic threshold points](../joint_budget/results/dag_staging_thresholds.json),
+with a maximum regret of 18.43%, and selects a different array shape in three.
+All selected fusion partitions agree. The fusion-enabled architecture-first
+control ties throughout. This test covers wave-local overlap and its SRAM
+cost. Off-chip DMA stays at its existing phase boundaries.

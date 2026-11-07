@@ -144,10 +144,11 @@ def scalar_graph(graph):
     return {name: values[name] for name in graph.outputs}
 
 
-def replay(graph, hardware, schedule, numeric=False):
+def replay(graph, hardware, schedule, numeric=False, staging_report=False):
     """Check address versions, local SRAM ownership and exclusive port intervals."""
     cal = CheckedCalendar()
     counts = Counter()
+    blocked = Counter()
     resident = {}
     pinned = {}
     produced = Counter()
@@ -285,6 +286,10 @@ def replay(graph, hardware, schedule, numeric=False):
                 operations = len(band) * len(ns)
             prior = bool(ks.start)
             staging = read_inputs + len(ns) * (1 + prior)
+            if staging_report and not event.overlap and len(band) > 1:
+                occupied = sum(len(rows) * graph.widths[tensor] for tensor, rows in resident.items())
+                if occupied + sum(pinned.values()) + scratch + staging > hardware.capacity_bytes:
+                    blocked[name] += 1
             live(scratch + (staging if event.overlap else 0))
             counts["write", name, "write"] += len(band) * len(ns)
             counts["mac", name, "cycles"] += len(band)
@@ -310,6 +315,9 @@ def replay(graph, hardware, schedule, numeric=False):
     service = {level: totals[level] * rate for level, rate in RATES.items()}
     if cal.now < max(service.values()) or cal.verified_overlap != cal.overlapped_waves:
         raise AssertionError("schedule exceeds a physical port")
-    return dict(energy=energy, ticks=cal.now, peak_bytes=peak, service_ticks=service,
-                overlapped_waves=cal.overlapped_waves,
-                actions={"/".join(key): value for key, value in sorted(counts.items())})
+    result = dict(energy=energy, ticks=cal.now, peak_bytes=peak, service_ticks=service,
+                  overlapped_waves=cal.overlapped_waves,
+                  actions={"/".join(key): value for key, value in sorted(counts.items())})
+    if staging_report:
+        result.update(staging_blocked=dict(blocked), overlapped_ticks=cal.overlapped_ticks)
+    return result

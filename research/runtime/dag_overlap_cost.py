@@ -17,13 +17,15 @@ def boundary(graph, profile):
     return energy, (fetch + drain) * DRAM[1]
 
 
-def pointwise(rows, n, b, q, room, live_width):
+def pointwise(rows, n, b, q, room, live_width, overlap="finite"):
     e = rows * n * (2 * GB_READ[0] + GB_WRITE[0] + COMPUTE[0])
     t = rows * (n * (2 * GB_READ[1] + GB_WRITE[1]) + ceildiv(n, q) * COMPUTE[1])
+    if overlap == "serial":
+        return e, t
     for band, count in shape_classes(rows, b):
         slack = room - band * live_width
         for width, repeats in shape_classes(n, q):
-            if 3 * width <= slack:
+            if overlap == "free_staging" or 3 * width <= slack:
                 read, write = 2 * width * GB_READ[1], width * GB_WRITE[1]
                 savings = read + write + COMPUTE[1] - max(read, write, COMPUTE[1])
                 t -= (band - 1) * count * repeats * savings
@@ -31,21 +33,23 @@ def pointwise(rows, n, b, q, room, live_width):
 
 
 @lru_cache(maxsize=2048)
-def pointwise_frontier(rows, n, b, lanes, room, live_width):
+def pointwise_frontier(rows, n, b, lanes, room, live_width, overlap="finite"):
     q = np.arange(1, min(n, lanes)+1, dtype=np.int64)
     e = rows * n * (2 * GB_READ[0] + GB_WRITE[0] + COMPUTE[0])
     t = rows * (n * (2 * GB_READ[1] + GB_WRITE[1]) + (n + q - 1) // q * COMPUTE[1])
-    for band, count in shape_classes(rows, b):
-        slack = room - band * live_width
-        for width, repeats in ((q, n // q), (n % q, 1)):
-            read, write = 2 * width * GB_READ[1], width * GB_WRITE[1]
-            saving = read + write + COMPUTE[1] - np.maximum(COMPUTE[1], np.maximum(read, write))
-            t -= np.where(3 * width <= slack, (band - 1) * count * repeats * saving, 0)
+    if overlap != "serial":
+        for band, count in shape_classes(rows, b):
+            slack = room - band * live_width
+            for width, repeats in ((q, n // q), (n % q, 1)):
+                read, write = 2 * width * GB_READ[1], width * GB_WRITE[1]
+                saving = read + write + COMPUTE[1] - np.maximum(COMPUTE[1], np.maximum(read, write))
+                fits = overlap == "free_staging" or 3 * width <= slack
+                t -= np.where(fits, (band - 1) * count * repeats * saving, 0)
     best = int(np.argmin(t))
     return (((e, int(t[best])), (0, best+1)),)
 
 
-def score(graph, hardware, plan):
+def score(graph, hardware, plan, overlap="finite"):
     validate_plan(graph, hardware, plan)
     total = (0, 0)
     for group in plan:
@@ -60,8 +64,8 @@ def score(graph, hardware, plan):
                 raise ValueError("SRAM capacity exceeded")
             if op.kind == "gemm":
                 cost = stage(graph.rows, graph.widths[op.inputs[0]], op.width, group.rows, p, q,
-                             pin, room, step.live_width)
+                             pin, room, step.live_width, overlap)
             else:
-                cost = pointwise(graph.rows, op.width, group.rows, q, room, step.live_width)
+                cost = pointwise(graph.rows, op.width, group.rows, q, room, step.live_width, overlap)
             total = add(total, cost)
     return total

@@ -70,25 +70,27 @@ def lower(graph, hardware, step, bands, pin):
     return lower_pointwise(graph, op, hardware)
 
 
-def choices(graph, hardware, step, b, pin, room, ideal=False):
+def choices(graph, hardware, step, b, pin, room, ideal=False, overlap="finite"):
     op = step.op
     if op.kind == "gemm":
         k = graph.widths[op.inputs[0]]
-        if ideal:
+        if ideal and overlap != "serial":
             return ideal_stage(graph.rows, k, op.width, b, hardware.px, hardware.py, pin)
+        if ideal:
+            room = b * step.live_width + min(k, hardware.py) * min(op.width, hardware.px)
         return stage_frontier(graph.rows, k, op.width, b, hardware.px, hardware.py,
-                              pin, room, step.live_width)
+                              pin, room, step.live_width, overlap)
     limit = graph.rows * step.live_width + 3 * op.width if ideal else room
-    return pointwise_frontier(graph.rows, op.width, b, hardware.px * hardware.py, limit, step.live_width)
+    return pointwise_frontier(graph.rows, op.width, b, hardware.px * hardware.py, limit, step.live_width, overlap)
 
 
-def fits(graph, step, b, pin, tile, room):
+def fits(graph, step, b, pin, tile, room, overlap):
     p, q = tile
-    staging = p + 2 * q if p else 3 * q
+    staging = (p + 2 * q if p else 3 * q) if overlap == "finite" else 0
     return b * step.live_width + (0 if pin else p * q) + staging <= room
 
 
-def group_frontier(graph, hardware, order, profile):
+def group_frontier(graph, hardware, order, profile, overlap="finite"):
     initial = boundary(graph, profile)
     room_options = []
     for pins in product(*[(False, True) if step.op.kind == "gemm" else (False,) for step in profile]):
@@ -114,12 +116,12 @@ def group_frontier(graph, hardware, order, profile):
                 estimate = add(estimate, lower(graph, hardware, step, bands, pin))
             if dominated(estimate):
                 break
-            ideal = compose(initial, (choices(graph, hardware, step, b, pin, room, ideal=True)
+            ideal = compose(initial, (choices(graph, hardware, step, b, pin, room, ideal=True, overlap=overlap)
                                       for step, pin in zip(profile, pins)))
             wanted = [(cost, tiles) for cost, tiles in ideal if not dominated(cost)]
             if not wanted:
                 continue
-            if all(fits(graph, step, b, pin, tile, room) for _, tiles in wanted
+            if all(fits(graph, step, b, pin, tile, room, overlap) for _, tiles in wanted
                    for step, pin, tile in zip(profile, pins, tiles)):
                 frontier = list(pareto(frontier + [
                     (cost, Group(order, b, tiles, pins)) for cost, tiles in wanted
@@ -127,7 +129,7 @@ def group_frontier(graph, hardware, order, profile):
                 continue
             largest = bmax if bands == 1 else min(bmax, (graph.rows - 1) // (bands - 1))
             for strip in range(b, largest+1):
-                possible = compose(initial, (choices(graph, hardware, step, strip, pin, room)
+                possible = compose(initial, (choices(graph, hardware, step, strip, pin, room, overlap=overlap)
                                              for step, pin in zip(profile, pins)))
                 frontier = list(pareto(frontier + [
                     (cost, Group(order, strip, tiles, pins)) for cost, tiles in possible
@@ -143,7 +145,9 @@ def lower_geometry(graph, hardware, profile):
 
 
 def exact_search(graph, budget, geometries=GEOMETRIES, *, prune_orders=True, singleton=False,
-                 fixed_order=None, on_incumbent=None):
+                 fixed_order=None, on_incumbent=None, overlap="finite"):
+    if overlap not in {"finite", "free_staging", "serial"}:
+        raise ValueError("unknown overlap pricing mode")
     hardware = [Hardware(x, y, max(c for c in CAPACITIES if c <= budget)) for x, y in geometries]
     transitions, profiles, terminal = transition_orders(graph, prune_orders and fixed_order is None)
     topo = tuple(op.name for op in graph.ops)
@@ -176,13 +180,13 @@ def exact_search(graph, budget, geometries=GEOMETRIES, *, prune_orders=True, sin
                                     fixed_order[done.bit_count():target.bit_count()] != order):
                     continue
                 if order not in groups:
-                    groups[order] = group_frontier(graph, h, order, profiles[order])
+                    groups[order] = group_frontier(graph, h, order, profiles[order], overlap)
                 states.setdefault(target, []).extend(
                     (add(a, b), left + (right,)) for a, left in states[done] for b, right in groups[order]
                 )
         for cost, plan in states.get(terminal, ()):
             if best is None or cost[0] * cost[1] < best[0][0] * best[0][1]:
-                if score(graph, h, plan) != cost:
+                if score(graph, h, plan, overlap) != cost:
                     raise AssertionError("DAG frontier disagrees with analytical evaluator")
                 best = cost, h, plan
                 if on_incumbent is not None:

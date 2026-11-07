@@ -28,15 +28,17 @@ def wave_classes(k, n, p, q):
             yield ki * no, staging, savings
 
 
-def stage(rows, k, n, b, p, q, pin, room, live_width=None):
+def stage(rows, k, n, b, p, q, pin, room, live_width=None, overlap="finite"):
     """Price valid tiles given remaining segment SRAM after pinned weights."""
     bands = ceildiv(rows, b)
     e, t = stage_cost(rows, k, n, ceildiv(k, p), ceildiv(n, q), bands, pin)
     t -= k * n * (1 if pin else bands) * GB_WRITE[1]
+    if overlap == "serial":
+        return e, t
     for band, count in shape_classes(rows, b):
         slack = room - band * (k + n if live_width is None else live_width)
         for wave, staging, savings in wave_classes(k, n, p, q):
-            if wave and staging + (0 if pin else wave) <= slack:
+            if wave and (overlap == "free_staging" or staging + (0 if pin else wave) <= slack):
                 t -= (band - 1) * count * savings
     return e, t
 
@@ -69,18 +71,20 @@ def tile_grid(k, n, x, y):
 
 
 @lru_cache(maxsize=4096)
-def stage_frontier(rows, k, n, b, x, y, pin, room, live_width=None):
+def stage_frontier(rows, k, n, b, x, y, pin, room, live_width=None, overlap="finite"):
     live_width = k + n if live_width is None else live_width
     p, q, kb, nb, waves = tile_grid(k, n, x, y)
     bands = ceildiv(rows, b)
     energy, time = stage_cost(rows, k, n, kb, nb, bands, pin)
     time = time - k * n * (1 if pin else bands) * GB_WRITE[1]
-    for band, count in shape_classes(rows, b):
-        if band == 1:
-            continue
-        slack = room - band * live_width
-        for wave, staging, savings in waves:
-            time -= np.where(staging + (0 if pin else wave) <= slack, savings, 0) * (band - 1) * count
+    if overlap != "serial":
+        for band, count in shape_classes(rows, b):
+            if band == 1:
+                continue
+            slack = room - band * live_width
+            for wave, staging, savings in waves:
+                fits = overlap == "free_staging" or staging + (0 if pin else wave) <= slack
+                time -= np.where(fits, savings, 0) * (band - 1) * count
 
     valid = np.flatnonzero((p * q <= room - b * live_width).ravel()) if not pin else np.arange(time.size)
     energy, time = energy.ravel()[valid], time.ravel()[valid]

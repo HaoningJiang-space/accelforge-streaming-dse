@@ -103,7 +103,8 @@ def test_dag_order_pruning_matches_unpruned_search(monkeypatch):
         assert opts[0] == opts[1]
 
 
-def test_all_tiny_dag_mappings_agree_with_exact_search(monkeypatch):
+@pytest.mark.parametrize("overlap", ("finite", "free_staging", "serial"))
+def test_all_tiny_dag_mappings_agree_with_exact_search(monkeypatch, overlap):
     graph = Graph(2, (("X", 2),), (
         Op("A", ("X",), 1), Op("B", ("X",), 1), Op("J", ("A", "B"), 1, "mul"),
     ))
@@ -127,6 +128,14 @@ def test_all_tiny_dag_mappings_agree_with_exact_search(monkeypatch):
             except ValueError as error:
                 assert "SRAM" in str(error)
             else:
-                values.append(result["energy"] * result["ticks"])
-    (cost, _, _), _ = search.exact_search(graph, 9, ((1, 2),))
+                e, t = score(graph, hardware, plan, overlap)
+                assert e == result["energy"]
+                if overlap == "free_staging":
+                    assert t <= result["ticks"]
+                elif overlap == "serial":
+                    assert t >= result["ticks"]
+                else:
+                    assert t == result["ticks"]
+                values.append(e*t)
+    (cost, _, _), _ = search.exact_search(graph, 9, ((1, 2),), overlap=overlap)
     assert cost[0] * cost[1] == min(values)
