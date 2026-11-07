@@ -92,15 +92,16 @@ def run(workload,domain_name,output,reference_path,collect_differences=False,met
         if seed_details:
             report['work']['model_rows'] += seed_details['proposer']['materialized_rows']
             report['work']['model_templates'] += seed_details['proposer']['symbolic_models']
-        frozen = json.loads(reference_path.read_text(encoding='utf-8'))
-        if frozen['status']!='complete' or any(frozen[key]!=report[key] for key in ('case','domain','policy')):
+        frozen = json.loads(reference_path.read_text(encoding='utf-8')) if reference_path else None
+        if frozen and (frozen['status']!='complete' or any(frozen[key]!=report[key] for key in ('case','domain','policy'))):
             raise ValueError('complete same-case/domain/policy reference required')
-        for point,row in zip(domain.points,frozen['points']):
+        for index,point in enumerate(domain.points):
             data = outputs[point]
             vectors = frontier(data).to_dict('records')
-            if vectors!=row['vectors']:
+            expected = frozen['points'][index]['vectors'] if frozen else None
+            if expected is not None and vectors!=expected:
                 report['frontier_differences'].append(dict(architecture=asdict(point),
-                    expected_rows=len(row['vectors']),actual_rows=len(vectors)))
+                    expected_rows=len(expected),actual_rows=len(vectors)))
                 if not collect_differences and method!='demand':
                     raise AssertionError(f'complete native relaxed-policy frontier differs: {point}')
             selected = selected_rows[point]
@@ -118,25 +119,25 @@ def run(workload,domain_name,output,reference_path,collect_differences=False,met
         report['budget_selections'] = []
         for budget_index,budget in enumerate(budgets):
             point,row,winning_witness = winners[budget_index]
-            baseline_edp = min(v['Total<SEP>energy']*v[common.LATENCY]
-                for p,r in zip(domain.points,frozen['points']) if budget.admits(p) for v in r['vectors'])
             canonical = winning_witness['edp']
-            if 'budget_selections' in frozen:
-                baseline_canonical = frozen['budget_selections'][budget_index]['witness']['edp']
-            else:
-                baseline_canonical = frozen['global_selections'][budget_index]['winner']['witness']['edp']
-            report['budget_selections'].append(dict(budget=asdict(budget),architecture=asdict(point),
-                reported_edp=float(row['Total<SEP>energy'])*float(row[common.LATENCY]),reference_edp=baseline_edp,
-                canonical_edp=canonical,reference_canonical_edp=baseline_canonical,witness=winning_witness))
+            selection = dict(budget=asdict(budget),architecture=asdict(point),
+                reported_edp=float(row['Total<SEP>energy'])*float(row[common.LATENCY]),
+                canonical_edp=canonical,witness=winning_witness)
+            if frozen:
+                selection['reference_edp'] = min(v['Total<SEP>energy']*v[common.LATENCY]
+                    for p,r in zip(domain.points,frozen['points']) if budget.admits(p) for v in r['vectors'])
+                selection['reference_canonical_edp'] = (frozen['budget_selections'][budget_index]['witness']['edp']
+                    if 'budget_selections' in frozen else frozen['global_selections'][budget_index]['winner']['witness']['edp'])
+            report['budget_selections'].append(selection)
         report['quality_gate_passed'] = all(b['canonical_edp']<=b['reference_canonical_edp'] or
             math.isclose(b['canonical_edp'],b['reference_canonical_edp'],rel_tol=1e-12,abs_tol=0)
-            for b in report['budget_selections'])
-        if not report['quality_gate_passed'] and not allow_quality_gap:
+            for b in report['budget_selections']) if frozen else None
+        if report['quality_gate_passed'] is False and not allow_quality_gap:
             raise AssertionError('canonical quality regressed versus the complete Event reference')
         report['quality_comparison'] = 'canonical native physical reevaluation; raw float32 reported values retained separately'
-        report.update(status='complete',all_declared_full_frontiers_exact=not report['frontier_differences'],
+        report.update(status='complete',all_declared_full_frontiers_exact=not report['frontier_differences'] if frozen else None,
             all_selected_physical_sources_valid=all(r['point_status']=='feasible' for r in report['points']),
-            reference_sha256=hashlib.sha256(reference_path.read_bytes()).hexdigest())
+            reference_sha256=hashlib.sha256(reference_path.read_bytes()).hexdigest() if reference_path else None)
         report['source_after'] = source_digest()
         if report['source_before']!=report['source_after']:
             raise AssertionError('source changed during experiment')
@@ -155,7 +156,7 @@ def main():
     parser.add_argument('--workload',choices=('3mm','attention','attention256','attention512'),default='attention')
     parser.add_argument('--domain',choices=('original12','factors96'),default='factors96')
     parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--reference',type=Path,required=True)
+    parser.add_argument('--reference',type=Path,help='Optional post-search quality reference.')
     parser.add_argument('--collect-differences',action='store_true')
     parser.add_argument('--method',choices=('direct','demand'),default='direct')
     parser.add_argument('--rounds',type=int,choices=(1,2),default=1)
