@@ -89,6 +89,28 @@ reconstruct fused scopes.
 ./research/joint_physical/benchmark_windows.ps1 -Repetitions 5 -PushEachTrial
 ```
 
+All five pairs completed; see the [machine-readable summary](../joint_budget/results/formal_demand128/summary.json)
+and the individual result/replay pairs next to it. The 96 physical points
+are the 24 ordered factorizations of 6,144 PEs crossed with 4, 8, 16 and 32 KiB.
+
+| Five-run median | Full relaxed Event | Demand with seed wave |
+| --- | ---: | ---: |
+| Complete search time (range), s | 129.78 (124.14–132.95) | 43.81 (43.56–44.23) |
+| Time to all four common EDP targets (range), s | 21.60 (21.22–22.03) | 13.20 (13.15–13.23) |
+| Native model rows | 218,509 | 4,533 |
+| Native Join pair rows | 7,190,411 | 183,963 |
+| Peak process GiB before independent audit | 0.492 | 0.351 |
+
+The four physically re-evaluated EDPs were identical in every trial:
+1.4112041153331202e-10, 9.708321706257069e-11, 7.658403161702401e-11 and
+4.061826628539734e-11 J·s, in budget order. Every demand trial independently
+replayed all 96 point witnesses and eight seed/final budget witnesses.
+The native Event replay rechecks its four budget incumbents. The 2.96×
+complete-search and 1.64× target-time ratios compare medians on this
+instance; the complete Event and heuristic searches have different
+completeness guarantees. The seed pass is charged again when the full
+search revisits that hardware.
+
 External systems still require matching physical constraints and mapping scope
 under the same evaluator. Published GPU runtime, Gemmini EDP and MAESTRO
 estimates are not directly comparable to these native NVDLA scores.
