@@ -114,6 +114,8 @@ def numeric(case, point, record, change=()):
     native = common.evaluate_mapping(spec).data.iloc[0]
     full_bounds = common.get_rank_variable_bounds_for_all_einsums(spec)
     # Each native einsum's affine variables (including reduction variables).
+    for name in paths:
+        component(name,"MAC")  # A scalar operator has no Spatial node to populate this cache.
     dims = {name:{r:full_bounds[r] for r in per_op[name].workload.einsums[name].rank_variables}
             for name in paths}
     independent = check_work(mapping,dims,native)

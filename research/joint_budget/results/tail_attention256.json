@@ -1,0 +1,189 @@
+{
+  "status": "complete",
+  "scope": "retile existing budget witnesses; independent trace; no full grammar search",
+  "reference_sha256": "3fa807e8a018ef131e2c38fe004c7c065dc47f93f10cccda42eb8583ba903787",
+  "case": {
+    "workload": "attention",
+    "arch": "nvdla",
+    "params": [
+      256,
+      1,
+      64
+    ]
+  },
+  "entries": [
+    {
+      "architecture": {
+        "px": 64,
+        "py": 96,
+        "capacity_bytes": 4096
+      },
+      "baseline": 2.09154923753199e-09,
+      "baseline_trace": {
+        "QK": {
+          "actions": 4194304,
+          "compute_cycles": 2048
+        },
+        "QK_softmax": {
+          "actions": 65536,
+          "compute_cycles": 65536
+        },
+        "AV": {
+          "actions": 4194304,
+          "compute_cycles": 4096
+        }
+      },
+      "candidates": [
+        {
+          "changes": [
+            [
+              "AV",
+              1,
+              96
+            ]
+          ],
+          "status": "rejected",
+          "reason": "No mappings found for QK_softmax <--> AV"
+        }
+      ],
+      "proposals": [
+        [
+          "AV",
+          1,
+          96
+        ]
+      ],
+      "best_edp": 2.09154923753199e-09
+    },
+    {
+      "architecture": {
+        "px": 64,
+        "py": 96,
+        "capacity_bytes": 8192
+      },
+      "baseline": 1.4004850625522349e-09,
+      "baseline_trace": {
+        "QK": {
+          "actions": 4194304,
+          "compute_cycles": 2048
+        },
+        "QK_softmax": {
+          "actions": 65536,
+          "compute_cycles": 65536
+        },
+        "AV": {
+          "actions": 4194304,
+          "compute_cycles": 2048
+        }
+      },
+      "candidates": [
+        {
+          "changes": [
+            [
+              "AV",
+              1,
+              96
+            ]
+          ],
+          "status": "rejected",
+          "reason": "No mappings found for QK_softmax <--> AV"
+        }
+      ],
+      "proposals": [
+        [
+          "AV",
+          1,
+          96
+        ]
+      ],
+      "best_edp": 1.4004850625522349e-09
+    },
+    {
+      "architecture": {
+        "px": 64,
+        "py": 96,
+        "capacity_bytes": 16384
+      },
+      "baseline": 1.0792275486091947e-09,
+      "baseline_trace": {
+        "QK": {
+          "actions": 4194304,
+          "compute_cycles": 1024
+        },
+        "QK_softmax": {
+          "actions": 65536,
+          "compute_cycles": 65536
+        },
+        "AV": {
+          "actions": 4194304,
+          "compute_cycles": 1024
+        }
+      },
+      "candidates": [
+        {
+          "changes": [
+            [
+              "AV",
+              1,
+              96
+            ]
+          ],
+          "status": "rejected",
+          "reason": "No mappings found for QK_softmax <--> AV"
+        }
+      ],
+      "proposals": [
+        [
+          "AV",
+          1,
+          96
+        ]
+      ],
+      "best_edp": 1.0792275486091947e-09
+    },
+    {
+      "architecture": {
+        "px": 64,
+        "py": 96,
+        "capacity_bytes": 32768
+      },
+      "baseline": 9.314727100416e-10,
+      "baseline_trace": {
+        "QK": {
+          "actions": 4194304,
+          "compute_cycles": 1024
+        },
+        "QK_softmax": {
+          "actions": 65536,
+          "compute_cycles": 65536
+        },
+        "AV": {
+          "actions": 4194304,
+          "compute_cycles": 1024
+        }
+      },
+      "candidates": [
+        {
+          "changes": [
+            [
+              "AV",
+              0,
+              96
+            ]
+          ],
+          "status": "rejected",
+          "reason": "No mappings found for QK_softmax <--> AV"
+        }
+      ],
+      "proposals": [
+        [
+          "AV",
+          0,
+          96
+        ]
+      ],
+      "best_edp": 9.314727100416e-10
+    }
+  ],
+  "external_sota_acceptance": false
+}
