@@ -109,12 +109,30 @@ A physical-area and port-contention evaluator, full graphs, and a common
 execution comparison with accelerator-specific systems are needed to test
 the stronger research claim.
 
+### Candidate coverage repair
+
+Native tile enumeration treats the two PE dimensions as feasibility
+constraints and optimizes total latency at its generation bandwidth.
+The `--retain-hardware-objectives` experiment also passes each PE demand
+and component service time to the native tile Pareto pass. It recovers
+the tight-budget native ResNet EDP of 2.92805 × 10¹⁴ pJ·ns at the same
+32 × 96 PE, 128 KiB, and 0.375× bandwidth witness. The wide-budget
+witness also agrees. Candidate capture and screening grows from 7,190
+to 177,426 rows and from 108 to 218 seconds. The 38,720 exact signatures
+leave 18 layer candidates after the wide-budget conditional bound.
+Both hardware witnesses match fresh native generation. General
+coverage across every architecture remains an open verification task.
+[Coverage repair data](results/resnet_coverage_repair.json)
+
 ```sh
 python -m research.late_binding.kill_frontier resnet /tmp/resnet.json --bank /tmp/resnet.npz
 python -m research.late_binding.late_binding_grid /tmp/resnet.npz /tmp/resnet_grid.json
 python -m research.late_binding.late_binding_grid resnet /tmp/resnet_grid.json --replay-native
 python -m pytest -q research/joint_synthesis/tests research/late_binding/tests
 ```
+
+Use `--retain-hardware-objectives` on the first command to generate the
+larger ResNet bank and rerun the comparison.
 
 The grid benchmark uses Optuna 5.0.0. Pass `--optuna-path` for an existing
 vendor directory if Optuna is outside the active Python environment.
