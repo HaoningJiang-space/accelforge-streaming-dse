@@ -931,3 +931,88 @@ python -m research.physical_cost.concurrent_search research/physical_cost/result
 python -m research.physical_cost.concurrent_search research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/probe.json.gz --methods af_probe --budgets 1 3 8 --repeats 3
 python -m research.physical_cost.concurrent_validation research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json "$ramulator_checkout" /tmp/validation.json.gz --search-results /tmp/serving.json.gz /tmp/probe.json.gz --remap-witnesses
 ```
+
+## Separate prefill/KV contention from idle leakage
+
+The factorial replay holds request arrivals, work, MAC+SRAM area
+accounting and action prices fixed. In the capacity intervention
+each side still has to fit in the original capacity of each bank,
+with independent capacity checks for prefill and all decode
+requests together. The bank assignment and virtual addresses
+stay fixed for a given mapping. In the port intervention each
+side has its own calendar for the same 1R1W bank service. Decode
+requests still compete with each other. Both sides continue to
+use the shared DDR controller and compute array. Both interventions
+are diagnostic resource relaxations priced using the original
+hardware. Each cell fully remaps the feasible grammar and also
+replays the physical winner with the mapping fixed.
+
+The original overlap case gives the same best architecture in
+all four cells. The near-capacity case uses 529 and 829 initial
+tokens, three steps per decode request and a 192-row prefill.
+Arrival times are 18, 0 and 0.12 µs in all four cells. None of
+the selected plans has time with no outstanding request.
+
+| Array and global SRAM | Physical | Capacity only | Ports only | Both |
+|---|---:|---:|---:|---:|
+| 64 × 32, 12 × 16 KiB | 2,956.534 | 1,629.092 | 2,926.941 | 1,443.616 |
+| 64 × 64, 3 × 64 KiB | 3,789.052 | 1,766.821 | 3,642.021 | 1,588.853 |
+| 16 × 64, 12 × 16 KiB | 4,430.618 | 3,016.015 | 4,284.523 | 2,949.647 |
+| 32 × 64, 4 × 64 KiB | 1,951.479 | 1,951.479 | 1,892.847 | 1,892.847 |
+
+EDP is in µJ·µs. The 64 × 32 array switches from one resident
+cache to two when the capacity constraint is relaxed. This saves
+133 KiB of additional DDR reads of KV. Its most loaded bank holds
+16,832 live bytes against a 16,384-byte limit, and at least one
+bank is over capacity for a total of 2.232 µs. The unchanged
+physical mapping has exactly the same result under the capacity
+intervention. On that fixed mapping, separating ports changes EDP
+from 2,956.534 to 2,926.941. With complete remapping, the capacity
+intervention reverses the 64 × 32 versus 32 × 64 order, and the
+port intervention alone preserves it. These results describe
+the four tested architectures and the declared allocation grammar.
+
+For the earlier delayed prefill case, a separate accounting replay
+merges request lifetimes and splits standby energy into active
+standby, no-request SRAM leakage and no-request PHY idle energy.
+Stalls inside a request remain active. All physical scores
+continue to charge standby until episode completion. At the
+100 µs prefill arrival the 64 × 32 and 16 × 64 arrays have
+76.305 and 58.548 µs with no outstanding request. The 64 × 32
+has physical EDP 8,081.882 and the 16 × 64 has 7,463.137.
+Keeping the same trace durations and subtracting only the
+no-request standby charge gives 4,536.800 and 5,157.915.
+This changes the ranking with the same arrivals and shows
+that the earlier reversal is sensitive to that charge. The
+subtraction is an accounting diagnostic for the recorded trace.
+
+The longer holdouts keep the 233-architecture grid, 6.918 mm²
+MAC+SRAM cap, fixed DDR configuration and common evaluator.
+Three decode requests have initial contexts of 1,151, 1,729
+and 2,369. Four decode requests have 1,535, 2,048, 2,817 and
+3,329. Both include a separate prefill request and three append
+steps per decode request. The two holdouts have 20,322 and
+14,708 feasible hardware/mapping pairs. The probe baseline
+retains every architecture tied at the probe boundary and
+continues full remapping in measured probe order. The budgets
+include ranking, probes, mapping generation and fine evaluation.
+
+| Decode requests | Best EDP in each repeat at 4, 12 and 25 s (µJ·µs) | Median time to this EDP, probe | Interleaved |
+|---|---:|---:|---:|
+| 3 | 24,021.234 | 1.472 s | 1.153 s |
+| 4 | 166,209.827 | 3.058 s | 2.259 s |
+
+The methods agree at every budget in all three repeats. Each
+found the same plan on the same architecture. The 25-second
+runs do not finish a complete remap of an architecture. The
+validation independently checks the recorded winners, including
+all KV versions, their resource intervals and the DDR commands.
+
+[Factorial replay and idle accounting](results/cotenancy_ablation_windows.json.gz) ·
+[Holdout trials](results/cotenancy_holdout_windows.json.gz) ·
+[Holdout replay](results/cotenancy_holdout_validation_windows.json.gz)
+
+```sh
+python -m research.physical_cost.cotenancy_ablation research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json "$ramulator_checkout" /tmp/cotenancy.json.gz
+python -m research.physical_cost.concurrent_search research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/holdout.json.gz --cases holdout3 holdout4 --methods af_probe joint --budgets 4 12 25 --repeats 3
+```
