@@ -1060,6 +1060,13 @@ and a 2,400-second wall limit.
 The 82,612 evaluations confirm the previously reported probe and
 interleaved incumbents in all four panels. Top-2 in the overlap
 case is 23.2% above the exact optimum.
+An independent check recounts feasible plans on every architecture
+and replays each exact winner. The overlap winner ranks third by
+the proxy. The first-ranked architecture remains 23.2% above the
+optimum after complete remapping. In the three holdouts the proxy
+ranks the optimal architecture first, and the first proxy plans
+are 0.26–0.63% above the exact optima.
+[Coverage, winner replays and budget regret](results/exact_hp_validation_windows.json.gz)
 
 New nominal experiments use the LSTP table, including its areas,
 access times and read/write energy. The matched four-architecture
@@ -1105,3 +1112,18 @@ case, giving 53.9% higher episode EDP than 32 × 64.
 python -m research.physical_cost.serving_exhaustive research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/exact-hp --workers 18 --memory-gib 12 --seconds 2400
 python -m research.physical_cost.cotenancy_ablation research/physical_cost/results/sram_45nm_lstp.json research/physical_cost/results/paid_ledger.json "$ramulator_checkout" /tmp/cotenancy-lstp.json.gz
 ```
+
+The distribution experiment freezes a synthetic 24-scenario
+sample at seed 17309. It stratifies by three context bands
+between 64 and 1,024 tokens and two prefill arrival regimes,
+with one to three decode requests. It uses 12 training scenarios
+to select a shared architecture and 12 held-out scenarios to
+score it. The complete serving grammar is remapped on every
+LSTP-legal architecture for every scenario. Standalone decode
+and prefill are independently remapped for stage-first selection.
+The analysis retains all ties on the primary training objective
+and uses training episode scores to break ties before test scoring.
+The 10% gate compares held-out mean EDP to the stronger of the
+two stage-first choices selected on training episodes. Per-scenario
+oracles and all 12 single-training-scenario choices are reported
+separately.

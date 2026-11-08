@@ -7,6 +7,7 @@ from research.physical_cost.concurrent_search import candidates
 from research.physical_cost.concurrent_serving import Plan, compile_program, placement
 from research.physical_cost.cotenancy_ablation import NEAR_CAPACITY, idle_ps
 from research.physical_cost.serving_ddr import CK, DDR
+from research.physical_cost.serving_distribution import select, stage_gate
 from research.physical_cost.serving_softmax import dense, online
 
 
@@ -72,3 +73,16 @@ def test_decode_first_releases_prefill_capacity_and_keeps_decode_arrival_offsets
     assert all(task.owner > 0 for task in decode.tasks)
     assert not any(slot.startswith("p") for slot in decode.regions)
     assert {task.release for task in decode.tasks if task.label == "initial k"} == {0, 120_000}
+
+
+def test_distribution_breaks_stage_ties_on_training_episodes_only():
+    train = {"name": "train", "training": True, "episode": [7, 8],
+             "decode": [1, 1], "prefill": [2, 1], "oracle": 7}
+    test = {"name": "test", "training": False, "episode": [30, 9],
+            "decode": [3, 1], "prefill": [2, 1], "oracle": 9}
+    rows = [train, test]
+    selection = select(rows, 2)
+    assert selection["decode"]["training_ties"] == [0, 1]
+    assert selection["decode"]["index"] == 0
+    assert selection["decode"]["test"]["mean_edp"] == 30
+    assert stage_gate(rows, selection)["passed"] is False

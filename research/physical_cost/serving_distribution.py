@@ -57,13 +57,32 @@ def select(rows, count):
                   for field in ("episode", "decode", "prefill")}
     for row in train:
         selections[row["name"]] = minimum(feasible, lambda i: score(row, i))
-    # The index tie-break is fixed before seeing the test samples.
+    # Remap every tied architecture over the training episodes before the
+    # final index tie-break. The test samples are scored only afterward.
     result = {}
     for name, ties in selections.items():
-        index = ties[0]
+        index = min(ties, key=lambda i: (sum(score(row, i) for row in train), i))
         result[name] = {"index": index, "training_ties": ties, "train": measure(train, index),
                         "test": measure(test, index) if all(row["episode"][index] is not None for row in test) else None}
     return result
+
+
+def stage_gate(rows, selections):
+    training = [row for row in rows if row["training"]]
+    phase = min(("decode", "prefill"),
+                key=lambda name: (sum(score(row, selections[name]["index"]) for row in training), name))
+    held_out = [row for row in rows if not row["training"]]
+    robust = selections["episode"]["index"]
+    baseline = selections[phase]["index"]
+    threshold = {"numerator": 1, "denominator": 10}
+    comparison = {"phase_chosen_on_training": phase, "threshold": threshold,
+                  "passed": None, "held_out_regret_to_shared": None}
+    if selections[phase]["test"] and selections["episode"]["test"]:
+        ours = sum(score(row, robust) for row in held_out)
+        theirs = sum(score(row, baseline) for row in held_out)
+        comparison["held_out_regret_to_shared"] = theirs / ours - 1
+        comparison["passed"] = 10 * theirs >= 11 * ours
+    return comparison
 
 
 def compact(panel_result, name, training):
@@ -101,8 +120,9 @@ def main():
             checkpoint = {**manifest, "workload": json.loads(json.dumps(asdict(work))), "stages": True}
             report = panel(pool, name, work, hardware, macros, args.output, checkpoint, deadline, stages=True)
             rows.append(compact(report, name, training))
+    selections = select(rows, len(hardware))
     result = {**manifest, "seed": 17309, "architecture": [asdict(hw) for hw in hardware],
-              "scenarios": rows, "selections": select(rows, len(hardware))}
+              "scenarios": rows, "selections": selections, "stage_gate": stage_gate(rows, selections)}
     write_atomic(args.output / "distribution.json.gz", result)
 
 
