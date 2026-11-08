@@ -25,6 +25,8 @@ CASES = {
     "overlap": Workload(96, (500, 769), 3, (2_000_000, 0, 120_000)),
     "delayed": Workload(96, (500, 769), 3, (100_000_000, 0, 120_000)),
     "pressure": Workload(160, (769, 1211), 4, (8_000_000, 0, 160_000)),
+    "holdout3": Workload(192, (1151, 1729, 2369), 3, (3_000_000, 0, 230_000, 590_000)),
+    "holdout4": Workload(224, (1535, 2048, 2817, 3329), 3, (7_000_000, 0, 170_000, 410_000, 770_000)),
 }
 METHODS = ("af_top2", "af_window", "af_complete", "joint")
 
@@ -38,8 +40,9 @@ def hardware_grid(macros, ledger, cap):
 
 
 def traffic(work, mask):
-    reads = 4 * WIDTH + work.rows + 2 * work.steps
-    writes = work.rows + 12 * work.steps
+    decode_steps = len(work.contexts) * work.steps
+    reads = 4 * WIDTH + work.rows + decode_steps
+    writes = work.rows + 6 * decode_steps
     for req, context in enumerate(work.contexts):
         if mask & (1 << req):
             reads += 2 * context
@@ -68,8 +71,9 @@ def proxy(hw, macros, work, plan, shape):
     x, y = hw.x, hw.y
     stripe = ceildiv(WIDTH * ceildiv(WIDTH, x), 8)
     prefill_tiles = ceildiv(work.rows, plan.rows)
-    projection = (work.rows + 6 * work.steps) * ceildiv(WIDTH, x) * ceildiv(WIDTH, y)
-    projection += stripe * (work.rows + prefill_tiles + 12 * work.steps)
+    decode_steps = len(work.contexts) * work.steps
+    projection = (work.rows + 3 * decode_steps) * ceildiv(WIDTH, x) * ceildiv(WIDTH, y)
+    projection += stripe * (work.rows + prefill_tiles + 6 * decode_steps)
     qk = 0
     for n, count in tiles.items():
         local = ceildiv((WIDTH // HEADS) * ceildiv(n, x), 8)
@@ -78,7 +82,7 @@ def proxy(hw, macros, work, plan, shape):
     av_ops = 8 * WIDTH * scan + (8 * (WIDTH + HEADS) * blocks if plan.online else 0)
     core = projection + qk + ceildiv(soft_ops, x) + ceildiv(av_ops, x * y)
     if plan.online:
-        core += 2 * work.steps * ceildiv(16 * WIDTH, x)
+        core += decode_steps * ceildiv(16 * WIDTH, x)
     macro = macros[hw.global_bank_bytes]
     sram_period = ceil(max(macro["access_ns"], macro["cycle_ns"]))
     d_banks = hw.global_banks // 2 if plan.partition else hw.global_banks
@@ -87,14 +91,14 @@ def proxy(hw, macros, work, plan, shape):
     # The late prefill arrival is known to both methods.
     elapsed = max(core, link, bank_work, max(work.arrivals_ps) // 1000) + min(core, link) // 2
     energy = (reads * hw.ddr_read_aj + writes * hw.ddr_write_aj
-              + (soft_ops + av_ops + (work.rows + 6 * work.steps) * WIDTH**2 + WIDTH * scan) * 84_000
+              + (soft_ops + av_ops + (work.rows + 3 * decode_steps) * WIDTH**2 + WIDTH * scan) * 84_000
               + round(hw.standby_mw(macros) * elapsed * 1_000_000))
     return energy * elapsed
 
 
 def prepare(hardware, macros, work):
     feasible = {}
-    space = tuple((plan, features(work, plan)) for plan in plans())
+    space = tuple((plan, features(work, plan)) for plan in plans(work))
     rows = []
     for i, hw in enumerate(hardware):
         mappings = []

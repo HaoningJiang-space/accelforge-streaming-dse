@@ -1,7 +1,11 @@
+from dataclasses import replace
 from math import isclose
 from random import Random
 
+from research.physical_cost.banked_scale import DeepArchitecture
 from research.physical_cost.concurrent_search import candidates
+from research.physical_cost.concurrent_serving import Plan, placement
+from research.physical_cost.cotenancy_ablation import NEAR_CAPACITY, idle_ps
 from research.physical_cost.serving_ddr import CK, DDR
 from research.physical_cost.serving_softmax import dense, online
 
@@ -39,3 +43,21 @@ def test_architecture_probes_keep_cutoff_ties_and_reuse_the_anchor():
         assert next(ranked) == (i, "anchor")
         scores[i] = 100 - i
     assert list(ranked) == [(i, "other") for i in reversed(range(9))]
+
+
+def test_capacity_ablation_only_relaxes_cross_side_reservation():
+    hw = DeepArchitecture(64, 64, 3, 65536, 1024)
+    full = Plan(32, 96, 2, 3, False, True, 0)
+    assert placement(hw, NEAR_CAPACITY, full) is None
+    assert placement(hw, NEAR_CAPACITY, full, share_capacity=False) is not None
+    cold = replace(full, resident=0)
+    assert placement(hw, NEAR_CAPACITY, cold).regions == placement(
+        hw, NEAR_CAPACITY, cold, share_capacity=False
+    ).regions
+    small = replace(hw, global_bank_bytes=16384)
+    assert placement(small, NEAR_CAPACITY, full, share_capacity=False) is None
+
+
+def test_idle_leakage_union_keeps_within_request_stalls_active():
+    assert idle_ps((20, 0, 3, 21), (23, 8, 10, 25)) == 10
+    assert idle_ps((4, 5, 11), (10, 12, 15)) == 4

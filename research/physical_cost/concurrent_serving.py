@@ -15,9 +15,15 @@ WEIGHTS = 1 << 22
 @dataclass(frozen=True)
 class Workload:
     rows: int
-    contexts: tuple[int, int]
+    contexts: tuple[int, ...]
     steps: int
-    arrivals_ps: tuple[int, int, int]
+    arrivals_ps: tuple[int, ...]
+
+    def __post_init__(self):
+        if (not 1 <= len(self.contexts) <= 7 or len(self.arrivals_ps) != len(self.contexts) + 1
+                or min(self.arrivals_ps) < 0 or not 1 <= self.rows <= 1 << 19 or not 1 <= self.steps <= 7168
+                or min(self.contexts) < 1 or max(self.contexts) + self.steps > 1 << 14):
+            raise ValueError("Workload exceeds the serving grammar's address ranges or has invalid arrivals")
 
 
 @dataclass(frozen=True, order=True)
@@ -31,13 +37,13 @@ class Plan:
     priority: int
 
 
-def plans():
-    return (Plan(*args) for args in product((16, 32), (32, 96), (1, 2), (0, 1, 2, 3),
+def plans(work):
+    return (Plan(*args) for args in product((16, 32), (32, 96), (1, 2), range(1 << len(work.contexts)),
                                            (False, True), (False, True), (0, 1)))
 
 
-def placement(hw, work, plan):
-    program = Program(hw, plan.priority)
+def placement(hw, work, plan, *, share_capacity=True):
+    program = Program(hw, plan.priority, share_capacity)
     banks = tuple(range(hw.global_banks))
     p_banks = banks[::2] if plan.partition else banks
     d_banks = banks[1::2] if plan.partition else banks
@@ -46,6 +52,9 @@ def placement(hw, work, plan):
     for slot in range(plan.slots):
         program.reserve(f"px{slot}", min(work.rows, plan.rows), p_banks)
         program.reserve(f"py{slot}", min(work.rows, plan.rows), p_banks)
+    prefill = program.used.copy()
+    for bank, count in program.regions["dw"].counts(0, 3 * WIDTH):
+        prefill[bank] -= count
     for request, context in enumerate(work.contexts, 1):
         maximum = context + work.steps
         # x, q, a K/V tile, and FP32 output accumulator.
@@ -59,11 +68,16 @@ def placement(hw, work, plan):
             program.reserve(f"{kind}{request}", size, d_banks)
         scores = min(plan.tile, maximum) if plan.online else maximum
         program.reserve(f"s{request}", ceildiv(scores * HEADS * 4, 64), d_banks)
-    return program if max(program.used) * 64 <= hw.global_capacity else None
+    # Keep both sides' addresses unchanged. In the counterfactual only the
+    # aggregate capacity check is replaced by two per-side capacity checks.
+    peak = max(program.used) if share_capacity else max(
+        max(p, total - p) for p, total in zip(prefill, program.used, strict=True)
+    )
+    return program if peak * 64 <= hw.global_capacity else None
 
 
-def compile_program(hw, work, plan):
-    program = placement(hw, work, plan)
+def compile_program(hw, work, plan, *, share_capacity=True):
+    program = placement(hw, work, plan, share_capacity=share_capacity)
     if program is None:
         return None
 

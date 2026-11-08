@@ -34,9 +34,10 @@ class Task:
 
 
 class Program:
-    def __init__(self, hardware, priority):
+    def __init__(self, hardware, priority, share_capacity=True):
         self.hardware = hardware
         self.priority = priority
+        self.share_capacity = share_capacity
         self.regions = {}
         self.tasks = []
         self.used = [0] * hardware.global_banks
@@ -54,12 +55,13 @@ class Program:
         return index
 
 
-def run(program, macros, record=False):
+def run(program, macros, record=False, *, share_ports=True, track_requests=False):
     hw = program.hardware
     ddr = DDR(record)
     macro, local = macros[hw.global_bank_bytes], macros[hw.weight_bytes_per_stripe]
     period = 1000 * ceil(max(macro["cycle_ns"], macro["access_ns"]))
-    ports = {"r": [0] * hw.global_banks, "w": [0] * hw.global_banks}
+    prefill_ports = {"r": [0] * hw.global_banks, "w": [0] * hw.global_banks}
+    decode_ports = prefill_ports if share_ports else {"r": [0] * hw.global_banks, "w": [0] * hw.global_banks}
     counts = Counter()
     # Dispatch by dependency completion with deterministic priority for simultaneous arrivals.
     tasks = program.tasks
@@ -77,6 +79,7 @@ def run(program, macros, record=False):
     while queue:
         release, _, index = heappop(queue)
         task = tasks[index]
+        ports = prefill_ports if task.owner == 0 else decode_ports
         stop = release
         if task.cycles:
             start = max(core, release)
@@ -136,6 +139,12 @@ def run(program, macros, record=False):
               + counts["ddr_read"] * hw.ddr_read_aj + counts["ddr_write"] * hw.ddr_write_aj
               + counts["alu"] * 84_000)
     standby = round(hw.standby_mw(macros) * elapsed * 1000)
-    return {"edp": (energy + standby) * elapsed, "elapsed_ps": elapsed, "dynamic_aj": energy,
-            "standby_aj": standby, "actions": dict(counts), "commands": ddr.counts,
-            "trace": (intervals, finish, ddr.trace) if record else None}
+    result = {"edp": (energy + standby) * elapsed, "elapsed_ps": elapsed, "dynamic_aj": energy,
+              "standby_aj": standby, "actions": dict(counts), "commands": ddr.counts,
+              "trace": (intervals, finish, ddr.trace) if record else None}
+    if track_requests:
+        completion = [0] * (1 + max(task.owner for task in tasks))
+        for task, stop in zip(tasks, finish, strict=True):
+            completion[task.owner] = max(completion[task.owner], stop)
+        result["request_completion_ps"] = completion
+    return result

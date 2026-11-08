@@ -50,15 +50,15 @@ def numerical(work, tile):
     return {"vectors_compared": count, "max_absolute_error": error}
 
 
-def replay(macros, work, hw, plan, device):
-    program = compile_program(hw, work, plan)
+def replay(macros, work, hw, plan, device, *, share_capacity=True, share_ports=True):
+    program = compile_program(hw, work, plan, share_capacity=share_capacity)
     assert program is not None
-    result = run(program, macros, record=True)
-    summary = verify(program, work, result, device, macros)
+    result = run(program, macros, record=True, share_ports=share_ports)
+    summary = verify(program, work, result, device, macros, share_ports=share_ports)
     measured = result["actions"]
     assert traffic(work, plan.resident) == (measured["ddr_read"], measured["ddr_write"])
     del result["trace"]
-    assert result == {k: v for k, v in run(program, macros).items() if k != "trace"}
+    assert result == {k: v for k, v in run(program, macros, share_ports=share_ports).items() if k != "trace"}
     return {"workload": asdict(work), "hardware": asdict(hw), "plan": asdict(plan),
             "result": result, "oracle": summary}
 
@@ -96,7 +96,7 @@ def remap_witnesses(macros, device, winners):
         best = None
         count = 0
         start = perf_counter()
-        for plan in plans():
+        for plan in plans(work):
             program = compile_program(hw, work, plan)
             if program is None:
                 continue
