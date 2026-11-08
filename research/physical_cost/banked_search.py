@@ -37,7 +37,8 @@ CASES = {
 }
 DEADLINES = (0.1, 0.5, 2.0, 8.0)
 METHODS = ("binding", "joint", "standalone", "optimistic", "near", "sweep", "grouped_sweep",
-           "wide", "top_two")
+           "wide", "top_two", "critical_joint", "critical_first", "critical_two")
+CRITICAL_PROBES = 4
 
 
 def estimate(hw, work, mapping, macros, regions=None):
@@ -209,6 +210,29 @@ def bind_candidates(hardware, work, plans, macros):
     return by_hw, feasible
 
 
+def refine_candidates(by_hw, work, macros):
+    """Compile a fixed number of distinct layouts at each architecture.
+
+    The score over this shortlist ranks architectures only. Each per-mapping
+    bound can safely replace its cheaper bound, including for exact search.
+    """
+    rankings, compiled = {}, {}
+    for hw, items in by_hw.items():
+        probes = [item for item in items if item[2].prefer == "P"][:CRITICAL_PROBES]
+        values = {}
+        for bound, _, mapping, dynamic in probes:
+            program = build(hw, work, mapping)
+            costs = price(program, macros)
+            if dynamic != costs.dynamic:
+                raise AssertionError("Critical-path probe changed the dynamic action count")
+            values[mapping] = max(bound, costs.lower)
+            compiled[hw, mapping] = program, costs
+        rankings[hw] = min(values.values())
+        by_hw[hw] = sorted((values.get(replace(mapping, prefer="P"), bound), hw, mapping, dynamic)
+                           for bound, _, mapping, dynamic in items)
+    return rankings, compiled
+
+
 def run_search(hardware, work, macros, method, deadlines=DEADLINES):
     start = perf_counter()
     incumbent = float("inf")
@@ -217,13 +241,19 @@ def run_search(hardware, work, macros, method, deadlines=DEADLINES):
     considered = compiled = replayed = 0
     verification_s = 0.0
     best = None
+    probes = {}
 
     def replay(item):
         nonlocal compiled, replayed, incumbent, best, verification_s
         bound, hw, mapping, exact_dynamic = item
-        program = build(hw, work, mapping)
-        compiled += 1
-        costs = price(program, macros)
+        previous = probes.get((hw, replace(mapping, prefer="P"))) if probes else None
+        if previous is None:
+            program = build(hw, work, mapping)
+            costs = price(program, macros)
+            compiled += 1
+        else:
+            program, costs = previous
+            program = replace(program, mapping=mapping)
         if costs.dynamic != exact_dynamic:
             raise AssertionError("Candidate bound miscounts dynamic energy")
         if max(bound, costs.lower) >= incumbent:
@@ -268,6 +298,9 @@ def run_search(hardware, work, macros, method, deadlines=DEADLINES):
     by_hw = {hw: sorted(items) for hw, items in by_hw.items()}
     lower = {hw: items[0][0] for hw, items in by_hw.items()}
     selection_start = perf_counter()
+    if method in ("critical_joint", "critical_first", "critical_two"):
+        rankings, probes = refine_candidates(by_hw, work, macros)
+        compiled += len(probes)
     if method == "standalone":
         selected = all_ties({hw: phase_score(hw, work, macros) for hw in by_hw})
     elif method == "optimistic":
@@ -276,11 +309,15 @@ def run_search(hardware, work, macros, method, deadlines=DEADLINES):
         selected = shortlist(lower, percent=2 if method == "near" else 10)
     elif method == "top_two":
         selected = shortlist(lower, count=2)
+    elif method == "critical_first":
+        selected = all_ties(rankings)
+    elif method == "critical_two":
+        selected = shortlist(rankings, count=2)
     else:
         selected = tuple(sorted(by_hw, key=lambda hw: (lower[hw], hw)))
     selection = perf_counter() - selection_start
 
-    if method in ("joint", "binding"):
+    if method in ("joint", "binding", "critical_joint"):
         for item in sorted(item for hw in selected for item in by_hw[hw]):
             if item[0] >= incumbent:
                 break
@@ -304,6 +341,7 @@ def run_search(hardware, work, macros, method, deadlines=DEADLINES):
         "candidates_considered": considered,
         "candidates_dominated": feasible - sum(map(len, by_hw.values())),
         "compiled": compiled,
+        "critical_probes": len(probes),
         "scheduled": replayed,
         "architectures_selected": [asdict(hw) for hw in selected],
         "edp_aj_ns": incumbent,
@@ -331,7 +369,9 @@ def layout_ablation(macros, hardware):
         independent = audit(program, macros, starts)
         if independent["edp"] != value:
             raise AssertionError("The layout ablation fails independent replay")
-        layouts[layout] = {**independent, "scheduler_bank_wait_ns": waits}
+        layouts[layout] = {**independent, "scheduler_bank_wait_ns": waits,
+                           "cheap_bound_aj_ns": estimate(hw, work, mapping, macros)[0],
+                           "command_bound_aj_ns": costs.lower}
     return {"hardware": asdict(hw), "workload": asdict(work), "layouts": layouts}
 
 
@@ -355,7 +395,8 @@ def run(table, output, names, repeats, area_factor=1.5, methods=METHODS):
                 print(name, repeat, method, record["seconds"], record["edp_aj_ns"],
                       record["winner"], flush=True)
             if len({runs[method][-1]["edp_aj_ns"]
-                    for method in ("binding", "joint", "sweep", "grouped_sweep") if method in runs}) > 1:
+                    for method in ("binding", "joint", "sweep", "grouped_sweep", "critical_joint")
+                    if method in runs}) > 1:
                 raise AssertionError("The complete architecture sweep disagrees with joint search")
         report["cases"][name] = {"workload": asdict(work), "runs": runs}
         output.write_bytes(gzip.compress(json.dumps(report, indent=2).encode(), mtime=0))

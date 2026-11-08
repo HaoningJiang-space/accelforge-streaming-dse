@@ -100,8 +100,10 @@ def test_exhaustive_tiny_domain_agrees_with_both_complete_searches():
             value, _, _, _ = dispatch(program, costs)
             assert value >= lower[0]
             exhaustive.append(value)
-    for method in ("joint", "sweep", "binding", "grouped_sweep"):
+    for method in ("joint", "sweep", "binding", "grouped_sweep", "critical_joint"):
         result = run_search(hardware, WORK, MACROS, method)
         assert result["edp_aj_ns"] == min(exhaustive)
+        if method == "critical_joint":
+            assert result["critical_probes"] == 4 * len(hardware)
         if method in ("binding", "grouped_sweep"):
             assert result["candidates_dominated"] > 0

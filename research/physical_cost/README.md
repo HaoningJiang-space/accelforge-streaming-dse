@@ -227,3 +227,42 @@ search advantage over the bank-aware selectors.
 python -m research.physical_cost.banked_search research/physical_cost/results/sram_45nm.json /tmp/holdout.json.gz --area-factor 1.65 --cases holdout448 holdout576 holdout704 --methods binding near wide top_two grouped_sweep standalone
 python -m research.physical_cost.banked_search research/physical_cost/results/sram_45nm.json /tmp/full-kv.json.gz --cases kv256 kv384 kv512 --methods binding optimistic near wide top_two grouped_sweep standalone
 ```
+
+### Dependency and bank-port ranking control
+
+The critical-path variants compile the four cheapest distinct mappings
+per hardware point. Each probe uses the command DAG's longest path and
+the busiest physical port to refine its mapping lower bound. Probe cost
+is included in cold runtime and its compilation is reused for dispatch.
+The architecture-first controls rank each point by the smallest refined
+probe bound, keep either all first-place ties or the first two points
+including cutoff ties, then fully remap. Joint search has access to the
+same probes. The probe score only ranks architectures; any pruning uses
+the certified bound of each individual mapping.
+
+At context 768, the aggregate word counts of the fixed layout ablation
+are identical. The inexpensive per-bank bound orders the three layouts
+correctly, with shared placement only 13% above striping in predicted EDP.
+The command bound raises that separation to 18%, but assigns shared and
+separate placement the same bound. Addressed execution puts shared
+placement 46% above striping. The command bound is a stronger
+relaxation for these mappings, and it still misses contention.
+
+The critical-path top two matches final joint EDP in all ten cells.
+At context 512 it matches by 0.5 s in all three repetitions; using only
+the cheaper top two still leaves a 7.90% gap. At the higher-cap
+576-token holdout, the critical-path top two has 23.29% higher EDP than
+critical-path joint search at 0.5 s and matches when allowed to finish.
+The cheaper top two already matches by 0.5 s. The grouped full sweep
+also matches final EDP throughout. With mandatory K and V residency,
+the architecture-first controls and joint search match by 0.5 s in
+all three cases. These comparisons establish bank placement and cache
+lifetime effects without establishing a general optimizer advantage.
+
+[Critical-path original and complete-cache results](results/banked_critical_1.5_windows.json.gz) ·
+[Smaller cap results](results/banked_critical_1.35_windows.json.gz) ·
+[Larger cap results](results/banked_critical_1.65_windows.json.gz)
+
+```sh
+python -m research.physical_cost.banked_search research/physical_cost/results/sram_45nm.json /tmp/critical.json.gz --cases context512 kv256 kv384 kv512 --methods binding critical_joint critical_first critical_two grouped_sweep top_two
+```
