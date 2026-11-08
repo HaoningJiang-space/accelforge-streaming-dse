@@ -1,7 +1,7 @@
 # One dense prefill projection and one single-query decode score contraction.
 # The evaluation repeats the latter with a fixed context and cold residency.
 workload:
-  rank_sizes: {M: 128, K: 256, N: 512, B: 1, D: 64, S: 512}
+  rank_sizes: {M: 128, K: 256, N: 512, B: 1, D: 64, S: {{ CONTEXT }}}
   bits_per_value: {All: 8}
   einsums:
   - name: Prefill

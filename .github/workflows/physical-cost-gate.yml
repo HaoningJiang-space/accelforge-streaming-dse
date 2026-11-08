@@ -37,8 +37,13 @@ jobs:
         env:
           ACCELFORGE_CONFIG_PATH: ${{ github.workspace }}/research/runtime/windows_config.yaml
         run: |
-          bash research/tracking_audit/run_capped.sh 4 900 "$RUNNER_TEMP/physical-cost/gate.log" -- \
-            python -u -m research.physical_cost.mixed_gate "$RUNNER_TEMP/physical-cost/sram.json" "$RUNNER_TEMP/physical-cost/mixed.json"
+          out="$RUNNER_TEMP/physical-cost"
+          bash research/tracking_audit/run_capped.sh 4 240 "$out/cold.log" -- \
+            python -u -m research.physical_cost.mixed_gate "$out/sram.json" "$out/cold.json"
+          bash research/tracking_audit/run_capped.sh 4 240 "$out/resident.log" -- \
+            python -u -m research.physical_cost.mixed_gate "$out/sram.json" "$out/resident.json" --context 1024 --resident-kv
+          bash research/tracking_audit/run_capped.sh 4 240 "$out/single-bank.log" -- \
+            python -u -m research.physical_cost.mixed_gate "$out/sram.json" "$out/single-bank.json" --context 1024 --resident-kv --single-bank-service
       - uses: actions/upload-artifact@v4
         if: always()
         with:
