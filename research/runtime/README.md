@@ -9,8 +9,8 @@ From the repository root, in PowerShell:
 
 ```powershell
 ./research/runtime/run_windows.ps1 -PythonArguments @('-m', 'pytest', '-q', 'research/joint_search/tests', 'research/joint_synthesis/tests', 'research/tracking_audit/test_platform_runtime.py', '--disable-warnings')
-./research/runtime/run_windows.ps1 -PythonArguments @('-m', 'research.joint_search.validation', '--output', 'research/joint_synthesis/results/windows_baseline/native_audit.json')
-./research/runtime/run_windows.ps1 -PythonArguments @('-S', '-m', 'research.joint_synthesis.validate', '--output', 'research/joint_synthesis/results/windows_baseline/composition_gate.json')
+./research/runtime/run_windows.ps1 -PythonArguments @('-m', 'research.joint_search.validation', '--output', 'native_audit.json')
+./research/runtime/run_windows.ps1 -PythonArguments @('-S', '-m', 'research.joint_synthesis.validate', '--output', 'composition_gate.json')
 ```
 
 The wrapper selects the environment, sets UTF-8 output and a checkout-local
@@ -23,7 +23,8 @@ PyPI currently supplies no Windows wheel for `islpy>=2025`; the native environme
 uses conda-forge `islpy=2024.2`, built against ISL 0.27. This is an explicit
 exception to the package metadata, not a successful unmodified `pip install -e .`.
 The exact tested dependency inventory and test outputs are stored with the
-Windows baseline. Do not compare these timings to archived macOS measurements.
+[original Windows baseline](https://github.com/HaoningJiang-space/accelforge-streaming-dse/tree/bcbf818d/research/joint_synthesis/results/windows_baseline).
+Do not compare these timings to archived macOS measurements.
 
 The NVDLA/TPU research architectures specify their action energy/latency directly.
 `windows_config.yaml` disables installed estimator autodiscovery: CACTI imports

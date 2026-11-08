@@ -1,0 +1,78 @@
+{
+  "case": "attention",
+  "shape_parameters": [
+    256,
+    8,
+    64
+  ],
+  "envelope_x_y_gb_bits_register_bits": [
+    32,
+    192,
+    16777216,
+    8
+  ],
+  "normalized_budget": 1.5,
+  "gb_bandwidth_multiplier_range": [
+    0.25,
+    2.0
+  ],
+  "epsilon_edp": 0.1,
+  "status": "complete",
+  "operators": {
+    "QK": {
+      "templates": 6,
+      "native_rows": 1203,
+      "distinct_signatures": 1038,
+      "safe_dominance": 803,
+      "epsilon_boxes": 797,
+      "exact_fits_budget": 803,
+      "exact_after_bound": 1,
+      "epsilon_fits_budget": 797,
+      "epsilon_after_bound": 1
+    },
+    "QK_softmax": {
+      "templates": 2,
+      "native_rows": 2,
+      "distinct_signatures": 1,
+      "safe_dominance": 1,
+      "epsilon_boxes": 1,
+      "exact_fits_budget": 1,
+      "exact_after_bound": 1,
+      "epsilon_fits_budget": 1,
+      "epsilon_after_bound": 1
+    },
+    "AV": {
+      "templates": 6,
+      "native_rows": 1261,
+      "distinct_signatures": 1157,
+      "safe_dominance": 899,
+      "epsilon_boxes": 899,
+      "exact_fits_budget": 899,
+      "exact_after_bound": 1,
+      "epsilon_fits_budget": 899,
+      "epsilon_after_bound": 1
+    }
+  },
+  "seconds": 14.813,
+  "exact_bound": {
+    "incumbent_edp_pj_ns": 94915263916551.53,
+    "incumbent_arch_x_y_bits_bw": [
+      32,
+      192,
+      1048576,
+      0.875
+    ],
+    "relaxed_graph_edp_pj_ns": 94915263916551.53
+  },
+  "epsilon_bound": {
+    "incumbent_edp_pj_ns": 94915264221992.44,
+    "incumbent_arch_x_y_bits_bw": [
+      32,
+      192,
+      1048576,
+      0.875
+    ],
+    "relaxed_graph_edp_pj_ns": 94915264221992.44
+  },
+  "meets_residual_target": true
+}
