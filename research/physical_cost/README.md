@@ -1127,3 +1127,32 @@ The 10% gate compares held-out mean EDP to the stronger of the
 two stage-first choices selected on training episodes. Per-scenario
 oracles and all 12 single-training-scenario choices are reported
 separately.
+
+All 24 scenarios were evaluated on the 226 architectures admitted
+by the LSTP macros and the same 6.918 mm² area cap. The enumeration
+scored 797,970 episode mappings, 204,948 standalone decode mappings
+and 43,392 standalone prefill mappings. An independent validation
+reconstructs the score tables from the per-architecture results
+and replays 61 selected or oracle episode mappings.
+
+| Selection on training | Fixed hardware | Held-out mean EDP (µJ·µs) | Regret to the held-out oracle mean |
+|---|---|---:|---:|
+| Full episode | 64 × 32, 8 × 64 KiB | 1,347.326 | 2.95% |
+| Decode-first | 64 × 32, 8 × 64 KiB | 1,347.326 | 2.95% |
+| Prefill-first | 64 × 64, 8 × 16 KiB | 1,906.022 | 45.64% |
+| Separate oracle hardware per held-out scenario | Varies by scenario | 1,308.760 | 0% |
+
+The strongest stage-first choice on training is decode-first. It
+selects the same hardware as full-episode selection, so the
+held-out difference is 0% and the 10% gate is unmet. The 12
+single-training-scenario choices range from −2.82% to +50.24%
+relative to the full-episode selection on held-out mean EDP,
+with a median of +34.43%. The range describes all 12 choices.
+It does not select a single-scenario winner using held-out scores.
+These values describe the frozen synthetic sample and declared
+mapping grammar. [Exact scenario scores and selected designs](results/serving_distribution_lstp_windows.json.gz)
+
+```sh
+python -m research.physical_cost.serving_distribution research/physical_cost/results/sram_45nm_lstp.json research/physical_cost/results/paid_ledger.json /tmp/distribution-lstp --workers 18 --memory-gib 12 --seconds 4200
+python -m research.physical_cost.concurrent_validation research/physical_cost/results/sram_45nm_lstp.json research/physical_cost/results/paid_ledger.json "$ramulator_checkout" /tmp/distribution-verified.json.gz --distribution-directory /tmp/distribution-lstp
+```

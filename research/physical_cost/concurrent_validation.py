@@ -179,6 +179,45 @@ def exact_coverage(exact, hardware, macros, device, search_reports):
             "winner_replays": replays, "budget_regret": comparison}
 
 
+def audit_distribution(directory, hardware, macros, device):
+    from research.physical_cost.serving_distribution import compact, sample, select, stage_gate
+
+    with gzip.open(directory / "distribution.json.gz", "rt") as file:
+        report = json.load(file)
+    assert report["device"] == "itrs-lstp"
+    assert report["architecture"] == [asdict(hw) for hw in hardware]
+    examples = tuple(sample(report["seed"]))
+    assert [name for name, _, _ in examples] == [row["name"] for row in report["scenarios"]]
+    scores = report["scenarios"]
+    selections = select(scores, len(hardware))
+    selected = {selections[name]["index"] for name in ("episode", "decode", "prefill")}
+    replay_count = 0
+    for (name, training, work), scores_row in zip(examples, scores, strict=True):
+        with gzip.open(directory / f"{name}.json.gz", "rt") as file:
+            panel = json.load(file)
+        assert panel["workload"] == json.loads(json.dumps(asdict(work)))
+        assert compact(panel, name, training) == scores_row
+        opt = min(value for value in scores_row["episode"] if value is not None)
+        assert opt == scores_row["oracle"]
+        expected = [i for i, value in enumerate(scores_row["episode"]) if value == opt]
+        assert expected == scores_row["oracle_architectures"]
+        for index in sorted(selected | set(expected)):
+            row = panel["architectures"][index]
+            assert row["hardware"] == asdict(hardware[index])
+            if not row["evaluated"]:
+                continue
+            best = row["best"]
+            checked = replay(macros, work, hardware[index], Plan(**best["plan"]), device)
+            assert checked["result"]["edp"] == best["edp"]
+            replay_count += 1
+        print("distribution replay verified", name, flush=True)
+    report["selections"] = selections
+    report["stage_gate"] = stage_gate(scores, selections)
+    report["independent_replay"] = {"scenarios": len(examples), "winner_mappings": replay_count,
+                                    "ramulator_revision": RAMULATOR_REVISION}
+    return report
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sram", type=Path)
@@ -187,6 +226,7 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("--search-results", type=Path, nargs="+")
     parser.add_argument("--exact-results", type=Path, nargs="+")
+    parser.add_argument("--distribution-directory", type=Path)
     parser.add_argument("--remap-witnesses", action="store_true")
     args = parser.parse_args()
     revision = check_output(["git", "-C", args.ramulator_checkout, "rev-parse", "HEAD"], text=True).strip()
@@ -198,6 +238,11 @@ def main():
     macros = {int(k): v for k, v in json.loads(args.sram.read_text())["macros"].items()}
     ledger = SystemLedger(json.loads(args.ledger.read_text()))
     device = DDR4(org_preset="DDR4_8Gb_x8", timing_preset="DDR4_2400R", rank=1)
+    if args.distribution_directory:
+        hardware = hardware_grid(macros, ledger, ledger.reference_overhead() + 4.5)
+        audited = audit_distribution(args.distribution_directory, hardware, macros, device)
+        args.output.write_bytes(gzip.compress(json.dumps(audited, separators=(",", ":")).encode(), mtime=0))
+        return
     hw = ledger.price(DeepArchitecture(16, 64, 6, 16384, 1024, ddr_word_ns=4))
     work = Workload(64, (75, 128), 3, (2_000_000, 0, 120_000))
     checks = [replay(macros, work, hw, Plan(16, 32, 2, mask, partition, stream, 1), device)
