@@ -10,7 +10,6 @@ from research.runtime.strip_codesign import ceildiv
 
 LINE = 64
 LOCAL_WORD = 8
-DRAM_NS = 2  # 64 bytes at 38.4 GB/s, rounded to a whole 1 GHz cycle.
 DRAM_AJ = 3_599_360_000
 MAC_AJ = 84_000
 
@@ -303,7 +302,7 @@ def price(program, macros):
                     port = 2 * bank + (access.direction == "w")
                     elapsed = count * g_cycle
                     if command.kind == "dma":
-                        elapsed = count * max(DRAM_NS, g_cycle)
+                        elapsed = count * max(hw.ddr_word_ns, g_cycle)
                         used[dram] = used.get(dram, 0) + elapsed
                         dynamic += count * DRAM_AJ
                     used[port] = used.get(port, 0) + elapsed

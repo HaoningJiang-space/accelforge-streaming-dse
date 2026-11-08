@@ -424,3 +424,52 @@ timing family adds no measured reduction in new addressed evaluations.
 ```sh
 python -m research.physical_cost.banked_scale research/physical_cost/results/sram_45nm.json /tmp/scale-proof.json.gz --proof-repeats 5
 ```
+
+## Scaling timing classes with DDR and PE count
+
+The addressed evaluator now gives the DDR port a configurable integer
+service time per 64-byte word. The four settings are 1, 2, 4 and 8 ns,
+or effective rates of 64, 32, 16 and 8 GB/s. The DMA and global bank
+occupy the slower of their two service periods. The analytic bound,
+command evaluator and independent word replay use the same setting.
+The PE counts are 1,024, 2,048 and 4,096. Each panel enforces a separate
+MAC ceiling and a CACTI SRAM area cap. MAC area and DDR interface area
+are outside that SRAM budget, and per-word DDR energy is held fixed.
+
+The timing key includes the PE X axis, the two actual Y-axis fold
+counts for the prefill and decoder reductions, the bank count and
+the global, private and DDR service periods. This merges nominal
+PE geometries when both reductions are saturated. Capacity and
+action prices remain design-specific. Safe dominance is applied
+separately at each area cap before architecture best-first remapping.
+The tests compare cross-DDR and cross-PE schedule reuse with an
+unpruned enumeration and the independent word replay.
+
+For fixed 32 GB/s, the following cells show effective classes,
+opened classes and classes where the search actually dispatches at
+least one addressed schedule. A class is opened when the architecture
+bound is too low to dismiss its remap before considering its mappings.
+
+| Workload | 1.35 mm² effective / opened / dispatched | 2.70 mm² effective / opened / dispatched | 4.50 mm² effective / opened / dispatched |
+|---|---:|---:|---:|
+| Context 576 | 63 / 8 / 3 | 198 / 64 / 32 | 378 / 96 / 44 |
+| 32-step K+V | 45 / 6 / 4 | 189 / 28 / 23 | 378 / 65 / 40 |
+| Asymmetric K+V | 33 / 6 / 4 | 189 / 56 / 33 | 378 / 79 / 44 |
+
+At 4.5 mm², each of the four fixed-DDR panels has 378 effective
+classes and the adaptive proof opens 21–96 of them (5.6–25.4%).
+The combined envelope at that cap admits 39,624 SRAM designs, with
+1,788 nominal and 1,512 effective timing classes in each workload.
+It opens 46–86 classes. All three combined winners use the fastest
+DDR setting. The fixed-DDR panels keep that bandwidth effect out of
+their denominators. The proportion of opened classes varies with
+workload, area and DDR speed. The report records both the architecture
+and timing-class counts, including how many bounds remain strictly
+below the verified final incumbent. These are search-work counts.
+The diagnostic shares profile construction across panels.
+
+[DDR and PE scaling report](results/banked_axes_windows.json.gz)
+
+```sh
+python -m research.physical_cost.banked_axes research/physical_cost/results/sram_45nm.json /tmp/axes.json.gz
+```

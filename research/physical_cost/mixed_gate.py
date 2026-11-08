@@ -40,6 +40,8 @@ class Architecture:
     global_banks: int
     global_bank_bytes: int
     weight_bytes_per_stripe: int
+    # 64 bytes at 38.4 GB/s, rounded up to a whole 1 GHz cycle.
+    ddr_word_ns = 2
 
     @property
     def global_capacity(self):
@@ -54,26 +56,31 @@ class Architecture:
                 + self.x * macros[self.weight_bytes_per_stripe][metric])
 
 
-def spec_for(architecture, macros, context, resident=False, single_bank=False):
-    root = Path(__file__).parent
-    spec = common.af.Spec.from_yaml(
-        root / "two_level_nvdla.yaml", root / "mixed_phases.yaml",
-        jinja_parse_data={"CONTEXT": context},
-    )
+def price_sram(spec, architecture, macros, single_bank=False):
     spec.arch.find("InputFanout").spatial[0].fanout = architecture.x
     spec.arch.find("OutputFanout").spatial[0].fanout = architecture.y
-    for component, size, banks in (
-        ("GlobalBuffer", architecture.global_bank_bytes, architecture.global_banks),
-        ("WeightBuffer", architecture.weight_bytes_per_stripe, 1),
+    for component, size, capacity, banks in (
+        ("GlobalBuffer", architecture.global_bank_bytes, architecture.global_capacity,
+         architecture.global_banks),
+        ("WeightBuffer", architecture.weight_bytes_per_stripe, architecture.private_capacity, 1),
     ):
         macro, memory = macros[size], spec.arch.find(component)
-        memory.size = size * banks * 8
+        memory.size = capacity * banks * 8
         transaction_ns = ceil(max(macro["access_ns"], macro["cycle_ns"]))
         for name in ("read", "write"):
             action = memory.actions[name]
             action.energy = macro[f"{name}_nj"] * 1e-9 / (macro["word_bytes"] * 8)
             parallel_banks = 1 if single_bank else banks
             action.latency = transaction_ns * 1e-9 / (macro["word_bytes"] * 8 * parallel_banks)
+
+
+def spec_for(architecture, macros, context, resident=False, single_bank=False):
+    root = Path(__file__).parent
+    spec = common.af.Spec.from_yaml(
+        root / "two_level_nvdla.yaml", root / "mixed_phases.yaml",
+        jinja_parse_data={"CONTEXT": context},
+    )
+    price_sram(spec, architecture, macros, single_bank)
     if resident:
         spec.arch.find("MainMemory").tensors.keep = "~KCache"
         spec.arch.find("MainMemory").tensors.may_keep = "Nothing"

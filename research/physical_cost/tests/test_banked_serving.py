@@ -116,13 +116,24 @@ def test_scaled_shortlist_intervals_and_breakpoints_against_exhaustion():
     work = replace(WORK, reserve_values=True)
     base = DeepArchitecture(64, 32, 2, 16384, 1024)
     hardware = (base, replace(base, global_depth=2), replace(base, private_depth=2),
-                replace(base, x=32, y=64, global_banks=4, global_bank_bytes=65536))
+                replace(base, x=32, y=64, global_banks=4, global_bank_bytes=65536),
+                replace(base, y=64), replace(base, y=128), replace(base, ddr_word_ns=4))
     plans = tuple(m for m in mappings() if m.resident and m.prefer == "P")
     reference = min(dispatch(program, price(program, MACROS))[0]
                     for hw in hardware for plan in plans for prefer in ("P", "D")
                     if (program := build(hw, work, replace(plan, prefer=prefer))) is not None)
     rows, _ = catalog(hardware, work, MACROS, plans)
     evaluator = Evaluator(work, MACROS, plans, rows)
+    more_mac, saturated_mac, slow_ddr = hardware[-3:]
+    assert rows[more_mac].timing == rows[saturated_mac].timing
+    assert rows[base].timing != rows[more_mac].timing
+    assert rows[base].timing != rows[slow_ddr].timing
+    for hw in (base, more_mac, saturated_mac, slow_ddr):
+        index = plans.index(PLAN)
+        program = build(hw, work, PLAN)
+        edp, elapsed, starts, _ = dispatch(program, price(program, MACROS))
+        assert evaluator.schedule_time(hw, index, "P") == elapsed
+        assert audit(program, MACROS, starts)["edp"] == edp
     assert len(breakpoints(hardware, rows)) < len(hardware)
     assert evaluator.exact(hardware)[0] == reference
     assert evaluator.joint(hardware, float("inf"), None, lambda score, plan: None)[0] == reference

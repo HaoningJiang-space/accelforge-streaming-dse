@@ -12,7 +12,7 @@ from time import perf_counter
 
 from research.physical_cost.banked_oracle import audit
 from research.physical_cost.banked_serving import (
-    DRAM_AJ, DRAM_NS, MAC_AJ, Mapping, Workload, build, dispatch, layout_requirements,
+    DRAM_AJ, MAC_AJ, Mapping, Workload, build, dispatch, layout_requirements,
     mappings, place, price, tile_words,
 )
 from research.physical_cost.mixed_gate import Architecture, GB_BANKS, GB_BYTES, LOCAL_BYTES, REFERENCE, SHAPES
@@ -65,7 +65,7 @@ def bind_profile(duration, traffic, prices, leak):
 
 
 def bound_profile(hw, work, mapping, regions, gc, lc):
-    dma_ns = max(DRAM_NS, gc)
+    dma_ns = max(hw.ddr_word_ns, gc)
     resources = Counter()
     traffic = Counter()
 
@@ -191,7 +191,7 @@ def bind_candidates(hardware, work, plans, macros):
     for hw in hardware:
         g, l = macros[hw.global_bank_bytes], macros[hw.weight_bytes_per_stripe]
         service = tuple(ceil(max(m["access_ns"], m["cycle_ns"])) for m in (g, l))
-        groups[hw.x, hw.y, hw.global_banks, *service].append(hw)
+        groups[hw.x, hw.y, hw.global_banks, *service, max(hw.ddr_word_ns, service[0])].append(hw)
         prices[hw] = tuple(round(m[key] * 1e9) for m in (g, l) for key in ("read_nj", "write_nj"))
         prices[hw] += (round(hw.sram_totals(macros, "leak_mw") * 1e6),)
     by_hw = defaultdict(list)

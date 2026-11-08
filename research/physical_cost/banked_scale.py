@@ -18,6 +18,7 @@ from research.physical_cost.banked_search import (
 )
 from research.physical_cost.banked_serving import Mapping, build, dispatch, layout_requirements, mappings, price
 from research.physical_cost.mixed_gate import Architecture, GB_BANKS, GB_BYTES, LOCAL_BYTES, REFERENCE, SHAPES
+from research.runtime.strip_codesign import ceildiv
 
 
 WORKLOADS = {
@@ -34,6 +35,7 @@ COLD_DEADLINES = (1, 3, 5, 10, 20)
 class DeepArchitecture(Architecture):
     global_depth: int = 1
     private_depth: int = 1
+    ddr_word_ns: int = Architecture.ddr_word_ns
 
     @property
     def global_capacity(self):
@@ -48,12 +50,12 @@ class DeepArchitecture(Architecture):
                 + macros[self.weight_bytes_per_stripe][metric] * (self.x * self.private_depth))
 
 
-def grid(macros, limit):
+def grid(macros, limit, *, mac_count=2048, ddr_word_ns=Architecture.ddr_word_ns):
     global_options = [(size, depth) for size, count in ((16384, 8), (65536, 3))
                       for depth in range(1, count + 1)]
     local_options = [(size, depth) for size, count in ((1024, 8), (4096, 3))
                      for depth in range(1, count + 1)]
-    hardware = (DeepArchitecture(x, 2048 // x, banks, g, l, gd, ld)
+    hardware = (DeepArchitecture(x, mac_count // x, banks, g, l, gd, ld, ddr_word_ns)
                 for x, banks, (g, gd), (l, ld) in product(
                     (4, 8, 16, 32, 64, 128, 256), range(2, 25), global_options, local_options))
     return tuple(sorted(hw for hw in hardware if hw.sram_totals(macros, "area_mm2") <= limit))
@@ -62,7 +64,13 @@ def grid(macros, limit):
 def service(hw, macros):
     cycles = tuple(ceil(max(m["access_ns"], m["cycle_ns"]))
                    for m in (macros[hw.global_bank_bytes], macros[hw.weight_bytes_per_stripe]))
-    return hw.x, hw.y, hw.global_banks, *cycles
+    return hw.x, hw.y, hw.global_banks, *cycles, max(hw.ddr_word_ns, cycles[0])
+
+
+def effective_service(hw, macros, work):
+    x, y, *ports = service(hw, macros)
+    # Only these two reduction widths consume the array's Y dimension.
+    return x, ceildiv(work.inner, y), *ports, ceildiv(work.head, y)
 
 
 @dataclass
@@ -81,7 +89,7 @@ def catalog(hardware, work, macros, plans):
     """Compile the layout and bound profile once per mapping and timing class."""
     groups = defaultdict(list)
     for hw in hardware:
-        groups[service(hw, macros)].append(hw)
+        groups[effective_service(hw, macros, work)].append(hw)
     rows, profile_count = {}, 0
     for timing, group in groups.items():
         requirements = []
@@ -90,7 +98,7 @@ def catalog(hardware, work, macros, plans):
         for index, mapping in enumerate(plans):
             regions, gb, local = layout_requirements(group[0], work, mapping)
             if gb <= gb_max and local <= local_max:
-                duration, traffic = bound_profile(group[0], work, mapping, regions, *timing[-2:])
+                duration, traffic = bound_profile(group[0], work, mapping, regions, *timing[3:5])
                 requirements.append((index, gb, local, duration, traffic))
         profile_count += len(requirements)
         for hw in group:
@@ -158,13 +166,15 @@ class Evaluator:
     def scheduled_edp(self, hw, index, prefer, dynamic):
         return self.score(hw, dynamic, self.schedule_time(hw, index, prefer))
 
-    def exact(self, hardware, upper=float("inf"), best=None, report=None):
+    def exact(self, hardware, upper=float("inf"), best=None, report=None, opened_classes=None):
         visits = 0
         checks = 0
         for hw in sorted(hardware, key=lambda h: (self.rows[h].lower, h)):
             if self.rows[hw].lower >= upper:
                 break
             visits += 1
+            if opened_classes is not None:
+                opened_classes.add(self.rows[hw].timing)
             for bound, index, dynamic in self.rows[hw].plans:
                 if bound >= upper:
                     break

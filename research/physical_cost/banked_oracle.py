@@ -46,7 +46,7 @@ def audit(program, macros, starts, *, standalone=None):
                 if not 0 <= row < bank_cap:
                     raise AssertionError("Access outside physical SRAM")
                 port = (bank, access.direction)
-                step = max(global_period, 2) if command.kind == "dma" else global_period
+                step = max(global_period, hw.ddr_word_ns) if command.kind == "dma" else global_period
                 tick = start + per_port[port]
                 per_port[port] += step
                 trace.append((tick, access.direction == "w", bank, row, access.slot, i, step))
