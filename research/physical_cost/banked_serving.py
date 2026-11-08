@@ -24,6 +24,7 @@ class Workload:
     head: int = 64
     steps: int = 8
     decode_tile: int = 256
+    reserve_values: bool = False
 
 
 @dataclass(frozen=True, order=True)
@@ -131,6 +132,8 @@ def layout_requirements(hardware, work, mapping, standalone=None):
     if standalone != "P":
         if mapping.resident:
             allocate("KV", context_words, kv_order)
+            if work.reserve_values:
+                allocate("V", context_words, kv_order)
         allocate("D", d_words, d_order)
     if standalone != "D":
         if mapping.pin_weights:
@@ -199,6 +202,9 @@ def build(hardware, work, mapping, *, standalone=None):
         if mapping.resident:
             kv_start, kv_end = dma("D", "KV", 0, context_words, "w", ())
             prior = (kv_end,)
+            if work.reserve_values:
+                v_start, v_end = dma("D", "V", 0, context_words, "w", prior)
+                prior = (v_end,)
         for step in range(work.steps):
             for col in range(0, work.context, work.decode_tile):
                 n = min(work.decode_tile, work.context - col)
@@ -216,6 +222,10 @@ def build(hardware, work, mapping, *, standalone=None):
                 first_decode_end = prior[0]
         if mapping.resident:
             lives.append(Life("KV", kv_start, last_kv_load))
+            if work.reserve_values:
+                # The later value contraction is outside this score window.
+                # Keep the complete value tensor through the last decode step.
+                lives.append(Life("V", v_start, prior[0]))
 
     p_first = p_previous_mac = None
     p_previous_dma = first_decode_end

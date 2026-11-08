@@ -182,3 +182,48 @@ and does not generate AccelForge native FFM address traces. Exactness is
 within that finite grammar.
 
 [Expanded Windows report](results/banked_v2_windows.json.gz)
+
+### Wider shortlists and complete cache reservation
+
+The shortlisted architecture-first remapper now also supports all points
+within 10% of the best score and the top two points including all ties at
+the cutoff. At the original cap and 512-token context, the joint EDP is
+9.99% below the 10% shortlist and 7.90% below the top two at 0.5 s across
+all three repetitions. The grouped complete sweep reaches the same EDP
+under that budget. For three held-out contexts (448, 576 and 704) crossed
+with two SRAM area caps (1.211846 and 1.481146 mm²), the top two reaches
+the exact EDP in all six cells by 0.5 s. The 10% selector misses it only
+at the higher cap and 576 tokens, where joint EDP is 18.89% lower.
+[Shortlist result](results/banked_shortlist_512_windows.json.gz) ·
+[Smaller cap holdout](results/banked_holdout_1.35_windows.json.gz) ·
+[Larger cap holdout](results/banked_holdout_1.65_windows.json.gz)
+
+The complete cache variant requires both K and V to be loaded into
+different physical words of the same banked SRAM. V stays allocated
+through the last measured decode step; an independent check verifies
+all V word fills, completion before the first decode compute, and the
+absence of an early release. Every search uses mandatory residency in
+this variant. The timed decoder still executes QK scores; a subsequent
+value contraction and KV updates are outside the experiment. V is
+charged for its initial fill and leakage, and its storage competes with
+prefill staging throughout the trace.
+
+| Context | Allocated V | Total global SRAM peak | Full KV and prefill co-residence | Cross-request bank R/W overlap |
+|---|---:|---:|---:|---:|
+| 256 | 16 KiB | 90,432 B | 4.276 µs | 0.535 µs |
+| 384 | 24 KiB | 106,816 B | 4.920 µs | 0.470 µs |
+| 512 | 32 KiB | 123,200 B | 4.979 µs | 0.535 µs |
+
+At the original cap the capacity binder and the grouped full sweep tie
+all three complete-cache optima. All bank-aware shortlists also match
+them by 0.5 s. The isolated-phase selector is worse on two of the three,
+by 12.91% and 47.43% when measured as the reduction in EDP from the
+selector to the joint optimum. These are differences against the
+isolated selector; the complete-cache experiment does not establish a
+search advantage over the bank-aware selectors.
+[Complete-cache result](results/banked_complete_kv_windows.json.gz)
+
+```sh
+python -m research.physical_cost.banked_search research/physical_cost/results/sram_45nm.json /tmp/holdout.json.gz --area-factor 1.65 --cases holdout448 holdout576 holdout704 --methods binding near wide top_two grouped_sweep standalone
+python -m research.physical_cost.banked_search research/physical_cost/results/sram_45nm.json /tmp/full-kv.json.gz --cases kv256 kv384 kv512 --methods binding optimistic near wide top_two grouped_sweep standalone
+```

@@ -1,5 +1,6 @@
 """Independent word-address and lifetime replay for a scheduled serving plan."""
 
+from bisect import bisect_right
 from collections import Counter, defaultdict
 from itertools import product
 from math import ceil
@@ -78,29 +79,35 @@ def audit(program, macros, starts, *, standalone=None):
         if any(completion[parent] > starts[i] for parent in command.after):
             raise AssertionError("A command starts before its producer completes")
     for port, slots in intervals.items():
-        if any(first[1] > second[0] for first, second in zip(sorted(slots), sorted(slots)[1:])):
+        slots.sort()
+        if any(first[1] > second[0] for first, second in zip(slots, slots[1:])):
             raise AssertionError(f"Port conflict on {port}")
 
-    lifetimes, endpoints = defaultdict(list), []
+    lifetimes, endpoints, locations = defaultdict(list), [], {}
     for life in program.lives:
         begin, end = starts[life.first], completion[life.last]
         region = program.regions[life.slot]
         if end <= begin:
             raise AssertionError("Invalid buffer lifetime")
-        location = frozenset(addresses(region, 0, region.words))
-        if len(location) != region.words or any(not 0 <= row < bank_cap for _, row in location):
-            raise AssertionError("Buffer aliases itself or exceeds a physical bank")
+        if life.slot not in locations:
+            location = frozenset(addresses(region, 0, region.words))
+            if len(location) != region.words or any(not 0 <= row < bank_cap for _, row in location):
+                raise AssertionError("Buffer aliases itself or exceeds a physical bank")
+            locations[life.slot] = location
+        location = locations[life.slot]
         version = len(lifetimes[life.slot])
         lifetimes[life.slot].append((begin, end, version))
         endpoints.extend(((begin, 1, life.slot, location), (end, 0, life.slot, location)))
 
     active, live_addresses = {}, set()
-    peak = co_resident = 0
+    peak = co_resident = full_kv_co_resident = 0
     peak_banks = [0] * hw.global_banks
     previous = 0
     for tick, reserve, slot, location in sorted(endpoints, key=lambda item: item[:3]):
         if "KV" in active and any(name.startswith("P") for name in active):
             co_resident += tick - previous
+            if "V" in active:
+                full_kv_co_resident += tick - previous
         previous = tick
         if reserve:
             if slot in active or live_addresses & location:
@@ -118,13 +125,18 @@ def audit(program, macros, starts, *, standalone=None):
                 raise AssertionError("Incorrect release")
             live_addresses.difference_update(location)
 
+    # Live versions of a slot are disjoint after the endpoint check.
+    life_index = {}
+    for slot, lives in lifetimes.items():
+        lives.sort()
+        life_index[slot] = [begin for begin, _, _ in lives], lives
     known, address_busy = {}, {}
     for tick, write, bank, row, slot, index, step in sorted(trace):
-        matching = [version for first, last, version in lifetimes[slot]
-                    if first <= tick and completion[index] <= last]
-        if len(matching) != 1:
+        begins, lives = life_index.get(slot, ((), ()))
+        position = bisect_right(begins, tick) - 1
+        if position < 0 or completion[index] > lives[position][1]:
             raise AssertionError("Access outside a live allocation")
-        version = (slot, matching[0])
+        version = (slot, lives[position][2])
         address = (bank, row)
         opposite_end = address_busy.get((address, not write), 0)
         if opposite_end > tick:
@@ -149,8 +161,21 @@ def audit(program, macros, starts, *, standalone=None):
         phases.extend(("D", 1, work.head, min(work.decode_tile, work.context - col), plan.resident)
                       for _, col in product(range(work.steps), range(0, work.context, work.decode_tile)))
         if plan.resident:
-            expected["D", "dram"] += words(work.context * work.head)
-            expected["D", "w"] += words(work.context * work.head)
+            fills = words(work.context * work.head) * (2 if work.reserve_values else 1)
+            expected["D", "dram"] += fills
+            expected["D", "w"] += fills
+            if work.reserve_values:
+                v_written = {(bank, row) for _, write, bank, row, slot, _, _ in trace
+                             if write and slot == "V"}
+                v_lives = lifetimes.get("V", ())
+                decode_begin = min(starts[i] for i, c in enumerate(program.commands)
+                                   if c.request == "D" and c.kind == "mac")
+                decode_end = max(completion[i] for i, c in enumerate(program.commands) if c.request == "D")
+                value_ready = max((tick + step for tick, write, _, _, slot, _, step in trace
+                                   if write and slot == "V"), default=decode_end)
+                if (len(v_written) != words(work.context * work.head) or len(v_lives) != 1
+                        or value_ready > decode_begin or v_lives[0][1] < decode_end):
+                    raise AssertionError("The complete value cache must stay live through the decode window")
     private_words = Counter()
     for request, rows, inner, columns, cached in phases:
         input_words, weights, output = words(rows * inner), words(inner * columns), words(rows * columns)
@@ -187,6 +212,8 @@ def audit(program, macros, starts, *, standalone=None):
         reads_kv = [tick for tick, write, _, _, slot, _, _ in trace if slot == "KV" and not write]
         if not (co_resident and min(reads_kv) < prefill_start <= max(reads_kv)):
             raise AssertionError("The running decoder must read KV before and during the prefill lifetime")
+        if work.reserve_values and not full_kv_co_resident:
+            raise AssertionError("Both key and value caches must coexist with prefill")
 
     # Exact intersection of the occupied read and write intervals on each bank.
     rw_overlap = cross_request_rw = 0
@@ -215,6 +242,8 @@ def audit(program, macros, starts, *, standalone=None):
         "peak_bank_bytes": [count * 64 for count in peak_banks],
         "reserved_private_bytes_per_stripe": sum(private_words.values()) * 8,
         "kv_prefill_co_resident_ns": co_resident,
+        "full_kv_prefill_co_resident_ns": full_kv_co_resident,
+        "resident_value_bytes": len(locations.get("V", ())) * 64,
         "same_bank_read_write_overlap_ns": rw_overlap,
         "cross_request_read_write_overlap_ns": cross_request_rw,
         "mac_idle_ns": ticks - sum(last - first for first, last in intervals["MAC"]),

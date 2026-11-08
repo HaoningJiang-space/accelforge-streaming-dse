@@ -69,6 +69,21 @@ def test_one_fewer_line_makes_the_same_mapping_infeasible():
     assert build(replace(HW, global_bank_bytes=(end - 1) * 64), WORK, PLAN) is None
 
 
+def test_complete_value_reservation_is_addressed_and_cannot_release_early():
+    work = replace(WORK, reserve_values=True)
+    program = build(HW, work, PLAN)
+    costs = price(program, MACROS)
+    value, _, starts, _ = dispatch(program, costs)
+    replay = audit(program, MACROS, starts)
+    assert replay["edp"] == value >= estimate(HW, work, PLAN, MACROS)[0]
+    assert replay["resident_value_bytes"] == work.context * work.head
+    assert replay["full_kv_prefill_co_resident_ns"] == replay["kv_prefill_co_resident_ns"] > 0
+    key = next(life for life in program.lives if life.slot == "KV")
+    released = [replace(life, last=key.last) if life.slot == "V" else life for life in program.lives]
+    with pytest.raises(AssertionError, match="complete value cache"):
+        audit(replace(program, lives=released), MACROS, starts)
+
+
 def test_exhaustive_tiny_domain_agrees_with_both_complete_searches():
     hardware = (HW, Architecture(32, 64, 4, 16384, 1024),
                 replace(HW, weight_bytes_per_stripe=4096))

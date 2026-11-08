@@ -28,8 +28,16 @@ CASES = {
     "asymmetric": Workload(rows=93, inner=192, columns=320, context=1152, head=80, steps=12),
     "decode_heavy": Workload(rows=32, context=640, steps=16),
     "prefill_heavy": Workload(rows=128, context=640, steps=4),
+    "holdout448": Workload(context=448),
+    "holdout576": Workload(context=576),
+    "holdout704": Workload(context=704),
+    "kv256": Workload(context=256, reserve_values=True),
+    "kv384": Workload(context=384, reserve_values=True),
+    "kv512": Workload(context=512, reserve_values=True),
 }
 DEADLINES = (0.1, 0.5, 2.0, 8.0)
+METHODS = ("binding", "joint", "standalone", "optimistic", "near", "sweep", "grouped_sweep",
+           "wide", "top_two")
 
 
 def estimate(hw, work, mapping, macros, regions=None):
@@ -93,6 +101,8 @@ def estimate(hw, work, mapping, macros, regions=None):
     first_decode = 0
     if mapping.resident:
         first_decode += moves("D", "KV", 0, ceildiv(work.context * work.head, 64), "w", 1, True)
+        if work.reserve_values:
+            first_decode += moves("D", "V", 0, ceildiv(work.context * work.head, 64), "w", 1, True)
     one_step = 0
     for col in range(0, work.context, work.decode_tile):
         n = min(work.decode_tile, work.context - col)
@@ -140,7 +150,8 @@ def phase_score(hw, work, macros):
             )
         else:
             plans = (Mapping(8, 16, 1, cached, layout, "D")
-                     for cached, layout in ((False, "striped"), (True, "striped"), (True, "separate")))
+                     for cached, layout in ((False, "striped"), (True, "striped"), (True, "separate"))
+                     if cached or not work.reserve_values)
         options = []
         for mapping in plans:
             program = build(hw, work, mapping, standalone=phase)
@@ -155,6 +166,15 @@ def phase_score(hw, work, macros):
 def all_ties(scores):
     optimum = min(scores.values())
     return tuple(sorted(hw for hw, score in scores.items() if score == optimum))
+
+
+def shortlist(scores, *, percent=None, count=None):
+    ordered = sorted(scores, key=lambda hw: (scores[hw], hw))
+    if percent is not None:
+        cutoff = scores[ordered[0]] * (100 + percent)
+        return tuple(hw for hw in ordered if scores[hw] * 100 <= cutoff)
+    cutoff = scores[ordered[min(count, len(ordered)) - 1]]
+    return tuple(hw for hw in ordered if scores[hw] <= cutoff)
 
 
 def bind_candidates(hardware, work, plans, macros):
@@ -223,7 +243,7 @@ def run_search(hardware, work, macros, method, deadlines=DEADLINES):
             history.append((perf_counter() - start, score))
 
     # The same cold anchor is generated and charged in all runs.
-    anchor = Mapping(16, 32, 1, False, "striped", "D")
+    anchor = Mapping(16, 32, 1, work.reserve_values, "striped", "D")
     for hw in hardware:
         result = estimate(hw, work, anchor, macros)
         if result is not None:
@@ -231,7 +251,8 @@ def run_search(hardware, work, macros, method, deadlines=DEADLINES):
             break
 
     before_generation = perf_counter()
-    plans = tuple(mapping for mapping in mappings() if mapping.prefer == "P")
+    plans = tuple(mapping for mapping in mappings()
+                  if mapping.prefer == "P" and (mapping.resident or not work.reserve_values))
     considered = 2 * len(plans) * len(hardware)
     if method in ("binding", "grouped_sweep"):
         by_hw, feasible = bind_candidates(hardware, work, plans, macros)
@@ -251,10 +272,10 @@ def run_search(hardware, work, macros, method, deadlines=DEADLINES):
         selected = all_ties({hw: phase_score(hw, work, macros) for hw in by_hw})
     elif method == "optimistic":
         selected = all_ties(lower)
-    elif method == "near":
-        minimum = min(lower.values())
-        selected = tuple(sorted((hw for hw, cost in lower.items() if cost * 100 <= minimum * 102),
-                                key=lambda hw: (lower[hw], hw)))
+    elif method in ("near", "wide"):
+        selected = shortlist(lower, percent=2 if method == "near" else 10)
+    elif method == "top_two":
+        selected = shortlist(lower, count=2)
     else:
         selected = tuple(sorted(by_hw, key=lambda hw: (lower[hw], hw)))
     selection = perf_counter() - selection_start
@@ -314,7 +335,7 @@ def layout_ablation(macros, hardware):
     return {"hardware": asdict(hw), "workload": asdict(work), "layouts": layouts}
 
 
-def run(table, output, names, repeats, area_factor=1.5):
+def run(table, output, names, repeats, area_factor=1.5, methods=METHODS):
     macros = {int(size): row for size, row in table["macros"].items()}
     limit = Architecture(*REFERENCE).sram_totals(macros, "area_mm2") * area_factor
     hardware = tuple(sorted(
@@ -322,7 +343,6 @@ def run(table, output, names, repeats, area_factor=1.5):
                       for shape, banks, gb, local in product(SHAPES, GB_BANKS, GB_BYTES, LOCAL_BYTES))
         if hw.sram_totals(macros, "area_mm2") <= limit
     ))
-    methods = ("binding", "joint", "standalone", "optimistic", "near", "sweep", "grouped_sweep")
     report = {"area_mm2": limit, "hardware_points": len(hardware), "cases": {},
               "same_hardware_layout_ablation": layout_ablation(macros, hardware)}
     for name in names:
@@ -335,7 +355,7 @@ def run(table, output, names, repeats, area_factor=1.5):
                 print(name, repeat, method, record["seconds"], record["edp_aj_ns"],
                       record["winner"], flush=True)
             if len({runs[method][-1]["edp_aj_ns"]
-                    for method in ("binding", "joint", "sweep", "grouped_sweep")}) != 1:
+                    for method in ("binding", "joint", "sweep", "grouped_sweep") if method in runs}) > 1:
                 raise AssertionError("The complete architecture sweep disagrees with joint search")
         report["cases"][name] = {"workload": asdict(work), "runs": runs}
         output.write_bytes(gzip.compress(json.dumps(report, indent=2).encode(), mtime=0))
@@ -348,12 +368,15 @@ def main():
     parser.add_argument("--cases", nargs="+", choices=CASES, default=list(CASES))
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--area-factor", type=float, default=1.5)
+    parser.add_argument("--methods", nargs="+", choices=METHODS, default=list(METHODS))
     args = parser.parse_args()
     if args.repeats < 1:
         parser.error("--repeats must be positive")
     if args.area_factor <= 0:
         parser.error("--area-factor must be positive")
-    run(json.loads(args.table.read_text()), args.output, args.cases, args.repeats, args.area_factor)
+    if len(args.methods) != len(set(args.methods)):
+        parser.error("--methods must be unique")
+    run(json.loads(args.table.read_text()), args.output, args.cases, args.repeats, args.area_factor, args.methods)
 
 
 if __name__ == "__main__":
