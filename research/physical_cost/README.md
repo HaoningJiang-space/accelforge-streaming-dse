@@ -820,3 +820,114 @@ python -m research.physical_cost.native_serving research/physical_cost/results/s
 python -m research.physical_cost.native_serving research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/decode-matched.json.gz --context 5120 --bandwidth 32 --bank-counts 11 8 3
 python -m research.physical_cost.external_ddr research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/fixed-ddr.json.gz
 ```
+
+## Concurrent attention with growing KV
+
+The addressed evaluator runs one tiled prefill projection and two
+autoregressive attention requests with independent arrival times.
+Each decode step computes Q, K and V, appends the new KV position,
+then attends to the full updated sequence. Cold append writes
+through to DDR. Resident append writes SRAM and persists the new
+positions to DDR before the episode ends. The mapping can choose
+residency separately for each decode request, shared or partitioned
+banks, staging depth, tile sizes, request priority, and stable
+dense or online softmax. The online version keeps a maximum,
+normalizer and weighted output per head between tiles.
+[FlashAttention](https://proceedings.neurips.cc/paper/2022/hash/67d57c32e20fd0a7a302cb81d36e40d5-Abstract-Conference.html)
+
+The evaluator reserves explicit SRAM word ranges and schedules each
+bank's one read and one write port. DDR timing uses one DDR4-2400R
+x64 rank with open rows, 64-byte bursts, bank groups, refresh and
+turnaround. A separate replay checks the emitted commands against
+the pinned Ramulator timing specification, verifies the SRAM
+intervals and data versions by physical address, checks every
+step's K and V scan range, and reconstructs EDP. A closed-row
+read issues ACT at cycle 0 and RD at cycle 16. Its first and
+last data boundaries are 26.656 and 29.988 ns. The validator
+rejects a read issued one cycle early and checks another 5,000
+mixed requests, including row conflicts and refresh. Numerical
+comparison to a stable NumPy reference over growing contexts
+gives a maximum absolute error of 1.78 × 10⁻¹⁴ in FP64.
+[Ramulator DDR4 specification](https://github.com/CMU-SAFARI/ramulator2/blob/7bead6cb7c4b03e095c6d4769ae3181a8e0bf6da/python/ramulator/dram/ddr4.py)
+
+The paired layouts use the same 16 × 64 array, six 16 KiB
+banks, online softmax and one resident decode cache. The two
+plans have equal action counts, dynamic energy (14.134 µJ) and
+peak live SRAM (28,288 bytes). Striping completes in 16.196 µs
+and partitioning in 17.058 µs. Partitioning reduces cross-request
+port waits from 181 to 88 but allocates fewer service ports to
+each request. Its busiest read port is occupied for 1.068 µs,
+compared with 0.674 µs with striping. The striped trace has 1.405 µs of simultaneous
+prefill staging and resident KV. The replay checks 16 placements
+across both softmax forms and all four residency combinations.
+
+The fixed 6.918 mm² MAC+SRAM cap admits 233 architectures.
+The grid varies array dimensions, MAC count, bank count and
+bank capacity. Each method starts from the same space of 33,054
+feasible hardware-mapping pairs in the first two workloads and
+26,274 in the pressure workload. Both types of search rank candidates
+with the same proxy using whole-episode traffic and feasible
+placements, and score them with the same addressed evaluator.
+Architecture-first keeps every architecture tied at a shortlist
+boundary and remaps each selected architecture in full when time
+permits. The complete method can open the entire grid. The probe
+variant measures one mapping for each of the first eight ranked
+architectures, including ties, then ranks those architectures by
+the measured result and resumes complete remapping. It retains
+the rest of the grid. Interleaved search orders individual
+architecture-mapping pairs across the same space.
+
+Every run starts cold. The wall-clock budget includes the grid,
+ranking, mapping generation and fine evaluation. The tables use
+the best EDP from evaluations completed by each deadline. Each
+method ran three times on Windows. The 8-second EDP is identical
+across all three repeats for each method and case.
+
+| Case | Top-2 | Within 10% | Complete remap | Probe + complete remap | Interleaved |
+|---|---:|---:|---:|---:|---:|
+| Overlap | 1,389.707 | 1,128.022 | 1,128.022 | 1,128.022 | 1,128.022 |
+| Delayed prefill | 7,736.109 | 7,736.109 | 7,736.109 | 7,732.335 | 7,463.137 |
+| Longer contexts | 3,266.682 | 3,266.682 | 3,266.682 | 3,266.682 | 3,266.682 |
+
+EDP is in µJ·µs. In the overlap case the median time to reach
+1,128.022 µJ·µs is 6.261 s for complete remapping, 6.239 s for the
+window, 0.689 s for probing, and 0.783 s for interleaved search.
+The winning plan moves from 3 × 64 KiB banks on 4,096 MACs to
+12 × 16 KiB banks on 2,048 MACs. Total global SRAM capacity is
+192 KiB in both cases. With delayed prefill, the probe variant
+is 3.61% above the best observed EDP. All decode work finishes
+before prefill starts on the replayed delayed winners, so that
+gap cannot be attributed to simultaneous prefill staging and KV.
+
+Complete remapping of the five architectures observed as winners
+also gives an arrival-sensitive ranking. The 64 × 32 and 16 × 64
+arrays both use 12 × 16 KiB banks. The 64 × 32 wins with overlap
+(1,128.022 versus 2,221.109 µJ·µs), while the 16 × 64 wins with
+delayed prefill (7,463.137 versus 8,081.882 µJ·µs). Each comparison
+evaluates all 156 feasible plans on each of those two architectures.
+The witness set was selected after the search. The arrival change
+also affects elapsed idle time and standby energy.
+
+A separate six-architecture control exhaustively checks 1,300 legal
+pairs. The larger grids use bounded runs and report the best
+observed EDP.
+
+[Budget trials](results/concurrent_serving_windows.json.gz) ·
+[Architecture probes](results/concurrent_probe_windows.json.gz) ·
+[Independent replay](results/concurrent_validation_windows.json.gz)
+
+The timing study uses an addressed research evaluator and a
+fixed serving grammar. It models a projection as prefill and
+uses declared arithmetic costs for FP32 attention. The SRAM
+ledger adds macro costs and the DDR energy ledger uses the
+previous 16 GB/s single-channel price with amortized core row
+energy. The DDR timing replay checks this command stream against
+Ramulator rules. Latency derives from the local controller and
+port scheduler. The serving grammar supplies the mappings,
+and the model prices SRAM macros separately from interconnect.
+
+```sh
+python -m research.physical_cost.concurrent_search research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/serving.json.gz --budgets 1 3 8 --repeats 3 --oracle-size 6
+python -m research.physical_cost.concurrent_search research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/probe.json.gz --methods af_probe --budgets 1 3 8 --repeats 3
+python -m research.physical_cost.concurrent_validation research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json "$ramulator_checkout" /tmp/validation.json.gz --search-results /tmp/serving.json.gz /tmp/probe.json.gz --remap-witnesses
+```

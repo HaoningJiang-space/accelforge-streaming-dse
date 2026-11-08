@@ -149,6 +149,11 @@ def verify(program, work, result, device, macros):
         active[group] += delta
         peak = max(peak, len(live))
     first = next((entry[2] for entry in bursts if entry[1] == "RD"), None)
+    bank_busy = {direction: [sum(end - start for start, end, _ in ports[direction, bank])
+                             for bank in range(hw.global_banks)] for direction in ("r", "w")}
+    completions = [max(end for task, end in zip(program.tasks, finish, strict=True) if task.owner == owner)
+                   for owner in range(3)]
     return {"ddr_bursts": len(bursts), "first_data_ps": first, "peak_live_bytes": peak * 64,
             "reserved_bank_bytes": [n * 64 for n in program.used],
+            "bank_busy_ps": bank_busy, "completion_by_request_ps": completions,
             "prefill_kv_overlap_ps": overlap, "cross_request_port_waits": waits}

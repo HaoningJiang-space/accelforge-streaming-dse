@@ -9,12 +9,13 @@ from pathlib import Path
 from random import Random
 from subprocess import check_output
 import sys
+from time import perf_counter
 
 import numpy as np
 
 from research.physical_cost.banked_scale import DeepArchitecture
 from research.physical_cost.concurrent_search import CASES, traffic
-from research.physical_cost.concurrent_serving import HEADS, WIDTH, Plan, Workload, compile_program
+from research.physical_cost.concurrent_serving import HEADS, WIDTH, Plan, Workload, compile_program, plans
 from research.physical_cost.external_ddr import SystemLedger
 from research.physical_cost.paid_area import PaidArchitecture
 from research.physical_cost.serving_ddr import DDR
@@ -85,6 +86,32 @@ def ddr_test(device):
     return {"closed_row_first_ps": begin, "closed_row_last_ps": end, "commands": mixed.counts}
 
 
+def remap_witnesses(macros, device, winners):
+    """Remap the same witnessed architectures at both arrival spacings."""
+    cases = ("overlap", "delayed")
+    hardware = sorted({hw for name, hw, _ in winners if name in cases})
+    result = []
+    for name, hw in product(cases, hardware):
+        work = CASES[name]
+        best = None
+        count = 0
+        start = perf_counter()
+        for plan in plans():
+            program = compile_program(hw, work, plan)
+            if program is None:
+                continue
+            outcome = run(program, macros)
+            count += 1
+            point = (outcome["edp"], plan)
+            if best is None or point < best:
+                best = point
+        elapsed = perf_counter() - start
+        summary = replay(macros, work, hw, best[1], device)
+        assert summary["result"]["edp"] == best[0]
+        result.append({"case": name, "candidates": count, "seconds": elapsed, **summary})
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sram", type=Path)
@@ -92,6 +119,7 @@ def main():
     parser.add_argument("ramulator_checkout", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--search-results", type=Path, nargs="+")
+    parser.add_argument("--remap-witnesses", action="store_true")
     args = parser.parse_args()
     revision = check_output(["git", "-C", args.ramulator_checkout, "rev-parse", "HEAD"], text=True).strip()
     if revision != RAMULATOR_REVISION:
@@ -133,6 +161,10 @@ def main():
                 seen[key] = replay(macros, CASES["oracle"], h, p, device)
             assert seen[key]["result"]["edp"] == best["edp"]
     report["verified_winners"] = list(seen.values())
+    if args.remap_witnesses:
+        if not args.search_results:
+            parser.error("Witness remapping requires search results")
+        report["remapped_witnesses"] = remap_witnesses(macros, device, seen)
     args.output.write_bytes(gzip.compress(json.dumps(report, indent=2).encode(), mtime=0))
     print("verified", len(checks), "paired layouts and", len(report.get("verified_winners", [])), "search winners")
 
