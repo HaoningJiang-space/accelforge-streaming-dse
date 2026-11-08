@@ -68,7 +68,7 @@ class DDR:
         stripe = address // 128
         group = stripe % 4
         bank = stripe // 4 % 4
-        row = stripe // 16
+        row = address // 2048  # 128 cache lines per bank row
         slot = 4 * group + bank
         at = max(arrival, self.ca)
         if self.row[slot] != row:

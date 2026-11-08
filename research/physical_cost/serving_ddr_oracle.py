@@ -48,7 +48,7 @@ def check(trace, device):
         else:
             assert opened.get(loc) == event.row
             stripe = event.address // 128
-            assert (stripe % 4, stripe // 4 % 4, stripe // 16) == (*loc, event.row)
+            assert (stripe % 4, stripe // 4 % 4, event.address // 2048) == (*loc, event.row)
             ck = ticks["tCK_ps"]
             assert t * ck >= event.arrival_ps
             data = t + ticks["nCL" if op == "RD" else "nCWL"]
