@@ -41,6 +41,14 @@ class Architecture:
     global_bank_bytes: int
     weight_bytes_per_stripe: int
 
+    @property
+    def global_capacity(self):
+        return self.global_bank_bytes
+
+    @property
+    def private_capacity(self):
+        return self.weight_bytes_per_stripe
+
     def sram_totals(self, macros, metric):
         return (self.global_banks * macros[self.global_bank_bytes][metric]
                 + self.x * macros[self.weight_bytes_per_stripe][metric])

@@ -17,7 +17,7 @@ def audit(program, macros, starts, *, standalone=None):
     hw, work, plan = program.hardware, program.workload, program.mapping
     if len(starts) != len(program.commands) or min(starts) < 0:
         raise AssertionError("Missing or invalid command starts")
-    bank_cap = hw.global_bank_bytes // 64
+    bank_cap = hw.global_capacity // 64
     g, l = macros[hw.global_bank_bytes], macros[hw.weight_bytes_per_stripe]
     global_period = max(ceil(g["access_ns"]), ceil(g["cycle_ns"]))
     local_period = max(ceil(l["access_ns"]), ceil(l["cycle_ns"]))
@@ -203,7 +203,7 @@ def audit(program, macros, starts, *, standalone=None):
             )
     if movements != expected:
         raise AssertionError("Word and MAC totals differ from independent tile arithmetic")
-    if sum(private_words.values()) * 8 > hw.weight_bytes_per_stripe:
+    if sum(private_words.values()) * 8 > hw.private_capacity:
         raise AssertionError("The two private SRAM slots exceed a stripe capacity")
 
     if standalone is None and plan.resident:
@@ -231,8 +231,9 @@ def audit(program, macros, starts, *, standalone=None):
             else:
                 j += 1
     ticks = max(completion)
-    leak_mw = sum(macros[size]["leak_mw"] * n for size, n in (
-        (hw.global_bank_bytes, hw.global_banks), (hw.weight_bytes_per_stripe, hw.x),
+    leak_mw = sum(macros[size]["leak_mw"] * count for size, count in (
+        (hw.global_bank_bytes, hw.global_banks * (hw.global_capacity // hw.global_bank_bytes)),
+        (hw.weight_bytes_per_stripe, hw.x * (hw.private_capacity // hw.weight_bytes_per_stripe)),
     ))
     return {
         "ns": ticks,

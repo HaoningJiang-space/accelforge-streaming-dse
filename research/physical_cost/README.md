@@ -266,3 +266,71 @@ lifetime effects without establishing a general optimizer advantage.
 ```sh
 python -m research.physical_cost.banked_search research/physical_cost/results/sram_45nm.json /tmp/critical.json.gz --cases context512 kv256 kv384 kv512 --methods binding critical_joint critical_first critical_two grouped_sweep top_two
 ```
+
+## Architecture shortlist scaling
+
+The scale experiment keeps one 2,048-MAC array and the same DDR service
+model. It varies the array shape, the number of independent global SRAM
+banks (2–24), and the macro type and depth in global and private SRAM.
+Multiple identical macros behind the same logical port add capacity,
+area and standby leakage. An access uses one macro and the model uses
+its calibrated word energy and service period. Selection mux and
+routing overhead are outside the area and timing model. The common
+4.5 mm² SRAM cap admits 3,302 configurations, of which 2,391–2,715 are
+feasible across the five workloads. They form 149 distinct timing
+classes. Each class groups equal PE shape, bank count and rounded
+global and private port cycles.
+
+The compiler builds an addressed layout and optimistic profile once
+per mapping and timing class. Within a class, a design can be removed
+when another feasible design admits every mapping it does and has no
+larger cost for any action or for standby leakage. Both designs run
+each shared mapping with identical command times. This leaves 552–760
+architecture points in the five full-grid cells. The experiment reports
+fixed shortlist results on the entire feasible grid as well as after
+this safe reduction. All fixed shortlists retain ties at the cutoff
+and remap over the whole declared grammar.
+
+For a shortlist with exact remapped EDP U and minimum omitted
+architecture lower bound B, the global optimum lies in
+[min(U, B), U]. The relative optimality gap is at most
+U / min(U, B) - 1. In particular, B >= U certifies that the shortlist
+contains an optimum. The architecture lower bound is the minimum of
+the admissible bounds over all feasible mappings. Ranking by a handful
+of command probes is heuristic and is used only to order the shortlist.
+An adaptive baseline orders the remaining architectures by admissible
+bound, remaps each until the remaining bounds cannot improve the
+incumbent, and independently replays every reported winner.
+
+The original 13-point pool is included in every subset. Five fixed
+seeds generate nested 64-, 256- and 1,024-point subsets. The full grid
+and the anchor each run once per workload. Each cell below is a
+workload and subset pair. Entries show misses over cells, followed by
+the maximum observed relative EDP regret. The table uses all feasible
+points and the exact same evaluator throughout.
+
+| SRAM grid size | Cells | Top 1 | Top 2 | Within 10% | Critical-path top 2 |
+|---|---:|---:|---:|---:|---:|
+| 13 | 5 | 2/5 (23.29%) | 1/5 (8.58%) | 2/5 (23.29%) | 0/5 (0.00%) |
+| 64 | 25 | 21/25 (33.47%) | 14/25 (32.53%) | 6/25 (15.91%) | 10/25 (23.29%) |
+| 256 | 25 | 16/25 (42.68%) | 12/25 (28.79%) | 1/25 (4.43%) | 3/25 (4.43%) |
+| 1,024 | 25 | 16/25 (28.09%) | 13/25 (16.03%) | 0/25 (0.00%) | 7/25 (5.35%) |
+| 3,302 | 5 | 5/5 (16.21%) | 3/5 (9.08%) | 0/5 (0.00%) | 2/5 (6.18%) |
+
+The miss fraction is nonmonotonic. At 3,302 points the 10% window
+includes 24–80 feasible designs per workload (22–54 after the safe
+reduction) and finds every optimum in this sample. Its omitted lower
+bounds do not certify any of those five choices. The exact adaptive
+solver certifies the full grids by remapping 54–148 architectures
+after reduction. The two largest-grid critical-path misses are 3.95%
+regret on context 576 and 6.18% on the 32-step complete-cache case.
+Their winners agree with the word-address replay. All values refer
+to the banked prefill-GEMM/QK grammar. The diagnostic shares work
+across nested subsets, so its aggregate runtime is not a cold
+comparison of search methods.
+
+[Scale report](results/banked_scale_450_windows.json.gz)
+
+```sh
+python -m research.physical_cost.banked_scale research/physical_cost/results/sram_45nm.json /tmp/scale.json.gz
+```

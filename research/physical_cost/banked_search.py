@@ -50,11 +50,24 @@ def estimate(hw, work, mapping, macros, regions=None):
     g, l = macros[hw.global_bank_bytes], macros[hw.weight_bytes_per_stripe]
     gc = ceil(max(g["access_ns"], g["cycle_ns"]))
     lc = ceil(max(l["access_ns"], l["cycle_ns"]))
+    duration, traffic = bound_profile(hw, work, mapping, regions, gc, lc)
+    return bind_profile(duration, traffic, action_prices(g, l), round(hw.sram_totals(macros, "leak_mw") * 1e6))
+
+
+def action_prices(global_macro, local_macro):
+    return (DRAM_AJ, MAC_AJ, *(round(m[f"{action}_nj"] * 1e9)
+            for m in (global_macro, local_macro) for action in ("read", "write")))
+
+
+def bind_profile(duration, traffic, prices, leak):
+    dynamic = sum(count * price for count, price in zip(traffic, prices, strict=True))
+    return (dynamic + leak * duration) * duration, dynamic
+
+
+def bound_profile(hw, work, mapping, regions, gc, lc):
     dma_ns = max(DRAM_NS, gc)
-    leak = round(hw.sram_totals(macros, "leak_mw") * 1e6)
     resources = Counter()
     traffic = Counter()
-    dynamic = 0
 
     def moves(request, slot, start, count, direction, repeats, dma=False):
         duration = 0
@@ -129,14 +142,7 @@ def estimate(hw, work, mapping, macros, regions=None):
         if request == "P":
             p_service = max(p_service, ticks)
     duration = max(full_decode, first_decode + p_service, max(pooled.values()))
-    dynamic = (
-        traffic["dram"] * DRAM_AJ + traffic["macs"] * MAC_AJ
-        + sum(traffic[d] * round(g[f"{action}_nj"] * 1e9)
-              for d, action in (("r", "read"), ("w", "write")))
-        + sum(traffic[f"local_{d}"] * round(l[f"{action}_nj"] * 1e9)
-              for d, action in (("r", "read"), ("w", "write")))
-    )
-    return (dynamic + leak * duration) * duration, dynamic
+    return duration, tuple(traffic[key] for key in ("dram", "macs", "r", "w", "local_r", "local_w"))
 
 
 def phase_score(hw, work, macros):
@@ -198,8 +204,8 @@ def bind_candidates(hardware, work, plans, macros):
         } for hw in members}
         for mapping in plans:
             regions, gb_needed, private_needed = layout_requirements(members[0], work, mapping)
-            admitted = {hw for hw in members if hw.global_bank_bytes >= gb_needed
-                        and hw.weight_bytes_per_stripe >= private_needed}
+            admitted = {hw for hw in members if hw.global_capacity >= gb_needed
+                        and hw.private_capacity >= private_needed}
             feasible += 2 * len(admitted)
             for hw in sorted(admitted):
                 if admitted & dominates[hw]:

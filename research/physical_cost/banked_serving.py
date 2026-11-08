@@ -145,7 +145,7 @@ def layout_requirements(hardware, work, mapping, standalone=None):
 
 def place(hardware, work, mapping, standalone=None):
     regions, bank_bytes, private_bytes = layout_requirements(hardware, work, mapping, standalone)
-    if bank_bytes > hardware.global_bank_bytes or private_bytes > hardware.weight_bytes_per_stripe:
+    if bank_bytes > hardware.global_capacity or private_bytes > hardware.private_capacity:
         return None
     return regions
 
@@ -279,6 +279,7 @@ class Costs:
     graph: list
     indegrees: list
     lower: int
+    lower_ns: int
 
 
 def price(program, macros):
@@ -337,7 +338,8 @@ def price(program, macros):
     if seen != len(end):
         raise AssertionError("Cyclic command dependencies")
     latency = max(max(work), max(end))
-    return Costs(ports, duration, dynamic, leak, graph, indegrees, (dynamic + leak * latency) * latency)
+    return Costs(ports, duration, dynamic, leak, graph, indegrees,
+                 (dynamic + leak * latency) * latency, latency)
 
 
 def dispatch(program, costs):

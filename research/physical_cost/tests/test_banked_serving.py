@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from research.physical_cost.banked_oracle import addresses, audit
+from research.physical_cost.banked_scale import DeepArchitecture, Evaluator, breakpoints, catalog, measure
 from research.physical_cost.banked_search import estimate, run_search
 from research.physical_cost.banked_serving import (
     Access, Command, Life, Mapping, Program, Region, Workload, build, dispatch, mappings, price,
@@ -107,3 +108,25 @@ def test_exhaustive_tiny_domain_agrees_with_both_complete_searches():
             assert result["critical_probes"] == 4 * len(hardware)
         if method in ("binding", "grouped_sweep"):
             assert result["candidates_dominated"] > 0
+
+
+def test_scaled_shortlist_intervals_and_breakpoints_against_exhaustion():
+    work = replace(WORK, reserve_values=True)
+    base = DeepArchitecture(64, 32, 2, 16384, 1024)
+    hardware = (base, replace(base, global_depth=2), replace(base, private_depth=2),
+                replace(base, x=32, y=64, global_banks=4, global_bank_bytes=65536))
+    plans = tuple(m for m in mappings() if m.resident and m.prefer == "P")
+    reference = min(dispatch(program, price(program, MACROS))[0]
+                    for hw in hardware for plan in plans for prefer in ("P", "D")
+                    if (program := build(hw, work, replace(plan, prefer=prefer))) is not None)
+    rows, _ = catalog(hardware, work, MACROS, plans)
+    evaluator = Evaluator(work, MACROS, plans, rows)
+    assert len(breakpoints(hardware, rows)) < len(hardware)
+    assert evaluator.exact(hardware)[0] == reference
+    assert evaluator.joint(hardware, float("inf"), None, lambda score, plan: None)[0] == reference
+    result = measure(hardware, rows, evaluator, {hw: evaluator.critical_score(hw) for hw in hardware})
+    assert result["exact_edp"] == reference
+    for item in result["shortlists"].values():
+        assert item["certificate_lower"] <= reference <= item["edp"]
+        if item["certified"]:
+            assert item["edp"] == reference
