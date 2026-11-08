@@ -1,0 +1,1089 @@
+{
+  "graph": {
+    "inputs": {
+      "X": 61760
+    },
+    "ops": [
+      [
+        "Stem",
+        [
+          "X"
+        ],
+        74112,
+        "gemm"
+      ],
+      [
+        "Wide",
+        [
+          "Stem"
+        ],
+        148224,
+        "gemm"
+      ],
+      [
+        "Left",
+        [
+          "Wide"
+        ],
+        49408,
+        "gemm"
+      ],
+      [
+        "Narrow",
+        [
+          "Stem"
+        ],
+        24704,
+        "gemm"
+      ],
+      [
+        "Right",
+        [
+          "Narrow"
+        ],
+        49408,
+        "gemm"
+      ],
+      [
+        "Merge",
+        [
+          "Left",
+          "Right"
+        ],
+        49408,
+        "mul"
+      ],
+      [
+        "Y",
+        [
+          "Merge"
+        ],
+        74112,
+        "gemm"
+      ]
+    ]
+  },
+  "all_schedules": [
+    {
+      "order": [
+        "Stem",
+        "Wide",
+        "Left",
+        "Narrow",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "peaks": {
+        "live_tensors": 2,
+        "cut_bytes": 222336,
+        "internal_crossing_edges": 2,
+        "event_bytes": 271744
+      },
+      "trace": [
+        {
+          "op": "Stem",
+          "live": [
+            "Stem"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 135872
+        },
+        {
+          "op": "Wide",
+          "live": [
+            "Stem",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 222336,
+          "internal_crossing_edges": 2,
+          "event_bytes": 222336
+        },
+        {
+          "op": "Left",
+          "live": [
+            "Left",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 123520,
+          "internal_crossing_edges": 2,
+          "event_bytes": 271744
+        },
+        {
+          "op": "Narrow",
+          "live": [
+            "Left",
+            "Narrow"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Right",
+          "live": [
+            "Left",
+            "Right"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 123520
+        },
+        {
+          "op": "Merge",
+          "live": [
+            "Merge"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 49408,
+          "internal_crossing_edges": 1,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Y",
+          "live": [],
+          "live_tensors": 0,
+          "cut_bytes": 0,
+          "internal_crossing_edges": 0,
+          "event_bytes": 123520
+        }
+      ]
+    },
+    {
+      "order": [
+        "Stem",
+        "Wide",
+        "Narrow",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "peaks": {
+        "live_tensors": 2,
+        "cut_bytes": 222336,
+        "internal_crossing_edges": 2,
+        "event_bytes": 247040
+      },
+      "trace": [
+        {
+          "op": "Stem",
+          "live": [
+            "Stem"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 135872
+        },
+        {
+          "op": "Wide",
+          "live": [
+            "Stem",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 222336,
+          "internal_crossing_edges": 2,
+          "event_bytes": 222336
+        },
+        {
+          "op": "Narrow",
+          "live": [
+            "Narrow",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 172928,
+          "internal_crossing_edges": 2,
+          "event_bytes": 247040
+        },
+        {
+          "op": "Left",
+          "live": [
+            "Left",
+            "Narrow"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 222336
+        },
+        {
+          "op": "Right",
+          "live": [
+            "Left",
+            "Right"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 123520
+        },
+        {
+          "op": "Merge",
+          "live": [
+            "Merge"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 49408,
+          "internal_crossing_edges": 1,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Y",
+          "live": [],
+          "live_tensors": 0,
+          "cut_bytes": 0,
+          "internal_crossing_edges": 0,
+          "event_bytes": 123520
+        }
+      ]
+    },
+    {
+      "order": [
+        "Stem",
+        "Wide",
+        "Narrow",
+        "Right",
+        "Left",
+        "Merge",
+        "Y"
+      ],
+      "peaks": {
+        "live_tensors": 2,
+        "cut_bytes": 222336,
+        "internal_crossing_edges": 2,
+        "event_bytes": 247040
+      },
+      "trace": [
+        {
+          "op": "Stem",
+          "live": [
+            "Stem"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 135872
+        },
+        {
+          "op": "Wide",
+          "live": [
+            "Stem",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 222336,
+          "internal_crossing_edges": 2,
+          "event_bytes": 222336
+        },
+        {
+          "op": "Narrow",
+          "live": [
+            "Narrow",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 172928,
+          "internal_crossing_edges": 2,
+          "event_bytes": 247040
+        },
+        {
+          "op": "Right",
+          "live": [
+            "Right",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 197632,
+          "internal_crossing_edges": 2,
+          "event_bytes": 222336
+        },
+        {
+          "op": "Left",
+          "live": [
+            "Left",
+            "Right"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 247040
+        },
+        {
+          "op": "Merge",
+          "live": [
+            "Merge"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 49408,
+          "internal_crossing_edges": 1,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Y",
+          "live": [],
+          "live_tensors": 0,
+          "cut_bytes": 0,
+          "internal_crossing_edges": 0,
+          "event_bytes": 123520
+        }
+      ]
+    },
+    {
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Left",
+        "Right",
+        "Merge",
+        "Y"
+      ],
+      "peaks": {
+        "live_tensors": 2,
+        "cut_bytes": 172928,
+        "internal_crossing_edges": 2,
+        "event_bytes": 247040
+      },
+      "trace": [
+        {
+          "op": "Stem",
+          "live": [
+            "Stem"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 135872
+        },
+        {
+          "op": "Narrow",
+          "live": [
+            "Narrow",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 98816
+        },
+        {
+          "op": "Wide",
+          "live": [
+            "Narrow",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 172928,
+          "internal_crossing_edges": 2,
+          "event_bytes": 247040
+        },
+        {
+          "op": "Left",
+          "live": [
+            "Left",
+            "Narrow"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 222336
+        },
+        {
+          "op": "Right",
+          "live": [
+            "Left",
+            "Right"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 123520
+        },
+        {
+          "op": "Merge",
+          "live": [
+            "Merge"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 49408,
+          "internal_crossing_edges": 1,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Y",
+          "live": [],
+          "live_tensors": 0,
+          "cut_bytes": 0,
+          "internal_crossing_edges": 0,
+          "event_bytes": 123520
+        }
+      ]
+    },
+    {
+      "order": [
+        "Stem",
+        "Narrow",
+        "Wide",
+        "Right",
+        "Left",
+        "Merge",
+        "Y"
+      ],
+      "peaks": {
+        "live_tensors": 2,
+        "cut_bytes": 197632,
+        "internal_crossing_edges": 2,
+        "event_bytes": 247040
+      },
+      "trace": [
+        {
+          "op": "Stem",
+          "live": [
+            "Stem"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 135872
+        },
+        {
+          "op": "Narrow",
+          "live": [
+            "Narrow",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 98816
+        },
+        {
+          "op": "Wide",
+          "live": [
+            "Narrow",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 172928,
+          "internal_crossing_edges": 2,
+          "event_bytes": 247040
+        },
+        {
+          "op": "Right",
+          "live": [
+            "Right",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 197632,
+          "internal_crossing_edges": 2,
+          "event_bytes": 222336
+        },
+        {
+          "op": "Left",
+          "live": [
+            "Left",
+            "Right"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 247040
+        },
+        {
+          "op": "Merge",
+          "live": [
+            "Merge"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 49408,
+          "internal_crossing_edges": 1,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Y",
+          "live": [],
+          "live_tensors": 0,
+          "cut_bytes": 0,
+          "internal_crossing_edges": 0,
+          "event_bytes": 123520
+        }
+      ]
+    },
+    {
+      "order": [
+        "Stem",
+        "Narrow",
+        "Right",
+        "Wide",
+        "Left",
+        "Merge",
+        "Y"
+      ],
+      "peaks": {
+        "live_tensors": 2,
+        "cut_bytes": 197632,
+        "internal_crossing_edges": 2,
+        "event_bytes": 271744
+      },
+      "trace": [
+        {
+          "op": "Stem",
+          "live": [
+            "Stem"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 135872
+        },
+        {
+          "op": "Narrow",
+          "live": [
+            "Narrow",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 98816
+        },
+        {
+          "op": "Right",
+          "live": [
+            "Right",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 123520,
+          "internal_crossing_edges": 2,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Wide",
+          "live": [
+            "Right",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 197632,
+          "internal_crossing_edges": 2,
+          "event_bytes": 271744
+        },
+        {
+          "op": "Left",
+          "live": [
+            "Left",
+            "Right"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 247040
+        },
+        {
+          "op": "Merge",
+          "live": [
+            "Merge"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 49408,
+          "internal_crossing_edges": 1,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Y",
+          "live": [],
+          "live_tensors": 0,
+          "cut_bytes": 0,
+          "internal_crossing_edges": 0,
+          "event_bytes": 123520
+        }
+      ]
+    }
+  ],
+  "greedy": [
+    {
+      "order": [
+        "Stem",
+        "Narrow",
+        "Right",
+        "Wide",
+        "Left",
+        "Merge",
+        "Y"
+      ],
+      "peaks": {
+        "live_tensors": 2,
+        "cut_bytes": 197632,
+        "internal_crossing_edges": 2,
+        "event_bytes": 271744
+      },
+      "trace": [
+        {
+          "op": "Stem",
+          "live": [
+            "Stem"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 135872
+        },
+        {
+          "op": "Narrow",
+          "live": [
+            "Narrow",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 98816
+        },
+        {
+          "op": "Right",
+          "live": [
+            "Right",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 123520,
+          "internal_crossing_edges": 2,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Wide",
+          "live": [
+            "Right",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 197632,
+          "internal_crossing_edges": 2,
+          "event_bytes": 271744
+        },
+        {
+          "op": "Left",
+          "live": [
+            "Left",
+            "Right"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 247040
+        },
+        {
+          "op": "Merge",
+          "live": [
+            "Merge"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 49408,
+          "internal_crossing_edges": 1,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Y",
+          "live": [],
+          "live_tensors": 0,
+          "cut_bytes": 0,
+          "internal_crossing_edges": 0,
+          "event_bytes": 123520
+        }
+      ]
+    },
+    {
+      "order": [
+        "Stem",
+        "Narrow",
+        "Right",
+        "Wide",
+        "Left",
+        "Merge",
+        "Y"
+      ],
+      "peaks": {
+        "live_tensors": 2,
+        "cut_bytes": 197632,
+        "internal_crossing_edges": 2,
+        "event_bytes": 271744
+      },
+      "trace": [
+        {
+          "op": "Stem",
+          "live": [
+            "Stem"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 135872
+        },
+        {
+          "op": "Narrow",
+          "live": [
+            "Narrow",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 98816
+        },
+        {
+          "op": "Right",
+          "live": [
+            "Right",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 123520,
+          "internal_crossing_edges": 2,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Wide",
+          "live": [
+            "Right",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 197632,
+          "internal_crossing_edges": 2,
+          "event_bytes": 271744
+        },
+        {
+          "op": "Left",
+          "live": [
+            "Left",
+            "Right"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 247040
+        },
+        {
+          "op": "Merge",
+          "live": [
+            "Merge"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 49408,
+          "internal_crossing_edges": 1,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Y",
+          "live": [],
+          "live_tensors": 0,
+          "cut_bytes": 0,
+          "internal_crossing_edges": 0,
+          "event_bytes": 123520
+        }
+      ]
+    },
+    {
+      "order": [
+        "Stem",
+        "Narrow",
+        "Right",
+        "Wide",
+        "Left",
+        "Merge",
+        "Y"
+      ],
+      "peaks": {
+        "live_tensors": 2,
+        "cut_bytes": 197632,
+        "internal_crossing_edges": 2,
+        "event_bytes": 271744
+      },
+      "trace": [
+        {
+          "op": "Stem",
+          "live": [
+            "Stem"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 135872
+        },
+        {
+          "op": "Narrow",
+          "live": [
+            "Narrow",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 98816
+        },
+        {
+          "op": "Right",
+          "live": [
+            "Right",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 123520,
+          "internal_crossing_edges": 2,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Wide",
+          "live": [
+            "Right",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 197632,
+          "internal_crossing_edges": 2,
+          "event_bytes": 271744
+        },
+        {
+          "op": "Left",
+          "live": [
+            "Left",
+            "Right"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 247040
+        },
+        {
+          "op": "Merge",
+          "live": [
+            "Merge"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 49408,
+          "internal_crossing_edges": 1,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Y",
+          "live": [],
+          "live_tensors": 0,
+          "cut_bytes": 0,
+          "internal_crossing_edges": 0,
+          "event_bytes": 123520
+        }
+      ]
+    },
+    {
+      "order": [
+        "Stem",
+        "Narrow",
+        "Right",
+        "Wide",
+        "Left",
+        "Merge",
+        "Y"
+      ],
+      "peaks": {
+        "live_tensors": 2,
+        "cut_bytes": 197632,
+        "internal_crossing_edges": 2,
+        "event_bytes": 271744
+      },
+      "trace": [
+        {
+          "op": "Stem",
+          "live": [
+            "Stem"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 74112,
+          "internal_crossing_edges": 2,
+          "event_bytes": 135872
+        },
+        {
+          "op": "Narrow",
+          "live": [
+            "Narrow",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 98816
+        },
+        {
+          "op": "Right",
+          "live": [
+            "Right",
+            "Stem"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 123520,
+          "internal_crossing_edges": 2,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Wide",
+          "live": [
+            "Right",
+            "Wide"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 197632,
+          "internal_crossing_edges": 2,
+          "event_bytes": 271744
+        },
+        {
+          "op": "Left",
+          "live": [
+            "Left",
+            "Right"
+          ],
+          "live_tensors": 2,
+          "cut_bytes": 98816,
+          "internal_crossing_edges": 2,
+          "event_bytes": 247040
+        },
+        {
+          "op": "Merge",
+          "live": [
+            "Merge"
+          ],
+          "live_tensors": 1,
+          "cut_bytes": 49408,
+          "internal_crossing_edges": 1,
+          "event_bytes": 148224
+        },
+        {
+          "op": "Y",
+          "live": [],
+          "live_tensors": 0,
+          "cut_bytes": 0,
+          "internal_crossing_edges": 0,
+          "event_bytes": 123520
+        }
+      ]
+    }
+  ],
+  "lookahead_2": {
+    "order": [
+      "Stem",
+      "Narrow",
+      "Wide",
+      "Left",
+      "Right",
+      "Merge",
+      "Y"
+    ],
+    "peaks": {
+      "live_tensors": 2,
+      "cut_bytes": 172928,
+      "internal_crossing_edges": 2,
+      "event_bytes": 247040
+    },
+    "trace": [
+      {
+        "op": "Stem",
+        "live": [
+          "Stem"
+        ],
+        "live_tensors": 1,
+        "cut_bytes": 74112,
+        "internal_crossing_edges": 2,
+        "event_bytes": 135872
+      },
+      {
+        "op": "Narrow",
+        "live": [
+          "Narrow",
+          "Stem"
+        ],
+        "live_tensors": 2,
+        "cut_bytes": 98816,
+        "internal_crossing_edges": 2,
+        "event_bytes": 98816
+      },
+      {
+        "op": "Wide",
+        "live": [
+          "Narrow",
+          "Wide"
+        ],
+        "live_tensors": 2,
+        "cut_bytes": 172928,
+        "internal_crossing_edges": 2,
+        "event_bytes": 247040
+      },
+      {
+        "op": "Left",
+        "live": [
+          "Left",
+          "Narrow"
+        ],
+        "live_tensors": 2,
+        "cut_bytes": 74112,
+        "internal_crossing_edges": 2,
+        "event_bytes": 222336
+      },
+      {
+        "op": "Right",
+        "live": [
+          "Left",
+          "Right"
+        ],
+        "live_tensors": 2,
+        "cut_bytes": 98816,
+        "internal_crossing_edges": 2,
+        "event_bytes": 123520
+      },
+      {
+        "op": "Merge",
+        "live": [
+          "Merge"
+        ],
+        "live_tensors": 1,
+        "cut_bytes": 49408,
+        "internal_crossing_edges": 1,
+        "event_bytes": 148224
+      },
+      {
+        "op": "Y",
+        "live": [],
+        "live_tensors": 0,
+        "cut_bytes": 0,
+        "internal_crossing_edges": 0,
+        "event_bytes": 123520
+      }
+    ]
+  },
+  "after_stem_narrow": [
+    {
+      "next": "Wide",
+      "immediate_bytes": 247040,
+      "best_completion_bytes": 247040
+    },
+    {
+      "next": "Right",
+      "immediate_bytes": 148224,
+      "best_completion_bytes": 271744
+    }
+  ],
+  "previous_suite_event_baseline": {
+    "exact_cases": 21,
+    "original_optimal": 13,
+    "event_greedy_optimal": 16,
+    "portfolio_optimal": 20
+  }
+}

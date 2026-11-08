@@ -4,6 +4,12 @@ The [local DAG structure analysis](graph_structure/README.md) measures tensor
 frontiers, weighted activation peaks and schedule sensitivity on 22 repository
 and explicitly constructed graphs, with exact topological-prefix optimization
 on 21 cases and a state-limited result on the remaining case.
+The [asymmetric follow-up](graph_structure/ASYMMETRIC.md) shows that two-step
+lookahead repairs the one-step greedy failure. The
+[real-model extension](graph_structure/REAL_MODELS.md) exports 10 Torchvision
+models successfully (one rejected multi-output case): all 10 source schedules
+already minimize the declared materialized activation peak, and DenseNet-121
+has a minimum live-tensor frontier of 25. These results narrow the earlier claims.
 
 The [late-binding experiments](late_binding/README.md) compare mapping-first
 certificates and exact architecture-first search using the same native candidate

@@ -57,3 +57,14 @@ def test_runtime_event_peak_agrees():
 def test_limit_does_not_claim_optimum():
     g=DAG({'X':1},[('a',('X',),1,'op'),('b',('X',),1,'op')])
     assert exact(g,1)['optimum'] is None
+
+
+def test_asymmetric_exhaustive_and_two_step_repair():
+    from research.graph_structure.analyze import cases, greedy, lookahead
+    from research.graph_structure.asymmetric_audit import all_orders
+    g=next(g for name,_,g in cases() if name=='native_asymmetric')
+    values=[trace(g,order)[0]['event_bytes'] for order in all_orders(g)]
+    assert sorted(values)==[247040]*4+[271744]*2
+    assert all(trace(g,greedy(g,j))[0]['event_bytes']==271744 for j in range(4))
+    assert trace(g,lookahead(g,2))[0]['event_bytes']==247040
+    assert exact(g,time_limit=0)['status']=='time_limit'

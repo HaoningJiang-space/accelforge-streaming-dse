@@ -71,14 +71,17 @@ def trace(graph, order):
     return dict(zip(METRICS, peaks)), rows
 
 
-def exact(graph, state_limit=50000):
+def exact(graph, state_limit=50000, time_limit=None):
     # Each objective has its own best prefix and predecessor, not one joint optimum.
     layer = {0: (0, 0, 0, 0)}
     parents = {}
     states = 1
+    start = perf_counter()
     for _ in graph.ops:
         following = {}
         for done, costs in layer.items():
+            if time_limit is not None and perf_counter() - start >= time_limit:
+                return dict(status="time_limit", states=states, optimum=None)
             for i in graph.ready(done):
                 nxt = done | (1 << i)
                 local = (*graph.cut(nxt), graph.event_bytes(done, i))
@@ -115,6 +118,26 @@ def greedy(graph, objective):
             values = (*graph.cut(done | (1 << i)), graph.event_bytes(done, i))
             return values[objective], values[1], i
         i = min(graph.ready(done), key=key)
+        order.append(i)
+        done |= 1 << i
+    return order
+
+
+def lookahead(graph, depth=2):
+    """Receding-horizon event-peak heuristic; no global optimality claim."""
+    if depth < 1:
+        raise ValueError("positive depth required")
+    def future(done, remaining):
+        if remaining == 0 or done == graph.full:
+            return 0
+        return min(max(graph.event_bytes(done, i), future(done | (1 << i), remaining-1))
+                   for i in graph.ready(done))
+    done, order = 0, []
+    while done != graph.full:
+        def key(i):
+            return (max(graph.event_bytes(done,i), future(done | (1 << i),depth-1)),
+                    graph.cut(done | (1 << i))[1], i)
+        i=min(graph.ready(done),key=key)
         order.append(i)
         done |= 1 << i
     return order
