@@ -6,11 +6,13 @@ from pathlib import Path
 from research.physical_cost.banked_scale import DeepArchitecture
 from research.physical_cost.external_ddr import SystemLedger
 from research.physical_cost.serving_trace import run
-from research.physical_cost.transformer_serving import Workload, Plan, compile_program, matrix_service
-from research.physical_cost.transformer_validation import numerical
+from research.physical_cost.transformer_serving import Workload, Plan, compile_program, matrix_service, placement
+from research.physical_cost.transformer_validation import numerical, numerical_long
 from research.physical_cost.transformer_boundary import summarize
 from research.physical_cost.transformer_boundary import evaluate
 from research.physical_cost.transformer_parallel import evaluate_shard, combine
+from research.physical_cost.transformer_cold import feasible
+from research.physical_cost.transformer_relocation import relocate
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,6 +21,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_full_block_causal_prefill_matches_incremental_decode_and_online_attention():
     for width in (64, 128):
         assert numerical(width)["max_absolute_error"] < 2e-5
+    for context in (8192, 12288):
+        assert numerical_long(context)["max_absolute_error"] < 2e-5
 
 
 def test_full_block_actions_stage_deletion_and_cache_persistence():
@@ -95,3 +99,23 @@ def test_disjoint_exhaustive_shards_preserve_coverage_and_all_ties():
         assert sharded[key] == direct[key]
     assert sharded["best"]["edp"] == direct["best"]["edp"]
     assert sorted(Plan(**p) for p in sharded["tied_plans"]) == sorted(Plan(**p) for p in direct["tied_plans"])
+
+
+def test_minimum_reservation_feasibility_matches_exhaustive_placement():
+    from research.physical_cost.transformer_serving import plans
+    work = Workload(19, (2049,), 2, (0, 0))
+    grammar = list(plans(work))
+    for banks, size in product((2, 3, 4, 8), (16384, 65536)):
+        hw = DeepArchitecture(32, 64, banks, size, 1024)
+        assert feasible(hw, work) == any(placement(hw, work, p) is not None for p in grammar)
+
+
+def test_relocation_reuses_dead_versions_but_keeps_live_versions_distinct():
+    a, b = (("a",), 0), (("b",), 0)
+    serial = [(0, 1, 0, "w", 0, 10, a, None), (1, 2, 1, "r", 0, 10, a, None),
+              (2, 3, 2, "w", 0, 20, b, None), (3, 4, 3, "r", 0, 20, b, None)]
+    assert relocate(serial, 64)["fits"]
+    overlap = [(0, 1, 0, "w", 0, 10, a, None), (2, 3, 1, "r", 0, 10, a, None),
+               (1, 2, 2, "w", 0, 20, b, None), (3, 4, 3, "r", 0, 20, b, None)]
+    assert not relocate(overlap, 64)["fits"]
+    assert relocate(overlap, 128)["fits"]

@@ -84,7 +84,29 @@ def numerical(width=64, heads=4):
             "dtype": "float32", "prefill_rows": len(x), "decode_steps": len(x), "tile_sizes": [1, 7, 16, 64]}
 
 
-def verify(program, result, macros, device, work=None, phase="episode"):
+def numerical_long(context, width=64, heads=4):
+    rng = np.random.default_rng(8102 + context)
+    weights = {name: (rng.standard_normal((k, n)) / np.sqrt(k)).astype(np.float32)
+               for name, k, n in (("q", width, width), ("k", width, width // heads),
+                                   ("v", width, width // heads), ("out", width, width),
+                                   ("up", width, 4 * width), ("down", 4 * width, width))}
+    for stage in (1, 2):
+        weights[f"g{stage}"] = np.ones(width, dtype=np.float32)
+        weights[f"b{stage}"] = np.zeros(width, dtype=np.float32)
+    old = tuple(rng.standard_normal((context, width // heads)).astype(np.float32) for _ in range(2))
+    inputs = rng.standard_normal((4, width)).astype(np.float32)
+    reference, cache = block(inputs, weights, heads, old)
+    errors = []
+    for tile in (128, 512):
+        actual, appended = block(inputs, weights, heads, old, tile)
+        np.testing.assert_allclose(actual, reference, atol=2e-5, rtol=2e-5)
+        assert all(np.array_equal(a, b) for a, b in zip(appended, cache, strict=True))
+        errors.append(float(abs(actual - reference).max()))
+    return {"context": context, "decode_steps": 4, "width": width,
+            "max_absolute_error": max(errors), "tiles": [128, 512]}
+
+
+def verify(program, result, macros, device, work=None, phase="episode", *, allow_reservation_overflow=False):
     """Replay all accesses and versions without using dispatcher calendars."""
     spans, finish, commands = result["trace"]
     hw = program.hardware
@@ -95,7 +117,8 @@ def verify(program, result, macros, device, work=None, phase="episode"):
     for name, region in program.regions.items():
         for loc in addresses(region, 0, region.words):
             canonical = program.aliases.get(name, name)
-            assert (loc not in occupied or occupied[loc] == canonical) and 0 <= loc[1] < hw.global_capacity // 64
+            assert loc not in occupied or occupied[loc] == canonical
+            assert loc[1] >= 0 and (allow_reservation_overflow or loc[1] < hw.global_capacity // 64)
             occupied[loc] = canonical
     expected = Counter()
     counts = Counter()
@@ -201,11 +224,12 @@ def verify(program, result, macros, device, work=None, phase="episode"):
     for _, delta, bank in sorted(events):
         current[bank] += 64 * delta
         peak[bank] = max(peak[bank], current[bank])
-        assert 0 <= current[bank] <= hw.global_capacity
+        assert current[bank] >= 0 and (allow_reservation_overflow or current[bank] <= hw.global_capacity)
     return {"ddr_bursts": len(bursts), "commands": len(commands), "tasks": len(finish),
             "peak_live_bank_bytes": peak, "reserved_bank_bytes": [64 * n for n in program.used],
             "first_data_ps": bursts[0][2], "matrix_macs": program.matrix_macs,
-            "attention_macs": program.attention_macs, "output_tiles": len(program.required_outputs)}
+            "attention_macs": program.attention_macs, "output_tiles": len(program.required_outputs),
+            "reservation_overflow_diagnostic": allow_reservation_overflow}
 
 
 def main():
@@ -235,7 +259,8 @@ def main():
 
     device = DDR4(org_preset="DDR4_8Gb_x8", timing_preset="DDR4_2400R", rank=1)
     macros = {int(k): v for k, v in json.loads(args.sram.read_text())["macros"].items()}
-    report = {"ramulator_revision": revision, "numeric": [numerical(64), numerical(128)], "replays": []}
+    report = {"ramulator_revision": revision, "numeric": [numerical(64), numerical(128)],
+              "long_numeric": [numerical_long(8192), numerical_long(12288)], "replays": []}
     for path in args.reports:
         data = json.loads(gzip.decompress(path.read_bytes()))
         work = Workload(**data["workload"])

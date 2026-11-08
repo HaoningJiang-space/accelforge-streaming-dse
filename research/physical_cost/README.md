@@ -1226,3 +1226,22 @@ are still in progress in this snapshot.
 [Exact tables and coverage](results/transformer_boundary_windows.json.gz) ·
 [Winner replays and static-allocation controls](results/transformer_validation_windows.json.gz) ·
 [18 small physical replays and FP32 numerical checks](results/transformer_smoke_windows.json.gz)
+
+**Allocation counterexample.** The two larger gaps must not be interpreted as
+necessary physical hardware losses. Move the grammar winner's mapping onto
+the decode-selected 24×16 KiB hardware, preserving its real prices and timing.
+Fixed regions would reserve 22,656 B/bank in the 8K case and 17,152 B/bank in
+the 12K case. Independent version lifetimes peak at only 14,208 and 12,160 B.
+A constructive per-bank interval allocation fits all versions in 16 KiB,
+replays every read against its last writer, and preserves bank IDs, access
+times, DDR commands, action counts and energy. The resulting EDPs are
+3,022,650 and 4,283,522 µJ·µs, below the original fixed-region grammar's
+3,235,957 and 4,557,106. This disproves a claim that the original hardware
+choice necessarily incurs the reported gaps.
+
+The relocation is outside the fixed-region grammar and its address-generator
+cost is uncalibrated. It is not silently included in the primary comparison,
+does not certify an optimum in the expanded space, and does not establish a
+new allocator/search advantage. It identifies incomplete allocation coverage
+as a material limit on the claimed decode-first boundary.
+[Constructive allocation and independent checks](results/transformer_relocation_windows.json.gz)
