@@ -12,7 +12,8 @@ from time import perf_counter
 
 from research.physical_cost.banked_oracle import audit
 from research.physical_cost.banked_serving import (
-    DRAM_AJ, DRAM_NS, MAC_AJ, Mapping, Workload, build, dispatch, mappings, place, price, tile_words,
+    DRAM_AJ, DRAM_NS, MAC_AJ, Mapping, Workload, build, dispatch, layout_requirements,
+    mappings, place, price, tile_words,
 )
 from research.physical_cost.mixed_gate import Architecture, GB_BANKS, GB_BYTES, LOCAL_BYTES, REFERENCE, SHAPES
 from research.runtime.strip_codesign import ceildiv
@@ -20,16 +21,21 @@ from research.runtime.strip_native_timing import shape_classes
 
 
 CASES = {
+    "context512": Workload(context=512),
     "context768": Workload(context=768),
     "context1024": Workload(),
     "context1536": Workload(rows=80, context=1536, steps=12),
+    "asymmetric": Workload(rows=93, inner=192, columns=320, context=1152, head=80, steps=12),
+    "decode_heavy": Workload(rows=32, context=640, steps=16),
+    "prefill_heavy": Workload(rows=128, context=640, steps=4),
 }
 DEADLINES = (0.1, 0.5, 2.0, 8.0)
 
 
-def estimate(hw, work, mapping, macros):
+def estimate(hw, work, mapping, macros, regions=None):
     """Bound by bank service, decoder serialization, and prefill admission."""
-    regions = place(hw, work, mapping)
+    if regions is None:
+        regions = place(hw, work, mapping)
     if regions is None:
         return None
     g, l = macros[hw.global_bank_bytes], macros[hw.weight_bytes_per_stripe]
@@ -54,28 +60,33 @@ def estimate(hw, work, mapping, macros):
             return count * dma_ns
         return duration
 
-    def kernel(request, slot, r, k, n, repeats, kv_offset=None):
-        xw, ww, ow = tile_words(r, k, n)
-        staged = xw if kv_offset is not None else xw + ww
-        peak = ceildiv(k * ceildiv(n, hw.x), 8)
+    def local_words(k, n):
         full_stripes = n % hw.x
         short_words = ceildiv(k * (n // hw.x), 8)
         long_words = ceildiv(k * (n // hw.x + 1), 8)
         local = full_stripes * long_words + (hw.x - full_stripes) * short_words
+        return local, ceildiv(k * ceildiv(n, hw.x), 8)
+
+    def kernel(request, slot, r, k, n, repeats, kv_offset=None, pinned=False):
+        xw, ww, ow = tile_words(r, k, n)
+        staged = xw if kv_offset is not None or pinned else xw + ww
+        local, peak = local_words(k, n)
         incoming = moves(request, slot, 0, staged, "w", repeats, True)
         load = moves(request, slot, 0, staged, "r", repeats)
         if kv_offset is not None:
             # The sum of accesses to each bank is tracked exactly. The shorter
             # of the combined service bounds is sufficient for the chain bound.
             load = max(load, moves(request, "KV", kv_offset, ww, "r", repeats))
-        load += peak * lc
+        if not pinned:
+            load += peak * lc
+            resources[request, "LW", "w"] += load * repeats
+            traffic["local_w"] += local * repeats
         mac = peak * lc + r * ceildiv(k, hw.y) * ceildiv(n, hw.x)
-        resources[request, "LW", "w"] += load * repeats
         resources[request, "LR", "r"] += peak * lc * repeats
         resources[request, "MAC", "both"] += mac * repeats
         output = moves(request, slot, staged, ow, "w", repeats)
         drain = moves(request, slot, staged, ow, "r", repeats, True)
-        traffic["local"] += local * repeats
+        traffic["local_r"] += local * repeats
         traffic["macs"] += r * k * n * repeats
         return incoming + load + mac + output + drain
 
@@ -89,10 +100,16 @@ def estimate(hw, work, mapping, macros):
                            col * work.head // 64 if mapping.resident else None)
     full_decode = first_decode + work.steps * one_step
     first_decode += one_step
-    for (r, repeat_r), (n, repeat_n) in product(
-        shape_classes(work.rows, mapping.rows), shape_classes(work.columns, mapping.columns),
-    ):
-        kernel("P", "P0", r, work.inner, n, repeat_r * repeat_n)
+    for n, repeat_n in shape_classes(work.columns, mapping.columns):
+        if mapping.pin_weights:
+            ww = ceildiv(work.inner * n, 64)
+            local, peak = local_words(work.inner, n)
+            moves("P", "PW", 0, ww, "w", repeat_n, True)
+            load = moves("P", "PW", 0, ww, "r", repeat_n)
+            resources["P", "LW", "w"] += (load + peak * lc) * repeat_n
+            traffic["local_w"] += local * repeat_n
+        for r, repeat_r in shape_classes(work.rows, mapping.rows):
+            kernel("P", "P0", r, work.inner, n, repeat_r * repeat_n, pinned=mapping.pin_weights)
 
     pooled = Counter()
     p_service = 0
@@ -105,7 +122,8 @@ def estimate(hw, work, mapping, macros):
         traffic["dram"] * DRAM_AJ + traffic["macs"] * MAC_AJ
         + sum(traffic[d] * round(g[f"{action}_nj"] * 1e9)
               for d, action in (("r", "read"), ("w", "write")))
-        + traffic["local"] * sum(round(l[f"{action}_nj"] * 1e9) for action in ("read", "write"))
+        + sum(traffic[f"local_{d}"] * round(l[f"{action}_nj"] * 1e9)
+              for d, action in (("r", "read"), ("w", "write")))
     )
     return (dynamic + leak * duration) * duration, dynamic
 
@@ -116,9 +134,9 @@ def phase_score(hw, work, macros):
     for phase in ("P", "D"):
         if phase == "P":
             plans = (
-                Mapping(r, n, d, False, layout, "P")
-                for r, n, d, layout in product((8, 16, 32), (16, 32, 64, 128), (1, 2),
-                                               ("striped", "separate", "shared"))
+                Mapping(r, n, d, False, layout, "P", pin)
+                for r, n, d, layout, pin in product((8, 16, 32), (16, 32, 64, 128), (1, 2),
+                                                    ("striped", "separate", "shared"), (False, True))
             )
         else:
             plans = (Mapping(8, 16, 1, cached, layout, "D")
@@ -137,6 +155,38 @@ def phase_score(hw, work, macros):
 def all_ties(scores):
     optimum = min(scores.values())
     return tuple(sorted(hw for hw, score in scores.items() if score == optimum))
+
+
+def bind_candidates(hardware, work, plans, macros):
+    """Reuse addressed layouts, excluding only cost-dominated equal-service mappings."""
+    groups = defaultdict(list)
+    prices = {}
+    for hw in hardware:
+        g, l = macros[hw.global_bank_bytes], macros[hw.weight_bytes_per_stripe]
+        service = tuple(ceil(max(m["access_ns"], m["cycle_ns"])) for m in (g, l))
+        groups[hw.x, hw.y, hw.global_banks, *service].append(hw)
+        prices[hw] = tuple(round(m[key] * 1e9) for m in (g, l) for key in ("read_nj", "write_nj"))
+        prices[hw] += (round(hw.sram_totals(macros, "leak_mw") * 1e6),)
+    by_hw = defaultdict(list)
+    feasible = 0
+    for members in groups.values():
+        dominates = {hw: {
+            other for other in members if other != hw
+            and (prices[other] != prices[hw] or other < hw)
+            and all(a <= b for a, b in zip(prices[other], prices[hw], strict=True))
+        } for hw in members}
+        for mapping in plans:
+            regions, gb_needed, private_needed = layout_requirements(members[0], work, mapping)
+            admitted = {hw for hw in members if hw.global_bank_bytes >= gb_needed
+                        and hw.weight_bytes_per_stripe >= private_needed}
+            feasible += 2 * len(admitted)
+            for hw in sorted(admitted):
+                if admitted & dominates[hw]:
+                    continue
+                bound, dynamic = estimate(hw, work, mapping, macros, regions)
+                for prefer in ("P", "D"):
+                    by_hw[hw].append((bound, hw, replace(mapping, prefer=prefer), dynamic))
+    return by_hw, feasible
 
 
 def run_search(hardware, work, macros, method, deadlines=DEADLINES):
@@ -181,16 +231,18 @@ def run_search(hardware, work, macros, method, deadlines=DEADLINES):
             break
 
     before_generation = perf_counter()
-    for hw in hardware:
-        estimates = {}
-        for mapping in mappings():
-            considered += 1
-            key = replace(mapping, prefer="P")
-            if key not in estimates:
-                estimates[key] = estimate(hw, work, key, macros)
-            result = estimates[key]
-            if result is not None:
-                by_hw[hw].append((result[0], hw, mapping, result[1]))
+    plans = tuple(mapping for mapping in mappings() if mapping.prefer == "P")
+    considered = 2 * len(plans) * len(hardware)
+    if method in ("binding", "grouped_sweep"):
+        by_hw, feasible = bind_candidates(hardware, work, plans, macros)
+    else:
+        for hw in hardware:
+            for mapping in plans:
+                result = estimate(hw, work, mapping, macros)
+                if result is not None:
+                    for prefer in ("P", "D"):
+                        by_hw[hw].append((result[0], hw, replace(mapping, prefer=prefer), result[1]))
+        feasible = sum(map(len, by_hw.values()))
     generation = perf_counter() - before_generation
     by_hw = {hw: sorted(items) for hw, items in by_hw.items()}
     lower = {hw: items[0][0] for hw, items in by_hw.items()}
@@ -207,7 +259,7 @@ def run_search(hardware, work, macros, method, deadlines=DEADLINES):
         selected = tuple(sorted(by_hw, key=lambda hw: (lower[hw], hw)))
     selection = perf_counter() - selection_start
 
-    if method == "joint":
+    if method in ("joint", "binding"):
         for item in sorted(item for hw in selected for item in by_hw[hw]):
             if item[0] >= incumbent:
                 break
@@ -229,6 +281,7 @@ def run_search(hardware, work, macros, method, deadlines=DEADLINES):
         "verification_s": verification_s,
         "candidates_generated": sum(map(len, by_hw.values())),
         "candidates_considered": considered,
+        "candidates_dominated": feasible - sum(map(len, by_hw.values())),
         "compiled": compiled,
         "scheduled": replayed,
         "architectures_selected": [asdict(hw) for hw in selected],
@@ -241,16 +294,37 @@ def run_search(hardware, work, macros, method, deadlines=DEADLINES):
     }
 
 
-def run(table, output, names, repeats):
+def layout_ablation(macros, hardware):
+    hw = Architecture(64, 32, 2, 65536, 1024)
+    if hw not in hardware:
+        return {}
+    layouts = {}
+    work = CASES["context768"]
+    for layout in ("striped", "separate", "shared"):
+        mapping = Mapping(8, 32, 2, True, layout, "D", True)
+        program = build(hw, work, mapping)
+        if program is None:
+            raise AssertionError("The fixed-address ablation must fit for all three layouts")
+        costs = price(program, macros)
+        value, _, starts, waits = dispatch(program, costs)
+        independent = audit(program, macros, starts)
+        if independent["edp"] != value:
+            raise AssertionError("The layout ablation fails independent replay")
+        layouts[layout] = {**independent, "scheduler_bank_wait_ns": waits}
+    return {"hardware": asdict(hw), "workload": asdict(work), "layouts": layouts}
+
+
+def run(table, output, names, repeats, area_factor=1.5):
     macros = {int(size): row for size, row in table["macros"].items()}
-    limit = Architecture(*REFERENCE).sram_totals(macros, "area_mm2") * 1.5
+    limit = Architecture(*REFERENCE).sram_totals(macros, "area_mm2") * area_factor
     hardware = tuple(sorted(
         hw for hw in (Architecture(*shape, banks, gb, local)
                       for shape, banks, gb, local in product(SHAPES, GB_BANKS, GB_BYTES, LOCAL_BYTES))
         if hw.sram_totals(macros, "area_mm2") <= limit
     ))
-    methods = ("joint", "standalone", "optimistic", "near", "sweep")
-    report = {"area_mm2": limit, "hardware_points": len(hardware), "cases": {}}
+    methods = ("binding", "joint", "standalone", "optimistic", "near", "sweep", "grouped_sweep")
+    report = {"area_mm2": limit, "hardware_points": len(hardware), "cases": {},
+              "same_hardware_layout_ablation": layout_ablation(macros, hardware)}
     for name in names:
         work = CASES[name]
         runs = {method: [] for method in methods}
@@ -260,7 +334,8 @@ def run(table, output, names, repeats):
                 runs[method].append(record)
                 print(name, repeat, method, record["seconds"], record["edp_aj_ns"],
                       record["winner"], flush=True)
-            if runs["joint"][-1]["edp_aj_ns"] != runs["sweep"][-1]["edp_aj_ns"]:
+            if len({runs[method][-1]["edp_aj_ns"]
+                    for method in ("binding", "joint", "sweep", "grouped_sweep")}) != 1:
                 raise AssertionError("The complete architecture sweep disagrees with joint search")
         report["cases"][name] = {"workload": asdict(work), "runs": runs}
         output.write_bytes(gzip.compress(json.dumps(report, indent=2).encode(), mtime=0))
@@ -272,10 +347,13 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("--cases", nargs="+", choices=CASES, default=list(CASES))
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--area-factor", type=float, default=1.5)
     args = parser.parse_args()
     if args.repeats < 1:
         parser.error("--repeats must be positive")
-    run(json.loads(args.table.read_text()), args.output, args.cases, args.repeats)
+    if args.area_factor <= 0:
+        parser.error("--area-factor must be positive")
+    run(json.loads(args.table.read_text()), args.output, args.cases, args.repeats, args.area_factor)
 
 
 if __name__ == "__main__":

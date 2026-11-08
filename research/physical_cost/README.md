@@ -121,3 +121,64 @@ cases. The initial grammar refetches the prefill weight tile per row tile.
 python -m research.physical_cost.banked_search research/physical_cost/results/sram_45nm.json /tmp/banked.json.gz
 python -m pytest -q research/physical_cost/tests/test_banked_serving.py
 ```
+
+### Weight residency and capacity binding
+
+The expanded grammar can keep each prefill weight stripe in private SRAM
+across row tiles and reserve the full source strip in global SRAM until the
+last local fill. All searches can use this mapping. At context 768, adding
+this option reduces the best EDP by 47.0% relative to the initial grammar.
+
+Mapping-first capacity binding groups hardware by PE shape, bank count
+and per-bank service cycles. For each addressed layout it computes the
+global and private capacity requirements once. Within a group it discards
+a feasible macro configuration only when another feasible configuration
+has no greater read, write or leakage cost at each level. Their addressed
+transactions and dispatch times are identical. The grouped architecture
+sweep has the same rule. It removes 112 feasible pairs per workload and
+cuts median generation time by 18–28% relative to joint search without
+binding. Both complete sweeps and both joint searches agree on EDP.
+
+Seven cases were run locally on Windows, serially in rotating method
+order, with three repetitions, 13 hardware points and a common SRAM area
+limit of 1.346496 mm². The table reports final EDP normalized to capacity
+binding and median cold time (including candidate generation). The
+bank-aware architecture selector includes all ties; the near variant
+also includes all points within 2% of its optimistic score. Both fully
+remap the selected points using the addressed evaluator.
+
+| Workload | Near selector EDP ratio | Separate phase selector EDP ratio | Binding time (s) | Near selector time (s) | Grouped complete sweep time (s) |
+|---|---:|---:|---:|---:|---:|
+| Context 512 | 1.1110 | 1.0000 | 0.350 | 0.282 | 0.403 |
+| Context 768 | 1.0000 | 1.5934 | 0.311 | 0.333 | 0.311 |
+| Context 1024 | 1.0000 | 1.0000 | 0.320 | 0.340 | 0.352 |
+| Context 1536 | 1.0000 | 1.0000 | 0.597 | 0.586 | 0.598 |
+| Asymmetric | 1.0000 | 1.0000 | 0.619 | 0.639 | 0.663 |
+| Decode heavy | 1.0000 | 1.0000 | 0.311 | 0.329 | 0.310 |
+| Prefill heavy | 1.0000 | 1.3014 | 0.338 | 0.309 | 0.302 |
+
+At 0.5 s in each repetition on context 512, joint binding, joint search
+and the complete sweeps returned the same best EDP. That EDP is 10.0%
+below either bank-aware architecture selector. The separate-phase selector
+also reaches the optimum after a median 3.365 s. The winning 64 × 32 array
+uses four 16 KiB banks and 6.613 µs, while the bank-aware selector chooses
+two 64 KiB banks on the same array and takes 7.726 µs. At 2 s the bank-aware
+selectors still differ only on that case. End-to-end time gains from
+binding vary by workload.
+
+The independent replay finds 3.114–9.788 µs of KV and prefill staging
+co-residence and 0.479–2.825 µs of cross-request read/write overlap summed
+over banks. For a fixed context-768 tile and hardware, the striped,
+separated and shared layouts have identical word counts, dynamic energy
+and peak aggregate occupancy. Their scheduler bank-wait totals are
+3.965, 5.013 and 10.357 µs, and their independently replayed makespans are
+13.022, 13.519 and 17.832 µs. Bank placement alone changes executable
+latency in this ablation.
+
+The area cap covers CACTI SRAM macros with fixed total MAC count and DDR
+bandwidth. The experiment covers one prefill GEMM and one decoder score
+operator, uses fixed physical slots and two declared dispatch priorities,
+and does not generate AccelForge native FFM address traces. Exactness is
+within that finite grammar.
+
+[Expanded Windows report](results/banked_v2_windows.json.gz)

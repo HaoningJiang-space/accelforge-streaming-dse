@@ -34,14 +34,15 @@ class Mapping:
     resident: bool
     layout: str
     prefer: str
+    pin_weights: bool = False
 
 
 def mappings():
     layouts = ((False, "striped"), (True, "striped"), (True, "separate"), (True, "shared"))
-    for rows, cols, depth, (resident, layout), prefer in product(
-        (8, 16, 32), (16, 32, 64, 128), (1, 2), layouts, ("P", "D"),
+    for rows, cols, depth, (resident, layout), pinned, prefer in product(
+        (8, 16, 32), (16, 32, 64, 128), (1, 2), layouts, (False, True), ("P", "D"),
     ):
-        yield Mapping(rows, cols, depth, resident, layout, prefer)
+        yield Mapping(rows, cols, depth, resident, layout, prefer, pinned)
 
 
 @dataclass(frozen=True)
@@ -99,24 +100,24 @@ def tile_words(rows, k, n):
     return ceildiv(rows * k, LINE), ceildiv(k * n, LINE), ceildiv(rows * n, LINE)
 
 
-def place(hardware, work, mapping, standalone=None):
+def layout_requirements(hardware, work, mapping, standalone=None):
     banks = hardware.global_banks
-    cap = hardware.global_bank_bytes // LINE
     context_words = ceildiv(work.context * work.head, LINE)
     p_orders = {"striped": tuple(range(banks)), "separate": tuple(range(1, banks)), "shared": (0,)}
     p_order = p_orders[mapping.layout]
     d_order = tuple(range(banks))
     kv_order = d_order if mapping.layout == "striped" else (0,)
     decode_n = min(work.context, work.decode_tile)
-    p_words = sum(tile_words(min(mapping.rows, work.rows), work.inner, min(mapping.columns, work.columns)))
+    px, pw, po = tile_words(min(mapping.rows, work.rows), work.inner, min(mapping.columns, work.columns))
+    p_words = px + po + (0 if mapping.pin_weights else pw)
     q_words, dw_words, do_words = tile_words(1, work.head, decode_n)
     d_words = q_words + do_words + (0 if mapping.resident else dw_words)
     local_p = work.inner * ceildiv(min(mapping.columns, work.columns), hardware.x)
     local_d = work.head * ceildiv(decode_n, hardware.x)
-    if ((ceildiv(local_p, LOCAL_WORD) * LOCAL_WORD if standalone != "D" else 0)
-            + (ceildiv(local_d, LOCAL_WORD) * LOCAL_WORD if standalone != "P" else 0)
-            > hardware.weight_bytes_per_stripe):
-        return None
+    private_bytes = (
+        (ceildiv(local_p, LOCAL_WORD) * LOCAL_WORD if standalone != "D" else 0)
+        + (ceildiv(local_d, LOCAL_WORD) * LOCAL_WORD if standalone != "P" else 0)
+    )
 
     regions = {}
     cursors = [0] * banks
@@ -132,9 +133,18 @@ def place(hardware, work, mapping, standalone=None):
             allocate("KV", context_words, kv_order)
         allocate("D", d_words, d_order)
     if standalone != "D":
+        if mapping.pin_weights:
+            allocate("PW", pw, p_order)
         for i in range(mapping.buffers):
             allocate(f"P{i}", p_words, p_order)
-    return regions if max(cursors) <= cap else None
+    return regions, max(cursors) * LINE, private_bytes
+
+
+def place(hardware, work, mapping, standalone=None):
+    regions, bank_bytes, private_bytes = layout_requirements(hardware, work, mapping, standalone)
+    if bank_bytes > hardware.global_bank_bytes or private_bytes > hardware.weight_bytes_per_stripe:
+        return None
+    return regions
 
 
 def build(hardware, work, mapping, *, standalone=None):
@@ -162,16 +172,21 @@ def build(hardware, work, mapping, *, standalone=None):
                     first_command = index
         return first_command, after[0]
 
-    def kernel(request, slot, shape, data, output, previous, kv=None):
-        r, k, n = shape
-        xw, ww, ow = tile_words(r, k, n)
+    def private_words(k, n):
         active = min(n, hardware.x)
         peak = ceildiv(k * ceildiv(n, hardware.x), LOCAL_WORD)
         words = sum(ceildiv(k * len(range(lane, n, hardware.x)), LOCAL_WORD) for lane in range(active))
+        return words, peak
+
+    def kernel(request, slot, shape, data, output, previous, kv=None, pinned=False):
+        r, k, n = shape
+        _, ww, ow = tile_words(r, k, n)
+        words, peak = private_words(k, n)
         reads = (Access(slot, 0, data, "r"),)
         if kv is not None:
             reads += (Access("KV", kv, ww, "r"),)
-        load = add(request, "load", previous, reads, local_words=words, local_peak=peak)
+        load = add(request, "load", previous, reads,
+                   local_words=0 if pinned else words, local_peak=0 if pinned else peak)
         mac = add(request, "mac", (load,), local_words=words, local_peak=peak,
                   macs=r * k * n, cycles=r * ceildiv(k, hardware.y) * ceildiv(n, hardware.x))
         write = add(request, "write", (mac,), (Access(slot, output, ow, "w"),))
@@ -206,19 +221,33 @@ def build(hardware, work, mapping, *, standalone=None):
     p_previous_dma = first_decode_end
     reuse = {}
     if standalone != "D":
-        tiles = product(range(0, work.rows, mapping.rows), range(0, work.columns, mapping.columns))
+        rows = range(0, work.rows, mapping.rows)
+        cols = range(0, work.columns, mapping.columns)
+        tiles = ((row, col) for col, row in product(cols, rows)) if mapping.pin_weights else product(rows, cols)
+        p_weight_ready = None
         for i, (row, col) in enumerate(tiles):
             slot = f"P{i % mapping.buffers}"
             r = min(mapping.rows, work.rows - row)
             n = min(mapping.columns, work.columns - col)
             xw, ww, _ = tile_words(r, work.inner, n)
+            if mapping.pin_weights and row == 0:
+                dependency = tuple(x for x in (p_previous_dma, p_weight_ready) if x is not None)
+                w_first, p_previous_dma = dma("P", "PW", 0, ww, "w", dependency)
+                if p_first is None:
+                    p_first = w_first
+                predecessors = tuple(x for x in (p_previous_dma, p_previous_mac) if x is not None)
+                words, peak = private_words(work.inner, n)
+                p_weight_ready = add("P", "load", predecessors, (Access("PW", 0, ww, "r"),),
+                                     local_words=words, local_peak=peak)
+                lives.append(Life("PW", w_first, p_weight_ready))
+            staged = xw if mapping.pin_weights else xw + ww
             dependencies = tuple(x for x in (p_previous_dma, reuse.get(slot)) if x is not None)
-            first, p_previous_dma = dma("P", slot, 0, xw + ww, "w", dependencies)
+            first, p_previous_dma = dma("P", slot, 0, staged, "w", dependencies)
             if p_first is None:
                 p_first = first
-            predecessors = (p_previous_dma,) if p_previous_mac is None else (p_previous_dma, p_previous_mac)
+            predecessors = tuple(x for x in (p_previous_dma, p_previous_mac, p_weight_ready) if x is not None)
             _, p_previous_mac, last = kernel(
-                "P", slot, (r, work.inner, n), xw + ww, xw + ww, predecessors,
+                "P", slot, (r, work.inner, n), staged, staged, predecessors, pinned=mapping.pin_weights,
             )
             reuse[slot] = last
             lives.append(Life(slot, first, last))
@@ -268,7 +297,7 @@ def price(program, macros):
                         dynamic += count * DRAM_AJ
                     used[port] = used.get(port, 0) + elapsed
                     dynamic += count * global_aj[access.direction]
-        if command.kind == "load":
+        if command.kind == "load" and command.local_words:
             used[local_w] = max(used.values()) + command.local_peak * l_cycle
             dynamic += command.local_words * local_aj["w"]
         if command.kind == "mac":

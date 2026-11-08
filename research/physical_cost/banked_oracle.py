@@ -25,6 +25,7 @@ def audit(program, macros, starts, *, standalone=None):
         "w": round(g["write_nj"] * 10**9),
     }
     intervals = defaultdict(list)
+    owners = defaultdict(list)
     movements, trace, completion = Counter(), [], []
     dynamic = 0
 
@@ -56,7 +57,7 @@ def audit(program, macros, starts, *, standalone=None):
                     per_port["DDR"] += step
                     dynamic += 3_599_360_000
                     movements[command.request, "dram"] += 1
-        if command.kind == "load":
+        if command.kind == "load" and command.local_words:
             # The read is followed by the transfer into private weight SRAM.
             per_port["LW"] = max(per_port.values()) + command.local_peak * local_period
             dynamic += round(l["write_nj"] * 10**9) * command.local_words
@@ -69,6 +70,8 @@ def audit(program, macros, starts, *, standalone=None):
             movements[command.request, "macs"] += command.macs
         for port, ticks in per_port.items():
             book(port, start, start + ticks)
+            if isinstance(port, tuple):
+                owners[port].append((start, start + ticks, command.request))
         completion.append(start + max(per_port.values()))
 
     for i, command in enumerate(program.commands):
@@ -156,11 +159,23 @@ def audit(program, macros, starts, *, standalone=None):
         local = sum(stripe_words)
         private_words[request] = max(private_words[request], max(stripe_words))
         expected[request, "macs"] += rows * inner * columns
-        expected[request, "dram"] += input_words + output + (0 if cached else weights)
-        expected[request, "w"] += input_words + output + (0 if cached else weights)
-        expected[request, "r"] += input_words + weights + output
+        pinned = request == "P" and plan.pin_weights
+        expected[request, "dram"] += input_words + output + (0 if cached or pinned else weights)
+        expected[request, "w"] += input_words + output + (0 if cached or pinned else weights)
+        expected[request, "r"] += input_words + output + (0 if pinned else weights)
         expected[request, "local_read"] += local
-        expected[request, "local_write"] += local
+        if not pinned:
+            expected[request, "local_write"] += local
+    if standalone != "D" and plan.pin_weights:
+        for col in range(0, work.columns, plan.columns):
+            n = min(plan.columns, work.columns - col)
+            weight_words = words(work.inner * n)
+            for movement in ("dram", "r", "w"):
+                expected["P", movement] += weight_words
+            expected["P", "local_write"] += sum(
+                (work.inner * count + 7) // 8
+                for count in Counter(c % hw.x for c in range(n)).values()
+            )
     if movements != expected:
         raise AssertionError("Word and MAC totals differ from independent tile arithmetic")
     if sum(private_words.values()) * 8 > hw.weight_bytes_per_stripe:
@@ -174,13 +189,16 @@ def audit(program, macros, starts, *, standalone=None):
             raise AssertionError("The running decoder must read KV before and during the prefill lifetime")
 
     # Exact intersection of the occupied read and write intervals on each bank.
-    rw_overlap = 0
+    rw_overlap = cross_request_rw = 0
     for bank in range(hw.global_banks):
-        reads, writes = sorted(intervals[bank, "r"]), sorted(intervals[bank, "w"])
+        reads, writes = sorted(owners[bank, "r"]), sorted(owners[bank, "w"])
         i = j = 0
         while i < len(reads) and j < len(writes):
             a, b = reads[i], writes[j]
-            rw_overlap += max(0, min(a[1], b[1]) - max(a[0], b[0]))
+            overlap = max(0, min(a[1], b[1]) - max(a[0], b[0]))
+            rw_overlap += overlap
+            if a[2] != b[2]:
+                cross_request_rw += overlap
             if a[1] <= b[1]:
                 i += 1
             else:
@@ -198,5 +216,8 @@ def audit(program, macros, starts, *, standalone=None):
         "reserved_private_bytes_per_stripe": sum(private_words.values()) * 8,
         "kv_prefill_co_resident_ns": co_resident,
         "same_bank_read_write_overlap_ns": rw_overlap,
+        "cross_request_read_write_overlap_ns": cross_request_rw,
+        "mac_idle_ns": ticks - sum(last - first for first, last in intervals["MAC"]),
+        "dram_busy_ns": sum(last - first for first, last in intervals["DDR"]),
         "words": {f"{request}/{kind}": count for (request, kind), count in sorted(movements.items())},
     }
