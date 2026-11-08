@@ -1,7 +1,7 @@
 """Isolate prefill/KV capacity, bank contention and idle leakage."""
 
 import argparse
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 import gzip
 from itertools import product
 import json
@@ -12,9 +12,10 @@ from time import perf_counter
 
 from research.physical_cost.banked_scale import DeepArchitecture
 from research.physical_cost.concurrent_search import CASES
-from research.physical_cost.concurrent_serving import Workload, compile_program, plans
+from research.physical_cost.concurrent_serving import Plan, Workload, compile_program, plans
 from research.physical_cost.concurrent_validation import RAMULATOR_REVISION, replay
 from research.physical_cost.external_ddr import SystemLedger
+from research.physical_cost.paid_area import PaidArchitecture
 from research.physical_cost.serving_exhaustive import evaluate_phase
 from research.physical_cost.serving_trace import run
 
@@ -28,6 +29,15 @@ MODES = {
     "both": (False, False),
 }
 OBJECTIVES = ("edp", "without_idle_leakage_edp", "active_edp", "dynamic_edp")
+
+
+@dataclass(frozen=True)
+class CapacityProbe(PaidArchitecture):
+    usable_bank_bytes: int = 0
+
+    @property
+    def global_capacity(self):
+        return self.usable_bank_bytes
 
 
 def idle_ps(arrivals, completions):
@@ -114,6 +124,30 @@ def stage_comparison(hardware, macros, work, results):
     return output
 
 
+def capacity_curve(hw, macros, device):
+    """Evaluate each plan once and derive every 64-byte capacity breakpoint."""
+    low, high = 14 * 1024, 20 * 1024
+    work = NEAR_CAPACITY
+    probe = CapacityProbe(**asdict(hw), usable_bank_bytes=high)
+    scored = []
+    for plan in plans(work):
+        program = compile_program(probe, work, plan)
+        if program is not None:
+            scored.append((max(program.used) * 64, plan, run(program, macros)))
+    curve = []
+    for capacity in range(low, high + 1, 64):
+        feasible = [(plan, result) for required, plan, result in scored if required <= capacity]
+        plan, result = min(feasible, key=lambda pair: (pair[1]["edp"], pair[0]))
+        curve.append({"bank_bytes": capacity, "feasible_plans": len(feasible), "plan": asdict(plan),
+                      "edp": result["edp"], "ddr_read_bytes": result["actions"]["ddr_read"] * 64})
+    first_both = next(row for row in curve if row["plan"]["resident"] == 3)
+    at_threshold = CapacityProbe(**asdict(hw), usable_bank_bytes=first_both["bank_bytes"])
+    witness = replay(macros, work, at_threshold, Plan(**first_both["plan"]), device)
+    assert first_both["edp"] == witness["result"]["edp"]
+    return {"hardware": asdict(hw), "workload": asdict(work), "curve": curve,
+            "first_both_resident": first_both, "threshold_replay": witness}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sram", type=Path)
@@ -121,6 +155,7 @@ def main():
     parser.add_argument("ramulator_checkout", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--reuse-factorial", type=Path, help="Add stage-first baselines to an existing factorial")
+    parser.add_argument("--capacity-curve-only", action="store_true")
     args = parser.parse_args()
     revision = check_output(["git", "-C", args.ramulator_checkout, "rev-parse", "HEAD"], text=True).strip()
     if revision != RAMULATOR_REVISION:
@@ -137,6 +172,10 @@ def main():
     assert all(hw.total_area_mm2(macros) <= cap for hw in hardware)
     report = {"area_cap_mm2": cap, "ramulator_revision": revision, "cases": {},
               "device": sram.get("device", "itrs-hp")}
+    if args.capacity_curve_only:
+        report["capacity_curve"] = capacity_curve(hardware[0], macros, device)
+        args.output.write_bytes(gzip.compress(json.dumps(report, indent=2).encode(), mtime=0))
+        return
     if args.reuse_factorial:
         with gzip.open(args.reuse_factorial, "rt") as file:
             existing = json.load(file)

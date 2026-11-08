@@ -1054,6 +1054,7 @@ and a 2,400-second wall limit.
 |---|---:|---:|
 | [Overlap](results/exact_hp_overlap_windows.json.gz) | 33,054 | 1,128.022 |
 | [Three decode requests](results/exact_hp_holdout3_windows.json.gz) | 20,322 | 24,021.234 |
+| [Four decode requests](results/exact_hp_holdout4_windows.json.gz) | 14,708 | 166,209.827 |
 
 The previously reported probe and interleaved incumbents are exact
 for these completed cases. Top-2 in the overlap case is 23.2%
@@ -1079,6 +1080,16 @@ physical architecture ranking. In the delayed-prefill case, the
 nominal LSTP scores for 64 × 32 and 16 × 64 are 3,998.995 and
 4,066.272. This pair retains the overlap order under full standby
 billing with LSTP.
+
+A separate capacity sweep keeps the 12-bank architecture's area,
+prices and timing fixed and changes the usable capacity by one
+64-byte line per bank. At 16,960 bytes the best mapping still keeps
+one KV resident. At 17,024 bytes the best mapping keeps both,
+removes 133 KiB of DDR reads and changes EDP from 2,469.930 to
+1,342.494 µJ·µs. The threshold mapping's largest live bank holds
+16,704 bytes. Static reservation in the declared grammar sets
+the feasibility threshold of 17,024 bytes, 640 above the
+physical 16 KiB. [Capacity sweep](results/cotenancy_capacity_curve_lstp_windows.json.gz)
 
 Decode-first removes prefill tasks and reservations and preserves
 the relative decode arrivals. Prefill-first likewise runs only
