@@ -1,5 +1,12 @@
 # AccelForge research workspace
 
+The [native motivation pilot](motivation/README.md) compares hardware selection
+under explicit per-operator DRAM materialization with graph-enabled FFM and
+then remaps the selected hardware. It verifies that zero fused loops alone
+does not force materialization, reports tie-aware selection regret and
+near-tie shortlist controls, and diagnoses two distinct capacity thresholds
+on small native matmul chains. This is not a full-model or physical-area study.
+
 The [local DAG structure analysis](graph_structure/README.md) measures tensor
 frontiers, weighted activation peaks and schedule sensitivity on 22 repository
 and explicitly constructed graphs, with exact topological-prefix optimization
