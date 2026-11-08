@@ -6,7 +6,7 @@ from pathlib import Path
 from research.physical_cost.banked_scale import DeepArchitecture
 from research.physical_cost.external_ddr import SystemLedger
 from research.physical_cost.serving_trace import run
-from research.physical_cost.transformer_serving import Workload, Plan, compile_program
+from research.physical_cost.transformer_serving import Workload, Plan, compile_program, matrix_service
 from research.physical_cost.transformer_validation import numerical
 from research.physical_cost.transformer_boundary import summarize
 
@@ -70,3 +70,14 @@ def test_decode_first_keeps_all_ties_after_common_feasibility_filter():
     assert result["unfiltered_decode_ties"] == [0]
     assert result["decode_ties"] == [1, 2]
     assert result["decode_first_edp"] == 8 and result["oracle_edp"] == 7
+
+
+def test_private_stripes_run_in_parallel_and_reduction_slices_fit():
+    hw = DeepArchitecture(64, 32, 16, 65536, 1024)
+    # QK: four query heads, 16 reductions, 128 scores. Each lane owns
+    # two 16-float columns: 16 private words. 64 compute + 5*16 service.
+    assert matrix_service(hw, 4, 16, 128) == (144, (4096, 1024))
+    # A smaller private buffer forces two K slices instead of one.
+    tiny = replace(hw, weight_bytes_per_stripe=64)
+    assert matrix_service(tiny, 4, 16, 128)[0] == 208
+    assert matrix_service(tiny, 4, 16, 128)[1] == matrix_service(hw, 4, 16, 128)[1]

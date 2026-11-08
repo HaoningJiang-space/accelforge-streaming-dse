@@ -16,6 +16,20 @@ from research.runtime.strip_codesign import ceildiv
 FP = 8
 
 
+def matrix_service(hw, rows, k, n):
+    """Output lanes on X, sliced reductions on Y, one private SRAM per X."""
+    columns = ceildiv(n, hw.x)
+    chunk = min(k, hw.private_capacity // (4 * columns))
+    if chunk < 1:
+        raise ValueError("No legal private weight slice")
+    cycles = sum(FP * rows * ceildiv(min(chunk, k - start), hw.y) * columns
+                 for start in range(0, k, chunk))
+    stripe = ceildiv(k * columns * 4, 8)
+    cycles += stripe * (rows + 1)
+    local = ceildiv(k * n * 4, 8)
+    return cycles, (local * rows, local)
+
+
 @dataclass(frozen=True)
 class Workload:
     rows: int
@@ -183,18 +197,10 @@ def compile_program(hw, work, plan, phase="episode"):
             ready = loads[name]
         # Reduction slices fit the private buffer. Accumulators stay in the
         # output registers across slices; the model has no overlap at this core.
-        columns = ceildiv(n, hw.x)
-        chunk = min(k, hw.private_capacity // (4 * columns))
-        if chunk < 1:
-            raise ValueError("No legal private weight slice")
-        cycles = sum(FP * rows * ceildiv(min(chunk, k - start), hw.y) * columns
-                     for start in range(0, k, chunk))
-        stripe = ceildiv(k * columns * 4, 8)
-        cycles += stripe * (rows + 1)
-        local = ceildiv(k * n * 4, 8)
+        cycles, private = matrix_service(hw, rows, k, n)
         p.matrix_macs += rows * k * n
         return alu(owner, name, (*deps, ready), (inp, a), (out,), rows * k * n,
-                   cycles=cycles, private=(local * rows, local))
+                   cycles=cycles, private=private)
 
     def norm_layer(owner, stage, inp, out, rows, deps):
         affine = Access("norm", (stage - 1) * d // 8, d // 8, ("norm",), (stage - 1) * d // 8)
@@ -229,9 +235,9 @@ def compile_program(hw, work, plan, phase="episode"):
             score = access(owner, "s", ("scores", *prefix, lo), ceildiv(rows * heads * num, 16), first)
             macs = rows * heads * num * h
             p.attention_macs += macs
-            compute = FP * rows * heads * ceildiv(h, hw.y) * ceildiv(num, hw.x)
+            cycles, private = matrix_service(hw, rows * heads, h, num)
             task = alu(owner, "QK causal" if owner == 0 else "QK", after, (q, key), (score,), macs,
-                       cycles=compute + 2 * ceildiv(num * h * 4, 8))
+                       cycles=cycles, private=private)
             return score, task
 
         def av(lo, num, weights, after, mix=None):
@@ -245,7 +251,13 @@ def compile_program(hw, work, plan, phase="episode"):
             p.attention_macs += macs
             writes = (out, next_stats) if plan.online else (out,)
             ops = macs + (rows * (2 * d + 6 * heads) if plan.online else 0)
-            task = alu(owner, "AV merge", after, reads, writes, ops, parallel=hw.x * hw.y)
+            # Heads occupy separate output lanes; GQA V is broadcast into
+            # the corresponding private copies. Charge copies in energy,
+            # and use the most-loaded stripe, not their sum, for time.
+            cycles, private = matrix_service(hw, rows, num, d)
+            cycles += ceildiv(FP * (ops - macs), hw.x)
+            task = alu(owner, "AV merge", after, reads, writes, ops, cycles=cycles,
+                       private=private)
             state, stats = out, next_stats
             return (task,)
 
