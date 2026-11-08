@@ -716,7 +716,9 @@ maxima for all 32 decode plans.
 
 In the corrected cold plan, the two DDR stages take 10.242 µs
 each and on-chip normalization takes 0.027 µs. Cold is within
-0.15% of the raw 20.480 µs K/V transfer time. In the resident
+0.15% of the raw 20.480 µs K/V transfer time in this aggregate
+model. DDR command timing and first-block startup would need a
+controller trace to establish attainable latency. In the resident
 plan, QK and AV are limited by WeightBuffer service at 1.280
 and 2.560 µs. This raises effective useful QK+AV throughput
 over the whole decode step from 26.9 to 169.5 MAC/ns. These
@@ -761,6 +763,25 @@ and 6.259 µJ to 4.087 µs and 2.425 µJ. The preferred prefill
 shape becomes 2,048 MACs. At 8 / 32 / 128 steps the corresponding
 shared penalties are 14.85% / 6.16% / 1.97%. This sensitivity
 recharacterizes the entire SRAM, including its timing and area.
+CACTI characterizes a single one-read/one-write bank. The area
+and leakage ledger multiplies by the exact count of instantiated
+macros. The native GlobalBuffer service model assumes balanced
+traffic across those instances and excludes interconnect costs.
+
+With both technologies fixed to 11 / 8 / 3 global banks, the
+32 × 32 resident decode step at 5,120 and 32 GB/s gives the
+following comparison. Standby includes the same PHY idle
+power. This control keeps bank counts, capacity and ports
+fixed while the MAC+SRAM area differs. Both fit the cap.
+
+| Device | MAC+SRAM area (mm²) | Latency (µs) | Dynamic (µJ) | Standby (µJ) | EDP (µJ·µs) |
+|---|---:|---:|---:|---:|---:|
+| HP | 6.137 | 3.869 | 1.244 | 4.656 | 22.829 |
+| LSTP | 6.762 | 4.087 | 1.908 | 0.517 | 9.911 |
+
+The LSTP per-step EDP is 56.59% lower. The complete prefill
+plus eight-decode-step episode EDP is 26.94% lower after
+remapping, with the initial KV fill included.
 
 At context 5,120 and 32 GB/s the partial-cache relaxation opens
 two of three HP architectures at 8, 32 and 128 steps. The
@@ -778,7 +799,8 @@ requests and optimizer comparisons require a different experiment.
 [Spatial-only](results/decode_spatial5120_windows.json.gz) ·
 [16 GB/s](results/decode_bw16_windows.json.gz) ·
 [64 GB/s](results/decode_bw64_windows.json.gz) ·
-[LSTP](results/decode_lstp5120_windows.json.gz)
+[LSTP](results/decode_lstp5120_windows.json.gz) ·
+[HP with matched banks](results/decode_hp_matched5120_windows.json.gz)
 
 The separate banked sweep uses the same per-bandwidth ledger.
 At the 6.918 mm² cap the certificate opens the following timing
@@ -795,5 +817,6 @@ classes. Dispatch counts are recorded separately in the raw data.
 ```sh
 python -m research.physical_cost.cacti_sram "$cacti" /tmp/lstp --device itrs-lstp
 python -m research.physical_cost.native_serving research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/decode.json.gz --context 5120 --bandwidth 32 --mapping gemv
+python -m research.physical_cost.native_serving research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/decode-matched.json.gz --context 5120 --bandwidth 32 --bank-counts 11 8 3
 python -m research.physical_cost.external_ddr research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/fixed-ddr.json.gz
 ```

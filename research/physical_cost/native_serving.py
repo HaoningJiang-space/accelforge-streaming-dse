@@ -28,15 +28,18 @@ HEAD_BYTES = 64
 STEPS = (1, 8, 32, 128)
 
 
-def architectures(macros, ledger, cap, bandwidth=32):
+def architectures(macros, ledger, cap, bandwidth=32, bank_counts=None):
     result = []
-    for y in (32, 64, 128):
+    for index, y in enumerate((32, 64, 128)):
+        banks_to_try = range(2, 25) if bank_counts is None else (bank_counts[index],)
         same_shape = (ledger.price(DeepArchitecture(32, y, banks, 65536, 1024,
                                                     ddr_word_ns=64 // bandwidth))
-                      for banks in range(2, 25))
+                      for banks in banks_to_try)
         choices = [hw for hw in same_shape if hw.total_area_mm2(macros) <= cap]
         if choices:
             result.append(choices[-1])
+        elif bank_counts is not None:
+            raise ValueError(f"Requested bank count on 32 x {y} exceeds the area cap")
     return result
 
 
@@ -106,9 +109,12 @@ def component_audit(spec, replay):
         op = str(part.nodes[-1].einsum)
         loops = [node for node in part.nodes if isinstance(node, Spatial)]
         reduction = {"QK": "e", "AV": "p"}.get(op)
-        if reduction is not None and any(node.component == "InputFanout" and node.rank_variable == reduction
-                                         for node in loops):
-            raise AssertionError(f"{op} uses an unpriced reduction axis")
+        for node in loops:
+            ranks = node.rank_variable
+            if not isinstance(ranks, (set, frozenset)):
+                ranks = (ranks,)
+            if node.component == "InputFanout" and reduction in ranks:
+                raise AssertionError(f"{op} uses an unpriced reduction axis")
         spatial[op] = [str(node) for node in loops]
     components = {}
     ddr = {}
@@ -260,9 +266,10 @@ def compare(rows, macros, context, steps):
                 [b["declared_mode_lower"] for b in bounds], exact)}
 
 
-def run(macros, ledger, context, output, bandwidth=32, mapping="gemv", device="itrs-hp"):
+def run(macros, ledger, context, output, bandwidth=32, mapping="gemv", device="itrs-hp",
+        bank_counts=None):
     cap = ledger.reference_overhead() + 4.5
-    hardware = architectures(macros, ledger, cap, bandwidth)
+    hardware = architectures(macros, ledger, cap, bandwidth, bank_counts)
     rows = []
     report = {"tokens": TOKENS, "width": WIDTH, "context": context,
               "area_cap_mm2": cap, "bandwidth_gb_s": bandwidth, "decode_mapping": mapping,
@@ -287,16 +294,20 @@ def main():
     parser.add_argument("--context", type=int, default=5120)
     parser.add_argument("--bandwidth", type=int, choices=(8, 16, 32, 64), default=32)
     parser.add_argument("--mapping", choices=("legacy", "spatial", "gemv"), default="gemv")
+    parser.add_argument("--bank-counts", nargs=3, type=int, metavar=("X32", "X64", "X128"),
+                        help="Fix the global SRAM bank count for each array shape")
     args = parser.parse_args()
     if args.context < 1:
         parser.error("Context must be positive")
+    if args.bank_counts is not None and min(args.bank_counts) < 1:
+        parser.error("Bank counts must be positive")
     clear_switches()
     af.set_n_parallel_jobs(1)
     logging.basicConfig(level=logging.ERROR, force=True)
     table = json.loads(args.sram.read_text())
     macros = {int(k): v for k, v in table["macros"].items()}
     run(macros, SystemLedger(json.loads(args.ledger.read_text())), args.context, args.output,
-        args.bandwidth, args.mapping, table.get("device", "itrs-hp"))
+        args.bandwidth, args.mapping, table.get("device", "itrs-hp"), args.bank_counts)
 
 
 if __name__ == "__main__":
