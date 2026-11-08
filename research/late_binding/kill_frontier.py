@@ -38,7 +38,7 @@ BUDGET = 1.5
 TARGET = 1000
 
 
-def workload_spec(case, metrics):
+def workload_spec(case, metrics, *, shape=SHAPE, gb_bits=GB_BITS, bandwidth=1.0):
     if case == "resnet":
         spec = common.af.Spec.from_yaml(
             common.ROOT / "examples/arches/nvdla.yaml",
@@ -46,7 +46,7 @@ def workload_spec(case, metrics):
         )
     else:
         spec = common.build(common.Case(case, "nvdla", CASES[case]), 2, metrics)
-    return configure_spec(spec, SHAPE, GB_BITS)
+    return configure_spec(spec, shape, gb_bits, bandwidth)
 
 
 def configure_spec(spec, shape, gb_bits, bandwidth=1.0):
@@ -67,7 +67,7 @@ def native_jobs(spec, metrics):
     return jobs
 
 
-def native_signature(job):
+def native_signature(job, retain_hardware_objectives=False):
     """Retain native tiles at the boundary before cross-template Pareto."""
     original_model = ffm.tiles.run_model
 
@@ -82,6 +82,14 @@ def native_signature(job):
             # The reservation prefix is already tracked in bits by native FFM.
             key = f"usage<SEP>memory<SEP>{memory}"
             columns[f"reservation<SEP>{memory}<SEP>signature"] = memories.get(key, 0)
+        if retain_hardware_objectives:
+            # Native enumeration only uses Total columns as cost objectives.
+            # Preserve shape demands and per-component service order before
+            # that earlier Pareto pass can erase target-specific mappings.
+            extra = [f"signature_{name}" for name in DEMANDS[:2]]
+            extra.extend(f"latency<SEP>{component}" for component in SERVICE)
+            for key in extra:
+                columns[f"Total<SEP>signature<SEP>{key}"] = columns[key]
         return symbols, columns, memories, spatial, tensor_mapping
 
     with patch.object(ffm.tiles, "run_model", capture):
@@ -216,7 +224,7 @@ def graph_bound(banks):
     }, masks
 
 
-def run(case, output, epsilon_edp):
+def run(case, output, epsilon_edp, bank_path=None, retain_hardware_objectives=False):
     common.clear_switches()
     if not exact_resources.enabled():
         raise ValueError("The experiment requires bit-exact capacity accounting")
@@ -231,6 +239,7 @@ def run(case, output, epsilon_edp):
         "normalized_budget": BUDGET,
         "gb_bandwidth_multiplier_range": [GB_BW_MIN, GB_BW_MAX],
         "epsilon_edp": epsilon_edp,
+        "retain_hardware_objectives": retain_hardware_objectives,
         "status": "generating",
         "operators": {},
     }
@@ -246,6 +255,7 @@ def run(case, output, epsilon_edp):
     spec = workload_spec(case, metrics)
     jobs = native_jobs(spec, metrics)
     exact_banks, epsilon_banks = [], []
+    captured = {}
     for op, groups in jobs.items():
         chunks, energies = [], []
         num_templates = 0
@@ -258,13 +268,16 @@ def run(case, output, epsilon_edp):
                 }
                 if backing != spec.workload.einsums[op].tensor_names:
                     raise ValueError(f"Unexpected nonmaterialized template for {op}")
-                rows, energy = native_signature(job)
+                rows, energy = native_signature(job, retain_hardware_objectives)
                 chunks.append(rows)
                 energies.append(energy)
                 num_templates += 1
         rows, energy = np.concatenate(chunks), np.concatenate(energies)
         if not len(rows):
             raise ValueError(f"No tile rows for {op}")
+        if bank_path is not None:
+            captured[f"{op}_rows"] = rows
+            captured[f"{op}_energy"] = energy
         front = pareto_indices(rows)
         rounded = front[epsilon_indices(rows[front], factor)]
         exact_banks.append((rows[front], energy[front]))
@@ -291,6 +304,8 @@ def run(case, output, epsilon_edp):
     result["meets_residual_target"] = result["epsilon_bound"]["incumbent_edp_pj_ns"] is not None and all(
         0 < op["epsilon_after_bound"] <= TARGET for op in result["operators"].values()
     )
+    if bank_path is not None:
+        np.savez(bank_path, **captured)
     save()
 
 
@@ -299,10 +314,15 @@ def main():
     parser.add_argument("case", choices=CASES)
     parser.add_argument("output", type=Path)
     parser.add_argument("--epsilon-edp", type=float, default=0.10)
+    parser.add_argument("--bank", type=Path, help="Optional native signature archive for replay")
+    parser.add_argument(
+        "--retain-hardware-objectives", action="store_true",
+        help="Keep per-dimension PE demands and per-component service in native tile Pareto",
+    )
     args = parser.parse_args()
     if not 1e-6 <= args.epsilon_edp <= 1:
         parser.error("--epsilon-edp must be between 1e-6 and 1")
-    run(args.case, args.output, args.epsilon_edp)
+    run(args.case, args.output, args.epsilon_edp, args.bank, args.retain_hardware_objectives)
 
 
 if __name__ == "__main__":

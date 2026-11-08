@@ -4,7 +4,8 @@ from itertools import product
 
 import numpy as np
 
-from research.joint_synthesis import kill_frontier as kill
+from research.late_binding import kill_frontier as kill
+from research.late_binding import late_binding_grid as grid
 from research.tracking_audit import common
 
 
@@ -80,3 +81,23 @@ def test_native_late_binding_oracle():
     assert len(kill.epsilon_indices(crossing, np.sqrt(1.1))) == 2
     assert kill.latency(crossing, 1).argmin() == 0
     assert kill.latency(crossing, 2).argmin() == 1
+
+
+def test_discrete_binding_against_architecture_and_mapping_sweep():
+    specs = [
+        [(4, 1, 1, 9, 3, 1, 9), (1, 3, 3, 7, 4, 1, 2), (2, 2, 2, 8, 5, 1, 5)],
+        [(3, 2, 1, 4, 5, 2, 7), (1, 4, 3, 3, 7, 2, 1), (2, 1, 2, 5, 3, 2, 2)],
+    ]
+    banks = []
+    for layer in specs:
+        rows = np.array([[x, y, banks * 262144, 8, c, d, g]
+                         for x, y, banks, _, c, d, g in layer], dtype=float)
+        banks.append((rows, np.array([row[3] for row in layer], dtype=float)))
+    budget = 2200
+    expected = float("inf")
+    for x, y, capacity, rate in product(range(1, 5), range(1, 5), range(1, 4), range(2, 17)):
+        if x * y + 96 * capacity + 384 * rate <= budget:
+            expected = min(expected, brute_edp(banks, x, y, capacity * 262144, rate / 8))
+    optimum, witness, _, _ = grid.bind(banks, budget, float("inf"), {})
+    np.testing.assert_allclose(optimum, expected, rtol=1e-12)
+    np.testing.assert_allclose(grid.fixed_arch_edp(banks, witness, budget), expected, rtol=1e-12)
