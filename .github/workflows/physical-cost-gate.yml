@@ -1,0 +1,37 @@
+name: Physical cost gate
+
+on:
+  push:
+    branches: [codex/physical-cost-gate]
+    paths:
+      - ".github/workflows/physical-cost-gate.yml"
+      - "research/physical_cost/*.py"
+      - "research/physical_cost/*.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build pinned CACTI
+        run: |
+          git init "$RUNNER_TEMP/cacti"
+          git -C "$RUNNER_TEMP/cacti" fetch --depth 1 https://github.com/HewlettPackard/cacti.git 1ffd8dfb10303d306ecd8d215320aea07651e878
+          git -C "$RUNNER_TEMP/cacti" checkout --detach FETCH_HEAD
+          make -C "$RUNNER_TEMP/cacti" -j2 opt
+      - name: Characterize two-level SRAM macros
+        run: python -m research.physical_cost.cacti_sram "$RUNNER_TEMP/cacti" "$RUNNER_TEMP/physical-cost"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: physical-cost
+          path: ${{ runner.temp }}/physical-cost
+          retention-days: 30
