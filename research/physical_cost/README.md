@@ -334,3 +334,53 @@ comparison of search methods.
 ```sh
 python -m research.physical_cost.banked_scale research/physical_cost/results/sram_45nm.json /tmp/scale.json.gz
 ```
+
+The plot summarizes the same nested cells. Each size labels its number
+of workload/subset pairs. Shared anchor points and nested seeds make
+these descriptive frequencies.
+
+![Shortlist misses and maximum EDP regret](results/banked_scale_450.svg)
+
+```sh
+python -m research.physical_cost.plot_banked_scale research/physical_cost/results/banked_scale_450_windows.json.gz /tmp/scale.svg
+```
+
+### Cold search at 3,302 architecture points
+
+The cold comparison regenerates the grid, mapping profiles and safe
+dominance reduction for every run. Each method begins with the same
+verified feasible seed. The adaptive method opens complete remaps in
+order of architecture lower bound. The joint method interleaves
+mappings across architectures and lazily refines their bounds with the
+command DAG. The two fixed shortlists fully remap their selected
+architectures. Every improvement is checked by the independent word
+replay before its timestamp is recorded. Five repeats rotate the method
+order. Timing starts before grid construction and includes selection,
+compilation and verification. The precomputed CACTI characterization
+table is shared.
+
+| Workload | Method | Median time to exact EDP | Median total time (range) | Schedule checks | Final regret | Certified |
+|---|---|---:|---:|---:|---:|---|
+| Context 576 | Adaptive | 4.536 s | 6.429 s (6.329–6.933) | 166 | 0% | Yes |
+| Context 576 | Joint | 5.637 s | 6.222 s (5.748–7.055) | 150 | 0% | Yes |
+| Context 576 | Within 10% | 4.492 s | 5.260 s (5.205–6.688) | 128 | 0% | No |
+| Context 576 | Critical-path top 2 | — | 12.458 s (12.275–13.769) | 12 | 3.95% | No |
+| 32-step K+V | Adaptive | 3.128 s | 8.401 s (8.101–8.986) | 544 | 0% | Yes |
+| 32-step K+V | Joint | 4.466 s | 9.251 s (9.005–9.357) | 544 | 0% | Yes |
+| 32-step K+V | Within 10% | 3.136 s | 6.209 s (6.131–6.321) | 230 | 0% | No |
+| 32-step K+V | Critical-path top 2 | — | 18.255 s (18.164–18.939) | 32 | 6.18% | No |
+
+In context 576, the adaptive baseline reaches the exact EDP at the
+5-second checkpoint in 5/5 runs, the 10% window in 4/5, and joint
+search in 0/5. The first three methods reach it in all five long-cache
+runs at 5 seconds. The critical-path selector spends most of its time
+compiling candidates for architecture ranking. Those compilations
+are included in total time and separately reported. The joint search
+reduces schedule checks in one case and reaches the optimal EDP later
+in both. The 10% policy attains that EDP with no global certificate.
+
+[Cold comparison](results/banked_scale_cold_450_windows.json.gz)
+
+```sh
+python -m research.physical_cost.banked_scale research/physical_cost/results/sram_45nm.json /tmp/scale-cold.json.gz --cases holdout576 kv_long --cold-repeats 5
+```
