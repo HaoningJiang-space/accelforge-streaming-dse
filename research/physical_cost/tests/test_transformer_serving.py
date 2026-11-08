@@ -9,6 +9,8 @@ from research.physical_cost.serving_trace import run
 from research.physical_cost.transformer_serving import Workload, Plan, compile_program, matrix_service
 from research.physical_cost.transformer_validation import numerical
 from research.physical_cost.transformer_boundary import summarize
+from research.physical_cost.transformer_boundary import evaluate
+from research.physical_cost.transformer_parallel import evaluate_shard, combine
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -81,3 +83,15 @@ def test_private_stripes_run_in_parallel_and_reduction_slices_fit():
     tiny = replace(hw, weight_bytes_per_stripe=64)
     assert matrix_service(tiny, 4, 16, 128)[0] == 208
     assert matrix_service(tiny, 4, 16, 128)[1] == matrix_service(hw, 4, 16, 128)[1]
+
+
+def test_disjoint_exhaustive_shards_preserve_coverage_and_all_ties():
+    macros = {int(k): v for k, v in json.loads((ROOT / "results/sram_45nm_lstp.json").read_text())["macros"].items()}
+    hw = DeepArchitecture(32, 64, 16, 65536, 1024)
+    task = (0, hw, Workload(1, (3,), 1, (0, 0)), macros, "decode")
+    direct = evaluate(task)
+    sharded = combine([evaluate_shard((i, 3, task))[1] for i in range(3)])
+    for key in ("generated", "evaluated"):
+        assert sharded[key] == direct[key]
+    assert sharded["best"]["edp"] == direct["best"]["edp"]
+    assert sorted(Plan(**p) for p in sharded["tied_plans"]) == sorted(Plan(**p) for p in direct["tied_plans"])

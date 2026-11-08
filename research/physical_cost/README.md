@@ -1196,3 +1196,33 @@ same wall limit and worker count. No new search mechanism is introduced.
 python -m research.physical_cost.transformer_boundary research/physical_cost/results/sram_45nm_lstp.json research/physical_cost/results/paid_ledger.json /tmp/block-boundary --workers 18 --memory-gib 12 --seconds 7200
 python -m research.physical_cost.transformer_validation research/physical_cost/results/sram_45nm_lstp.json "$ramulator_checkout" /tmp/block-verified.json.gz /tmp/block-boundary/c8192-n4-prefill.json.gz
 ```
+
+The identical enumeration can use `transformer_parallel` in place of
+`transformer_boundary`: three disjoint mapping subsequences per architecture
+keep workers occupied after small/infeasible points finish. There is no pruning
+or ranking. A regression checks coverage and every tied minimum against the
+unsharded version. Per-architecture timing fields are worker-time sums in this
+mode; only whole-method wall clocks are suitable for end-to-end comparisons.
+
+The first two completed panels, after correcting attention private-stripe
+timing and charging private operand copies, give the following **grammar-local**
+regrets. Earlier development scores are superseded.
+
+| Context / decode requests | Prefill rows / decode steps | Feasible episode pairs | Decode-first EDP regret |
+|---|---|---:|---:|
+| 8K / 4 | 512 / 1 | 348 | 13.63% |
+| 8K / 4 | 64 / 4 | 528 | 1.67% |
+
+Both keep every decode tie after common episode-feasibility filtering and
+allow quarter/eighth-prefix KV retention. The larger prefill case chooses
+64×32 with 8×64 KiB; decode-first chooses 64×32 with 24×16 KiB. The first
+keeps prefill K/V and uses a larger prefill tile. In the decode-heavy case,
+the unfiltered decode winner is episode-infeasible; the strong baseline is
+allowed to reject it before hardware selection. These rows have independent
+word/version, bank, append and DDR-command replays. They do not establish an
+optimizer advantage. The other frozen panels and fresh equal-budget timings
+are still in progress in this snapshot.
+
+[Exact tables and coverage](results/transformer_boundary_windows.json.gz) ·
+[Winner replays and static-allocation controls](results/transformer_validation_windows.json.gz) ·
+[18 small physical replays and FP32 numerical checks](results/transformer_smoke_windows.json.gz)
