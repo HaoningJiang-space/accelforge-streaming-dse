@@ -18,8 +18,8 @@ Native bit counts are prorated against 64-bit private and 512-bit global
 transactions. The initial service model assumes evenly distributed global
 bank traffic and rounds each bank's access and cycle times up to whole
 1 GHz cycles. The one-bank sensitivity keeps all SRAM area and leakage
-and limits the global service rate to one bank. Neither service mode
-resolves addresses to individual bank calendars.
+and limits the global service rate to one bank. Both modes use aggregate
+service rates. Address-level bank calendars are outside this model.
 
 The mapper generates native tile rows independently at each hardware point.
 The EDP calculation adds the energy and time of both phases before
@@ -63,11 +63,18 @@ decode because its GlobalBuffer has no room for both full KV and staging.
 The hardware-conflict threshold of 5% is met at 16 steps in both service
 models. The fixed-price architecture selector also models residency and
 ties the physical shared optimum in every resident case. The result
-identifies a capacity threshold and shared-hardware cost. It does not
-establish a search advantage over architecture-first with a residency-aware
-mapper or a bound outside the sampled native mappings.
+identifies a capacity threshold and shared-hardware cost. The matching
+control leaves a search advantage open. The optimality scope is the
+sampled native mappings.
 [All-bank report](results/resident_1024_all_windows.json.gz) ·
 [One-bank report](results/resident_1024_single_windows.json.gz)
+
+The [Linux replay](https://github.com/HaoningJiang-space/accelforge-streaming-dse/actions/runs/42454657897)
+regenerated the CACTI table byte for byte and reproduced all 27 shared and
+independent EDP pairs and their shared winners exactly. The Linux native
+scans took 39–45 seconds per service configuration.
+[All-bank Linux report](results/resident_1024_all_linux.json.gz) ·
+[One-bank Linux report](results/resident_1024_single_linux.json.gz)
 
 ## Run
 
