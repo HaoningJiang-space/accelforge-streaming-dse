@@ -2,14 +2,17 @@
 
 from collections import Counter, defaultdict
 from itertools import pairwise
+from math import ceil
 
 from research.physical_cost.banked_oracle import addresses
 from research.physical_cost.serving_ddr_oracle import check
 
 
-def verify(program, work, result, device):
+def verify(program, work, result, device, macros):
     intervals, finish, commands = result["trace"]
     hw = program.hardware
+    macro, local = macros[hw.global_bank_bytes], macros[hw.weight_bytes_per_stripe]
+    period = 1000 * ceil(max(macro["cycle_ns"], macro["access_ns"]))
     bursts = check(commands, device)
     queues = defaultdict(list)
     for line, op, start, stop in bursts:
@@ -31,7 +34,13 @@ def verify(program, work, result, device):
     memory, main_memory = [], []
     scans = defaultdict(Counter)
     step_by_task = {}
+    expected_accesses = Counter()
     for i, task in enumerate(program.tasks):
+        for a in task.accesses:
+            region = program.regions[a.slot]
+            for j, (bank, row) in enumerate(addresses(region, a.first, a.words)):
+                dram = None if task.dram_line is None else task.dram_line + j
+                expected_accesses[i, task.direction, bank, row, (a.value, a.offset + j), dram] += 1
         if task.label in ("QK:read", "AV and merge:read"):
             tag = task.accesses[0].value
             step_by_task[i] = tag[2]
@@ -41,10 +50,15 @@ def verify(program, work, result, device):
         ports[port].append((begin, end, i))
         ends[i] = max(ends[i], end)
         if direction == "core":
+            task = program.tasks[i]
+            assert end - begin == task.cycles * 1000
+            observed.update({"alu": task.alu, "local_read": task.local_read, "local_write": task.local_write})
             continue
+        assert end - begin == period
         coord = bank, row
         assert coord in occupied
         assert any(coord in bounds[a.slot] for a in program.tasks[i].accesses)
+        expected_accesses[i, direction, bank, row, value, dram] -= 1
         observed[direction] += 1
         cells[coord].append((begin, end))
         memory.append((end if direction == "w" else begin, direction == "r", coord, value, end, i))
@@ -62,8 +76,17 @@ def verify(program, work, result, device):
             main_memory.append((burst[1], op == "RD", dram, value))
             observed["ddr_read" if op == "RD" else "ddr_write"] += 1
     assert ends == finish and all(not q for q in queues.values())
+    assert all(n == 0 for n in expected_accesses.values())
     assert max(ends) == result["elapsed_ps"]
     assert all(result["actions"].get(k, 0) == v for k, v in observed.items())
+    prices = {"r": round(macro["read_nj"] * 1e9), "w": round(macro["write_nj"] * 1e9),
+              "local_read": round(local["read_nj"] * 1e9), "local_write": round(local["write_nj"] * 1e9),
+              "ddr_read": hw.ddr_read_aj, "ddr_write": hw.ddr_write_aj, "alu": 84_000}
+    energy = sum(prices[k] * n for k, n in observed.items())
+    standby = round(hw.standby_mw(macros) * max(ends) * 1000)
+    assert (energy, standby, (energy + standby) * max(ends)) == (
+        result["dynamic_aj"], result["standby_aj"], result["edp"],
+    )
     for request, context in enumerate(work.contexts, 1):
         for step in range(work.steps):
             expected = Counter(range(context + step + 1))
@@ -84,8 +107,8 @@ def verify(program, work, result, device):
     last = {}
     for time, read, loc, value, stop, i in sorted(memory):
         if read:
-            observed, born = version[loc]
-            assert observed == value, (program.tasks[i].label, loc, value, observed)
+            stored, born = version[loc]
+            assert stored == value, (program.tasks[i].label, loc, value, stored)
             last[loc, born] = stop
         else:
             version[loc] = value, time

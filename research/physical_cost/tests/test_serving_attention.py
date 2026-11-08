@@ -1,6 +1,7 @@
 from math import isclose
 from random import Random
 
+from research.physical_cost.concurrent_search import candidates
 from research.physical_cost.serving_ddr import CK, DDR
 from research.physical_cost.serving_softmax import dense, online
 
@@ -28,3 +29,13 @@ def test_ddr_closed_open_conflicting_and_direction_change():
     assert ddr.burst(2048, True, 0) == (83 * CK, 87 * CK)
     assert ddr.burst(2049, False, 0) == (112 * CK, 116 * CK)
     assert [x.op for x in ddr.trace] == ["ACT", "RD", "RD", "PREpb", "ACT", "WR", "RD"]
+
+
+def test_architecture_probes_keep_cutoff_ties_and_reuse_the_anchor():
+    rows = [(i, [(min(i, 7), "anchor"), (20, "other")]) for i in range(9)]
+    scores = {}
+    ranked = candidates(rows, "af_probe", scores)
+    for i in range(9):
+        assert next(ranked) == (i, "anchor")
+        scores[i] = 100 - i
+    assert list(ranked) == [(i, "other") for i in reversed(range(9))]
