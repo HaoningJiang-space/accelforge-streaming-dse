@@ -1175,6 +1175,10 @@ panel uses D=64, four query heads and one KV head, FP32 tensors, and an assumed
 eight INT8-MAC equivalents per FP32 operation. That arithmetic cost is not
 ISA-calibrated. DDR timing, CACTI LSTP macros and MAC area retain the existing
 physical ledger. Fixed DDR remains an external system parameter.
+The mapping grammar still stages a whole weight matrix per request in streamed
+mode; it does not cover general weight streaming tiles or arbitrary buffer
+relocation. Complete remapping below means complete within this explicit
+grammar, not coverage of all executable Transformer mappings.
 
 The frozen panel crosses 8,192/12,288 context, four/six decode requests and
 prefill-heavy (512 rows, one step)/decode-heavy (64 rows, four steps) episodes.
@@ -1203,6 +1207,12 @@ keep workers occupied after small/infeasible points finish. There is no pruning
 or ranking. A regression checks coverage and every tied minimum against the
 unsharded version. Per-architecture timing fields are worker-time sums in this
 mode; only whole-method wall clocks are suitable for end-to-end comparisons.
+Reference enumeration resumed identical per-architecture checkpoints. Its
+`*_seconds_this_run` fields therefore omit earlier work and are not used for
+performance comparisons. The separate `transformer_cold` driver starts its
+timer before cost-table loading and feasibility checks, creates a new worker
+pool, and regenerates every candidate. Interpreter/module startup before
+entering that timer is excluded equally for both methods.
 
 All eight frozen panels are complete. After correcting attention private-stripe
 timing and charging private operand copies, they give the following
@@ -1222,12 +1232,22 @@ timing and charging private operand copies, they give the following
 This is 2,208 feasible episode evaluations and 968 standalone decode
 evaluations. Only 12 hardware points are episode-feasible with four requests,
 and six with six requests; the area-legal count of 49 does not describe the
-effective space. Every decode tie is kept after common episode-feasibility
-filtering, with quarter/eighth-prefix KV retention available. The two larger
-prefill gaps choose 64×32 with 8×64 KiB; decode-first chooses 64×32 with
-24×16 KiB. The former keeps prefill K/V and uses a larger prefill tile.
+effective space. All six-request feasible points use 8×64 KiB, so those
+panels test PE selection after the fixed-region capacity filter has removed
+the alternative 24×16 KiB organization. Every decode tie is kept after common
+episode-feasibility filtering, with quarter/eighth-prefix KV retention
+available. The two larger prefill gaps choose 64×32 with 8×64 KiB;
+decode-first chooses 64×32 with 24×16 KiB. The former keeps prefill K/V and
+uses a larger prefill tile.
 Some unfiltered decode winners are episode-infeasible; the strong baseline
 rejects those using common feasibility before hardware selection.
+
+In the 8K/four-request decode-heavy case, the decode-selected hardware's
+best episode mapping reads 364 KiB less from DDR and consumes 0.19% less
+total energy, but takes 1.86% longer, producing the 1.67% EDP gap. The two
+plans differ in bank partition and KV retention, so these measurements alone
+do not isolate a bank-only causal effect. They do show why fewer transferred
+bytes do not suffice to rank the plans.
 
 Twenty-two independent winner/baseline replays cover both episode and decode
 phases, checking word/version lifetimes, bank exclusion, append persistence,
@@ -1235,7 +1255,31 @@ action counts and DDR commands against the pinned Ramulator specification.
 Numerical dense/online comparisons at 8K and 12K context over four decode
 steps have maximum absolute FP32 errors of 4.77e-7 and 4.17e-7. These are
 semantic checks, not calibrated softmax/LayerNorm hardware measurements.
-Fresh equal-budget timings are still in progress in this snapshot.
+
+Both methods completed every frozen panel within the same 900-second cap,
+using 18 workers and a 12 GiB aggregate memory limit on an i7-12700
+(Windows 10.0.26200, Python 3.12.16). Every cold EDP, feasible set, selected
+architecture tie, remap count, generated-candidate count and source/space
+hash matched the exhaustive reference. One fresh repetition per method and
+panel was run, including candidate generation. These timings support the
+quality comparison at a common budget, not a statistical speedup claim.
+
+| Context / requests | Prefill rows / decode steps | Decode-first total (s) | Episode sweep total (s) |
+|---|---|---:|---:|
+| 8K / 4 | 512 / 1 | 24.24 | 55.26 |
+| 8K / 4 | 64 / 4 | 114.25 | 183.27 |
+| 8K / 6 | 512 / 1 | 29.22 | 45.98 |
+| 8K / 6 | 64 / 4 | 97.36 | 201.84 |
+| 12K / 4 | 512 / 1 | 18.30 | 46.34 |
+| 12K / 4 | 64 / 4 | 55.19 | 218.84 |
+| 12K / 6 | 512 / 1 | 25.38 | 39.83 |
+| 12K / 6 | 64 / 4 | 69.39 | 89.80 |
+
+[Fresh matched-budget results and coverage checks](results/transformer_cold_windows.json.gz)
+
+```sh
+python -m research.physical_cost.transformer_cold research/physical_cost/results/sram_45nm_lstp.json research/physical_cost/results/paid_ledger.json /tmp/block-cold --workers 18 --memory-gib 12 --budget 900 --repeats 1
+```
 
 [Exact tables and coverage](results/transformer_boundary_windows.json.gz) ·
 [Winner replays and static-allocation controls](results/transformer_validation_windows.json.gz) ·
@@ -1250,8 +1294,9 @@ A constructive per-bank interval allocation fits all versions in 16 KiB,
 replays every read against its last writer, and preserves bank IDs, access
 times, DDR commands, action counts and energy. The resulting EDPs are
 3,022,650 and 4,283,522 µJ·µs, below the original fixed-region grammar's
-3,235,957 and 4,557,106. This disproves a claim that the original hardware
-choice necessarily incurs the reported gaps.
+3,235,957 and 4,557,106. Within the declared access/timing cost model, this
+disproves a claim that the original hardware choice necessarily incurs the
+reported gaps.
 
 The relocation is outside the fixed-region grammar and its address-generator
 cost is uncalibrated. It is not silently included in the primary comparison,
