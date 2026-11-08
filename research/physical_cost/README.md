@@ -1016,13 +1016,25 @@ zero full architectures and evaluates 578 and 429 candidates. Both
 retain the same EDP as the shorter runs. Any feasible completed
 evaluation can become the incumbent immediately for either method.
 
+A further four-decode holdout uses initial contexts of 1,023,
+1,793, 3,073 and 6,657. Of the 233 area-legal architectures,
+217 admit a feasible mapping, for 14,528 total pairs. Both
+methods give 409,588.176 µJ·µs at 4, 12 and 25 seconds in all
+three repeats. Median times to that EDP are 3.964 s for probing
+and 2.840 s for interleaving. Neither method finishes a full
+architecture in this 25-second panel. Independent replay
+verifies its winner and the winners of the longer budget runs.
+
 [Factorial replay and idle accounting](results/cotenancy_ablation_windows.json.gz) ·
 [Holdout trials](results/cotenancy_holdout_windows.json.gz) ·
 [Holdout replay](results/cotenancy_holdout_validation_windows.json.gz) ·
 [40-second runs](results/cotenancy_holdout3_40s_windows.json.gz) ·
-[65-second runs](results/cotenancy_holdout4_65s_windows.json.gz)
+[65-second runs](results/cotenancy_holdout4_65s_windows.json.gz) ·
+[6,657-token runs](results/cotenancy_holdout_6657_windows.json.gz) ·
+[Extended replay](results/cotenancy_holdout_extended_validation_windows.json.gz)
 
 ```sh
 python -m research.physical_cost.cotenancy_ablation research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json "$ramulator_checkout" /tmp/cotenancy.json.gz
 python -m research.physical_cost.concurrent_search research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/holdout.json.gz --cases holdout3 holdout4 --methods af_probe joint --budgets 4 12 25 --repeats 3
+python -m research.physical_cost.concurrent_search research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/holdout-6657.json.gz --cases holdout_long --methods af_probe joint --budgets 4 12 25 --repeats 3
 ```

@@ -21,7 +21,7 @@ class Workload:
 
     def __post_init__(self):
         if (not 1 <= len(self.contexts) <= 7 or len(self.arrivals_ps) != len(self.contexts) + 1
-                or min(self.arrivals_ps) < 0 or not 1 <= self.rows <= 1 << 19 or not 1 <= self.steps <= 7168
+                or min(self.arrivals_ps) < 0 or not 1 <= self.rows <= 1 << 19 or not 1 <= self.steps <= 4096
                 or min(self.contexts) < 1 or max(self.contexts) + self.steps > 1 << 14):
             raise ValueError("Workload exceeds the serving grammar's address ranges or has invalid arrivals")
 
