@@ -12,7 +12,7 @@ from time import perf_counter
 
 from research.physical_cost.banked_oracle import audit
 from research.physical_cost.banked_serving import (
-    DRAM_AJ, MAC_AJ, Mapping, Workload, build, dispatch, layout_requirements,
+    MAC_AJ, Mapping, Workload, build, dispatch, layout_requirements,
     mappings, place, price, tile_words,
 )
 from research.physical_cost.mixed_gate import Architecture, GB_BANKS, GB_BYTES, LOCAL_BYTES, REFERENCE, SHAPES
@@ -51,11 +51,11 @@ def estimate(hw, work, mapping, macros, regions=None):
     gc = ceil(max(g["access_ns"], g["cycle_ns"]))
     lc = ceil(max(l["access_ns"], l["cycle_ns"]))
     duration, traffic = bound_profile(hw, work, mapping, regions, gc, lc)
-    return bind_profile(duration, traffic, action_prices(g, l), round(hw.sram_totals(macros, "leak_mw") * 1e6))
+    return bind_profile(duration, traffic, action_prices(hw, g, l), round(hw.standby_mw(macros) * 1e6))
 
 
-def action_prices(global_macro, local_macro):
-    return (DRAM_AJ, MAC_AJ, *(round(m[f"{action}_nj"] * 1e9)
+def action_prices(hw, global_macro, local_macro):
+    return (hw.ddr_read_aj, hw.ddr_write_aj, MAC_AJ, *(round(m[f"{action}_nj"] * 1e9)
             for m in (global_macro, local_macro) for action in ("read", "write")))
 
 
@@ -78,7 +78,7 @@ def bound_profile(hw, work, mapping, regions, gc, lc):
         traffic[direction] += count * repeats
         if dma:
             resources[request, "dram", "both"] += count * dma_ns * repeats
-            traffic["dram"] += count * repeats
+            traffic["dram_r" if direction == "w" else "dram_w"] += count * repeats
             return count * dma_ns
         return duration
 
@@ -142,7 +142,7 @@ def bound_profile(hw, work, mapping, regions, gc, lc):
         if request == "P":
             p_service = max(p_service, ticks)
     duration = max(full_decode, first_decode + p_service, max(pooled.values()))
-    return duration, tuple(traffic[key] for key in ("dram", "macs", "r", "w", "local_r", "local_w"))
+    return duration, tuple(traffic[key] for key in ("dram_r", "dram_w", "macs", "r", "w", "local_r", "local_w"))
 
 
 def phase_score(hw, work, macros):
@@ -192,8 +192,7 @@ def bind_candidates(hardware, work, plans, macros):
         g, l = macros[hw.global_bank_bytes], macros[hw.weight_bytes_per_stripe]
         service = tuple(ceil(max(m["access_ns"], m["cycle_ns"])) for m in (g, l))
         groups[hw.x, hw.y, hw.global_banks, *service, max(hw.ddr_word_ns, service[0])].append(hw)
-        prices[hw] = tuple(round(m[key] * 1e9) for m in (g, l) for key in ("read_nj", "write_nj"))
-        prices[hw] += (round(hw.sram_totals(macros, "leak_mw") * 1e6),)
+        prices[hw] = (*action_prices(hw, g, l), round(hw.standby_mw(macros) * 1e6))
     by_hw = defaultdict(list)
     feasible = 0
     for members in groups.values():

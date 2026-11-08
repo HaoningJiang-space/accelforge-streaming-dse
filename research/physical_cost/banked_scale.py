@@ -102,8 +102,8 @@ def catalog(hardware, work, macros, plans):
                 requirements.append((index, gb, local, duration, traffic))
         profile_count += len(requirements)
         for hw in group:
-            prices = action_prices(macros[hw.global_bank_bytes], macros[hw.weight_bytes_per_stripe])
-            leak = round(hw.sram_totals(macros, "leak_mw") * 1e6)
+            prices = action_prices(hw, macros[hw.global_bank_bytes], macros[hw.weight_bytes_per_stripe])
+            leak = round(hw.standby_mw(macros) * 1e6)
             items, mask = [], 0
             for index, gb, local, duration, traffic in requirements:
                 if gb <= hw.global_capacity and local <= hw.private_capacity:

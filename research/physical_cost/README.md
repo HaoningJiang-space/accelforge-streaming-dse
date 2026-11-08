@@ -523,3 +523,76 @@ fusion limit as the compute-only check.
 ```sh
 python -m research.physical_cost.native_block research/physical_cost/results/sram_45nm.json /tmp/native-block.json.gz --cold-ddr-bound
 ```
+
+## Joint area budget with paid DDR and MAC choices
+
+This sweep charges one common budget for the two SRAM levels, the
+MACs, and the DDR I/O and digital PHY area estimate. The SRAM
+entries are the existing 45 nm CACTI table. For the INT8 PE, Yosys
+0.61 synthesizes the registered multiply and signed 32-bit accumulator.
+Generic gates and mapped flops are priced using the pinned Nangate45
+X1 cell areas. The sum is 1,180.508 µm² per PE. This is standard cell
+area before routing and clock implementation.
+
+DDR I/O area and read, write and idle power come from the pinned
+CACTI external I/O routines with one loaded rank per channel.
+The additional digital PHY area is the modeled I/O area times
+0.551 / 3.820, the digital-to-I/O ratio of the published DDR3
+controller. This ratio is a proxy for the digital part of the DDR4
+design. DDR4-2000 channel replication represents 8, 16 and 32 GB/s.
+The 64 GB/s point uses five 32-bit DDR4-3200 channels. The scheduler
+still represents their aggregate bandwidth as one shared port.
+
+| DDR (GB/s) | I/O + digital PHY (mm²) | Read (pJ/bit) | Write (pJ/bit) | Idle (mW) |
+|---|---:|---:|---:|---:|
+| 8 | 1.810 | 14.792 | 16.152 | 57.361 |
+| 16 | 2.907 | 12.874 | 14.233 | 63.121 |
+| 32 | 5.815 | 12.874 | 14.233 | 126.242 |
+| 64 | 10.535 | 10.712 | 11.744 | 325.686 |
+
+Transfer energy is active minus idle power divided by aggregate bit
+rate. Idle interface power is charged once over elapsed execution
+time. Replicating identical channels preserves incremental pJ/bit
+and increases area and idle power. The nominal energy estimate uses
+the modeled interface. At 32 GB/s its active price already exceeds
+the old fixed 7.03 pJ/bit, so the residual DRAM core energy is zero
+in the nominal ledger. The optional device term permits sensitivity
+analysis. Controller logic, package, array routing and PE idle power
+are outside this model.
+
+Each total-area cap adds 1.35, 2.70 or 4.50 mm² to the area of
+the 2,048-MAC and 32-GB/s reference without SRAM. Those same
+9.582, 10.932 and 12.732 mm² limits apply to every hardware choice.
+The three workloads all choose 32 GB/s at each limit. The winning
+MAC count varies between 1,024 and 4,096. The 64 GB/s tier is
+infeasible at the first two limits. At the last it admits only
+1,024-MAC designs and still loses wherever a mapping fits.
+
+The fixed 32 GB/s panel gives the following numbers of opened
+versus effective timing classes.
+
+| Workload | 9.582 mm² | 10.932 mm² | 12.732 mm² |
+|---|---:|---:|---:|
+| Context 576 | 40 / 94 | 64 / 195 | 80 / 318 |
+| 32-step K+V | 15 / 86 | 41 / 192 | 67 / 317 |
+| Asymmetric K+V | 40 / 81 | 28 / 192 | 67 / 315 |
+
+At the largest cap, the fixed 32 GB/s proof opens 21.1–25.2% of
+classes. At smaller caps it can open up to 49.4%. The report records
+actual dispatch separately. The counts describe this model and these
+sizes. The mixed-DDR denominator includes service classes with very
+different bandwidth, and no asymptotic claim follows from the sweep.
+
+[Raw calibration ledger](results/paid_ledger.json) ·
+[Paid-area scan](results/paid_area_windows.json.gz) ·
+[CACTI-IO](https://users.cs.utah.edu/~rajeev/cacti7/) ·
+[Controller area table](https://kluedo.ub.rptu.de/files/8310/Diss_Chirag_Sudarshan_wo_DOB.pdf)
+
+```sh
+# Use the revisions and Liberty hash in results/paid_ledger.json.
+yosys -p 'read_verilog mac_int8.v; synth -top mac_int8 -noabc; dfflibmap -liberty nangate.lib; write_json mac.json; stat'
+g++ -std=c++11 -O2 -I "$cacti" ddr4_probe.cc "$cacti/extio.cc" "$cacti/extio_technology.cc" -o ddr4_probe
+# Run from the repository root after producing the local probe and netlist.
+python -m research.physical_cost.calibrate_ledger /tmp/mac.json /tmp/nangate.lib /tmp/ddr4_probe /tmp/ledger.json
+python -m research.physical_cost.paid_area research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/paid-area.json.gz
+```

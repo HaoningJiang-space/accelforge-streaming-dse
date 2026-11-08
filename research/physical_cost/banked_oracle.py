@@ -56,7 +56,7 @@ def audit(program, macros, starts, *, standalone=None):
                     if access.bank is None:
                         raise AssertionError("DMA must name one physical bank")
                     per_port["DDR"] += step
-                    dynamic += 3_599_360_000
+                    dynamic += hw.ddr_read_aj if access.direction == "w" else hw.ddr_write_aj
                     movements[command.request, "dram"] += 1
         if command.kind == "load" and command.local_words:
             # The read is followed by the transfer into private weight SRAM.
@@ -231,7 +231,7 @@ def audit(program, macros, starts, *, standalone=None):
             else:
                 j += 1
     ticks = max(completion)
-    leak_mw = sum(macros[size]["leak_mw"] * count for size, count in (
+    leak_mw = hw.phy_idle_mw + sum(macros[size]["leak_mw"] * count for size, count in (
         (hw.global_bank_bytes, hw.global_banks * (hw.global_capacity // hw.global_bank_bytes)),
         (hw.weight_bytes_per_stripe, hw.x * (hw.private_capacity // hw.weight_bytes_per_stripe)),
     ))

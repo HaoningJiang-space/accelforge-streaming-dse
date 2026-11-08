@@ -1,3 +1,4 @@
+from collections import Counter
 from dataclasses import replace
 import json
 from pathlib import Path
@@ -13,6 +14,7 @@ from research.physical_cost.banked_serving import (
     Access, Command, Life, Mapping, Program, Region, Workload, build, dispatch, mappings, price,
 )
 from research.physical_cost.mixed_gate import Architecture
+from research.physical_cost.paid_area import PaidArchitecture
 
 
 MACROS = {int(k): v for k, v in json.loads(
@@ -145,3 +147,23 @@ def test_scaled_shortlist_intervals_and_breakpoints_against_exhaustion():
         assert item["certificate_lower"] <= reference <= item["edp"]
         if item["certified"]:
             assert item["edp"] == reference
+
+
+def test_paid_ddr_read_write_and_idle_costs_reach_the_bound_and_replay():
+    base = PaidArchitecture(64, 32, 2, 65536, 1024)
+    paid = replace(base, ddr_read_aj=base.ddr_read_aj + 11, ddr_write_aj=base.ddr_write_aj + 29,
+                   phy_idle_mw=7.0)
+    program = build(paid, WORK, PLAN)
+    costs = price(program, MACROS)
+    score, _, starts, _ = dispatch(program, costs)
+    original = price(build(base, WORK, PLAN), MACROS)
+    transfers = Counter()
+    for command in program.commands:
+        if command.kind == "dma":
+            for access in command.accesses:
+                transfers[access.direction] += sum(count for bank, count in
+                    program.regions[access.slot].counts(access.first, access.words) if bank == access.bank)
+    assert costs.dynamic - original.dynamic == 11 * transfers["w"] + 29 * transfers["r"]
+    assert costs.leak - original.leak == 7_000_000
+    assert estimate(paid, WORK, PLAN, MACROS)[1] == costs.dynamic
+    assert audit(program, MACROS, starts)["edp"] == score

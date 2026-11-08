@@ -35,15 +35,15 @@ class Stratum:
     rows: dict
 
 
-def prepare(macros, work, caps, plans):
+def prepare(macros, work, caps, plans, grid_factory=grid):
     """Share capacity catalogs across area caps and keep cap-specific dominance."""
     strata = {}
     profiles = 0
     for mac, tick in AXES:
-        hardware = grid(macros, max(caps), mac_count=mac, ddr_word_ns=tick)
+        hardware = grid_factory(macros, max(caps), mac_count=mac, ddr_word_ns=tick)
         rows, count = catalog(hardware, work, macros, plans)
         profiles += count
-        areas = {hw: hw.sram_totals(macros, "area_mm2") for hw in hardware}
+        areas = {hw: hw.total_area_mm2(macros) for hw in hardware}
         for cap in caps:
             admitted = [hw for hw in hardware if areas[hw] <= cap]
             feasible = tuple(hw for hw in admitted if hw in rows)
@@ -73,6 +73,7 @@ def solve(strata, work, macros, plans):
     unresolved = [candidate for candidate in reduced if rows[candidate].lower < score]
     return {
         **data, "exact_edp_aj_ns": score, "winner": asdict(hw),
+        "winner_area_mm2": hw.total_area_mm2(macros),
         "winner_mapping": asdict(replace(plans[index], prefer=prefer)),
         "architectures_opened": visits, "classes_opened": len(opened),
         "classes_below_incumbent": len({rows[h].timing for h in unresolved}),
@@ -84,18 +85,22 @@ def solve(strata, work, macros, plans):
     }
 
 
-def run(macros, caps, cases, output):
+def run(macros, caps, cases, output, ledger=None):
+    area_key = "total_area_mm2" if ledger is not None else "sram_area_mm2"
+    caps_key = "total_area_caps_mm2" if ledger is not None else "sram_area_caps_mm2"
     report = {"mac_counts": MAC_COUNTS, "ddr_word_ns": DDR_TICKS,
-              "sram_area_caps_mm2": caps, "panels": PANELS, "cases": {}}
+              "area_kind": area_key, caps_key: caps, "panels": PANELS, "cases": {}}
+    if ledger is not None:
+        report["ledger"] = ledger.description()
     for name in cases:
         start = perf_counter()
         work = WORKLOADS[name]
         plans = tuple(m for m in mappings() if m.prefer == "P" and (m.resident or not work.reserve_values))
-        strata, profiles = prepare(macros, work, caps, plans)
+        strata, profiles = prepare(macros, work, caps, plans, grid if ledger is None else ledger.grid)
         results = []
         for cap, (label, axes) in product(caps, PANELS.items()):
             result = solve([strata[mac, tick, cap] for mac, tick in axes], work, macros, plans)
-            results.append({"sram_area_mm2": cap, "panel": label, **result})
+            results.append({area_key: cap, "panel": label, **result})
             print(name, cap, label, result["effective_classes"], result.get("classes_opened"),
                   result.get("classes_dispatched"), result.get("exact_edp_aj_ns"), flush=True)
         report["cases"][name] = {"workload": asdict(work), "generated_profiles": profiles,

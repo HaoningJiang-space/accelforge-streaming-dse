@@ -42,6 +42,8 @@ class Architecture:
     weight_bytes_per_stripe: int
     # 64 bytes at 38.4 GB/s, rounded up to a whole 1 GHz cycle.
     ddr_word_ns = 2
+    ddr_read_aj = ddr_write_aj = round(DRAM_BIT_J * 512 * 1e18)
+    phy_idle_mw = 0.0
 
     @property
     def global_capacity(self):
@@ -54,6 +56,12 @@ class Architecture:
     def sram_totals(self, macros, metric):
         return (self.global_banks * macros[self.global_bank_bytes][metric]
                 + self.x * macros[self.weight_bytes_per_stripe][metric])
+
+    def standby_mw(self, macros):
+        return self.sram_totals(macros, "leak_mw") + self.phy_idle_mw
+
+    def total_area_mm2(self, macros):
+        return self.sram_totals(macros, "area_mm2")
 
 
 def price_sram(spec, architecture, macros, single_bank=False):

@@ -10,7 +10,6 @@ from research.runtime.strip_codesign import ceildiv
 
 LINE = 64
 LOCAL_WORD = 8
-DRAM_AJ = 3_599_360_000
 MAC_AJ = 84_000
 
 
@@ -288,7 +287,7 @@ def price(program, macros):
     l_cycle = ceil(max(l["access_ns"], l["cycle_ns"]))
     global_aj = {d: round(g[f"{name}_nj"] * 1e9) for d, name in (("r", "read"), ("w", "write"))}
     local_aj = {d: round(l[f"{name}_nj"] * 1e9) for d, name in (("r", "read"), ("w", "write"))}
-    leak = round(hw.sram_totals(macros, "leak_mw") * 1e6)
+    leak = round(hw.standby_mw(macros) * 1e6)
     ports, duration, dynamic = [], [], 0
     work = [0] * (2 * hw.global_banks + 4)
     dram, local_r, local_w, mac = range(2 * hw.global_banks, len(work))
@@ -304,7 +303,8 @@ def price(program, macros):
                     if command.kind == "dma":
                         elapsed = count * max(hw.ddr_word_ns, g_cycle)
                         used[dram] = used.get(dram, 0) + elapsed
-                        dynamic += count * DRAM_AJ
+                        # Writing to the SRAM endpoint reads the off-chip device.
+                        dynamic += count * (hw.ddr_read_aj if access.direction == "w" else hw.ddr_write_aj)
                     used[port] = used.get(port, 0) + elapsed
                     dynamic += count * global_aj[access.direction]
         if command.kind == "load" and command.local_words:
