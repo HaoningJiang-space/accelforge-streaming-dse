@@ -1,5 +1,10 @@
 # AccelForge research workspace
 
+The [local DAG structure analysis](graph_structure/README.md) measures tensor
+frontiers, weighted activation peaks and schedule sensitivity on 22 repository
+and explicitly constructed graphs, with exact topological-prefix optimization
+on 21 cases and a state-limited result on the remaining case.
+
 The [late-binding experiments](late_binding/README.md) compare mapping-first
 certificates and exact architecture-first search using the same native candidate
 banks. The [Windows runtime guide](runtime/README.md) documents the isolated
