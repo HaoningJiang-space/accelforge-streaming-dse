@@ -39,6 +39,36 @@ exactly on Windows with the same CACTI table.
 [Linux report](results/cold_512_linux.json.gz) ·
 [Windows replay](results/cold_512_windows.json.gz)
 
+## Resident decode
+
+The 1,024-token variant allows the 64 KiB KV input to stay in GlobalBuffer
+between decode steps. Each native tile reserves the whole tensor plus its
+other live storage. The audit checks the bit-exact capacity and verifies
+zero native DRAM reads of resident KV. An explicit DMA fill loads the full
+input once after prefill. The fill occupies both endpoints and pays
+DRAM read energy, SRAM write energy, and leakage during the transfer.
+
+At the 1.3465 mm² SRAM cap, 13 hardware points are admitted and four
+can keep KV resident. The 16-step shared winner uses a 32 × 64 array,
+two 64 KiB global banks, and a 1 KiB private macro per stripe. It uses
+1.0954 mm² of SRAM. In the all-bank model, prefill alone chooses a
+16 × 128 array and four 16 KiB global banks. That hardware needs cold
+decode because its GlobalBuffer has no room for both full KV and staging.
+
+| Global service | Shared penalty at 16 steps | 64 steps | 256 steps | Prefill-first EDP ratio at 16 steps | Fixed-price remap ratio at 16 steps |
+|---|---:|---:|---:|---:|---:|
+| All banks | 7.39% | 4.73% | 1.94% | 5.86× | 1.00× |
+| One bank | 8.12% | 4.85% | 2.68% | 3.46× | 1.00× |
+
+The hardware-conflict threshold of 5% is met at 16 steps in both service
+models. The fixed-price architecture selector also models residency and
+ties the physical shared optimum in every resident case. The result
+identifies a capacity threshold and shared-hardware cost. It does not
+establish a search advantage over architecture-first with a residency-aware
+mapper or a bound outside the sampled native mappings.
+[All-bank report](results/resident_1024_all_windows.json.gz) ·
+[One-bank report](results/resident_1024_single_windows.json.gz)
+
 ## Run
 
 Run these commands from the repository root in the AccelForge environment.
