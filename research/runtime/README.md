@@ -54,3 +54,59 @@ The requirements intentionally omit the unsupported estimators and leave ISL
 to conda. `pip check` will report the known metadata exceptions above. This is
 a research configuration with explicit action costs, not general Windows support
 for every AccelForge hardware estimator.
+
+## Executable DAG weight prefetch
+
+The next-wave policy can put part or all of a following streamed weight tile
+into otherwise idle SRAM-write intervals of the current GEMM wave. It reserves
+the whole next tile alongside the current tile, all live activations and the
+current wave's staging. Each prefetched word books both the DRAM and SRAM-write
+ports. The following wave fetches any remainder before its register fill.
+The policy looks ahead only to the next wave of the same operator.
+
+The [fixed-pool replay](../joint_budget/results/dag_prefetch_decision.json)
+uses the distinct choices made by the preceding pricing models. It checks
+identical action counts and energy and accounts for all removed synchronous
+DMA ticks. EDP decreases on nine of ten workload-budget pairs, with a maximum
+decrease of 27.23% for 3mm at 128 KiB. GLU and asymmetric select different
+members of this fixed pool with prefetch. The test covers feasibility and
+reranking in this pool. It does not search every prefetch-enabled mapping.
+
+The next experiment chooses the cheaper of overlapping rows and running
+them serially in each wave, after accounting for how much DMA each mode can
+hide. Prefetch uses only complete words that fit in the write-port gaps.
+The replay constructs the two legal timelines and checks the selected
+timeline. The analytical search prices their row, reduction and output-tail
+classes separately. Each wave decision changes only the synchronous remainder
+of its immediate successor, so this policy composes additively across waves.
+The optimizer enumerates every row band and integer spatial tile within the
+same DAG grammar, with a lower bound allowing weight DMA to overlap MAC service
+but never the register fill. Exactness applies to this one-wave lookahead
+policy. The test does not explore DMA across operator or group boundaries.
+
+```powershell
+./research/runtime/run_windows.ps1 -PythonArguments @('-m','research.runtime.dag_prefetch_search','--projection','--cases','3mm','glu','diamond','--budgets','135168','--output','research/local_prefetch_opt.json')
+```
+
+At [132 KiB over the three common array shapes](../joint_budget/results/dag_prefetch_optimized_132k.json),
+reoptimizing GLU and diamond lowers EDP by 14.32% and 14.51% relative to
+the previous mappings replayed with the same prefetch policy. GLU changes
+from 48×128 to 32×192 and drops two pinned weights. Its DRAM traffic stays at
+106,496 words and its prefetched weight words rise from 9,288 to 46,864.
+Diamond also unpins a weight and preserves its DRAM volume. The strong
+architecture-first control and the joint optimum agree on all three graphs.
+
+The [ten-pair extension](../joint_budget/results/dag_prefetch_optimized_projection.json)
+uses the same three array shapes at both SRAM budgets. Eight pairs improve
+over the previous mappings when both sides use the executable prefetch
+evaluator. GLU and asymmetric select a different shape at both budgets.
+The chosen fusion partitions agree, and the fusion-enabled architecture-first
+control ties joint search in all ten pairs.
+
+Residual at 128 KiB gives a traffic reversal. Its previous mapping moves
+409,904 DRAM words and takes 26,376,128 ticks. The reoptimized mapping moves
+412,976 words and takes 24,048,720 ticks, lowering EDP by 8.32%. Both use the
+same array and fusion partition. On GLU, repricing the best new mapping on the
+old 48×128 shape gives EDP 1.22461e16 in the experiment's integer units.
+Switching to 32×192 gives 1.22340e16, an extra 0.10% improvement. Most of the
+14.32% reduction comes from changing the mapping on the old shape.

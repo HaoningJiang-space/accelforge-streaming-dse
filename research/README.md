@@ -5,7 +5,9 @@ certificates and exact architecture-first search using the same native candidate
 banks. The [Windows runtime guide](runtime/README.md) documents the isolated
 environment for running the experiments.
 
-The complete port-calendar, residency and prefetch experiments are preserved at
+The [DAG runtime](runtime/README.md#executable-dag-weight-prefetch) includes the
+port calendar, tensor residency, prefetch search and its replay checks.
+The complete experimental history is preserved at
 [the original experiment tip](https://github.com/HaoningJiang-space/accelforge-streaming-dse/tree/2cae8406929ef3c2b3d0e9c4c57860569dc96d67).
 The synthesis, search-control and native-generation investigations share
 [a separate history](https://github.com/HaoningJiang-space/accelforge-streaming-dse/tree/3cd0495a7267a9a4a874802aae4b581409157d1d).
