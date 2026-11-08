@@ -596,3 +596,88 @@ g++ -std=c++11 -O2 -I "$cacti" ddr4_probe.cc "$cacti/extio.cc" "$cacti/extio_tec
 python -m research.physical_cost.calibrate_ledger /tmp/mac.json /tmp/nangate.lib /tmp/ddr4_probe /tmp/ledger.json
 python -m research.physical_cost.paid_area research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/paid-area.json.gz
 ```
+
+At fixed 12.732 mm² and context 576, scaling only the interface area
+by 0.8 selects 64 GB/s and 2,048 MACs, with 17 of 1,324 mixed
+effective classes opened. Scaling it by 1.2 selects 32 GB/s and
+2,048 MACs, with 84 of 1,058 opened. The nominal winner is 32 GB/s
+and 4,096 MACs. A 4 pJ/bit incremental device term at nominal
+area keeps that winner and changes fixed 32 GB/s openings from
+80 to 83 of 318. The bandwidth conclusion depends on the PHY
+estimate. Each sensitivity holds the absolute area limit fixed.
+
+[PHY ×0.8](results/paid_phy080_windows.json.gz) ·
+[PHY ×1.2](results/paid_phy120_windows.json.gz) ·
+[DRAM device sensitivity](results/paid_device4_windows.json.gz)
+
+## Native prefill and long decode at the same paid bandwidth
+
+All three candidates run at 32 GB/s and fit the same 12.732 mm²
+budget. They have 1,024, 2,048 and 4,096 MACs and respectively 768,
+576 and 256 KiB of global SRAM. The candidates use the largest
+number of 64 KiB banks within this cap for each shape, with
+32 private 1 KiB SRAMs. Total areas are 12.378, 12.309 and
+12.597 mm².
+
+Native FFM remaps a 256 × 256 × 256 prefill projection and a
+single-query attention graph with QK, the elementwise normalization
+proxy and AV. The decode graph operates on a fixed four-head group
+with 16 values per head. The episode runs prefill and decode in
+series on the same hardware. The decode reuses the fixed K/V
+inputs across autoregressively ordered queries. The model allows
+either cold DDR reads each time or a complete cache reservation
+with one charged fill. The resident case removes the full K/V
+size from staging and retains the native mapper's active tile
+reservations in the remaining space. Every joined frontier row
+is replayed, including the per-tensor DDR action counts. Resident
+K/V has zero off-chip reads after the initial fill. Fusion is
+limited to one loop. This is a native aggregate model of a
+fixed-context episode. It excludes concurrent requests, cache
+append and partial residency from the mapped candidates.
+
+The 4,096-MAC prefill takes 6.144 µs, compared with 16.384 µs
+on 1,024 MACs. At context 5,120 only the latter can reserve
+the 640 KiB cache. Its resident decode takes 24.320 µs per step.
+Cold decode takes 42.244 µs per step. The shared optimum switches
+at longer decode phases. The independent-hardware comparator
+minimizes the product of summed energy and latency over both
+complete phase frontiers.
+
+| Context | Decode winner at 8 steps (MACs) | Shared hardware EDP penalty at 8 steps | At 32 steps | At 128 steps |
+|---|---:|---:|---:|---:|
+| 4,096 | 2,048 | 2.85% | 0.87% | 0.23% |
+| 5,120 | 1,024 | 9.04% | 2.61% | 0.68% |
+| 6,144 | 4,096 | 0% | 0% | 0% |
+
+The last case has no room for both a complete cache and staging
+on any candidate. At one decode step the prefill and decode
+winners agree in all three contexts.
+
+The boundary lower bound charges native compulsory input and
+output activation traffic, including the prefill X read and P
+write (64 KiB each). It also charges required weight reads and
+uses the maximum of ideal compute and compulsory DDR service.
+The capacity relaxation gives K/V all modeled on-chip storage
+at a step boundary, including private SRAM and registers. If the
+cache exceeds that capacity, the excess must be fetched before
+each subsequent complete scan. The initial cache fill is charged
+once. Intermediate scores and other internal activations can
+stay on chip for free in the bound.
+
+We compare both bounds against full native remapping of the
+three architectures. The lower bound that assumes cold or fully
+resident modes opens one of three at context 5,120 and 32 or
+128 steps, and two at eight steps. The relaxed capacity bound
+allows arbitrary partial residency and opens all three. These
+are proof-work counts reconstructed from the verified frontiers.
+The restricted-mode result does not establish pruning for
+native partial caching or for arbitrary attention graphs.
+
+[4,096 context](results/paid_native_4096_windows.json.gz) ·
+[5,120 context](results/paid_native_5120_windows.json.gz) ·
+[6,144 context](results/paid_native_6144_windows.json.gz)
+
+```sh
+python -m research.physical_cost.native_serving research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/native-serving.json.gz --context 5120
+python -m research.physical_cost.paid_area research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/paid-sensitivity.json.gz --cases holdout576 --caps 12.732443088031802 --phy-scale 0.8
+```
