@@ -5,7 +5,9 @@ from pathlib import Path
 import pytest
 
 from research.physical_cost.banked_oracle import addresses, audit
-from research.physical_cost.banked_scale import DeepArchitecture, Evaluator, breakpoints, catalog, measure
+from research.physical_cost.banked_scale import (
+    DeepArchitecture, Evaluator, breakpoints, catalog, certify_families, measure,
+)
 from research.physical_cost.banked_search import estimate, run_search
 from research.physical_cost.banked_serving import (
     Access, Command, Life, Mapping, Program, Region, Workload, build, dispatch, mappings, price,
@@ -124,6 +126,8 @@ def test_scaled_shortlist_intervals_and_breakpoints_against_exhaustion():
     assert len(breakpoints(hardware, rows)) < len(hardware)
     assert evaluator.exact(hardware)[0] == reference
     assert evaluator.joint(hardware, float("inf"), None, lambda score, plan: None)[0] == reference
+    assert certify_families(evaluator, hardware, reference)[0]
+    assert not certify_families(evaluator, hardware, reference + 1)[0]
     result = measure(hardware, rows, evaluator, {hw: evaluator.critical_score(hw) for hw in hardware})
     assert result["exact_edp"] == reference
     for item in result["shortlists"].values():

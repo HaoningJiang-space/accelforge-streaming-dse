@@ -384,3 +384,43 @@ in both. The 10% policy attains that EDP with no global certificate.
 ```sh
 python -m research.physical_cost.banked_scale research/physical_cost/results/sram_45nm.json /tmp/scale-cold.json.gz --cases holdout576 kv_long --cold-repeats 5
 ```
+
+### Certifying the omitted architectures
+
+Both certifiers start with the exact remapped 10% shortlist, its
+verified incumbent, and copies of the same command and schedule
+caches. They must exclude every remaining architecture. The
+architecture certifier remaps by lower bound. The family certifier
+groups feasible mappings with identical addresses, dependencies and
+service periods. At a fixed mapping and duration it takes the minimum
+EDP across the actual feasible members, using each member's dynamic
+energy and leakage. A family can be rejected when this minimum at the
+command latency bound reaches the incumbent. Otherwise it uses the
+faster of the two addressed schedules and checks the member costs
+at that duration. Identical timing allows one dispatch to cover
+all members with the same priority, while capacities and prices
+are evaluated per member.
+
+All five incumbents were certified by both methods in all repeats.
+These times start after shortlist remapping. The new work columns
+are identical for both methods because the architecture baseline
+already caches equivalent command timings.
+
+| Workload | Omitted designs after dominance | New compilations | New schedules | Architecture median (s) | Family median (s) |
+|---|---:|---:|---:|---:|---:|
+| Context 512 | 713 | 164 | 6 | 1.152 | 1.164 |
+| Context 576 | 712 | 164 | 20 | 1.296 | 1.322 |
+| Complete K+V | 536 | 134 | 0 | 0.917 | 0.997 |
+| 32-step K+V | 563 | 172 | 272 | 2.658 | 2.834 |
+| Asymmetric K+V | 498 | 106 | 6 | 1.496 | 1.491 |
+
+The long-cache case has 314 vs 288 logical schedule checks with
+identical physical dispatch counts. This comparison establishes a
+practical certificate for the 10% window. Batching the proof by
+timing family adds no measured reduction in new addressed evaluations.
+
+[Certificate comparison](results/banked_scale_proof_450_windows.json.gz)
+
+```sh
+python -m research.physical_cost.banked_scale research/physical_cost/results/sram_45nm.json /tmp/scale-proof.json.gz --proof-repeats 5
+```

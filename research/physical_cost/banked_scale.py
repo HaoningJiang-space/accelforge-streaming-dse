@@ -147,13 +147,16 @@ class Evaluator:
         return min(max(bound, self.score(hw, dynamic, self.command(hw, index)[1][1].lower_ns))
                    for bound, index, dynamic in self.rows[hw].plans[:CRITICAL_PROBES])
 
-    def scheduled_edp(self, hw, index, prefer, dynamic):
+    def schedule_time(self, hw, index, prefer):
         key, (program, costs) = self.command(hw, index)
         trial = key, prefer
         if trial not in self.times:
             mapped = replace(program, mapping=replace(program.mapping, prefer=prefer))
             self.times[trial] = dispatch(mapped, costs)[1]
-        return self.score(hw, dynamic, self.times[trial])
+        return self.times[trial]
+
+    def scheduled_edp(self, hw, index, prefer, dynamic):
+        return self.score(hw, dynamic, self.schedule_time(hw, index, prefer))
 
     def exact(self, hardware, upper=float("inf"), best=None, report=None):
         visits = 0
@@ -383,6 +386,72 @@ def run_cold(macros, cap, cases, repeats, output):
         output.write_bytes(gzip.compress(json.dumps(report, indent=2).encode(), mtime=0))
 
 
+def certify_families(evaluator, omitted, upper):
+    """Cover equal-timing mappings with one command bound and two schedules."""
+    groups = defaultdict(list)
+    for hw in omitted:
+        row = evaluator.rows[hw]
+        for lower, index, dynamic in row.plans:
+            if lower >= upper:
+                break
+            groups[row.timing, index].append((hw, dynamic))
+    checked = 0
+    for (_, index), members in groups.items():
+        representative = members[0][0]
+        _, (_, costs) = evaluator.command(representative, index)
+        if min(evaluator.score(hw, dynamic, costs.lower_ns) for hw, dynamic in members) >= upper:
+            continue
+        duration, prefer = min((evaluator.schedule_time(representative, index, p), p) for p in ("P", "D"))
+        checked += 2
+        score, hw = min((evaluator.score(hw, dynamic, duration), hw) for hw, dynamic in members)
+        if score < upper:
+            evaluator.verify(score, hw, index, prefer)
+            return False, checked, len(groups)
+    return True, checked, len(groups)
+
+
+def run_proof(macros, cap, cases, repeats, output):
+    report = {"sram_area_mm2": cap, "repeats": repeats, "cases": {}}
+    hardware = grid(macros, cap)
+    for name in cases:
+        work = WORKLOADS[name]
+        start = perf_counter()
+        plans = tuple(m for m in mappings() if m.prefer == "P" and (m.resident or not work.reserve_values))
+        rows, _ = catalog(hardware, work, macros, plans)
+        reduced = breakpoints(tuple(rows), rows)
+        base = Evaluator(work, macros, plans, rows)
+        chosen = shortlist({hw: rows[hw].lower for hw in reduced}, percent=10)
+        upper, winner, _, _ = base.exact(chosen)
+        seed_s = perf_counter() - start
+        omitted = tuple(sorted(set(reduced) - set(chosen)))
+        results = {"architecture": [], "family": []}
+        for repeat in range(repeats):
+            order = ("architecture", "family") if repeat % 2 == 0 else ("family", "architecture")
+            for method in order:
+                evaluator = Evaluator(work, macros, plans, rows)
+                evaluator.compiled = base.compiled.copy()
+                evaluator.times = base.times.copy()
+                evaluator.verified = base.verified.copy()
+                begin = perf_counter()
+                if method == "architecture":
+                    value, _, work_items, checks = evaluator.exact(omitted, upper, winner)
+                    certified = value == upper
+                else:
+                    certified, checks, work_items = certify_families(evaluator, omitted, upper)
+                results[method].append({
+                    "seconds": perf_counter() - begin, "certified": certified,
+                    "work_items": work_items, "schedule_checks": checks,
+                    "new_compilations": len(evaluator.compiled) - len(base.compiled),
+                    "new_schedules": len(evaluator.times) - len(base.times),
+                })
+            if results["architecture"][-1]["certified"] != results["family"][-1]["certified"]:
+                raise AssertionError("The family certificate disagrees with complete architecture remapping")
+        report["cases"][name] = {"upper": upper, "shortlist": len(chosen), "omitted": len(omitted),
+                                 "shared_seed_seconds": seed_s, "proofs": results}
+        print(name, len(omitted), upper, {method: trials[-1] for method, trials in results.items()}, flush=True)
+        output.write_bytes(gzip.compress(json.dumps(report, indent=2).encode(), mtime=0))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("table", type=Path)
@@ -391,13 +460,17 @@ def main():
     parser.add_argument("--cases", nargs="+", choices=WORKLOADS, default=DEFAULT_CASES)
     parser.add_argument("--sizes", nargs="+", type=int, default=(64, 256, 1024))
     parser.add_argument("--seeds", nargs="+", type=int, default=(17, 29, 61, 83, 101))
-    parser.add_argument("--cold-repeats", type=int, default=0)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--cold-repeats", type=int, default=0)
+    mode.add_argument("--proof-repeats", type=int, default=0)
     args = parser.parse_args()
-    if args.area < 1.346496 or not all(n > 0 for n in args.sizes) or args.cold_repeats < 0:
+    if args.area < 1.346496 or not all(n > 0 for n in args.sizes) or min(args.cold_repeats, args.proof_repeats) < 0:
         parser.error("Provide at least the reference SRAM budget, positive sizes, and nonnegative repeats")
     macros = {int(size): value for size, value in json.loads(args.table.read_text())["macros"].items()}
     if args.cold_repeats:
         run_cold(macros, args.area, args.cases, args.cold_repeats, args.output)
+    elif args.proof_repeats:
+        run_proof(macros, args.area, args.cases, args.proof_repeats, args.output)
     else:
         run(macros, args.area, args.cases, args.sizes, args.seeds, args.output)
 
