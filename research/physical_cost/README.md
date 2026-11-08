@@ -1008,9 +1008,19 @@ runs do not finish a complete remap of an architecture. The
 validation independently checks the recorded winners, including
 all KV versions, their resource intervals and the DDR commands.
 
+One additional run per method extends both clocks to 40 seconds
+on the three-decode case and 65 seconds on the four-decode case.
+The probe baseline completes one full architecture in each case
+and evaluates 510 and 405 candidates. Interleaved search completes
+zero full architectures and evaluates 578 and 429 candidates. Both
+retain the same EDP as the shorter runs. Any feasible completed
+evaluation can become the incumbent immediately for either method.
+
 [Factorial replay and idle accounting](results/cotenancy_ablation_windows.json.gz) ·
 [Holdout trials](results/cotenancy_holdout_windows.json.gz) ·
-[Holdout replay](results/cotenancy_holdout_validation_windows.json.gz)
+[Holdout replay](results/cotenancy_holdout_validation_windows.json.gz) ·
+[40-second runs](results/cotenancy_holdout3_40s_windows.json.gz) ·
+[65-second runs](results/cotenancy_holdout4_65s_windows.json.gz)
 
 ```sh
 python -m research.physical_cost.cotenancy_ablation research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json "$ramulator_checkout" /tmp/cotenancy.json.gz

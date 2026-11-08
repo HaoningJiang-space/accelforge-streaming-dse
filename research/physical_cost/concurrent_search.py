@@ -27,6 +27,7 @@ CASES = {
     "pressure": Workload(160, (769, 1211), 4, (8_000_000, 0, 160_000)),
     "holdout3": Workload(192, (1151, 1729, 2369), 3, (3_000_000, 0, 230_000, 590_000)),
     "holdout4": Workload(224, (1535, 2048, 2817, 3329), 3, (7_000_000, 0, 170_000, 410_000, 770_000)),
+    "holdout_long": Workload(224, (1023, 1793, 3073, 6657), 3, (7_000_000, 0, 170_000, 410_000, 770_000)),
 }
 METHODS = ("af_top2", "af_window", "af_complete", "joint")
 
@@ -207,10 +208,13 @@ def search(macros, ledger, cap, work, method, budgets, limit=None):
     return {"area_legal_architectures": len(hardware), "feasible_architectures": all_architectures,
             "feasible_candidates": all_candidates, "selected_architectures": list(available),
             "ranking_seconds": ranked_at, "wall_seconds": wall, "time_to_best": best_time,
+            "time_to_first": history[0][0] if history else None,
+            "time_to_first_complete_architecture": next((t for t, _, _, done in history if done), None),
             "mapping_generation_seconds": generation_seconds, "evaluation_seconds": evaluation_seconds,
             "evaluated": sum(evaluated.values()), "opened_architectures": len(evaluated),
             "ranking_probes": len(probes),
             "complete_architectures": sum(evaluated[i] == n for i, n in available.items()),
+            "complete_architecture_indices": [i for i, n in available.items() if evaluated[i] == n],
             "all_mappings_evaluated": all_candidates == sum(evaluated.values()),
             "checkpoints": checkpoints, "best": best}
 
