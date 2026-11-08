@@ -115,3 +115,61 @@ existing 661-test FFM research regression was recorded at `d40a664b`; it has not
 been rerun for this isolated, standard-library-only module. No production FFM
 code changed in this gate. Paper mechanisms and their limits are linked in the
 contract; a complete five-paper literature review is not claimed here.
+
+## Mapping-first candidate kill test
+
+The screen uses materialized, serial operators and AccelForge's NVDLA template.
+It captures the native tile rows before cross-template Pareto, including the
+enumerator's own earlier reductions. The envelope is 32 × 192 PEs, 2 MiB of
+GlobalBuffer, and 8 bits per Register instance. The experiments vary PE
+dimensions, GlobalBuffer capacity, and its read and write bandwidth together.
+The budget is normalized as PE count / 6144 + GlobalBuffer bits / 16777216 +
+bandwidth multiplier / 2 ≤ 1.5. Energy uses fixed native action prices and
+zero leakage. Latency uses the native per-component costs and a maximum within
+each operator, summed across operators. This scope covers the native
+unfused latency column. The experiment models neither a physical area budget
+nor separate graph-level fill, staging, or port calendars.
+
+| Workload | Native tile rows | Exact signature frontier | 10% EDP boxes | Exact bound survivors | Boxes and bound survivors |
+|---|---:|---:|---:|---:|---:|
+| [GLU](results/kill_frontier_glu.json) | 4,442 | 3,277 | 3,257 | 4 | 4 |
+| [Attention](results/kill_frontier_attention.json) | 2,466 | 1,703 | 1,697 | 3 | 3 |
+| [ResNet bottleneck](results/kill_frontier_resnet.json) | 7,190 | 2,871 | 2,846 | 22 | 12 |
+
+All 11 operators meet the 1,000-residual threshold with the exact bound alone.
+The bound uses a common feasible incumbent. For each candidate, it uses the
+fastest bandwidth compatible with that candidate's demand. The remaining
+operators contribute separate minima of energy and latency over their own
+relaxed architectures. The graph bound is the product of the energy sum and
+the latency sum. The incumbent equals the relaxed bound for GLU and Attention
+to reported precision. ResNet's incumbent is 0.092% above the relaxed bound.
+These certificates apply to the captured candidate banks.
+
+Exact dominance compares PE and SRAM requirements, aggregate action counts
+per component and action, and the service time of each independently scaled
+component. The boxes retain exact demand antichains. Costs in a box differ
+by at most √1.1 per coordinate, including a separate bin for zeros. One
+replacement per operator bounds serial EDP inflation by 1.1. The two-layer
+oracle enumerates mapping pairs at 12 hardware points, regenerates native
+tiles at each point, checks the exact and approximate fronts, and verifies the
+bound against continuous bandwidth binding on the tiny bank.
+
+The workload equations use the repository's GLU and Attention proxies. The
+ResNet workload includes the residual Add and an implicit zero-padding halo.
+Its convolution charges the full iteration space at the boundary. Runs used
+a local Windows watchdog with per-workload limits of 240 seconds and 2 GiB
+working set. The ResNet case took 108 seconds. On Linux, use the existing
+watchdog from an AccelForge environment.
+
+```sh
+research/tracking_audit/run_capped.sh 2 240 /tmp/frontier.log -- \
+  python -m research.joint_synthesis.kill_frontier resnet /tmp/resnet.json
+python -m pytest -q research/joint_synthesis/tests/test_kill_frontier.py
+```
+
+[DOSA](https://people.eecs.berkeley.edu/~ysshao/assets/papers/dosa-micro2023.pdf)
+already uses mapping-first multilayer co-search, and
+[SENNA](https://doi.org/10.1145/3705731) already combines layer requirements
+by a componentwise maximum. The remaining question is whether certified
+search improves time to end-to-end EDP on a large shared space. This screen
+measures candidate compression and does not compare optimizers.

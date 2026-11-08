@@ -1,0 +1,85 @@
+{
+  "case": "resnet",
+  "shape_parameters": [],
+  "envelope_x_y_gb_bits_register_bits": [
+    32,
+    192,
+    16777216,
+    8
+  ],
+  "normalized_budget": 1.5,
+  "gb_bandwidth_multiplier_range": [
+    0.25,
+    2.0
+  ],
+  "epsilon_edp": 0.1,
+  "status": "complete",
+  "operators": {
+    "Reduce": {
+      "templates": 6,
+      "native_rows": 1557,
+      "distinct_signatures": 1448,
+      "safe_dominance": 1127,
+      "epsilon_boxes": 1116,
+      "exact_fits_budget": 1127,
+      "exact_after_bound": 10,
+      "epsilon_fits_budget": 1116,
+      "epsilon_after_bound": 5
+    },
+    "Spatial": {
+      "templates": 24,
+      "native_rows": 4163,
+      "distinct_signatures": 1205,
+      "safe_dominance": 755,
+      "epsilon_boxes": 749,
+      "exact_fits_budget": 755,
+      "exact_after_bound": 1,
+      "epsilon_fits_budget": 749,
+      "epsilon_after_bound": 1
+    },
+    "Expand": {
+      "templates": 6,
+      "native_rows": 1464,
+      "distinct_signatures": 1347,
+      "safe_dominance": 988,
+      "epsilon_boxes": 980,
+      "exact_fits_budget": 988,
+      "exact_after_bound": 10,
+      "epsilon_fits_budget": 980,
+      "epsilon_after_bound": 5
+    },
+    "Add": {
+      "templates": 6,
+      "native_rows": 6,
+      "distinct_signatures": 1,
+      "safe_dominance": 1,
+      "epsilon_boxes": 1,
+      "exact_fits_budget": 1,
+      "exact_after_bound": 1,
+      "epsilon_fits_budget": 1,
+      "epsilon_after_bound": 1
+    }
+  },
+  "seconds": 108.442,
+  "exact_bound": {
+    "incumbent_edp_pj_ns": 280617144497146.62,
+    "incumbent_arch_x_y_bits_bw": [
+      32,
+      192,
+      1048576,
+      0.875
+    ],
+    "relaxed_graph_edp_pj_ns": 280360199784851.12
+  },
+  "epsilon_bound": {
+    "incumbent_edp_pj_ns": 280617144497146.62,
+    "incumbent_arch_x_y_bits_bw": [
+      32,
+      192,
+      1048576,
+      0.875
+    ],
+    "relaxed_graph_edp_pj_ns": 280360200950832.4
+  },
+  "meets_residual_target": true
+}

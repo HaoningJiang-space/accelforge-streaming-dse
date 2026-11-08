@@ -1,0 +1,35 @@
+# ResNet-50 identity bottleneck at 56 x 56. Centered 3 x 3 zero padding.
+# The cost model uses the full convolution iteration space at the boundary.
+workload:
+  rank_sizes: {P0: 56, Q0: 56, P1: 56, Q1: 56, C: 256, K: 64, L: 64, M: 256, R: 3, S: 3}
+  bits_per_value: {All: 8}
+  einsums:
+  - name: Reduce
+    tensor_accesses:
+    - {name: X, projection: [p0, q0, c]}
+    - {name: W1, projection: [c, k]}
+    - {name: A, projection: [p0, q0, k], output: True}
+    renames: {input: X, weight: W1}
+  - name: Spatial
+    tensor_accesses:
+    - {name: A, projection: {P0: p1+r-1, Q0: q1+s-1, K: k}}
+    - {name: W2, projection: [r, s, k, l]}
+    - {name: B, projection: [p1, q1, l], output: True}
+    renames: {input: A, weight: W2}
+  - name: Expand
+    tensor_accesses:
+    - {name: B, projection: [p1, q1, l]}
+    - {name: W3, projection: [l, m]}
+    - {name: C3, projection: [p1, q1, m], output: True}
+    renames: {input: B, weight: W3}
+  - name: Add
+    tensor_accesses:
+    - {name: X, projection: {P0: p1, Q0: q1, C: m}}
+    - {name: C3, projection: [p1, q1, m]}
+    - {name: Y, projection: [p1, q1, m], output: True}
+    renames: {input: X, weight: Nothing}
+renames:
+  einsums:
+  - name: default
+    tensor_accesses:
+    - {name: output, source: Outputs, expected_count: 1}
