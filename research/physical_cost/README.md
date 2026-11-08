@@ -473,3 +473,27 @@ The diagnostic shares profile construction across panels.
 ```sh
 python -m research.physical_cost.banked_axes research/physical_cost/results/sram_45nm.json /tmp/axes.json.gz
 ```
+
+## Native FFM check with AV and FFN
+
+The native probe loads the AccelForge GPT-3 block example with eight
+tokens, width 64, four 16-wide heads and FFN width 256. It includes
+the input copy, Q/K/V projections, QK, the example's elementwise
+softmax proxy, AV, output projection and both FFN GEMMs. FFM generates
+and joins mappings independently at each of five SRAM-admitted
+architectures. Fusion is capped at one loop. The best joined
+energy/latency row is replayed through AccelForge evaluate_mapping
+and the two values must agree before reporting the leakage-adjusted
+EDP. This uses the native aggregate memory model. KV append and
+address-level overlap are outside this probe.
+
+The compute-only lower bound uses compulsory contraction MACs,
+ideal utilization of the chosen array and nonnegative SRAM leakage.
+The five architectures all required remapping. The best EDP is
+6.762e-12 J s on the 32 × 128 array with four 16 KiB global banks
+and 64 GB/s DDR. The bound agreed with the exhaustive architecture
+result. Every FFM frontier contained one row and replay matched
+energy and latency at all five points. The timings are smoke-run
+diagnostics for the declared block and fusion limit.
+
+[Native compute-bound report](results/native_block_compute_windows.json.gz)
