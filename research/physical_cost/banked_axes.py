@@ -35,11 +35,11 @@ class Stratum:
     rows: dict
 
 
-def prepare(macros, work, caps, plans, grid_factory=grid):
+def prepare(macros, work, caps, plans, grid_factory=grid, axes=AXES):
     """Share capacity catalogs across area caps and keep cap-specific dominance."""
     strata = {}
     profiles = 0
-    for mac, tick in AXES:
+    for mac, tick in axes:
         hardware = grid_factory(macros, max(caps), mac_count=mac, ddr_word_ns=tick)
         rows, count = catalog(hardware, work, macros, plans)
         profiles += count
@@ -85,21 +85,22 @@ def solve(strata, work, macros, plans):
     }
 
 
-def run(macros, caps, cases, output, ledger=None):
+def run(macros, caps, cases, output, ledger=None, panels=PANELS):
     area_key = "total_area_mm2" if ledger is not None else "sram_area_mm2"
     caps_key = "total_area_caps_mm2" if ledger is not None else "sram_area_caps_mm2"
     report = {"mac_counts": MAC_COUNTS, "ddr_word_ns": DDR_TICKS,
-              "area_kind": area_key, caps_key: caps, "panels": PANELS, "cases": {}}
+              "area_kind": area_key, caps_key: caps, "panels": panels, "cases": {}}
+    axes = tuple(sorted({axis for group in panels.values() for axis in group}))
     if ledger is not None:
         report["ledger"] = ledger.description()
     for name in cases:
         start = perf_counter()
         work = WORKLOADS[name]
         plans = tuple(m for m in mappings() if m.prefer == "P" and (m.resident or not work.reserve_values))
-        strata, profiles = prepare(macros, work, caps, plans, grid if ledger is None else ledger.grid)
+        strata, profiles = prepare(macros, work, caps, plans, grid if ledger is None else ledger.grid, axes)
         results = []
-        for cap, (label, axes) in product(caps, PANELS.items()):
-            result = solve([strata[mac, tick, cap] for mac, tick in axes], work, macros, plans)
+        for cap, (label, group) in product(caps, panels.items()):
+            result = solve([strata[mac, tick, cap] for mac, tick in group], work, macros, plans)
             results.append({area_key: cap, "panel": label, **result})
             print(name, cap, label, result["effective_classes"], result.get("classes_opened"),
                   result.get("classes_dispatched"), result.get("exact_edp_aj_ns"), flush=True)

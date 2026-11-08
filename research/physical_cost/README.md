@@ -610,7 +610,7 @@ estimate. Each sensitivity holds the absolute area limit fixed.
 [PHY ×1.2](results/paid_phy120_windows.json.gz) ·
 [DRAM device sensitivity](results/paid_device4_windows.json.gz)
 
-## Native prefill and long decode at the same paid bandwidth
+## Historical native prefill and decode with PHY area charged
 
 All three candidates run at 32 GB/s and fit the same 12.732 mm²
 budget. They have 1,024, 2,048 and 4,096 MACs and respectively 768,
@@ -677,7 +677,123 @@ native partial caching or for arbitrary attention graphs.
 [5,120 context](results/paid_native_5120_windows.json.gz) ·
 [6,144 context](results/paid_native_6144_windows.json.gz)
 
+The timings and shared penalties above describe the legacy mapping and
+area/energy ledger at revision `e563bc4b`. The rerun below supersedes
+that decode timing when interpreting the KV-capacity tradeoff.
+
 ```sh
-python -m research.physical_cost.native_serving research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/native-serving.json.gz --context 5120
 python -m research.physical_cost.paid_area research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/paid-sensitivity.json.gz --cases holdout576 --caps 12.732443088031802 --phy-scale 0.8
+```
+
+## Native decode timing audit and fixed-bandwidth rerun
+
+At context 5,120 on the 32 × 32 HP architecture at 32 GB/s,
+QK and AV already each use 512 spatial instances in the legacy
+plan. The pointwise normalization proxy has no spatial loop.
+It processes 20,480 elements at one per ns. In the legacy cold
+plan, QK and AV each take 10.882 µs at MainMemory and the
+normalization takes 20.480 µs at MAC. This accounts for all
+42.244 µs. The action counts show one full scan of K and V,
+320 KiB each. Scores and Prob each make a 20 KiB write and
+read, totaling another 80 KiB. That traffic explains the
+23.044 µs summed DDR service. The normalization's legacy
+1.280 µs DDR service fits inside its 20.480 µs MAC time.
+
+The `spatial` ablation permits partitioning the normalization
+input and output on the existing two fanouts. The `gemv` variant
+also lets FFM choose whether to spill Scores and Prob. The
+contractions retain their broadcast axes and existing reduction
+paths. All joined plans are replayed with their action counts and
+per-operator service times. An independent calculation from the
+replay records reconciled exact DDR traffic and summed stage
+maxima for all 32 decode plans.
+
+| Mapping at 5,120 | Cold (µs/step) | Resident (µs/step) | Scores and Prob DDR traffic |
+|---|---:|---:|---:|
+| Legacy | 42.244 | 24.320 | 80 KiB |
+| Spatial only | 23.044 | 5.120 | 80 KiB |
+| Spatial and optional spills | 20.511 | 3.867 | 0 |
+
+In the corrected cold plan, the two DDR stages take 10.242 µs
+each and on-chip normalization takes 0.027 µs. Cold is within
+0.15% of the raw 20.480 µs K/V transfer time. In the resident
+plan, QK and AV are limited by WeightBuffer service at 1.280
+and 2.560 µs. This raises effective useful QK+AV throughput
+over the whole decode step from 26.9 to 169.5 MAC/ns. These
+resident timings exclude the one-time fill. Its cost is included
+in episode EDP using balanced stripes and aggregate streaming service.
+
+Bandwidth is a fixed system condition in each panel. The native
+area cap is 6.918 mm² for SRAM and MACs. The three HP shapes
+use 12, 9 and 4 global banks. PHY transfer and idle energy remain
+in the ledger. The incremental DRAM core charges are 6.852
+pJ/bit for reads and 5.554 pJ/bit for writes, derived from x8
+DDR4 burst currents and full-row amortization of ACT/PRE.
+Total active prices at 32 GB/s are about 19.73 and 19.79 pJ/bit.
+The core model assumes the row amortization in the fixture
+and excludes device refresh, additional device background
+energy and controller queuing. MAC area retains the earlier
+`synth -noabc` calibration. [DRAMPower DDR4 VDD fixture](https://raw.githubusercontent.com/tukl-msd/DRAMPower/master/tests/tests_drampower/resources/ddr4.json)
+
+| Context, HP at 32 GB/s | Cold, 1,024 MACs (µs) | Resident, 1,024 MACs (µs) | Shared EDP penalty at 8 / 32 / 128 steps |
+|---|---:|---:|---:|
+| 4,096 | 16.409 | 3.093 | 7.63% / 3.72% / 1.31% |
+| 5,120 | 20.511 | 3.867 | 28.16% / 12.39% / 3.99% |
+| 6,144 | 24.612 | Infeasible | 0% / 0% / 0% |
+
+The shared penalty compares one architecture with an idealized
+pair of independently chosen architectures, each under the same
+area cap. At 5,120 and 8 steps the 4,096-MAC prefill preference
+and the 1,024-MAC resident decode preference persist at 16,
+32 and 64 GB/s. The respective penalties are 11.60%, 28.16%
+and 41.77%. The same ledger and architecture give an 8.40%
+penalty with the legacy mapping at 32 GB/s. At 6,144 the largest
+global SRAM has no staging after reserving all K/V.
+
+The [45 nm LSTP table](results/sram_45nm_lstp.json) was generated
+from the same CACTI revision with cell and peripheral device
+types changed. A 64 KiB macro has 0.0194 mW leakage, versus
+93.42 mW for HP. The area is 0.4827 versus 0.4259 mm² and
+the modeled service takes three versus one ns. Remapping under
+the same 6.918 mm² cap gives 11, 8 and 3 banks on LSTP. At 5,120
+and 32 GB/s, the 1,024-MAC resident step changes from 3.867 µs
+and 6.259 µJ to 4.087 µs and 2.425 µJ. The preferred prefill
+shape becomes 2,048 MACs. At 8 / 32 / 128 steps the corresponding
+shared penalties are 14.85% / 6.16% / 1.97%. This sensitivity
+recharacterizes the entire SRAM, including its timing and area.
+
+At context 5,120 and 32 GB/s the partial-cache relaxation opens
+two of three HP architectures at 8, 32 and 128 steps. The
+declared cold/full-resident bound opens one. The work counts
+are reconstructed from full remaps. The episode uses a
+pointwise normalization proxy, three shapes and serial phases.
+The shared penalty measures hardware conflict for those phases.
+Partial-resident mappings, true softmax, KV append, concurrent
+requests and optimizer comparisons require a different experiment.
+
+[HP 4,096](results/decode_hp4096_windows.json.gz) ·
+[HP 5,120](results/decode_hp5120_windows.json.gz) ·
+[HP 6,144](results/decode_hp6144_windows.json.gz) ·
+[Legacy](results/decode_legacy5120_windows.json.gz) ·
+[Spatial-only](results/decode_spatial5120_windows.json.gz) ·
+[16 GB/s](results/decode_bw16_windows.json.gz) ·
+[64 GB/s](results/decode_bw64_windows.json.gz) ·
+[LSTP](results/decode_lstp5120_windows.json.gz)
+
+The separate banked sweep uses the same per-bandwidth ledger.
+At the 6.918 mm² cap the certificate opens the following timing
+classes. Dispatch counts are recorded separately in the raw data.
+
+| Workload | 16 GB/s | 32 GB/s | 64 GB/s |
+|---|---:|---:|---:|
+| Context 576 | 116 / 318 | 84 / 318 | 55 / 318 |
+| 32-step K+V | 113 / 317 | 66 / 317 | 62 / 317 |
+| Asymmetric K+V | 63 / 315 | 73 / 315 | 29 / 315 |
+
+[Fixed-bandwidth banked sweep](results/fixed_ddr_windows.json.gz)
+
+```sh
+python -m research.physical_cost.cacti_sram "$cacti" /tmp/lstp --device itrs-lstp
+python -m research.physical_cost.native_serving research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/decode.json.gz --context 5120 --bandwidth 32 --mapping gemv
+python -m research.physical_cost.external_ddr research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/fixed-ddr.json.gz
 ```

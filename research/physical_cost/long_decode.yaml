@@ -8,15 +8,15 @@ workload:
     - {name: Q, projection: [b, m, h, e]}
     - {name: K, projection: [b, p, h, e]}
     - {name: Scores, projection: [b, m, p, h], output: True}
-    renames: {input: Q, weight: K, output: Scores}
+    renames: {input: Q, weight: K, output: Scores, fanout_input: Q, fanout_output: Scores}
   - name: Normalize
     tensor_accesses:
     - {name: Scores, projection: [b, m, p, h]}
     - {name: Prob, projection: [b, m, p, h], output: True}
-    renames: {input: Scores, weight: Nothing, output: Prob}
+    renames: {input: Scores, weight: Nothing, output: Prob, fanout_input: Nothing, fanout_output: Nothing}
   - name: AV
     tensor_accesses:
     - {name: Prob, projection: [b, m, p, h]}
     - {name: V, projection: [b, p, h, f]}
     - {name: Value, projection: [b, m, h, f], output: True}
-    renames: {input: Prob, weight: V, output: Value}
+    renames: {input: Prob, weight: V, output: Value, fanout_input: Prob, fanout_output: Value}

@@ -17,7 +17,7 @@ def word_bytes(capacity):
     return 8 if capacity <= 4096 else 64
 
 
-def scratchpad_config(template, capacity):
+def scratchpad_config(template, capacity, device="itrs-hp"):
     settings = {
         "-size (bytes)": str(capacity),
         "-block size (bytes)": str(word_bytes(capacity)),
@@ -31,6 +31,10 @@ def scratchpad_config(template, capacity):
         "-cache type": '"ram"',
         "-Add ECC": '- "false"',
     }
+    if device != "itrs-hp":
+        for array in ("Data", "Tag"):
+            for kind in ("cell", "peripheral"):
+                settings[f"-{array} array {kind} type"] = f'- "{device}"'
     configured = []
     for line in template.splitlines():
         for key in settings:
@@ -72,7 +76,7 @@ def read_macro(path, capacity):
     return {"word_bytes": word_bytes(capacity), **macro}
 
 
-def characterize(source, output):
+def characterize(source, output, device="itrs-hp"):
     source, output = source.resolve(), output.resolve()
     revision = subprocess.check_output(
         ["git", "-C", source, "rev-parse", "HEAD"], text=True
@@ -88,13 +92,18 @@ def characterize(source, output):
         "write_ports": 1,
         "macros": {},
     }
+    if device != "itrs-hp":
+        table["device"] = device
+    binary = source / "cacti"
+    if not binary.is_file():
+        binary = binary.with_suffix(".exe")
     for capacity in CAPACITIES:
         cfg = output / f"sram_{capacity}.cfg"
-        cfg.write_text(scratchpad_config(template, capacity), encoding="utf-8")
+        cfg.write_text(scratchpad_config(template, capacity, device), encoding="utf-8")
         log_path = cfg.with_suffix(".log")
         with log_path.open("w", encoding="utf-8") as log:
             result = subprocess.run(
-                [source / "cacti", "-infile", cfg], cwd=source,
+                [binary, "-infile", cfg], cwd=source,
                 stdout=log, stderr=subprocess.STDOUT, timeout=120,
             )
         if result.returncode:
@@ -108,8 +117,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--device", choices=("itrs-hp", "itrs-lstp"), default="itrs-hp")
     args = parser.parse_args()
-    characterize(args.source, args.output)
+    characterize(args.source, args.output, args.device)
 
 
 if __name__ == "__main__":

@@ -6,18 +6,19 @@ import gzip
 from itertools import product
 import json
 import logging
-from math import isclose
+from math import ceil, isclose, isfinite
 from pathlib import Path
 from time import perf_counter
 
 import accelforge as af
 from accelforge.mapper.FFM.main import join_pmappings, make_pmappings
-from accelforge.model.main import evaluate_mapping
+from accelforge.frontend.mapping import Spatial
+from accelforge.model.main import _split_mapping_to_pmappings, evaluate_mapping
 
 from research.physical_cost.banked_scale import DeepArchitecture
+from research.physical_cost.external_ddr import SystemLedger
 from research.physical_cost.mixed_gate import price_sram
 from research.physical_cost.native_block import ARCH, ENERGY, LATENCY, MAPPING, MAC_J, METRICS
-from research.physical_cost.paid_area import Ledger
 from research.tracking_audit.common import clear_switches
 
 
@@ -27,10 +28,11 @@ HEAD_BYTES = 64
 STEPS = (1, 8, 32, 128)
 
 
-def architectures(macros, ledger, cap):
+def architectures(macros, ledger, cap, bandwidth=32):
     result = []
     for y in (32, 64, 128):
-        same_shape = (ledger.price(DeepArchitecture(32, y, banks, 65536, 1024))
+        same_shape = (ledger.price(DeepArchitecture(32, y, banks, 65536, 1024,
+                                                    ddr_word_ns=64 // bandwidth))
                       for banks in range(2, 25))
         choices = [hw for hw in same_shape if hw.total_area_mm2(macros) <= cap]
         if choices:
@@ -38,7 +40,7 @@ def architectures(macros, ledger, cap):
     return result
 
 
-def phase_spec(hw, macros, context, phase):
+def phase_spec(hw, macros, context, phase, mapping="gemv"):
     workload = Path(__file__).with_name("mixed_phases.yaml" if phase == "prefill" else "long_decode.yaml")
     spec = af.Spec.from_yaml(ARCH, workload, jinja_parse_data={"CONTEXT": context})
     if phase == "prefill":
@@ -60,6 +62,16 @@ def phase_spec(hw, macros, context, phase):
         buffer = spec.arch.find("GlobalBuffer")
         buffer.tensors.back = "All & (K | V)"
         buffer.size = staging * 8
+    if phase != "prefill" and mapping != "legacy":
+        # Only the pointwise operator may partition both tensors. The
+        # contractions retain the original broadcast and reduction axes.
+        spec.arch.find("InputFanout").spatial[0].reuse = "fanout_input"
+        spec.arch.find("OutputFanout").spatial[0].reuse = "fanout_output"
+        if mapping == "gemv":
+            intermediates = "Scores | Prob"
+            external = "All - (K | V)" if phase == "resident" else "All"
+            memory.tensors.keep = f"({external}) - ({intermediates})"
+            memory.tensors.may_keep = f"All & ({intermediates})"
     spec.mapper.ffm.metrics = METRICS
     spec.model.metrics = METRICS | af.Metrics.ACTIONS
     spec.mapper.ffm.max_fused_loops = 1
@@ -88,8 +100,35 @@ def phase_bound(hw, macros, context, phase):
     return energy, seconds
 
 
-def remap(hw, macros, context, phase):
-    spec = phase_spec(hw, macros, context, phase)
+def component_audit(spec, replay):
+    spatial = {}
+    for part in _split_mapping_to_pmappings(spec.mapping, spec.workload):
+        op = str(part.nodes[-1].einsum)
+        loops = [node for node in part.nodes if isinstance(node, Spatial)]
+        reduction = {"QK": "e", "AV": "p"}.get(op)
+        if reduction is not None and any(node.component == "InputFanout" and node.rank_variable == reduction
+                                         for node in loops):
+            raise AssertionError(f"{op} uses an unpriced reduction axis")
+        spatial[op] = [str(node) for node in loops]
+    components = {}
+    ddr = {}
+    for key, value in replay.items():
+        fields = key.split("<SEP>")
+        if len(fields) < 3:
+            continue
+        if fields[1] in ("latency", "first_latency"):
+            number = float(value)
+            if isfinite(number):
+                components[key] = number
+        if fields[1:3] == ["action", "MainMemory"]:
+            number = float(value)
+            if isfinite(number) and number:
+                ddr[key] = int(number)
+    return {"spatial": spatial, "component_seconds": components, "ddr_actions": ddr}
+
+
+def remap(hw, macros, context, phase, mapping="gemv"):
+    spec = phase_spec(hw, macros, context, phase, mapping)
     if spec is None:
         return None
     start = perf_counter()
@@ -115,7 +154,8 @@ def remap(hw, macros, context, phase):
         energy = float(row[ENERGY]) + hw.standby_mw(macros) * 1e-3 * seconds
         if energy < lower_e * (1 - 1e-6) or seconds < lower_t * (1 - 1e-6):
             raise AssertionError(f"The native boundary bound exceeds {phase} replay")
-        plans.append({"joules": energy, "seconds": seconds, "ddr_bits": ledger})
+        plans.append({"joules": energy, "seconds": seconds, "ddr_bits": ledger,
+                      "dynamic_joules": float(row[ENERGY]), "audit": component_audit(spec, replay)})
     return {"plans": plans, "lower_joules": lower_e, "lower_seconds": lower_t,
             "wall_seconds": perf_counter() - start}
 
@@ -124,8 +164,9 @@ def resident_fill(hw, macros, context):
     bytes_ = 2 * context * HEAD_BYTES
     macro = macros[hw.global_bank_bytes]
     words = bytes_ // 64
-    # Sequential port reservation. All benchmark context sizes are line aligned.
-    ns = words * hw.ddr_word_ns
+    # Aggregate streaming fill with balanced stripes and a shared DDR link.
+    bank_ns = ceil(words / hw.global_banks) * ceil(max(macro["cycle_ns"], macro["access_ns"]))
+    ns = max(words * hw.ddr_word_ns, bank_ns)
     joules = (words * hw.ddr_read_aj * 1e-18 + words * macro["write_nj"] * 1e-9
               + hw.standby_mw(macros) * 1e-3 * ns * 1e-9)
     return joules, ns * 1e-9
@@ -219,21 +260,23 @@ def compare(rows, macros, context, steps):
                 [b["declared_mode_lower"] for b in bounds], exact)}
 
 
-def run(macros, ledger, context, output):
+def run(macros, ledger, context, output, bandwidth=32, mapping="gemv", device="itrs-hp"):
     cap = ledger.reference_overhead() + 4.5
-    hardware = architectures(macros, ledger, cap)
+    hardware = architectures(macros, ledger, cap, bandwidth)
     rows = []
-    report = {"tokens": TOKENS, "width": WIDTH, "context": context, "total_area_cap_mm2": cap}
+    report = {"tokens": TOKENS, "width": WIDTH, "context": context,
+              "area_cap_mm2": cap, "bandwidth_gb_s": bandwidth, "decode_mapping": mapping,
+              "sram_device": device, "cost_model": ledger.description()}
     for hw in hardware:
         phases = {}
         for phase in ("prefill", "cold", "resident"):
-            phases[phase] = remap(hw, macros, context, phase)
+            phases[phase] = remap(hw, macros, context, phase, mapping)
             print(hw.x, hw.y, hw.global_banks, phase,
                   None if phases[phase] is None else len(phases[phase]["plans"]), flush=True)
         rows.append({"hardware": hw, "total_area_mm2": hw.total_area_mm2(macros), "phases": phases})
-        report["architectures"] = [{**row, "hardware": asdict(row["hardware"])} for row in rows]
-        report["steps"] = [compare(rows, macros, context, count) for count in STEPS]
-        output.write_bytes(gzip.compress(json.dumps(report, indent=2).encode(), mtime=0))
+    report["architectures"] = [{**row, "hardware": asdict(row["hardware"])} for row in rows]
+    report["steps"] = [compare(rows, macros, context, count) for count in STEPS]
+    output.write_bytes(gzip.compress(json.dumps(report, indent=2).encode(), mtime=0))
 
 
 def main():
@@ -242,14 +285,18 @@ def main():
     parser.add_argument("ledger", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--context", type=int, default=5120)
+    parser.add_argument("--bandwidth", type=int, choices=(8, 16, 32, 64), default=32)
+    parser.add_argument("--mapping", choices=("legacy", "spatial", "gemv"), default="gemv")
     args = parser.parse_args()
     if args.context < 1:
         parser.error("Context must be positive")
     clear_switches()
     af.set_n_parallel_jobs(1)
     logging.basicConfig(level=logging.ERROR, force=True)
-    macros = {int(k): v for k, v in json.loads(args.sram.read_text())["macros"].items()}
-    run(macros, Ledger(json.loads(args.ledger.read_text())), args.context, args.output)
+    table = json.loads(args.sram.read_text())
+    macros = {int(k): v for k, v in table["macros"].items()}
+    run(macros, SystemLedger(json.loads(args.ledger.read_text())), args.context, args.output,
+        args.bandwidth, args.mapping, table.get("device", "itrs-hp"))
 
 
 if __name__ == "__main__":
