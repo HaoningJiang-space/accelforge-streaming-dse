@@ -1156,3 +1156,43 @@ mapping grammar. [Exact scenario scores and selected designs](results/serving_di
 python -m research.physical_cost.serving_distribution research/physical_cost/results/sram_45nm_lstp.json research/physical_cost/results/paid_ledger.json /tmp/distribution-lstp --workers 18 --memory-gib 12 --seconds 4200
 python -m research.physical_cost.concurrent_validation research/physical_cost/results/sram_45nm_lstp.json research/physical_cost/results/paid_ledger.json "$ramulator_checkout" /tmp/distribution-verified.json.gz --distribution-directory /tmp/distribution-lstp
 ```
+
+## Complete-block decode-first boundary
+
+`transformer_serving.py` replaces the earlier single-projection prefill with
+a complete bias-free pre-LN GQA block: affine LayerNorm, Q/K/V projections,
+causal softmax and AV, output projection, residual, second LayerNorm,
+4D FFN with tanh GELU, and the second residual. Every decode step runs the
+same block and persists its appended K/V. Shared weights can be pinned once
+or streamed into explicitly charged request-local staging. Historical KV
+starts in DDR in every mode. Full, quarter-prefix and eighth-prefix retention
+are alternatives; no cache arrives for free. Phase-disjoint attention/FFN
+buffers reuse physical addresses, checked by version replay.
+
+This is a complete **operator topology in a reduced-width analytical machine**,
+not native FFM coverage or a production LLM performance prediction. The main
+panel uses D=64, four query heads and one KV head, FP32 tensors, and an assumed
+eight INT8-MAC equivalents per FP32 operation. That arithmetic cost is not
+ISA-calibrated. DDR timing, CACTI LSTP macros and MAC area retain the existing
+physical ledger. Fixed DDR remains an external system parameter.
+
+The frozen panel crosses 8,192/12,288 context, four/six decode requests and
+prefill-heavy (512 rows, one step)/decode-heavy (64 rows, four steps) episodes.
+Request j has context L+17j and arrives at 0.12j microseconds; prefill arrives
+at 2 microseconds. A fixed factorial hardware subgrid contains 49 area-legal
+architectures under 6.917680384 mm². It varies X in {16,32,64}, MAC count in
+{1024,2048,4096}, banks in {4,8,12,16,24}, and 16/64 KiB macros. Some points
+cannot execute this grammar and are reported as infeasible.
+
+Both methods receive the same full block grammar and evaluator. Strong
+decode-first first checks episode feasibility without observing episode EDP,
+then completely remaps standalone decode, retains every integer-EDP tie and
+completely remaps episodes on those architectures. The reference enumerates
+every feasible pair. Cold repeats create new worker pools and candidates,
+include the feasibility pass and all generation, and give both methods the
+same wall limit and worker count. No new search mechanism is introduced.
+
+```sh
+python -m research.physical_cost.transformer_boundary research/physical_cost/results/sram_45nm_lstp.json research/physical_cost/results/paid_ledger.json /tmp/block-boundary --workers 18 --memory-gib 12 --seconds 7200
+python -m research.physical_cost.transformer_validation research/physical_cost/results/sram_45nm_lstp.json "$ramulator_checkout" /tmp/block-verified.json.gz /tmp/block-boundary/c8192-n4-prefill.json.gz
+```
