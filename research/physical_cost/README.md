@@ -1204,24 +1204,38 @@ or ranking. A regression checks coverage and every tied minimum against the
 unsharded version. Per-architecture timing fields are worker-time sums in this
 mode; only whole-method wall clocks are suitable for end-to-end comparisons.
 
-The first two completed panels, after correcting attention private-stripe
-timing and charging private operand copies, give the following **grammar-local**
-regrets. Earlier development scores are superseded.
+All eight frozen panels are complete. After correcting attention private-stripe
+timing and charging private operand copies, they give the following
+**grammar-local** regrets. Earlier development scores are superseded.
 
 | Context / decode requests | Prefill rows / decode steps | Feasible episode pairs | Decode-first EDP regret |
 |---|---|---:|---:|
 | 8K / 4 | 512 / 1 | 348 | 13.63% |
 | 8K / 4 | 64 / 4 | 528 | 1.67% |
+| 8K / 6 | 512 / 1 | 156 | 0% |
+| 8K / 6 | 64 / 4 | 384 | 0% |
+| 12K / 4 | 512 / 1 | 180 | 9.08% |
+| 12K / 4 | 64 / 4 | 432 | 0% |
+| 12K / 6 | 512 / 1 | 84 | 0% |
+| 12K / 6 | 64 / 4 | 96 | 0% |
 
-Both keep every decode tie after common episode-feasibility filtering and
-allow quarter/eighth-prefix KV retention. The larger prefill case chooses
-64×32 with 8×64 KiB; decode-first chooses 64×32 with 24×16 KiB. The first
-keeps prefill K/V and uses a larger prefill tile. In the decode-heavy case,
-the unfiltered decode winner is episode-infeasible; the strong baseline is
-allowed to reject it before hardware selection. These rows have independent
-word/version, bank, append and DDR-command replays. They do not establish an
-optimizer advantage. The other frozen panels and fresh equal-budget timings
-are still in progress in this snapshot.
+This is 2,208 feasible episode evaluations and 968 standalone decode
+evaluations. Only 12 hardware points are episode-feasible with four requests,
+and six with six requests; the area-legal count of 49 does not describe the
+effective space. Every decode tie is kept after common episode-feasibility
+filtering, with quarter/eighth-prefix KV retention available. The two larger
+prefill gaps choose 64×32 with 8×64 KiB; decode-first chooses 64×32 with
+24×16 KiB. The former keeps prefill K/V and uses a larger prefill tile.
+Some unfiltered decode winners are episode-infeasible; the strong baseline
+rejects those using common feasibility before hardware selection.
+
+Twenty-two independent winner/baseline replays cover both episode and decode
+phases, checking word/version lifetimes, bank exclusion, append persistence,
+action counts and DDR commands against the pinned Ramulator specification.
+Numerical dense/online comparisons at 8K and 12K context over four decode
+steps have maximum absolute FP32 errors of 4.77e-7 and 4.17e-7. These are
+semantic checks, not calibrated softmax/LayerNorm hardware measurements.
+Fresh equal-budget timings are still in progress in this snapshot.
 
 [Exact tables and coverage](results/transformer_boundary_windows.json.gz) ·
 [Winner replays and static-allocation controls](results/transformer_validation_windows.json.gz) ·
@@ -1243,5 +1257,8 @@ The relocation is outside the fixed-region grammar and its address-generator
 cost is uncalibrated. It is not silently included in the primary comparison,
 does not certify an optimum in the expanded space, and does not establish a
 new allocator/search advantage. It identifies incomplete allocation coverage
-as a material limit on the claimed decode-first boundary.
+as a material limit on the claimed decode-first boundary. Five of eight
+panels tie, one has a 1.67% grammar-local gap, and the two larger gaps have
+this constructive counterexample. These results do not establish that longer
+context or more requests make a specialized joint search necessary.
 [Constructive allocation and independent checks](results/transformer_relocation_windows.json.gz)
