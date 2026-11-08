@@ -497,3 +497,29 @@ energy and latency at all five points. The timings are smoke-run
 diagnostics for the declared block and fusion limit.
 
 [Native compute-bound report](results/native_block_compute_windows.json.gz)
+
+The cold DDR cut also charges the six compulsory external projection
+and FFN weight reads. MainMemory is their backing store in this
+specification. The bound adds their bit energy to mandatory MAC
+energy and uses the maximum of ideal array service and required
+single-DDR read service. SRAM standby leakage is charged over
+that latency bound. Intermediate activations, output writeback,
+and startup costs are relaxed. The replay explicitly checks each
+of the six weights and finds 393,216 read bits (48 KiB) on every
+architecture.
+
+The cold cut opens four of the five architectures. It eliminates
+the 16 GB/s point with a lower bound of 9.283e-12 J s after finding
+an incumbent of 6.762e-12 J s. The independent full remap of the
+excluded point gives 1.814e-11 J s. The three architectures with
+fixed 32 GB/s all still require remapping. The elimination is
+specific to the mixed DDR pool. This probe uses FFM's native
+bit-granular aggregate memory model and the same graph and
+fusion limit as the compute-only check.
+
+[Native cold DDR report](results/native_block_cold_cut_windows.json.gz) ·
+[Original FFM paper](https://arxiv.org/abs/2602.15166)
+
+```sh
+python -m research.physical_cost.native_block research/physical_cost/results/sram_45nm.json /tmp/native-block.json.gz --cold-ddr-bound
+```
