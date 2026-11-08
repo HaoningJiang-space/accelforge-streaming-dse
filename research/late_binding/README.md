@@ -124,6 +124,14 @@ Both hardware witnesses match fresh native generation. General
 coverage across every architecture remains an open verification task.
 [Coverage repair data](results/resnet_coverage_repair.json)
 
+On the enlarged tight-budget bank, direct binding certifies optimality
+in 253 ms. The 1,926-point architecture sweep finds the same EDP in
+23 ms and certifies it after 3.83 seconds. The median one-second EDP
+regrets for random, GA, and TPE are 4.29%, 8.98%, and 8.98%.
+These timings isolate search after common preprocessing. The gain
+over the exact architecture control is in time to a certificate.
+[Expanded-bank comparison](results/grid_resnet_retained.json)
+
 ```sh
 python -m research.late_binding.kill_frontier resnet /tmp/resnet.json --bank /tmp/resnet.npz
 python -m research.late_binding.late_binding_grid /tmp/resnet.npz /tmp/resnet_grid.json
