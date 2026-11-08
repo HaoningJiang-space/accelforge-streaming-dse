@@ -166,8 +166,15 @@ def make_pmappings(
     if cache_dir is None:
         result = _make_pmappings(**kwargs)
     else:
+        cache_location = os.path.abspath(cache_dir)
+        if os.name == "nt" and not cache_location.startswith("\\\\?\\"):
+            # Joblib appends a module path, digest and atomic-write suffix. Even
+            # a modest cache root can exceed MAX_PATH in a Conda interpreter.
+            cache_location = ("\\\\?\\UNC\\" + cache_location[2:]
+                              if cache_location.startswith("\\\\")
+                              else "\\\\?\\" + cache_location)
 
-        @joblib.Memory(location=os.path.join(cache_dir), compress=True).cache
+        @joblib.Memory(location=cache_location, compress=True).cache
         def _make_pmappings_cached(generation_options, **kwargs) -> MultiEinsumPmappings:
             # Explicit cache-key input: generation reads these options outside Spec.
             return _make_pmappings(**kwargs)

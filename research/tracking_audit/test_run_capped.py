@@ -10,6 +10,8 @@ from unittest.mock import patch
 
 import pytest
 
+pytest.importorskip('resource', reason='POSIX process-group watchdog requires resource and signals')
+
 import run_capped
 
 SCRIPT = Path(__file__).with_name('run_capped.sh')
