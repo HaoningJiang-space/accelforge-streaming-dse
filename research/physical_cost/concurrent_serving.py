@@ -37,25 +37,36 @@ class Plan:
     priority: int
 
 
-def plans(work):
+def plans(work, phase="episode"):
+    if phase == "decode":
+        return (Plan(*args) for args in product((16,), (32, 96), (1,), range(1 << len(work.contexts)),
+                                               (False, True), (False, True), (0, 1)))
+    if phase == "prefill":
+        return (Plan(*args) for args in product((16, 32), (32,), (1, 2), (0,),
+                                               (False, True), (False,), (0,)))
     return (Plan(*args) for args in product((16, 32), (32, 96), (1, 2), range(1 << len(work.contexts)),
                                            (False, True), (False, True), (0, 1)))
 
 
-def placement(hw, work, plan, *, share_capacity=True):
+def placement(hw, work, plan, *, share_capacity=True, phase="episode"):
     program = Program(hw, plan.priority, share_capacity)
     banks = tuple(range(hw.global_banks))
     p_banks = banks[::2] if plan.partition else banks
     d_banks = banks[1::2] if plan.partition else banks
-    program.reserve("pw", WIDTH, p_banks)
-    program.reserve("dw", 3 * WIDTH, d_banks)
-    for slot in range(plan.slots):
-        program.reserve(f"px{slot}", min(work.rows, plan.rows), p_banks)
-        program.reserve(f"py{slot}", min(work.rows, plan.rows), p_banks)
+    if phase != "decode":
+        program.reserve("pw", WIDTH, p_banks)
+    if phase != "prefill":
+        program.reserve("dw", 3 * WIDTH, d_banks)
+    if phase != "decode":
+        for slot in range(plan.slots):
+            program.reserve(f"px{slot}", min(work.rows, plan.rows), p_banks)
+            program.reserve(f"py{slot}", min(work.rows, plan.rows), p_banks)
     prefill = program.used.copy()
-    for bank, count in program.regions["dw"].counts(0, 3 * WIDTH):
-        prefill[bank] -= count
-    for request, context in enumerate(work.contexts, 1):
+    if phase != "prefill":
+        for bank, count in program.regions["dw"].counts(0, 3 * WIDTH):
+            prefill[bank] -= count
+    contexts = () if phase == "prefill" else work.contexts
+    for request, context in enumerate(contexts, 1):
         maximum = context + work.steps
         # x, q, a K/V tile, and FP32 output accumulator.
         program.reserve(f"x{request}", 1, d_banks)
@@ -76,8 +87,10 @@ def placement(hw, work, plan, *, share_capacity=True):
     return program if peak * 64 <= hw.global_capacity else None
 
 
-def compile_program(hw, work, plan, *, share_capacity=True):
-    program = placement(hw, work, plan, share_capacity=share_capacity)
+def compile_program(hw, work, plan, *, share_capacity=True, phase="episode"):
+    if phase not in ("episode", "prefill", "decode"):
+        raise ValueError(f"Unknown serving phase {phase}")
+    program = placement(hw, work, plan, share_capacity=share_capacity, phase=phase)
     if program is None:
         return None
 
@@ -101,26 +114,31 @@ def compile_program(hw, work, plan, *, share_capacity=True):
         return alu(owner, label, deps, reads, cycles, r * k * n, writes,
                    (sum(stripe) * r, sum(stripe) * fills))
 
-    p_weight = Access("pw", 0, WIDTH, ("pw",))
-    p_arrival = work.arrivals_ps[0]
-    p_weights = dma(PREFILL, "prefill weights", p_weight, WEIGHTS, release=p_arrival)
-    free = {}
-    for i, row in enumerate(range(0, work.rows, plan.rows)):
-        slot = i % plan.slots
-        rows = min(plan.rows, work.rows - row)
-        x = Access(f"px{slot}", 0, rows, ("prefill input", i))
-        y = Access(f"py{slot}", 0, rows, ("prefill output", i))
-        read = dma(PREFILL, "prefill input", x, (1 << 19) + row, free.get(slot, ()),
-                   release=p_arrival)
-        done = gemm(PREFILL, "prefill", (p_weights, read), (p_weight, x), rows, WIDTH, WIDTH, (y,))
-        drain = dma(PREFILL, "prefill output", y, (1 << 20) + row, (done,), write=True)
-        free[slot] = (drain,)
+    if phase != "decode":
+        p_weight = Access("pw", 0, WIDTH, ("pw",))
+        p_arrival = work.arrivals_ps[0] if phase == "episode" else 0
+        p_weights = dma(PREFILL, "prefill weights", p_weight, WEIGHTS, release=p_arrival)
+        free = {}
+        for i, row in enumerate(range(0, work.rows, plan.rows)):
+            slot = i % plan.slots
+            rows = min(plan.rows, work.rows - row)
+            x = Access(f"px{slot}", 0, rows, ("prefill input", i))
+            y = Access(f"py{slot}", 0, rows, ("prefill output", i))
+            read = dma(PREFILL, "prefill input", x, (1 << 19) + row, free.get(slot, ()),
+                       release=p_arrival)
+            done = gemm(PREFILL, "prefill", (p_weights, read), (p_weight, x), rows, WIDTH, WIDTH, (y,))
+            drain = dma(PREFILL, "prefill output", y, (1 << 20) + row, (done,), write=True)
+            free[slot] = (drain,)
+    if phase == "prefill":
+        return program
 
+    first_decode = min(work.arrivals_ps[1:])
+    origin = first_decode if phase == "decode" else 0
     d_weight = Access("dw", 0, 3 * WIDTH, ("dw",))
     d_weights = dma(1, "decode weights", d_weight, WEIGHTS + (1 << 12),
-                    release=min(work.arrivals_ps[1:]))
+                    release=first_decode - origin)
     for request, context in enumerate(work.contexts, 1):
-        arrival = work.arrivals_ps[request]
+        arrival = work.arrivals_ps[request] - origin
         resident = bool(plan.resident & (1 << (request - 1)))
         base = request << 16
 

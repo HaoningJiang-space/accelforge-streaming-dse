@@ -1038,3 +1038,58 @@ python -m research.physical_cost.cotenancy_ablation research/physical_cost/resul
 python -m research.physical_cost.concurrent_search research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/holdout.json.gz --cases holdout3 holdout4 --methods af_probe joint --budgets 4 12 25 --repeats 3
 python -m research.physical_cost.concurrent_search research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/holdout-6657.json.gz --cases holdout_long --methods af_probe joint --budgets 4 12 25 --repeats 3
 ```
+
+## Exact serving references and LSTP accounting
+
+The parallel enumerator visits every legal hardware point and every
+plan in the declared grammar. It records each architecture's exact
+minimum and coverage, and retains all architectures tied at the
+global minimum. Checkpoints are written per completed architecture.
+The historical searches used HP macros, so their exact references
+use the same macros, area cap, grammar and addressed evaluator.
+The archived HP run used 18 local workers, a 12 GiB job commit limit
+and a 2,400-second wall limit.
+
+| Historical case | Fully evaluated pairs | Exact EDP (µJ·µs) |
+|---|---:|---:|
+| [Overlap](results/exact_hp_overlap_windows.json.gz) | 33,054 | 1,128.022 |
+| [Three decode requests](results/exact_hp_holdout3_windows.json.gz) | 20,322 | 24,021.234 |
+
+The previously reported probe and interleaved incumbents are exact
+for these completed cases. Top-2 in the overlap case is 23.2%
+above the exact optimum.
+
+New nominal experiments use the LSTP table, including its areas,
+access times and read/write energy. The matched four-architecture
+factorial gives the following near-capacity scores.
+
+| Array and global SRAM | Physical | Capacity only | Ports only | Both |
+|---|---:|---:|---:|---:|
+| 64 × 32, 12 × 16 KiB | 2,469.930 | 1,260.079 | 2,389.811 | 1,163.983 |
+| 64 × 64, 3 × 64 KiB | 3,543.240 | 1,700.061 | 3,422.895 | 1,558.625 |
+| 16 × 64, 12 × 16 KiB | 3,479.351 | 2,165.044 | 3,389.000 | 2,140.802 |
+| 32 × 64, 4 × 64 KiB | 1,604.933 | 1,604.933 | 1,559.942 | 1,559.942 |
+
+EDP is in µJ·µs. The 64 × 32 winner under the capacity
+relaxation removes 133 KiB of additional DDR KV reads and exceeds
+the 16 KiB live capacity of at least one bank for 2.612 µs.
+Keeping the same physical mapping gives the same score under
+the capacity intervention. Port isolation alone preserves the
+physical architecture ranking. In the delayed-prefill case, the
+nominal LSTP scores for 64 × 32 and 16 × 64 are 3,998.995 and
+4,066.272. This pair retains the overlap order under full standby
+billing with LSTP.
+
+Decode-first removes prefill tasks and reservations and preserves
+the relative decode arrivals. Prefill-first likewise runs only
+prefill. Both choose from all four hardware points using a fully
+remapped standalone stage, preserve ties, and then use complete
+episode remapping on the selected hardware. Both match the episode
+oracle in overlap and delayed. Both pick 64 × 32 in the near-capacity
+case, giving 53.9% higher episode EDP than 32 × 64.
+[LSTP factorial and standalone rankings](results/cotenancy_ablation_lstp_windows.json.gz)
+
+```sh
+python -m research.physical_cost.serving_exhaustive research/physical_cost/results/sram_45nm.json research/physical_cost/results/paid_ledger.json /tmp/exact-hp --workers 18 --memory-gib 12 --seconds 2400
+python -m research.physical_cost.cotenancy_ablation research/physical_cost/results/sram_45nm_lstp.json research/physical_cost/results/paid_ledger.json "$ramulator_checkout" /tmp/cotenancy-lstp.json.gz
+```

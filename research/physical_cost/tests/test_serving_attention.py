@@ -4,7 +4,7 @@ from random import Random
 
 from research.physical_cost.banked_scale import DeepArchitecture
 from research.physical_cost.concurrent_search import candidates
-from research.physical_cost.concurrent_serving import Plan, placement
+from research.physical_cost.concurrent_serving import Plan, compile_program, placement
 from research.physical_cost.cotenancy_ablation import NEAR_CAPACITY, idle_ps
 from research.physical_cost.serving_ddr import CK, DDR
 from research.physical_cost.serving_softmax import dense, online
@@ -61,3 +61,14 @@ def test_capacity_ablation_only_relaxes_cross_side_reservation():
 def test_idle_leakage_union_keeps_within_request_stalls_active():
     assert idle_ps((20, 0, 3, 21), (23, 8, 10, 25)) == 10
     assert idle_ps((4, 5, 11), (10, 12, 15)) == 4
+
+
+def test_decode_first_releases_prefill_capacity_and_keeps_decode_arrival_offsets():
+    hw = DeepArchitecture(64, 64, 3, 65536, 1024)
+    work = replace(NEAR_CAPACITY, arrivals_ps=(18_000_000, 2_000_000, 2_120_000))
+    plan = Plan(32, 96, 2, 3, False, True, 0)
+    assert compile_program(hw, work, plan) is None
+    decode = compile_program(hw, work, plan, phase="decode")
+    assert all(task.owner > 0 for task in decode.tasks)
+    assert not any(slot.startswith("p") for slot in decode.regions)
+    assert {task.release for task in decode.tasks if task.label == "initial k"} == {0, 120_000}

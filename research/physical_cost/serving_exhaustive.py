@@ -62,22 +62,30 @@ def limit_memory(total_bytes, workers):
     # Keep the handle open until process exit. Workers inherit job membership.
 
 
-def evaluate_architecture(task):
-    index, hw, work, macros = task
+def evaluate_phase(hw, work, macros, phase):
     best = None
     evaluated = 0
-    for plan in plans(work):
-        program = compile_program(hw, work, plan)
+    for plan in plans(work, phase):
+        program = compile_program(hw, work, plan, phase=phase)
         if program is None:
             continue
         outcome = run(program, macros)
         evaluated += 1
         if best is None or (outcome["edp"], plan) < (best[1]["edp"], best[0]):
             best = plan, outcome
-    row = {"index": index, "hardware": asdict(hw), "evaluated": evaluated}
+    row = {"evaluated": evaluated}
     if best is not None:
         plan, outcome = best
         row["best"] = {"plan": asdict(plan), **outcome}
+    return row
+
+
+def evaluate_architecture(task):
+    index, hw, work, macros, stages = task
+    row = {"index": index, "hardware": asdict(hw), **evaluate_phase(hw, work, macros, "episode")}
+    if stages:
+        row["stages"] = {phase: evaluate_phase(hw, work, macros, phase)
+                         for phase in ("decode", "prefill")}
     return row
 
 
@@ -88,9 +96,8 @@ def write_atomic(path, value):
     scratch.replace(path)
 
 
-def panel(pool, name, hardware, macros, output, manifest, deadline):
+def panel(pool, name, work, hardware, macros, output, manifest, deadline, *, stages=False):
     started = monotonic()
-    work = CASES[name]
     directory = output / name
     directory.mkdir(exist_ok=True)
     metadata = directory / "manifest.json"
@@ -100,7 +107,7 @@ def panel(pool, name, hardware, macros, output, manifest, deadline):
     rows = {i: json.loads(path.read_text()) for i in range(len(hardware))
             if (path := directory / f"{i}.json").exists()}
     # Visit large SRAM capacities first to dispatch the longest jobs early.
-    pending = sorted(((i, hw, work, macros) for i, hw in enumerate(hardware) if i not in rows),
+    pending = sorted(((i, hw, work, macros, stages) for i, hw in enumerate(hardware) if i not in rows),
                      key=lambda task: -task[1].global_banks * task[1].global_capacity)
     results = pool.imap_unordered(evaluate_architecture, pending)
     while len(rows) < len(hardware):
@@ -127,6 +134,24 @@ def panel(pool, name, hardware, macros, output, manifest, deadline):
               "architectures": [rows[i] for i in range(len(hardware))]}
     write_atomic(output / f"{name}.json.gz", report)
     print(name, "complete", report["evaluated"], optimum, flush=True)
+    return report
+
+
+def inputs(sram_path, ledger_path):
+    sram_raw, ledger_raw = sram_path.read_bytes(), ledger_path.read_bytes()
+    sram = json.loads(sram_raw)
+    macros = {int(k): v for k, v in sram["macros"].items()}
+    ledger = SystemLedger(json.loads(ledger_raw))
+    cap = ledger.reference_overhead() + 4.5
+    hardware = hardware_grid(macros, ledger, cap)
+    source = Path(__file__).parent
+    files = ("concurrent_serving.py", "serving_trace.py", "serving_ddr.py",
+             "banked_serving.py", "banked_scale.py", "external_ddr.py", "paid_area.py")
+    manifest = {"area_cap_mm2": cap, "device": sram.get("device", "itrs-hp"),
+                "sram_sha256": sha256(sram_raw).hexdigest(), "ledger_sha256": sha256(ledger_raw).hexdigest(),
+                "evaluator_sha256": {name: sha256((source / name).read_bytes()).hexdigest() for name in files},
+                "space_sha256": sha256(repr(hardware).encode()).hexdigest()}
+    return hardware, macros, manifest
 
 
 def main():
@@ -143,26 +168,14 @@ def main():
         parser.error("Use positive limits and at most one worker per logical CPU")
     deadline = monotonic() + args.seconds
     limit_memory(args.memory_gib * 2**30, args.workers)
-    sram_raw, ledger_raw = args.sram.read_bytes(), args.ledger.read_bytes()
-    sram = json.loads(sram_raw)
-    macros = {int(k): v for k, v in sram["macros"].items()}
-    ledger = SystemLedger(json.loads(ledger_raw))
-    cap = ledger.reference_overhead() + 4.5
-    hardware = hardware_grid(macros, ledger, cap)
-    source = Path(__file__).parent
-    files = ("concurrent_serving.py", "serving_trace.py", "serving_ddr.py",
-             "banked_serving.py", "banked_scale.py", "external_ddr.py", "paid_area.py")
-    manifest = {"area_cap_mm2": cap, "device": sram.get("device", "itrs-hp"),
-                "sram_sha256": sha256(sram_raw).hexdigest(), "ledger_sha256": sha256(ledger_raw).hexdigest(),
-                "evaluator_sha256": {name: sha256((source / name).read_bytes()).hexdigest() for name in files},
-                "space_sha256": sha256(repr(hardware).encode()).hexdigest()}
+    hardware, macros, manifest = inputs(args.sram, args.ledger)
     args.output.mkdir(parents=True, exist_ok=True)
     with mp.get_context("spawn").Pool(args.workers) as pool:
         for name in args.cases:
-            work = asdict(CASES[name])
+            work = CASES[name]
             # Normalize tuples to the on-disk JSON representation.
-            panel_manifest = {**manifest, "workload": json.loads(json.dumps(work))}
-            panel(pool, name, hardware, macros, args.output, panel_manifest, deadline)
+            panel_manifest = {**manifest, "workload": json.loads(json.dumps(asdict(work)))}
+            panel(pool, name, work, hardware, macros, args.output, panel_manifest, deadline)
 
 
 if __name__ == "__main__":

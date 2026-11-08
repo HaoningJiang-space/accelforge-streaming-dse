@@ -15,6 +15,7 @@ from research.physical_cost.concurrent_search import CASES
 from research.physical_cost.concurrent_serving import Workload, compile_program, plans
 from research.physical_cost.concurrent_validation import RAMULATOR_REVISION, replay
 from research.physical_cost.external_ddr import SystemLedger
+from research.physical_cost.serving_exhaustive import evaluate_phase
 from research.physical_cost.serving_trace import run
 
 
@@ -100,12 +101,26 @@ def remap(hw, macros, work, device, modes):
             "seconds": perf_counter() - start, "modes": rows}
 
 
+def stage_comparison(hardware, macros, work, results):
+    episode = [row["modes"]["physical"]["best"]["edp"]["edp"] for row in results]
+    output = {}
+    for phase in ("decode", "prefill"):
+        rows = [evaluate_phase(hw, work, macros, phase) for hw in hardware]
+        stage_best = min(row["best"]["edp"] for row in rows)
+        ties = [index for index, row in enumerate(rows) if row["best"]["edp"] == stage_best]
+        output[phase] = {"rows": rows, "tied_architectures": ties,
+                         "episode_edp_by_tie": [episode[index] for index in ties],
+                         "best_tie_regret": min(episode[index] for index in ties) / min(episode) - 1}
+    return output
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sram", type=Path)
     parser.add_argument("ledger", type=Path)
     parser.add_argument("ramulator_checkout", type=Path)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--reuse-factorial", type=Path, help="Add stage-first baselines to an existing factorial")
     args = parser.parse_args()
     revision = check_output(["git", "-C", args.ramulator_checkout, "rev-parse", "HEAD"], text=True).strip()
     if revision != RAMULATOR_REVISION:
@@ -113,23 +128,38 @@ def main():
     sys.path.insert(0, str(args.ramulator_checkout / "python"))
     from ramulator.dram import DDR4
 
-    macros = {int(k): v for k, v in json.loads(args.sram.read_text())["macros"].items()}
+    sram = json.loads(args.sram.read_text())
+    macros = {int(k): v for k, v in sram["macros"].items()}
     ledger = SystemLedger(json.loads(args.ledger.read_text()))
     cap = ledger.reference_overhead() + 4.5
     device = DDR4(org_preset="DDR4_8Gb_x8", timing_preset="DDR4_2400R", rank=1)
     hardware = [ledger.price(DeepArchitecture(*shape, 1024, ddr_word_ns=4)) for shape in SHAPES]
     assert all(hw.total_area_mm2(macros) <= cap for hw in hardware)
-    report = {"area_cap_mm2": cap, "ramulator_revision": revision, "cases": {}}
+    report = {"area_cap_mm2": cap, "ramulator_revision": revision, "cases": {},
+              "device": sram.get("device", "itrs-hp")}
+    if args.reuse_factorial:
+        with gzip.open(args.reuse_factorial, "rt") as file:
+            existing = json.load(file)
+        assert (existing["area_cap_mm2"], existing["ramulator_revision"]) == (cap, revision)
     for name, work in (("overlap", CASES["overlap"]), ("near_capacity", NEAR_CAPACITY),
                        ("delayed", CASES["delayed"])):
         modes = MODES if name != "delayed" else {"physical": MODES["physical"]}
-        results = []
-        for hw in hardware:
-            result = remap(hw, macros, work, device, modes)
-            results.append(result)
-            print(name, hw.x, hw.y, hw.global_banks, result["seconds"],
-                  [row["best"]["edp"]["edp"] for row in result["modes"].values()], flush=True)
-        report["cases"][name] = {"workload": asdict(work), "architectures": results}
+        if args.reuse_factorial:
+            cell = existing["cases"][name]
+            assert cell["workload"] == json.loads(json.dumps(asdict(work)))
+            results = cell["architectures"]
+            for hw, result in zip(hardware, results, strict=True):
+                assert asdict(hw) == result["hardware"] and hw.total_area_mm2(macros) == result["area_mm2"]
+        else:
+            results = []
+            for hw in hardware:
+                result = remap(hw, macros, work, device, modes)
+                results.append(result)
+                print(name, hw.x, hw.y, hw.global_banks, result["seconds"],
+                      [row["best"]["edp"]["edp"] for row in result["modes"].values()], flush=True)
+        stages = stage_comparison(hardware, macros, work, results)
+        report["cases"][name] = {"workload": asdict(work), "architectures": results, "stage_first": stages}
+        print(name, "stage-first", {key: row["best_tie_regret"] for key, row in stages.items()}, flush=True)
     args.output.write_bytes(gzip.compress(json.dumps(report, indent=2).encode(), mtime=0))
 
 

@@ -14,8 +14,8 @@ from time import perf_counter
 import numpy as np
 
 from research.physical_cost.banked_scale import DeepArchitecture
-from research.physical_cost.concurrent_search import CASES, traffic
-from research.physical_cost.concurrent_serving import HEADS, WIDTH, Plan, Workload, compile_program, plans
+from research.physical_cost.concurrent_search import CASES, hardware_grid, traffic
+from research.physical_cost.concurrent_serving import HEADS, WIDTH, Plan, Workload, compile_program, placement, plans
 from research.physical_cost.external_ddr import SystemLedger
 from research.physical_cost.paid_area import PaidArchitecture
 from research.physical_cost.serving_ddr import DDR
@@ -112,6 +112,51 @@ def remap_witnesses(macros, device, winners):
     return result
 
 
+def exact_coverage(exact, hardware, macros, device, search_reports):
+    name = exact["case"]
+    work = CASES[name]
+    grammar = tuple(plans(work))
+    assert exact["workload"] == json.loads(json.dumps(asdict(work)))
+    minima = {}
+    evaluated = 0
+    for index, (hw, row) in enumerate(zip(hardware, exact["architectures"], strict=True)):
+        assert row["index"] == index and row["hardware"] == asdict(hw)
+        count = sum(placement(hw, work, plan) is not None for plan in grammar)
+        assert count == row["evaluated"]
+        evaluated += count
+        if count:
+            minima[index] = row["best"]["edp"]
+    assert (len(minima), evaluated) == (exact["feasible_architectures"], exact["evaluated"])
+    optimum = min(minima.values())
+    winners = [index for index, score in minima.items() if score == optimum]
+    assert (optimum, winners) == (exact["best_edp"], exact["optimal_architectures"])
+    replays = []
+    for index in winners:
+        best = exact["architectures"][index]["best"]
+        audited = replay(macros, work, hardware[index], Plan(**best["plan"]), device)
+        assert audited["result"]["edp"] == optimum
+        replays.append(audited)
+    comparison = {}
+    for label, search in search_reports.items():
+        if name not in search["cases"]:
+            continue
+        methods = {}
+        for trial in search["cases"][name]["trials"]:
+            for method, row in trial.items():
+                if row["best"] is None:
+                    continue
+                incumbent = row["best"]
+                assert incumbent["edp"] >= minima[incumbent["index"]]
+                assert row["feasible_candidates"] == evaluated
+                by_deadline = {budget: (None if value is None else value["edp"] / optimum - 1)
+                               for budget, value in row["checkpoints"].items()}
+                assert all(value is None or value >= 0 for value in by_deadline.values())
+                methods.setdefault(method, []).append(by_deadline)
+        comparison[label] = methods
+    return {"evaluated": evaluated, "best_edp": optimum, "optimal_architectures": winners,
+            "winner_replays": replays, "budget_regret": comparison}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sram", type=Path)
@@ -119,6 +164,7 @@ def main():
     parser.add_argument("ramulator_checkout", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--search-results", type=Path, nargs="+")
+    parser.add_argument("--exact-results", type=Path, nargs="+")
     parser.add_argument("--remap-witnesses", action="store_true")
     args = parser.parse_args()
     revision = check_output(["git", "-C", args.ramulator_checkout, "rev-parse", "HEAD"], text=True).strip()
@@ -139,9 +185,11 @@ def main():
     report = {"ramulator_revision": RAMULATOR_REVISION, "ddr": ddr_test(device),
               "numeric": numeric, "paired_layouts": checks}
     seen = {}
+    search_reports = {}
     for path in args.search_results or ():
         with gzip.open(path, "rt") as file:
             search_results = json.load(file)
+        search_reports[path.name] = search_results
         for name, cell in search_results["cases"].items():
             for trial in cell["trials"]:
                 for row in trial.values():
@@ -161,6 +209,14 @@ def main():
                 seen[key] = replay(macros, CASES["oracle"], h, p, device)
             assert seen[key]["result"]["edp"] == best["edp"]
     report["verified_winners"] = list(seen.values())
+    if args.exact_results:
+        hardware = hardware_grid(macros, ledger, ledger.reference_overhead() + 4.5)
+        report["exact"] = {}
+        for path in args.exact_results:
+            with gzip.open(path, "rt") as file:
+                exact = json.load(file)
+            report["exact"][exact["case"]] = exact_coverage(exact, hardware, macros, device, search_reports)
+            print("exact coverage verified", exact["case"], exact["evaluated"], flush=True)
     if args.remap_witnesses:
         if not args.search_results:
             parser.error("Witness remapping requires search results")
