@@ -90,3 +90,34 @@ python -m research.physical_cost.mixed_gate /tmp/physical-cost/sram.json /tmp/si
 On Windows, supply the corresponding Python arguments to
 `research/runtime/run_windows.ps1` and use the checked-in macro table.
 Raw run logs and CACTI inputs are available as a compressed workflow artifact.
+
+## Addressed SRAM with two concurrent requests
+
+The addressed experiment admits prefill after the first decode step of
+another request and opens the next decode step after prefill staging
+starts. It tracks 64-byte physical words in every global SRAM bank, charges
+whole transactions, and schedules the separate read and write ports, a
+single DDR port and a single MAC array. Prefill and decode have separate
+fixed slots in the private weight SRAM of each stripe. Global slots are
+reserved from the first fill until their final use. The decode request
+can retain a full KV image or stream its weight slices from DDR.
+
+The evaluator schedules commands and the independent replay enumerates
+word addresses and their versions. The latter checks conflicts,
+producer completion, peak occupancy and EDP. Both search families use
+the same physical area, tile choices, schedules, and calibrated costs.
+Each wall-clock trace starts with candidate generation and charges
+architecture selection, event compilation, dispatch and verification of
+each new incumbent. The common CACTI table is loaded before timing.
+
+On the initial three cases, the shared winners held KV concurrently with
+prefill staging for 8.762–16.246 µs. The bank-aware architecture selector
+retained all exact ties and the wider control included all architectures
+within 2% of its bound. Both matched the complete search in all three
+cases. The initial grammar refetches the prefill weight tile per row tile.
+[Initial Windows report](results/banked_v1_windows.json.gz)
+
+```sh
+python -m research.physical_cost.banked_search research/physical_cost/results/sram_45nm.json /tmp/banked.json.gz
+python -m pytest -q research/physical_cost/tests/test_banked_serving.py
+```
