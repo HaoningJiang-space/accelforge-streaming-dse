@@ -1055,10 +1055,11 @@ and a 2,400-second wall limit.
 | [Overlap](results/exact_hp_overlap_windows.json.gz) | 33,054 | 1,128.022 |
 | [Three decode requests](results/exact_hp_holdout3_windows.json.gz) | 20,322 | 24,021.234 |
 | [Four decode requests](results/exact_hp_holdout4_windows.json.gz) | 14,708 | 166,209.827 |
+| [Four decode requests, 6,657-token maximum](results/exact_hp_holdout_long_windows.json.gz) | 14,528 | 409,588.176 |
 
-The previously reported probe and interleaved incumbents are exact
-for these completed cases. Top-2 in the overlap case is 23.2%
-above the exact optimum.
+The 82,612 evaluations confirm the previously reported probe and
+interleaved incumbents in all four panels. Top-2 in the overlap
+case is 23.2% above the exact optimum.
 
 New nominal experiments use the LSTP table, including its areas,
 access times and read/write energy. The matched four-architecture

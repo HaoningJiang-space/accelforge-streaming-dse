@@ -14,7 +14,7 @@ from time import perf_counter
 import numpy as np
 
 from research.physical_cost.banked_scale import DeepArchitecture
-from research.physical_cost.concurrent_search import CASES, hardware_grid, traffic
+from research.physical_cost.concurrent_search import CASES, hardware_grid, prepare, traffic
 from research.physical_cost.concurrent_serving import HEADS, WIDTH, Plan, Workload, compile_program, placement, plans
 from research.physical_cost.external_ddr import SystemLedger
 from research.physical_cost.paid_area import PaidArchitecture
@@ -130,12 +130,30 @@ def exact_coverage(exact, hardware, macros, device, search_reports):
     optimum = min(minima.values())
     winners = [index for index, score in minima.items() if score == optimum]
     assert (optimum, winners) == (exact["best_edp"], exact["optimal_architectures"])
+    proxy_rows = prepare(hardware, macros, work)
+    assert sum(len(mappings) for _, mappings in proxy_rows) == evaluated
+    proxy_best, first_mappings = proxy_rows[0]
+    first_proxy_plan = compile_program(hardware[proxy_best], work, first_mappings[0][1])
+    proxy_first_edp = run(first_proxy_plan, macros)["edp"]
+    proxy_by_index = dict(proxy_rows)
+    proxy_winners = []
     replays = []
     for index in winners:
         best = exact["architectures"][index]["best"]
-        audited = replay(macros, work, hardware[index], Plan(**best["plan"]), device)
+        plan = Plan(**best["plan"])
+        audited = replay(macros, work, hardware[index], plan, device)
         assert audited["result"]["edp"] == optimum
         replays.append(audited)
+        mappings = proxy_by_index[index]
+        arch_score = mappings[0][0]
+        plan_score = next(score for score, candidate in mappings if candidate == plan)
+        proxy_winners.append({
+            "index": index,
+            "architecture_rank": 1 + sum(rows[0][0] < arch_score for _, rows in proxy_rows),
+            "architecture_ties": sum(rows[0][0] == arch_score for _, rows in proxy_rows),
+            "witness_mapping_rank": 1 + sum(score < plan_score for score, _ in mappings),
+            "witness_mapping_ties": sum(score == plan_score for score, _ in mappings),
+        })
     comparison = {}
     for label, search in search_reports.items():
         if name not in search["cases"]:
@@ -154,6 +172,10 @@ def exact_coverage(exact, hardware, macros, device, search_reports):
                 methods.setdefault(method, []).append(by_deadline)
         comparison[label] = methods
     return {"evaluated": evaluated, "best_edp": optimum, "optimal_architectures": winners,
+            "proxy_first_architecture": proxy_best,
+            "proxy_first_plan_regret": proxy_first_edp / optimum - 1,
+            "proxy_first_architecture_remapped_regret": minima[proxy_best] / optimum - 1,
+            "proxy_ranks_of_winners": proxy_winners,
             "winner_replays": replays, "budget_regret": comparison}
 
 
