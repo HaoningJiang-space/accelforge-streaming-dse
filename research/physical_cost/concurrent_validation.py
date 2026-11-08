@@ -91,7 +91,7 @@ def main():
     parser.add_argument("ledger", type=Path)
     parser.add_argument("ramulator_checkout", type=Path)
     parser.add_argument("output", type=Path)
-    parser.add_argument("--search-results", type=Path)
+    parser.add_argument("--search-results", type=Path, nargs="+")
     args = parser.parse_args()
     revision = check_output(["git", "-C", args.ramulator_checkout, "rev-parse", "HEAD"], text=True).strip()
     if revision != RAMULATOR_REVISION:
@@ -110,10 +110,10 @@ def main():
                for name, case in CASES.items() for tile in (32, 96)}
     report = {"ramulator_revision": RAMULATOR_REVISION, "ddr": ddr_test(device),
               "numeric": numeric, "paired_layouts": checks}
-    if args.search_results:
-        with gzip.open(args.search_results, "rt") as file:
+    seen = {}
+    for path in args.search_results or ():
+        with gzip.open(path, "rt") as file:
             search_results = json.load(file)
-        seen = {}
         for name, cell in search_results["cases"].items():
             for trial in cell["trials"]:
                 for row in trial.values():
@@ -125,7 +125,14 @@ def main():
                     if key not in seen:
                         seen[key] = replay(macros, CASES[name], h, p, device)
                     assert seen[key]["result"]["edp"] == best["edp"]
-        report["verified_winners"] = list(seen.values())
+        if "small_oracle" in search_results:
+            best = search_results["small_oracle"]["best"]
+            h, p = PaidArchitecture(**best["hardware"]), Plan(**best["plan"])
+            key = "oracle", h, p
+            if key not in seen:
+                seen[key] = replay(macros, CASES["oracle"], h, p, device)
+            assert seen[key]["result"]["edp"] == best["edp"]
+    report["verified_winners"] = list(seen.values())
     args.output.write_bytes(gzip.compress(json.dumps(report, indent=2).encode(), mtime=0))
     print("verified", len(checks), "paired layouts and", len(report.get("verified_winners", [])), "search winners")
 
