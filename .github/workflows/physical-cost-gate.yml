@@ -29,6 +29,16 @@ jobs:
           make -C "$RUNNER_TEMP/cacti" -j2 opt
       - name: Characterize two-level SRAM macros
         run: python -m research.physical_cost.cacti_sram "$RUNNER_TEMP/cacti" "$RUNNER_TEMP/physical-cost"
+      - name: Install the native mapper dependencies
+        run: |
+          python -m pip install -r research/runtime/windows-requirements.txt 'islpy>=2025'
+          python -m pip install --no-deps -e .
+      - name: Evaluate the mixed workload under the SRAM area budgets
+        env:
+          ACCELFORGE_CONFIG_PATH: ${{ github.workspace }}/research/runtime/windows_config.yaml
+        run: |
+          bash research/tracking_audit/run_capped.sh 4 900 "$RUNNER_TEMP/physical-cost/gate.log" -- \
+            python -u -m research.physical_cost.mixed_gate "$RUNNER_TEMP/physical-cost/sram.json" "$RUNNER_TEMP/physical-cost/mixed.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

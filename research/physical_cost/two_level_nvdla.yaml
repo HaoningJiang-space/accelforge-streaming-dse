@@ -1,0 +1,57 @@
+# Bit-granular native service model. The benchmark binds SRAM macro prices.
+arch:
+  nodes:
+  - !Memory
+    name: MainMemory
+    size: inf
+    leak_power: 0
+    actions:
+    - {name: read, energy: 7.03e-12, latency: 1 / (8 * 38.4e9)}
+    - {name: write, energy: 7.03e-12, latency: 1 / (8 * 38.4e9)}
+    tensors: {keep: All}
+
+  - !Memory
+    name: GlobalBuffer
+    size: 32*1024*8
+    total_latency: max(read_latency, write_latency)
+    leak_power: 0
+    actions:
+    - {name: read, energy: 0, latency: 0}
+    - {name: write, energy: 0, latency: 0}
+    tensors: {keep: All}
+
+  - !Fanout
+    name: InputFanout
+    spatial:
+    - {name: reuse_input, fanout: 16, may_reuse: input, reuse: input, min_usage: 0}
+
+  - !Memory
+    name: WeightBuffer
+    size: 1024*8
+    total_latency: max(read_latency, write_latency)
+    leak_power: 0
+    actions:
+    - {name: read, energy: 0, latency: 0}
+    - {name: write, energy: 0, latency: 0}
+    tensors: {keep: weight}
+
+  - !Fanout
+    name: OutputFanout
+    spatial:
+    - {name: reuse_output, fanout: 128, may_reuse: output, reuse: output, min_usage: 0}
+
+  - !Memory
+    name: Register
+    size: 8
+    area: 0
+    leak_power: 0
+    actions:
+    - {name: read, energy: 0, latency: 0}
+    - {name: write, energy: 0, latency: 0}
+    tensors: {keep: weight}
+
+  - !Compute
+    name: MAC
+    leak_power: 0
+    actions:
+    - {name: compute, energy: 0.084e-12, latency: 1 / 1e9}

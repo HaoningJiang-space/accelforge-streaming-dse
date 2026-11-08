@@ -10,21 +10,24 @@ import subprocess
 
 CACTI_REVISION = "1ffd8dfb10303d306ecd8d215320aea07651e878"
 TECH_NM = 45
-WORD_BYTES = 64
 CAPACITIES = (1024, 4096, 16384, 65536)
+
+
+def word_bytes(capacity):
+    return 8 if capacity <= 4096 else 64
 
 
 def scratchpad_config(template, capacity):
     settings = {
         "-size (bytes)": str(capacity),
-        "-block size (bytes)": str(WORD_BYTES),
+        "-block size (bytes)": str(word_bytes(capacity)),
         "-associativity": "1",
         "-read-write port": "0",
         "-exclusive read port": "1",
         "-exclusive write port": "1",
         "-UCA bank count": "1",
         "-technology (u)": "0.045",
-        "-output/input bus width": str(8 * WORD_BYTES),
+        "-output/input bus width": str(8 * word_bytes(capacity)),
         "-cache type": '"ram"',
         "-Add ECC": '- "false"',
     }
@@ -50,7 +53,7 @@ def read_macro(path, capacity):
         "Tech node (nm)": TECH_NM,
         "Capacity (bytes)": capacity,
         "Number of banks": 1,
-        "Output width (bits)": 8 * WORD_BYTES,
+        "Output width (bits)": 8 * word_bytes(capacity),
     }
     for key, value in expected.items():
         if float(row[key]) != value:
@@ -66,7 +69,7 @@ def read_macro(path, capacity):
     macro = {key: float(row[column]) for key, column in quantities.items()}
     if any(not math.isfinite(value) or value <= 0 for value in macro.values()):
         raise ValueError(f"Invalid SRAM characterization for {capacity}: {macro}")
-    return macro
+    return {"word_bytes": word_bytes(capacity), **macro}
 
 
 def characterize(source, output):
@@ -81,7 +84,6 @@ def characterize(source, output):
     table = {
         "cacti_revision": revision,
         "technology_nm": TECH_NM,
-        "word_bytes": WORD_BYTES,
         "read_ports": 1,
         "write_ports": 1,
         "macros": {},
@@ -89,11 +91,14 @@ def characterize(source, output):
     for capacity in CAPACITIES:
         cfg = output / f"sram_{capacity}.cfg"
         cfg.write_text(scratchpad_config(template, capacity), encoding="utf-8")
-        with cfg.with_suffix(".log").open("w", encoding="utf-8") as log:
-            subprocess.run(
+        log_path = cfg.with_suffix(".log")
+        with log_path.open("w", encoding="utf-8") as log:
+            result = subprocess.run(
                 [source / "cacti", "-infile", cfg], cwd=source,
-                stdout=log, stderr=subprocess.STDOUT, check=True, timeout=120,
+                stdout=log, stderr=subprocess.STDOUT, timeout=120,
             )
+        if result.returncode:
+            raise RuntimeError(f"CACTI failed for {capacity}:\n{log_path.read_text()[-2500:]}")
         table["macros"][capacity] = read_macro(cfg.with_suffix(".cfg.out"), capacity)
     (output / "sram.json").write_text(json.dumps(table, indent=2) + "\n", encoding="utf-8")
     print("CACTI_SRAM " + json.dumps(table, separators=(",", ":")), flush=True)
