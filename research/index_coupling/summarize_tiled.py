@@ -1,4 +1,4 @@
-"""Summarize saved the experiment server ablations; optionally render a publication-style plot."""
+"""Summarize saved experiment-server ablations; optionally render a publication-style plot."""
 import argparse
 from collections import Counter
 import json
