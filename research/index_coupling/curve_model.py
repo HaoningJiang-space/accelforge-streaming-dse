@@ -150,7 +150,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                     else:
                         extra += size(t, ext) * (len(gs) - 1)
                 dropped = tuple(t for t, k in zip(shared, keep_bits) if not k)
-                level = ((0, extra, (('groups', tuple(groups), 'kept', tuple(sorted(kept)), 'via DRAM', dropped),)),)
+                level = ((0, extra, (('groups', tuple(groups), 'kept', tuple(sorted(kept)), 'via DRAM', dropped),)
+                          if witness else ()),)
                 for g, group in enumerate(groups):
                     across = sum(size(t, ext) for t in kept if min(users[t]) <= g <= max(users[t]))
                     inner = group_curve(group, ext, external | frozenset(kept))
@@ -188,7 +189,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                                 accumulated = any(output_of(op) == t for op in group)
                                 extra += (2 if accumulated else 1) * (trips - 1) * size(t, ext)
                         inner = solve(group, inner_ext, external | kept)
-                        note = (('loop', group, v, f'tile {b} x{trips}', 'kept', tuple(sorted(kept)),
+                        note = () if not witness else (('loop', group, v, f'tile {b} x{trips}', 'kept', tuple(sorted(kept)),
                                  'refetched', tuple(t for t, k in zip(lacking, keep_bits) if not k)),)
                         results.extend((cap + c, extra + trips * t, cat(note, w)) for c, t, w in inner)
                 b //= 2
