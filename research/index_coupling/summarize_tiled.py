@@ -87,6 +87,8 @@ def plot(report, output):
     fig.suptitle("Fork construction: power-of-two tiles, same execution model", fontsize=13)
     fig.savefig(output.with_suffix(".png"), dpi=200)
     fig.savefig(output.with_suffix(".svg"))
+    svg = output.with_suffix(".svg")
+    svg.write_text("\n".join(line.rstrip() for line in svg.read_text().splitlines())+"\n")
     plt.close(fig)
 
 
