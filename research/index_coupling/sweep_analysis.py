@@ -1,9 +1,9 @@
 """Analyze coupling_sweep output: capacity needed for an extra-traffic target.
 
-Same and cross coupling have different compulsory traffic when shapes are not
-square (V is I x L versus L x K), so targets are extra traffic q above each
-graph's own compulsory traffic (its plateau traffic). S(q) is the least
-capacity whose curve point has extra traffic at most q;
+Targets are extra traffic q above each curve's plateau traffic. For the paired
+coupling graphs, compulsory traffic is actually identical even off-square:
+the private input and output swap I*L and K*L footprints, preserving their sum.
+S(q) is the least capacity whose curve point has extra traffic at most q;
 dS(q) = S_cross(q) - S_same(q), over q where both are finite.
 """
 import json
