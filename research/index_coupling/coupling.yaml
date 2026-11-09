@@ -2,10 +2,11 @@
 # CROSS=False: V = XD (both consumers contract X's column index k).
 # CROSS=True:  V = DX (V contracts X's row index i), same DAG, shapes and MACs.
 {% set N = N | default(4) %}
+{% set NI = NI | default(N) %}{% set NJ = NJ | default(N) %}{% set NK = NK | default(N) %}{% set NL = NL | default(N) %}
 {% set CROSS = CROSS | default(False) %}
 {% set JOIN = JOIN | default(True) %}
 workload:
-  rank_sizes: {I: {{N}}, J: {{N}}, K: {{N}}, L: {{N}}}
+  rank_sizes: {I: {{NI}}, J: {{NJ}}, K: {{NK}}, L: {{NL}}}
   bits_per_value: {All: 8}
   einsums:
   - name: EX
@@ -23,7 +24,7 @@ workload:
     {% if CROSS %}
     - {name: D, projection: [l, i]}
     - {name: X, projection: [i, k]}
-    - {name: V, projection: {I: l, L: k}, output: True}
+    - {name: V, projection: [l, k], output: True}
     {% else %}
     - {name: X, projection: [i, k]}
     - {name: D, projection: [k, l]}
@@ -33,6 +34,7 @@ workload:
   - name: EY
     tensor_accesses:
     - {name: U, projection: [i, l]}
-    - {name: V, projection: [i, l]}
+    # The cross join reads V transposed and is only shape-consistent for square sizes.
+    - {name: V, projection: {% if CROSS %}{L: i, K: l}{% else %}[i, l]{% endif %}}
     - {name: Y, projection: [i, l], output: True}
   {% endif %}
