@@ -10,52 +10,77 @@ What is the least information about a computation graph that determines its
 capacity-traffic curve S_G(q)? A secondary question is how compact that
 information is at a cut, so that summaries of subgraphs compose.
 
-Inside the curve model the curve is, by construction, a function of three
+Operationally, seek a computable sufficient invariant within a declared class
+of representations and execution grammar Gamma:
+
+    S_(G,Gamma)(q) = min { P(m) : m in Gamma(G), Q(m) <= q }.
+
+Here q is total traffic. The existing inverse-curve helpers instead use excess
+traffic over each curve's plateau; retain that baseline explicitly when
+comparing physical traffic budgets. Gamma includes legal orders, tile domains,
+precision, retention and recomputation rules. No globally minimal description
+or unrestricted-mapping optimum has been established.
+
+For fixed grammar and options, the curve is, by construction, a function of three
 things: tensor sizes, the incidence between einsums and ranks, and the role of
 each tensor (input, intermediate, accumulated output). Saying "the graph
 determines the curve" is therefore empty. The content lies in which parts of
 that description can be dropped without changing the curve:
 
-- P17. With spill cost 1, roles can be dropped entirely, and same equals cross.
+- P17. With spill cost 1, swapping private terminal inputs and accumulated
+  outputs in the studied fork preserves the curve. This does not remove
+  producer/consumer roles or reduction-completion constraints in general DAGs.
 - P18e. Exchanging I and K together with flipping every role preserves the curve.
-- P18 and P19. In forks, roles may enter only through b = min(#k, #i), and the
-  maximum gap through ceil(b/2). P19 tests this.
+- For homogeneous forks with all legal consumer orders, equal (#k,#i) is a
+  renaming symmetry. At I=K and fixed m, role classes reduce to b=min(#k,#i).
+  P18/P19 test additional quantitative claims about the maximum gap; symmetry
+  alone neither computes the curve nor predicts that gap.
 
-The classical results are I/O lower bounds for one fast-memory size: red-blue
-pebbling (Hong-Kung), IOLB/IOOpt, SOAP and HBL. They do not separate the read and
-write costs of accumulation. This plan targets the whole curve, with reduction
-roles explicit. The literature check in FIRST_PRINCIPLES.md §5 must place it
-against those works before any novelty claim.
+Direct related work includes red-blue pebbling (Hong-Kung), IOLB/IOOpt, SOAP
+and HBL. Do not presume these ignore read/write accounting or memory-size
+parameters: the [IOOpt interface](https://iocomplexity.corse.inria.fr/ioub)
+records read/write occurrences, and [SOAP](https://htor.spcl.ethz.ch/publications/index.php?pub=418)
+handles multiple statements and input/output reuse. The literature check in
+FIRST_PRINCIPLES.md §5 must establish a specific distinction for the present
+comparative role/retention results before any novelty claim.
 
 ## Why this is the composable summary
 
-Curves of sibling groups compose by (max capacity, sum traffic), which is
-`combine_max_sum` in graph/curve.py. That rule is valid only for a fixed
-interface: which tensors stay live across the cut, their roles, and their slice
-granularity. The projected cache key (`7b891c7c`) is one exact interface state
-for the current grammar. It cut a four-consumer control from 568,721 to 37,710
-states, with all 475 archived curves unchanged.
+For a fixed serial interface, sibling groups compose after the caller charges
+cross-group residency: P=max_g(A_g+p_g), Q=Q_boundary+sum_g(q_g).
+`combine_max_sum` receives these adjusted peaks, not raw local capacities.
+The interface fixes which tensors stay live, their roles, slice extents and
+execution entry/partition. The projected cache key (`7b891c7c`) is sufficient
+for the inspected recurrence with callers charging ancestor reservations.
+It reduced one four-consumer control from 568,721 to 37,710 total memo entries;
+the default solver also preserves all 475 archived comparisons. This is not
+a count of boundary states at one cut or a proof of a minimal quotient.
 
 So "how compact can a demand summary be" becomes a measurable question: how many
 distinct interface states are there, and how coarse can they be while staying
-exact? P17 already shows that a role-blind interface is not exact when spill
-cost is 2. Same and cross would merge, yet their curves differ in 95/95 shapes.
+exact? Count signatures per fixed cut and context domain, frontier size per
+signature, and total memo/construction work separately. P17 shows that a graph
+signature forgetting the terminal-role distinction without otherwise encoding
+its effects is insufficient at spill cost 2 (95/95 differing curves).
 
 ## Why it is architecture-mapping co-optimization
 
-S_G(q) is the interface between a graph and an architecture: the buffer size
-fixes the capacity, and the bandwidth fixes the traffic that can be afforded.
-Suppose the breakpoints of S_G follow from graph structure, for example
-n·min(ceil(b/2)·L, n/2). Then architecture search can read demand off the graph
-instead of searching mappings per architecture. This matters most at sizes where
-FFM cannot run.
+S_(G,Gamma)(q) describes memory demand under its fixed hardware/execution
+assumptions. Bandwidth gives an affordable traffic budget only together with a
+time objective and compute/overlap model. If actual curve breakpoints or useful
+bounds follow cheaply from graph structure, architecture queries can reuse
+them without repeating mapping search. P19's n·min(ceil(b/2)·L,n/2) is a
+maximum capacity-gap conjecture, not a breakpoint-location formula. PE shape,
+banking or precision changes may require a different Gamma and cost model.
 
 ## Steps
 
 1. **Close the open tests.** These decide whether the next steps build on the
    first-split account or on multi-level retention scopes.
    - P19: whether the first-split knapsack generalizes.
-   - P14-FFN′: whether sharing accounts for the 34 FFN breakpoints below FFM.
+   - P14-FFN′ equality failed (26 lower points, plus the known 1 B offset).
+     Classify remaining differences using executed witnesses and native source
+     reconstruction; do not infer a unique mechanism from numerical agreement.
    - An integer-tile retest of dS, since the power-of-two grid is a known
      artifact source.
 2. **P20, the minimal invariant (to be frozen after P19).** Use graph pairs with
@@ -63,10 +88,11 @@ FFM cannot run.
    identical curves and which differ. Candidates:
    - *Order.* After order completion (Pareto union over legal orders, with
      tensor identities preserved), a fork's curve depends on roles only through
-     (#k, #i). This tests whether the (16,4,16,4) difference is the only order
-     effect.
-   - *Role count.* Pairs that differ only in b differ as P19 predicts. Pairs
-     with equal b but different consumer placement do not differ.
+     (#k, #i). This is already proved by renaming for homogeneous independent
+     consumers (P18_STRUCTURAL_INTERPRETATION.md §3); test it as a regression.
+   - *Role count.* Test quantitative differences between different b classes.
+     Equal-b placement is covered by symmetry only at fixed m, I=K and the
+     stated homogeneous, order-completed grammar.
    - *A non-fork family.* Diamonds or GLU, where a join meets the shared tensor,
      to see whether the fork invariant survives a reconvergent path.
 3. **P21: retain/spill and interface-state measurement.** Start with the frozen
@@ -75,9 +101,10 @@ FFM cannot run.
    whether a conditional residency/granularity interface repairs the coarse
    curve. Distinguish the fixed partition from unrestricted fusion, include
    producer/join feasibility, and report ties in the 2s inequality. Then, on
-   real cuts (the FFN forward/backward
+   workload cuts (the modeled FFN forward/backward
    boundary, the attention score/value boundary), count projected interface
-   states against complete mappings. Then test coarser interfaces: role-blind,
+   states against complete mappings. The current FFN alias/lifetime and
+   attention elementwise-softmax abstractions must be explicit. Then test coarser interfaces: role-blind,
    slice-blind, lifetime-blind. Each must reproduce the same final Pareto
    frontier, or the failure is reported. This reuses graph/curve.py. No new
    oracle is needed for the current grammar. A streaming oracle outside the
@@ -127,8 +154,8 @@ SoMa, SFD and LoopTree comparisons require reading the papers before claims.
   is wrong beyond b <= 2. Step 2 then targets retention scopes and loop
   skeletons (LOOP_NORMAL_FORM.md, SCALAR_RETENTION_PROOF.md) instead of role
   counts.
-- **Coarser interfaces are never exact, and states do not shrink below the
-  projected key.** The summary is then the projected key itself. The
+- **Tested coarser interfaces fail, and states do not shrink below the
+  projected key.** Keep that sufficient key without claiming minimality. The
   contribution rests on the invariant and the analytic formulas, not on
   compression.
 - **The FFN gap is not explained by sharing (P14-FFN′ fails as well).** The

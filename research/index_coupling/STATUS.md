@@ -109,6 +109,13 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
    independently execute correctly. These are workload contrasts and regression
    checks, not an optimizer speedup; the 1,004 B wider-tile witness is retained
    alongside the 1,041 B restricted threshold. See BUDGET_EFFECT_RESULTS.md.
+9. **FFN fixed-witness sharing effect.** At 80 B, an independently executed
+   schedule uses 448 B traffic. Keeping its schedule/reservations fixed while
+   separating X and dY consumer reads raises traffic to 576 B; 3 model and 5
+   ablation executions pass. A fresh upstream run reproduces all 27 archived
+   frontier rows, but the selected 80 B-budget source fails whole-mapping
+   reconstruction. This establishes the schedule's sharing benefit, not the
+   unique cause of the native gap. See FFN_EXECUTION_AUDIT.md.
 
 ## Withdrawn or corrected claims
 
@@ -183,6 +190,7 @@ Other files at the top level:
 | `curve_comparison*.txt`, `ffn_simulated.txt`, `nest_scores.txt` | Model vs FFM; simulator checks |
 | `classify_v2_small.jsonl` (`classify_small.jsonl` is superseded), `p14_small.jsonl` | P11–P14 |
 | `ffn_parts/` | FFN graph, no-write-through and FFM-like subset curves |
+| `ffn_shared_input_replay/` | Executed FFN witnesses, fixed-schedule sharing ablation, fresh native frontier and reconstruction failure |
 | `coupling_sweep.jsonl` (256), `coupling_sweep_heldout.jsonl` (31), `p15_p16_scores.txt` | Two-consumer gap law |
 | `p17/`, `p18.jsonl`, `p18_scores.txt`, `p18_profile/`, `fork_witness/` | Role symmetry, multi-consumer forks, witnesses |
 | `tiled_fork/`, `constructive_fork/`, `constructive_heldout/`, `scalar_retention/`, `loop_normal_form/` | Codex constructive work |

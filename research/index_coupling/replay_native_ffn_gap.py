@@ -30,7 +30,8 @@ def main():
           'research_commit': subprocess.check_output(['git', '-C', str(research), 'rev-parse', 'HEAD'], text=True).strip(),
           'workload_sha256': hashlib.sha256(Path(__file__).with_name('ffn_train.yaml').read_bytes()).hexdigest(),
           'case': 'ffn_full_copy', 'shape': [8, 4, 8],
-          'search_metrics': 'ENERGY | RESOURCE_USAGE', 'workers': 1})
+          'search_metrics': 'ENERGY | RESOURCE_USAGE', 'workers': 1,
+          'query_capacity_rounding_decimals': 3})
     af.set_n_parallel_jobs(1)
     spec = spec_for('ffn_full_copy', 4)
     spec.mapper.metrics = af.Metrics.ENERGY | af.Metrics.RESOURCE_USAGE
@@ -40,13 +41,16 @@ def main():
           'rows': len(results.data), 'frontier': frontier(results, bits)})
     reserve = next(c for c in results.data.columns if c.startswith('reservation<SEP>GlobalBuffer<SEP>'))
     for budget in (80, 147):
-        candidates = [(float(row['Total<SEP>energy'])/8, float(row[reserve])*bits/8, i)
+        # Match the archived frontier's three-decimal capacity contract. Resource
+        # fractions are float32; a nominal integer can expand to 147.0000... B.
+        candidates = [(float(row['Total<SEP>energy'])/8, round(float(row[reserve])*bits/8, 3), i)
                       for i, (_, row) in enumerate(results.data.iterrows())
-                      if float(row[reserve])*bits/8 <= budget+1e-8]
+                      if round(float(row[reserve])*bits/8, 3) <= budget]
         traffic, capacity, index = min(candidates)
         row = results.data.iloc[index]
         record = {'kind': 'native_replay', 'capacity_budget': budget,
                   'source_index': index, 'joined_peak': capacity, 'joined_traffic': traffic,
+                  'joined_peak_raw': float(row[reserve])*bits/8,
                   'per_einsum_joined_energy_bytes': {
                       str(c): float(row[c])/8 for c in row.index
                       if c.endswith('<SEP>energy') and not c.startswith('Total<SEP>')},
