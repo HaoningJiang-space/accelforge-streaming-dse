@@ -138,7 +138,11 @@ def plot(input_path, output_dir):
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
     for suffix in ('png', 'svg'):
-        fig.savefig(output / ('common_budget_effects.' + suffix), dpi=180)
+        destination = output / ('common_budget_effects.' + suffix)
+        fig.savefig(destination, dpi=180)
+        if suffix == 'svg':
+            destination.write_text('\n'.join(s.rstrip() for s in
+                                  destination.read_text().splitlines()) + '\n')
     plt.close(fig)
 
 
