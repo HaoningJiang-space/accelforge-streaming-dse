@@ -299,3 +299,78 @@ of {H, Z, dH}, same scoring (graph/scoring.py ffn).
 - **P14-FFN'-weak.** It is never above FFM's best (it may be below: reading an
   input once per group is cheaper than materializing a copy, which FFM also
   writes).
+
+# Retain or spill across a residual block (P21, frozen 2026-11-09)
+
+Frozen before executing any P21 curves. Independent of P19; P20 remains a
+separate prediction to freeze after P19. Serial, no recomputation, one memory
+channel, unit-byte elements, exact Pareto pruning, existing divisible halving
+tile grammar. No prefetch, overlap, double buffering, bank or 3D model.
+
+Graphs: `residual(I,K,L,depth,reads_x)` in graph/model.py. X = copy(R), then
+H0 = D W0 (P21a) or X W0 (P21b), H1 = H0 W1, depth-2 elementwise operations,
+finally Z = H_last + X. D has X's shape. Shapes (I,K,L): (2,2,2), (2,2,4),
+(4,2,2), (4,4,2); depth in {2,8}. Both read modes: 16 cases, including eight
+10-operator graphs. Compare every integer capacity through the last breakpoint
+of either curve; the constant tail is also checked. Do not assume one switch:
+report all retain/spill/tie/infeasible intervals.
+
+Definitions and necessary qualifications (not experimental outcomes):
+
+- s = |X| at the current interface granularity. A dirty internal X written once
+  and read once later costs 2s. A clean input, an already-written tensor, or
+  multiple consuming groups has a different transfer count.
+- Q_H is calculated independently, with the same entry mode as the child in
+  the grammar (`group_curve` for a fixed sibling group). Its boundary traffic
+  and external/resident tensors must be specified. A standalone arbitrary
+  `solve` curve cannot silently replace a `group_curve` child.
+- If H never accesses X, holding X only shifts its capacity by s. For this
+  bridge, keep is strictly better iff Q_H(C-s)-Q_H(C) < 2s; equality is a tie.
+  Infeasible capacities use +infinity; never subtract infinity from infinity.
+- This identity alone does not prove a whole-graph identity. The producer and
+  join can bind capacity, and free fusion can cross the proposed boundary.
+  We record both effects instead of treating them as failure of cache projection.
+
+**P21a-bridge (exact prediction).** H does not read X. Independently computed
+H curves with/without an unused external X are identical before the caller's
+s-byte reservation. The two-choice bridge is exactly
+min(Q_H(C-s), Q_H(C)+2s), with all equality intervals explicitly retained.
+
+**P21a-composition (exact prediction).** Fix the top partition EX | H | EAdd,
+materialize H_last, and either keep X through all three groups or send it via
+DRAM. Calculate each child's curve independently, excluding the traffic and
+allocation of external X. Compose serially with max(capacity), sum(traffic),
+adding s to each phase while X is resident. The predicted whole frontier and
+branch choices equal a monolithic recursion restricted to the same root
+partition and X decision at every capacity. Producer/join costs are included;
+the bare bridge inequality is compared separately wherever endpoints are
+feasible and add identical traffic to both branches.
+
+**P21a-free (diagnostic, no equality prediction).** Compare that fixed-interface
+frontier with the unrestricted whole-graph frontier. Record every discrepant
+interval and a witness. Equality is not implied by the bridge theorem.
+
+**P21b-coarse (falsifiable prediction).** H reads X. Apply the same capacity-only
+bridge formula to the standalone DRAM-input Q_H. Predict at least one wrong
+capacity across the eight cases, including feasibility disagreements. Keep
+common endpoint profiles when comparing coarse and corrected whole curves so
+that an endpoint change is not mistaken for a failure of the H interface.
+
+**P21b-interface (exact prediction).** Replace the coarse retained child by
+Q_H(C-s | X resident), excluding X's compulsory read; the spilled child uses
+Q_H(C | X in DRAM). Compose producer and join as above. Predict exact equality
+with the fixed-root monolithic recursion. Repeat at full granularity and tiles
+(I/2,K), (I,K/2), (I/2,K/2) where integral, with L unchanged, recording the exact
+extents and residency. These are conditional interface experiments, not a
+claim that shrinking the whole graph models arbitrary partial retention.
+Report whether granularity alone suffices: same extents with different X
+residency must remain distinguishable if their curves differ. X's fixed
+lifetime is producer through join; varying lifetime is deferred.
+
+Verification: preserve branch curves, exact error intervals, witnesses, source
+revision, protocol hash, Python version, elapsed time and peak RSS. Replay the
+unrestricted and fixed-root whole witnesses cell by cell using simulate_nest;
+its product-valued join is access-equivalent to addition (numerical addition
+is not a claim). Test default solver regression on archived curves. Resource
+limit per case: one worker, 8 GiB address space, 180 seconds; timeout/error is
+an incomplete case, never a pass. Run on the user-designated experiment server.

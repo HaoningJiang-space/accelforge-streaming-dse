@@ -69,18 +69,47 @@ FFM cannot run.
      with equal b but different consumer placement do not differ.
    - *A non-fork family.* Diamonds or GLU, where a join meets the shared tensor,
      to see whether the fork invariant survives a reconvergent path.
-3. **Interface-state measurement.** On real cuts (the FFN forward/backward
+3. **P21: retain/spill and interface-state measurement.** Start with the frozen
+   residual-block tests in PROTOCOL.md, independently of P19: P21a excludes X
+   from H and tests the capacity-shift identity; P21b lets H read X and tests
+   whether a conditional residency/granularity interface repairs the coarse
+   curve. Distinguish the fixed partition from unrestricted fusion, include
+   producer/join feasibility, and report ties in the 2s inequality. Then, on
+   real cuts (the FFN forward/backward
    boundary, the attention score/value boundary), count projected interface
    states against complete mappings. Then test coarser interfaces: role-blind,
    slice-blind, lifetime-blind. Each must reproduce the same final Pareto
    frontier, or the failure is reported. This reuses graph/curve.py. No new
    oracle is needed for the current grammar. A streaming oracle outside the
    grammar is a later extension.
-4. **Real scale and an architecture decision.** Predict S_G(q) for GPT-scale FFN
+4. **P22, after P21: overlap and buffer occupancy.** A single-channel extension
+   must charge double buffering and in-flight tiles against the same capacity
+   budget as retained tensors. Prefetch scheduling follows this model; it does
+   not precede the retain/spill experiments. Interval information may be needed
+   at the interface; a single (compute, traffic) pair is not generally enough.
+5. **Real scale and an architecture decision, last.** Only after small-graph
+   composition checks, extend from 16 to 128 operators. Predict S_G(q) for GPT-scale FFN
    and attention from validated structural formulas, and check them against
    exact curves at sizes the model can still solve. Then give one buffer-size ×
    bandwidth co-design example. That closes the loop from graph structure to an
    architecture choice.
+
+## Bandwidth boundary
+
+In the current serial, no-recomputation model every mapping has the same
+compute work W. With constant throughput P, T = W/P + Q/B, so the Q-minimizer
+is optimal at every positive bandwidth B. Bandwidth rescales traffic-related
+time differences; it cannot reverse their sign. Do not claim bandwidth-driven
+mapping crossovers without recomputation, shape-dependent utilization, or
+compute/transfer overlap.
+
+For serial stages, fixed-interface (capacity, compute time, traffic) Pareto
+summaries compose by max capacity and additive compute/traffic. Their supported
+lower hull answers all positive-bandwidth linear objectives without re-search.
+With overlap, sum(max(c_i,q_i/B)) is not generally
+max(sum(c_i),sum(q_i)/B); a time/occupancy interface needs its own proof.
+DRAM is a test setting for composable summaries, not a broadened research theme.
+SoMa, SFD and LoopTree comparisons require reading the papers before claims.
 
 ## What would change the plan
 
@@ -100,3 +129,4 @@ FFM cannot run.
 
 - Faster search as the headline. Speed is a consequence to report, not the claim.
 - New hand-made mapping families for one fork shape.
+- Multi-bank or 3D DRAM, broad joint hardware/data-placement optimization.
