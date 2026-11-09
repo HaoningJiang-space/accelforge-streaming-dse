@@ -58,10 +58,66 @@ class InputEpisodeAudit(oracle.Machine):
         return result
 
 
+class SeparateInputConsumers(oracle.Machine):
+    """Keep reservations/schedule fixed; reload selected inputs per consumer.
+
+    A read-only value may be discarded while its reservation stays allocated.
+    This is an executable traffic ablation, not a model of FFM's entire grammar.
+    """
+    def __init__(self, spec, selected):
+        super().__init__(spec)
+        self.selected = set(selected)
+        oracle.require(self.selected <= spec.inputs, 'only graph inputs may be separated')
+        self.used_by = defaultdict(set)
+        self.current_op = None
+
+    def step(self, op, iteration):
+        self.current_op = op
+        super().step(op, iteration)
+
+    def load(self, cell, accumulator=False):
+        if not accumulator and cell[0] in self.selected:
+            if self.used_by[cell] and self.current_op not in self.used_by[cell]:
+                self.values.pop(cell, None)
+            self.used_by[cell].add(self.current_op)
+        return super().load(cell, accumulator)
+
+    def release(self, cells):
+        super().release(cells)
+        for cell in cells:
+            self.used_by.pop(cell, None)
+
+
+def counterfactual(path):
+    records = [json.loads(line) for line in Path(path).read_text().splitlines()]
+    plan = next(row for row in records if row.get('capacity_budget') == 80)
+    graph = ffn(8, 4, 8)
+    spec = oracle.Specification(graph)
+    root = oracle.parse_witness(spec, plan['witness'])
+    for selected in ((), ('X',), ('dY',), ('X', 'dY'), ('W1', 'W2', 'X', 'dY')):
+        machine = SeparateInputConsumers(spec, selected)
+        for kind, payload in oracle.events(spec, root):
+            if kind == 'step':
+                machine.step(*payload)
+            else:
+                getattr(machine, kind)(payload)
+        result = machine.finish()
+        oracle.require(result['peak'] == plan['model_peak'], 'changed reservation peak')
+        print(json.dumps({'kind': 'fixed_witness_input_separation',
+                          'source_sha256': hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+                          'separated_inputs': selected, 'execution': result,
+                          'scope': 'Post-hoc traffic ablation; same schedule and allocation, not native FFM.'}),
+              flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--capacities', nargs='+', type=int, default=[80, 147, 148])
+    parser.add_argument('--counterfactual', help='saved model replay JSONL; no curve regeneration')
     args = parser.parse_args()
+    if args.counterfactual:
+        counterfactual(args.counterfactual)
+        return
     graph = ffn(8, 4, 8)
     start = perf_counter()
     points = ffm_like_part(graph, (), separate_inputs=False, witness=True,
