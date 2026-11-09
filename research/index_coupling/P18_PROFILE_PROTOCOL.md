@@ -56,3 +56,22 @@ Consumer-order completion is a separate follow-up. It must take a Pareto union
 over legal orders with tensor identity preserved, and use the same order set
 for every mixture being compared. Do not replace only the worse archived order
 or silently rewrite the P18 scores.
+
+## Narrow order-complete control fixed before its execution
+
+Use only the already identified order-sensitive shape (16,4,16,4), with two
+K-contracting consumers and one I-contracting consumer. Evaluate kki, kik and
+ikk with the unchanged curve model. Preserve the original operator names,
+tensor names and data bindings while permuting independent consumer operations;
+do not implement the control by changing the computation's input identities.
+
+Within this fork's name-invariant cost model, permutations of the two equal-role
+consumers are equivalent, so the three orders cover all six physical operation
+permutations up to that symmetry. Check the kki/ikk numerical curves against
+their archives, take a Pareto union, and independently execute every point of
+the resulting envelope. Report all curves and all improvements or their absence.
+
+This case was chosen after observing an order difference. It tests mechanism
+and implementation, not generalization. It does not replace P18's fixed-order
+baseline, and has no predicted minimum improvement. One process is limited to
+4 GiB address space and 120 seconds of CPU time; a failure remains a result.
