@@ -2,7 +2,7 @@
 
 This page is the index to the directory. README.md keeps the chronological record.
 PROTOCOL.md holds every frozen prediction, unchanged after freezing.
-Numbers below are copied from the linked result files.
+Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
 
 ## Question
 
