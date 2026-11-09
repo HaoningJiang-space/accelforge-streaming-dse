@@ -44,6 +44,12 @@ whether both can be kept at the same time.
 | P17 | spill_cost = 1 makes same and cross identical | 95/95; also proved | P17_RESULTS.md, ROLE_SYMMETRY_AND_SYSTEMS_CASE.md |
 | P18a–e | 3- and 4-consumer forks: bounds, max gap, symmetry | all pass; **P18d only by equality** | `results/p18_scores.txt` |
 | P19a–d | 6-consumer forks: max gap doubles at kkkiii (first-split knapsack) | **running** (frozen before any record) | PROTOCOL.md, `score_p19.py` |
+| P21a | Unused X shifts H's capacity; fixed-boundary retain/spill composition | **pass**: 28/28 feasible interfaces exact; 4 empty controls excluded from evidence | P21_RESULTS.md, `results/p21/` |
+| P21b | Capacity-only fails when H reads X; conditional residency/extents repair it | **pass**: coarse fails in 8/8 full graphs; 28/28 feasible interfaces repaired; 596/596 whole witnesses replay exactly across P21 | same |
+
+P21 does not assert unrestricted whole-graph equality: all 16 free curves
+differ from the fixed partition with H_last materialized. Granularity alone
+does not distinguish resident X from DRAM X. P20 still awaits P19; P22 is deferred.
 
 ## What is established, and how firmly
 
@@ -182,6 +188,7 @@ Other files at the top level:
 | `tiled_fork/`, `constructive_fork/`, `constructive_heldout/`, `scalar_retention/`, `loop_normal_form/` | Codex constructive work |
 | `memory_probe/`, `verify_projection.txt` | Cache diagnosis and its exact fix |
 | `projected_effect_replay/` | 227 independent executions, common-buffer effects and figures |
+| `p21/` | 16 residual graphs, 64 conditional interfaces (56 feasible), 596 witness replays, full error/choice intervals, static comparison figure |
 
 Heavy runs go to the experiment server with memory and time caps, one process
 per curve for FFN. Local runs are limited to checks that take seconds.

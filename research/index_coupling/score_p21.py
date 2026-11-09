@@ -3,7 +3,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
-from research.index_coupling.run_p21 import CASES
+from research.index_coupling.run_p21 import CASES, comparison, frontier, serial, shifted
 
 
 def score(directory):
@@ -32,6 +32,14 @@ def score(directory):
             continue
         complete.append(record)
     interfaces = [x for r in complete for x in r['result']['interfaces']]
+    unique, duplicate_mismatches = {}, []
+    for x in interfaces:
+        key = (tuple(x['shape']), x['depth'], x['reads_x'])
+        previous = unique.setdefault(key, x)
+        if (previous['children'] != x['children'] or any(
+                previous['curves'][k] != x['curves'][k]
+                for k in ('keep', 'spill', 'actual', 'coarse'))):
+            duplicate_mismatches.append(key)
     full = [r['result']['interfaces'][0] for r in complete]
     a = [x for x in interfaces if not x['reads_x']]
     b = [x for x in interfaces if x['reads_x']]
@@ -40,6 +48,7 @@ def score(directory):
                   for x in interfaces for k in ('keep', 'spill', 'composed')
                   if not x['checks'][k]['exact']]
     table = []
+    read_credit = []
     for x in full:
         table.append(dict(shape=x['shape'], depth=x['depth'], reads_x=x['reads_x'],
                           fixed_points=len(x['curves']['actual']),
@@ -49,11 +58,25 @@ def score(directory):
                           free_wrong_capacities=x['checks']['free']['wrong_capacities'],
                           choices=x['choices'],
                           bare_wrong_choices=x['bare_inequality']['wrong_choices']))
+        if x['reads_x']:
+            # Post-hoc mechanism diagnostic on saved curves, not a new frozen claim:
+            # does removing only the compulsory X read repair the coarse interface?
+            s = x['s']
+            children = x['children']
+            keep = serial([shifted(children['resident'][0], s),
+                           shifted(children['cold'][1], s, -s),
+                           shifted(children['resident'][2], s)])
+            repaired = frontier(keep + x['curves']['spill'])
+            read_credit.append(dict(shape=x['shape'], depth=x['depth'],
+                                    comparison=comparison(repaired, x['curves']['actual'])))
     complete_ok = len(complete) == len(CASES)
     return dict(expected_cases=len(CASES), complete_cases=len(complete),
                 missing=missing, incomplete=incomplete, invalid=invalid,
                 interfaces=len(interfaces), informative_interfaces=sum(
                     x['checks']['composed']['informative'] for x in interfaces),
+                distinct_interfaces=len(unique), distinct_feasible_interfaces=sum(
+                    x['checks']['composed']['informative'] for x in unique.values()),
+                duplicate_mismatches=duplicate_mismatches,
                 p21a_bridge_exact=sum(x['checks']['bridge']['exact'] for x in a),
                 p21a_interfaces=len(a),
                 p21a_informative_interfaces=sum(x['checks']['composed']['informative'] for x in a),
@@ -69,12 +92,13 @@ def score(directory):
                 max_peak_rss_kib=max((r['peak_rss_kib'] for r in complete), default=0),
                 source_revisions=sorted({r['source_revision'] for r in complete}),
                 protocol_hashes=sorted({r['protocol_sha256'] for r in complete}),
-                exact_predictions_pass=(complete_ok and not branch_bad
+                exact_predictions_pass=(complete_ok and not branch_bad and not duplicate_mismatches
                     and all(x['checks']['bridge']['exact'] for x in a)
                     and not any(x['bare_inequality']['wrong_choices'] for x in a)
                     and all(x['exact'] for x in replays)),
                 coarse_failure_prediction_pass=(complete_ok and any(
                     not x['checks']['coarse']['exact'] for x in full if x['reads_x'])),
+                posthoc_compulsory_read_credit=read_credit,
                 cases=table)
 
 

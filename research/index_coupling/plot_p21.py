@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import matplotlib
 matplotlib.use('Agg')
+matplotlib.rcParams['svg.hashsalt'] = 'p21'
 import matplotlib.pyplot as plt
 from research.index_coupling.graph.analysis import traffic_at
 
@@ -34,7 +35,9 @@ def main(directory):
     fig.suptitle('10 operators; (I, K, L) = (2, 2, 4); serial, no recomputation', fontsize=11)
     fig.tight_layout(rect=(0, .17, 1, .95))
     fig.savefig(directory / 'curves.png', dpi=180)
-    fig.savefig(directory / 'curves.svg')
+    svg = directory / 'curves.svg'
+    fig.savefig(svg, metadata={'Date': None})
+    svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines()) + '\n')
 
 
 if __name__ == '__main__':
