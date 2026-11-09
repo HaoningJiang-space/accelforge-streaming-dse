@@ -5,6 +5,7 @@ Prints one JSON line per case: status, wall seconds and the capacity/traffic
 Pareto frontier in bytes on upstream's Snowcat (1 J/bit MainMemory actions).
 """
 import argparse
+import copy
 import json
 import math
 import traceback
@@ -61,13 +62,17 @@ def main():
         try:
             spec = spec_for(case, args.n)
             spec.mapper.metrics = af.Metrics.ENERGY | af.Metrics.RESOURCE_USAGE
-            if args.actions:
-                spec.mapper.metrics |= af.Metrics.ACTIONS
             results = spec.map_workload_to_arch()
             record.update(status='ok', frontier=frontier(results, float(spec.arch.find('GlobalBuffer').size)))
             if args.actions:
+                # Replay the minimum-traffic mapping with ACTIONS; the mapper cannot optimize them.
                 best = results.data.sort_values('Total<SEP>energy').iloc[0]
-                record['min_traffic_actions_bytes'] = {k.split('<SEP>', 1)[1]: float(v) / 8 for k, v in best.items()
+                replay = copy.deepcopy(spec)
+                replay.mapping = copy.deepcopy(best['Total<SEP>mapping']())
+                replay.model.metrics = af.Metrics.ENERGY | af.Metrics.RESOURCE_USAGE | af.Metrics.ACTIONS
+                row = replay.evaluate_mapping().data.iloc[0]
+                record['min_traffic_replay_bytes'] = float(row['Total<SEP>energy']) / 8
+                record['min_traffic_actions_bytes'] = {k.split('<SEP>', 1)[1]: float(v) / 8 for k, v in row.items()
                                                        if '<SEP>action<SEP>MainMemory<SEP>' in k and float(v)}
         except Exception as error:
             record.update(status='error', error=f'{type(error).__name__}: {error}'[:600],
