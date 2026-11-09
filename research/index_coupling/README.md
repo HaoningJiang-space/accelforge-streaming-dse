@@ -199,3 +199,28 @@ The resident set switches at tokens = FFN hidden size (min(4·M·D, 4·D·F)) fo
 the FFN step, and at queries = keys for attention. Limits: only the zero-extra-
 traffic point is modeled, not the capacity-traffic curve below it; online
 softmax statistics, heads, projections and GQA are omitted.
+
+## Capacity-traffic curve model
+
+`curve_model.py` extends the nest model from the zero-extra-traffic point to the
+whole Pareto curve: a tensor may be refetched (inputs, (T−1)·size per loop) or
+spilled (accumulated outputs, 2·(T−1)·size) instead of kept, sibling groups may
+pass a tensor through DRAM, and loops split by powers of two. It enumerates this
+restricted model; it is not a lower bound and does not run FFM.
+
+Compared with every saved FFM frontier (`compare_curves.py`,
+`results/curve_comparison.txt`): **216 points over 19 graphs, 206 equal, 10
+where the model is lower, none where it is higher.** Only n=4 and n=8 coupling
+were inspected while writing the model; the rest were not used to build it but
+also were not frozen predictions.
+
+The 10 lower points are unverified:
+- Cross coupling (n4, n8, n16, T1, C2): the model's witness fuses X into one
+  consumer while also writing X to DRAM for the other (write-through). FFM gives
+  each shared tensor a single backing storage, which plausibly excludes this.
+  The saving is 5.6% of traffic at those capacities.
+- Attention core (4 points, 32 B each): the witness is a FlashAttention-style
+  tiling (query blocks refetching K and V, key blocks with an O accumulator,
+  Q refetched per key block). Hand accounting reproduces the model's traffic,
+  but no reason for FFM's higher value has been found; a model accounting error
+  is not ruled out.
