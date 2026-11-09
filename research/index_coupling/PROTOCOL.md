@@ -171,3 +171,23 @@ match FFM exactly on the union of breakpoints.
   1 B plateau offset (147 vs 148).
 - **P14′.** For the three attention cases (no multi-consumer tensor) the
   FFM-like curve equals the graph curve, so their gaps remain unexplained.
+
+# Coupling capacity gap, frozen before running (P15, P16)
+
+Exploratory sweep (results/coupling_sweep.jsonl, sides 4 to 32): with I = K the
+two graphs have identical operators, tensor sizes and per-operator costs. The
+maximum over traffic targets of dS(q) = S_cross(q) - S_same(q) (sweep_analysis.py,
+extra traffic above each graph's plateau) equals I·min(L, I/2) in 61 of 64
+shapes; the other 3 (I = 32, L ≤ 8) are 4 B lower. Fitted after seeing the data.
+Witness reading: a split along a variable shared by all three einsums leaves
+one consumer's output without that variable when cross (U lacks K, V lacks I),
+so the output becomes a partial sum that is kept resident or spilled at twice
+the cost; same has I in both outputs.
+
+Held-out shapes: (64, J, 64, L) for J, L in {4, 8, 16, 32, 64}, and (I, J, I, 64)
+for I in {8, 16, 32}, J in {4, 16}; 31 shapes, write-through on.
+
+- **P15.** max_q dS(q) = I·min(L, I/2) exactly in at least 28 of 31 shapes.
+- **P15′.** Within 5% of I·min(L, I/2) in all 31.
+- **P16.** dS(q) ≥ -0.05·S_same(q) at every q in every held-out shape, and the
+  plateau dS(0) = 0 in all 31.

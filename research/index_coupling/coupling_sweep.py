@@ -29,6 +29,10 @@ def run(shape):
 if __name__ == '__main__':
     jobs = int(sys.argv[1]) if len(sys.argv) > 1 else 8
     shapes = list(product(SIDES, repeat=4))
+    if 'heldout' in sys.argv[2:]:
+        # P15/P16 held-out shapes (PROTOCOL.md): I = K, at least one side 64.
+        shapes = [(64, j, 64, l) for j in (4, 8, 16, 32, 64) for l in (4, 8, 16, 32, 64)] + \
+                 [(i, j, i, 64) for i in (8, 16, 32) for j in (4, 16)]
     with Pool(jobs) as pool:
         for record in pool.imap_unordered(run, shapes):
             print(json.dumps(record), flush=True)
