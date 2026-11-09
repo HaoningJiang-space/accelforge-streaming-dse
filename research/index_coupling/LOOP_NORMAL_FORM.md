@@ -123,3 +123,18 @@ The next algorithmic question, if these checks support the proof, is whether
 the *bounded* skeleton set can be generated economically and paired with exact
 size solvers. Neither that cost nor coverage of a smaller subset follows from
 this theorem.
+
+## Follow-up coverage fixed after inspecting the first run
+
+The original 16 cases passed, but their original witnesses did not trigger the
+optional redundant-refinement injection. Do not report that path as tested.
+The follow-up uses normalized witnesses from cases 4, 5, 10 and 12 to expose
+coalesced loops eligible for refinement. It requires at least one injected case,
+unchanged independent execution metrics, and a strict loop-count reduction.
+
+A separate hand-built MatMul has I=4,J=2,K=4, A[I,K], B[K,J], C[I,J]. Its scopes
+are J(tile=1, keep A), I(tile=2, keep B), K(tile=1, keep nothing), I(tile=1,
+keep nothing). The free K,I block has only C local. Reordering it to I,K would
+prematurely invoke the implicit scalar leaf. The guard convention must preserve
+its partial spills. Before executing this follow-up, the hand prediction is
+peak=21 cells, reads={A:16,B:8,C:24}, writes={C:32}, traffic=80.

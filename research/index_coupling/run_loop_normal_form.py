@@ -11,7 +11,7 @@ from time import perf_counter
 from .loop_normal_form import (depth_bound, flatten, loop_counts,
                                normalize_witness, refine_once)
 from .nest_model import Graph, attention, coupling, ffn
-from .simulate_nest import Specification, parse_witness, simulate
+from .simulate_nest import Node, Specification, parse_witness, simulate
 
 
 SHAPES = ((2,2,2,2), (4,2,4,2), (4,4,4,4),
@@ -89,10 +89,63 @@ def evaluate(index):
                 passed=True)
 
 
+def supplement():
+    """Follow-up coverage: not part of the original frozen case outcomes."""
+    from .curve_model import curve
+    results = []
+    for index in (4, 5, 10, 12):
+        name, graph = list(cases())[index]
+        spec = Specification(graph)
+        checked = 0
+        for _, _, witness in curve(graph, witness=True):
+            normalized = normalize_witness(graph, witness)
+            refined, changed = refine_once(spec, parse_witness(spec, normalized))
+            if not changed:
+                continue
+            injected = flatten(spec, refined)
+            allowed_grid(spec, injected)
+            reduced = normalize_witness(graph, injected)
+            a, b, c = (simulate(graph, w) for w in (normalized, injected, reduced))
+            assert all(a[k] == b[k] == c[k] for k in FIELDS)
+            assert loop_counts(parse_witness(spec, reduced))[0] < loop_counts(refined)[0]
+            checked += 1
+        results.append(dict(case=name, refinements=checked))
+    assert sum(r['refinements'] for r in results) > 0
+
+    # A/B are inherited by the free K,I block; only C is local. Sorting I,K
+    # would hit the implicit scalar leaf before the explicit K split. The
+    # live-rank guard must leave I last, preserving C's partial-sum spills.
+    graph = Graph(dict(I=4,J=2,K=4), [
+        ('MM', {'A': ('I','K'), 'B': ('K','J'), 'C': ('I','J')})])
+    spec = Specification(graph)
+    ops = ('MM',)
+    root = Node('leaf', ops)
+    for v, tile, kept, dropped in (
+            ('I',1,(),()), ('K',1,(),('C',)),
+            ('I',2,('B',),()), ('J',1,('A',),())):
+        root = Node('loop', ops, kept, dropped, v, tile, (root,))
+    original = flatten(spec, root)
+    normalized = normalize_witness(graph, original)
+    allowed_grid(spec, normalized)
+    a, b = simulate(graph, original), simulate(graph, normalized)
+    assert all(a[k] == b[k] for k in FIELDS)
+    assert (a['peak'], a['traffic']) == (21, 80)
+    return dict(kind='supplement', passed=True, refinements=results,
+                guard_case=dict(peak=a['peak'], traffic=a['traffic'],
+                                reads=a['reads'], writes=a['writes']))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--case', type=int)
+    parser.add_argument('--supplement', action='store_true')
     args = parser.parse_args()
+    if args.supplement:
+        print(json.dumps(dict(kind='metadata', mode='supplement',
+            commit=subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip(),
+            tracked_dirty=bool(subprocess.check_output(['git','diff','--name-only','HEAD'], text=True)))), flush=True)
+        print(json.dumps(supplement()), flush=True)
+        return
     if args.case is not None:
         resource.setrlimit(resource.RLIMIT_AS, (8*1024**3, 8*1024**3))
         try:
