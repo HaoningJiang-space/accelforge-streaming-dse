@@ -1,0 +1,220 @@
+{
+  "sources": [
+    "f1ac7c5a4056d5df65b015a6d8a1fcf2af0b2120",
+    "f4f4c7dccf65d46e83c769bf96ec9c6d576e1c15"
+  ],
+  "ablations": [
+    {
+      "all_tiles": false,
+      "mode": "strips",
+      "instances": 512,
+      "coverage": {
+        "uncovered": 1792,
+        "equal": 1633,
+        "worse": 3046
+      },
+      "union_coverage": {
+        "uncovered": 1792,
+        "equal": 2071,
+        "worse": 3716
+      },
+      "midpoint_exact": 116,
+      "midpoint_better": 0,
+      "midpoint_total": 128,
+      "median_build_ms": 0.7833703421056271,
+      "total_build_seconds": 0.3981905151158571,
+      "candidates_min": 54,
+      "candidates_max": 108
+    },
+    {
+      "all_tiles": false,
+      "mode": "tiles_no_retention",
+      "instances": 512,
+      "coverage": {
+        "worse": 3832,
+        "equal": 2639
+      },
+      "union_coverage": {
+        "worse": 4090,
+        "equal": 2851
+      },
+      "midpoint_exact": 116,
+      "midpoint_better": 0,
+      "midpoint_total": 128,
+      "median_build_ms": 1.1652489192783833,
+      "total_build_seconds": 0.6091249939054251,
+      "candidates_min": 72,
+      "candidates_max": 180
+    },
+    {
+      "all_tiles": false,
+      "mode": "tiles_dual_retention",
+      "instances": 512,
+      "coverage": {
+        "worse": 3766,
+        "equal": 2705
+      },
+      "union_coverage": {
+        "worse": 3966,
+        "equal": 2907
+      },
+      "midpoint_exact": 121,
+      "midpoint_better": 0,
+      "midpoint_total": 128,
+      "median_build_ms": 1.2796688824892044,
+      "total_build_seconds": 0.6667829379439354,
+      "candidates_min": 78,
+      "candidates_max": 192
+    },
+    {
+      "all_tiles": false,
+      "mode": "tiles_scoped_retention",
+      "instances": 512,
+      "coverage": {
+        "worse": 3484,
+        "equal": 2987
+      },
+      "union_coverage": {
+        "worse": 3719,
+        "equal": 3081
+      },
+      "midpoint_exact": 121,
+      "midpoint_better": 0,
+      "midpoint_total": 128,
+      "median_build_ms": 3.849436528980732,
+      "total_build_seconds": 2.0909939017146826,
+      "candidates_min": 198,
+      "candidates_max": 684
+    },
+    {
+      "all_tiles": true,
+      "mode": "strips",
+      "instances": 512,
+      "coverage": {
+        "uncovered": 1792,
+        "equal": 1600,
+        "worse": 2828,
+        "better": 251
+      },
+      "union_coverage": {
+        "uncovered": 1792,
+        "equal": 2126,
+        "worse": 3901,
+        "better": 1281
+      },
+      "midpoint_exact": 115,
+      "midpoint_better": 1,
+      "midpoint_total": 128,
+      "median_build_ms": 2.342880703508854,
+      "total_build_seconds": 1.2896982282400131,
+      "candidates_min": 72,
+      "candidates_max": 576
+    },
+    {
+      "all_tiles": true,
+      "mode": "tiles_no_retention",
+      "instances": 512,
+      "coverage": {
+        "worse": 3273,
+        "equal": 2532,
+        "better": 666
+      },
+      "union_coverage": {
+        "worse": 4444,
+        "equal": 2804,
+        "better": 3447
+      },
+      "midpoint_exact": 115,
+      "midpoint_better": 1,
+      "midpoint_total": 128,
+      "median_build_ms": 5.086610093712807,
+      "total_build_seconds": 3.636449782177806,
+      "candidates_min": 104,
+      "candidates_max": 2624
+    },
+    {
+      "all_tiles": true,
+      "mode": "tiles_dual_retention",
+      "instances": 512,
+      "coverage": {
+        "worse": 3208,
+        "equal": 2581,
+        "better": 682
+      },
+      "union_coverage": {
+        "worse": 4302,
+        "equal": 2828,
+        "better": 3484
+      },
+      "midpoint_exact": 120,
+      "midpoint_better": 1,
+      "midpoint_total": 128,
+      "median_build_ms": 5.439870525151491,
+      "total_build_seconds": 3.809510011225939,
+      "candidates_min": 112,
+      "candidates_max": 2688
+    },
+    {
+      "all_tiles": true,
+      "mode": "tiles_scoped_retention",
+      "instances": 512,
+      "coverage": {
+        "worse": 3032,
+        "equal": 2748,
+        "better": 691
+      },
+      "union_coverage": {
+        "worse": 4141,
+        "equal": 2890,
+        "better": 3569
+      },
+      "midpoint_exact": 120,
+      "midpoint_better": 1,
+      "midpoint_total": 128,
+      "median_build_ms": 23.830626625567675,
+      "total_build_seconds": 20.881658339872956,
+      "candidates_min": 328,
+      "candidates_max": 16960
+    }
+  ],
+  "paired_timing": {
+    "cases": 12,
+    "repetitions": 12,
+    "sum_medians_seconds": {
+      "strips": 0.009892231784760952,
+      "tiles_no_retention": 0.016357189510017633,
+      "tiles_dual_retention": 0.017671591136604548,
+      "tiles_scoped_retention": 0.06176963169127703
+    },
+    "reduced_saving_fraction": 0.7139113403666273
+  },
+  "execution_audit": {
+    "kind": "audit_size",
+    "plans": 7562,
+    "reasons": {
+      "power_of_two_frontier": 4021,
+      "wider_improves_strips": 6987,
+      "wider_beats_archived": 2323
+    },
+    "completed": 7562,
+    "macs": 118713344
+  },
+  "reduced_vs_full": [
+    {
+      "all_tiles": false,
+      "counts": {
+        "equal": 6017,
+        "worse": 362
+      },
+      "worst_relative_traffic_excess": 0.2666666666666666
+    },
+    {
+      "all_tiles": true,
+      "counts": {
+        "equal": 9205,
+        "worse": 323
+      },
+      "worst_relative_traffic_excess": 0.1428571428571428
+    }
+  ]
+}
