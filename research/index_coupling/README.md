@@ -229,6 +229,12 @@ exactly at every point. No accounting bug was found. The 10 lower points:
   most likely cause is FFM's default of one fused loop per rank variable, but
   no rejected template has been shown.
 
-On the FFN training step (`results/curve_comparison_ffn.txt`) the model is
-lower at 25 of 27 FFM points, by 32–384 B, and higher at 147 B. These are not
-yet simulated and are not claimed as findings.
+On the FFN training step (`results/curve_comparison_ffn.txt`), FFM's saved
+frontier repeats some capacities with dominated values; against FFM's best at
+each capacity the model is lower at 19 of 20 distinct capacities by 32–96 B and
+higher only at 147 B (the plateau, model 148). The simulator executed the
+model's witness at 7, 19, 57 and 140 B and reproduced its buffer and traffic
+exactly (`results/ffn_simulated.txt`); e.g. at 140 B the model needs 320 B of
+DRAM traffic versus FFM's 384 B. The mechanism behind these FFN gaps has not
+been classified; write-through of FFN's many multi-consumer tensors is the
+leading hypothesis, not a finding.
