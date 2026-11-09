@@ -153,3 +153,38 @@ set is the tensors lacking v, with weight 2 for outputs contracted over v and
 this multiset spreads over axes; buffer capacity buys partial sums first, then
 inputs; and the price of an unfavourable spread is at most the size of the
 partial sums it exposes on the best axis.
+
+## 7. What sets the maximum capacity gap (witnesses, then a prediction)
+
+Witnesses at the q of the maximum gap (results/fork_witness/, I = K = n, s = nL):
+
+- Pure fork, n·L branch: the fused group splits I, which no consumer contracts.
+  The split's obligations are the shared input B and each consumer's C, all
+  inputs. Each is kept (capacity s) or refetched (traffic s).
+- Mixed fork: every axis of X is some consumer's contraction axis. Splitting the
+  axis contracted by fewer consumers (b of them) turns their outputs into
+  obligations of partial-sum type: kept (capacity s) or spilled (traffic 2s).
+  (8,4,8,2): kkki keeps V3 whole at q=96 (53 vs 37); kkii keeps U0 and U1 at
+  q=80 (69) while kkkk keeps one C (53).
+- n·n/2 branch (L > n/2): keeping or spilling an exposed accumulator costs more
+  than giving up the fused split. The mixed fork holds X whole (n²); the pure
+  fork holds half of it.
+
+So in the n·L branch the two forks face the same obligation list, of the same
+sizes. The only difference is that b items carry refetch weight 2 instead of 1.
+The capacity gap at a traffic budget is how many more items must be kept.
+Freeing items costs s each in the pure fork. In the mixed fork, the weight-1
+items cost s each and the weight-2 items 2s each. The kept-count difference is
+at most ceil(b/2), reached when the budget frees every item of the pure fork.
+That gives
+
+    max_q dS = n·min(ceil(b/2)·L, n/2),   b = min(#k consumers, #i consumers).
+
+For m <= 4, b <= 2 and ceil(b/2) = 1. This is why the maximum never grew in
+P18 while the positive-gap range (about 2b-1 budget steps of s) did. The same
+reading also explains P17. With spill_cost = 1 the weights are equal, the
+obligation lists coincide and the gap vanishes.
+
+This is a first-split heuristic, not a proof: deeper levels and other groupings
+can change either fork's optimum. P19 (frozen) tests its first new consequence: the
+maximum doubles at kkkiii.
