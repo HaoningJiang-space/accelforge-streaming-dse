@@ -6,6 +6,7 @@ import json
 from multiprocessing import Pool
 from pathlib import Path
 import platform
+import statistics
 import subprocess
 from time import perf_counter
 
@@ -128,6 +129,28 @@ def dual_sweep():
     sweep(modes=("tiles_dual_retention",))
 
 
+def benchmark():
+    # Rotate mode order; include candidate construction and Pareto in every run.
+    modes = (*MODES, "tiles_dual_retention")
+    for shape in ((4,4,4,4), (8,8,8,8), (16,16,16,16), (32,32,32,32),
+                  (32,4,32,16), (32,8,32,4)):
+        for cross in (False, True):
+            times = {mode: [] for mode in modes}
+            frontiers = {}
+            counts = {}
+            for repeat in range(12):
+                ordered = modes[repeat % 4:] + modes[:repeat % 4]
+                for mode in ordered:
+                    _, points, count, seconds = build(shape, cross, False, mode)
+                    if mode in frontiers:
+                        assert points == frontiers[mode]
+                    frontiers[mode], counts[mode] = points, count
+                    times[mode].append(seconds)
+            emit(kind="benchmark", shape=shape, cross=cross, all_tiles=False,
+                 repetitions=12, samples=times, candidates=counts,
+                 medians={mode: statistics.median(values) for mode, values in times.items()})
+
+
 def replay(item):
     plan, reason = item
     actual = execute(plan)
@@ -164,7 +187,7 @@ def audit():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("validate", "sweep", "audit", "dual_sweep"))
+    parser.add_argument("mode", choices=("validate", "sweep", "audit", "dual_sweep", "benchmark"))
     args = parser.parse_args()
     emit(kind="metadata", mode=args.mode, host=platform.node(), python=platform.python_version(),
          commit=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),

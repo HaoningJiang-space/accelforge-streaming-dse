@@ -71,3 +71,8 @@ preserves the midpoint gains, how much full-curve quality it loses relative
 to all masks, and how much construction work it avoids. Do not replace or
 rewrite the original three-way sweep. This adds I/K strip choices, not their
 Cartesian product, beyond the no-retention 2D baseline.
+
+For the timing comparison, also run all four modes in one process on square
+n=4,8,16,32 and (32,4,32,16)/(32,8,32,4), both patterns, power-of-two tiles.
+Rotate mode order across twelve repetitions and save every time sample. This
+comparison includes construction and Pareto, but not independent replay.
