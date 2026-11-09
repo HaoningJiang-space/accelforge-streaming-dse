@@ -99,3 +99,37 @@ Predictions in [PROTOCOL.md](PROTOCOL.md) were committed before these runs
   frontier to the cross graph, so they still need one graph search.
 - All values are this fork's FFM mapspace on the abstract Snowcat, not an
   independent proof; each case took 15–17 s.
+
+## FFN training step on upstream FFM
+
+`ffn_train.yaml` is one FFN layer: forward, backward and both weight gradients.
+X (H = X·W1 vs dW1 = Xᵀ·dH) and Z (Y = Z·W2 vs dW2 = Zᵀ·dY) are cross pairs.
+
+Two upstream modeling issues had to be handled first:
+
+- **Shared graph inputs.** FFM shares only intermediates between einsums.
+  A graph input read by two einsums is fetched by each. In the minimal case
+  `U = X·C, V = X·D`, the unlimited-buffer minimum is 96 B instead of 80 B. Wrapping
+  the input in a copy einsum (as upstream's GPT workload does for `I`) gives 80 B.
+  Without copies the FFN minimum is 384 B; with copies it reaches the algorithmic 256 B.
+- **Detailed re-evaluation crash.** With copies, X and dY become cross-index
+  shared intermediates. The join completes, but FFM's post-join detailed
+  evaluation crashes rebuilding mapping trees (`Nested._merge`). Running with
+  `eval_in_detail=False` returns the joined frontier. On `shared_input_copy`,
+  joined and detailed values agree row for row; the FFN values are not replayed.
+  The cross diamond `Y = U∘V` also joins this way and reaches the 80 B minimum at
+  37 B, versus 25 B for the same-index diamond, so with a join the plateau differs.
+
+Frozen predictions (PROTOCOL.md) for two held-out shapes, from the single-nest
+resident sets R_m = 4·D·F (weights and gradients) and R_f = 4·M·D (activations
+and their gradients):
+
+| Case | M·D·F | R | Plateau | P5 reaches minimum | P6 plateau in [R, 1.25R] |
+| --- | --- | ---: | ---: | --- | --- |
+| F1 token-heavy | 16·4·8 | 128 (R_m) | 147 B | pass (384 B) | pass (≤ 160) |
+| F2 hidden-heavy | 4·4·16 | 64 (R_f) | 81 B | pass (320 B) | **miss by 1 B** (> 80) |
+
+P7 (which resident set) is only indirectly supported: each plateau is below
+the other set's size (256 B in both cases). F1's plateau equals the M=8
+calibration's 147 B, consistent with weight-resident streaming being
+independent of token count. Each run took about 6 minutes with one worker.
