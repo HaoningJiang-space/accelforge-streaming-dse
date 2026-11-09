@@ -18,8 +18,8 @@ def s_of(points, q):
 
 def delta(same, cross):
     qs = sorted({t - same[-1][1] for _, t in same} | {t - cross[-1][1] for _, t in cross})
-    q_lo = max(same[0][1] - same[-1][1], cross[0][1] - cross[-1][1])
-    return [(q, s_of(cross, q) - s_of(same, q), s_of(same, q)) for q in qs if q >= q_lo]
+    # Every q >= 0 is reachable (the plateau has zero extra traffic).
+    return [(q, s_of(cross, q) - s_of(same, q), s_of(same, q)) for q in qs]
 
 
 def sign(ds):
