@@ -7,6 +7,7 @@ each group opens one loop over a rank variable t.
   slice granularity) for the group, otherwise it would be refetched or spilled.
 - A tensor touched by two or more groups at this level stays whole from its
   first to its last group, for the same reason.
+- The loop index must be iterated by every einsum in the group (no recomputation).
 - Recursion ends when every tensor in a group is a scalar; each remaining
   scalar that is not already held costs one element.
 Peak = max over groups of (whole tensors live across groups + held tensors of
@@ -41,16 +42,16 @@ class Graph:
         return {v for op in ops for dims in self.access[op].values() for v in dims}
 
 
-def plateau(graph):
-    # Rank variables are renamed per einsum in AccelForge, but a tensor's dimension
-    # identity is what matters: we key slicing by tensor dimension names.
+def plateau(graph, witness=False):
+    """Minimum peak; with witness=True also return the nest that attains it."""
+    # Slicing is keyed by tensor dimension names (I, J, K, L or M, D, F, E).
     @lru_cache(maxsize=None)
     def peak(ops, sliced, external):
         live = graph.tensors(ops) - external
         unsliced = {v for t in live for v in graph.dims(t) if v not in sliced}
         if not unsliced:
-            return len(live)
-        best = float('inf')
+            return len(live), ('scalars', tuple(sorted(live)))
+        best = (float('inf'), None)
         n = len(ops)
         for mask in range(1 << (n - 1)):
             groups, start = [], 0
@@ -65,27 +66,46 @@ def plateau(graph):
                     first, last = span.get(t, (g, g))
                     span[t] = (min(first, g), max(last, g))
             shared = {t for t, (a, b) in span.items() if b > a}
-            worst = 0
+            worst, parts = 0, []
             for g, group in enumerate(groups):
-                across = sum(graph.size(t, sliced) for t in shared if span[t][0] <= g <= span[t][1])
+                across = {t: graph.size(t, sliced) for t in shared if span[t][0] <= g <= span[t][1]}
                 inside = graph.tensors(group) - external - shared
-                choices = {v for t in inside | (graph.tensors(group) & shared)
-                           for v in graph.dims(t) if v not in sliced}
-                group_best = float('inf')
-                if not choices:
-                    group_best = len(inside)
-                for v in choices:
+                # A loop may only be opened over an index every einsum in the group
+                # iterates; otherwise an einsum would be recomputed per iteration.
+                choices = set.intersection(*(graph.rank_vars((op,)) for op in group)) - sliced
+                choices &= {v for t in inside | (graph.tensors(group) & shared) for v in graph.dims(t)}
+                group_best = (float('inf'), None)
+                if not {v for t in graph.tensors(group) - external for v in graph.dims(t)} - sliced:
+                    group_best = (len(inside), ('scalars', tuple(sorted(inside))))
+                for v in sorted(choices):
                     held = {t for t in inside if v not in graph.dims(t)}
-                    cost = sum(graph.size(t, sliced) for t in held)
-                    cost += peak(group, sliced | {v}, external | shared | frozenset(held))
-                    group_best = min(group_best, cost)
-                worst = max(worst, across + group_best)
-                if worst >= best:
+                    inner = peak(group, sliced | {v}, external | shared | frozenset(held))
+                    cost = sum(graph.size(t, sliced) for t in held) + inner[0]
+                    if cost < group_best[0]:
+                        group_best = (cost, ('loop', v, {t: graph.size(t, sliced) for t in sorted(held)}, inner[1]))
+                worst = max(worst, sum(across.values()) + group_best[0])
+                parts.append((group, across, group_best))
+                if worst >= best[0]:
                     break
-            best = min(best, worst)
+            if worst < best[0]:
+                best = (worst, ('groups', parts))
         return best
 
-    return peak(graph.ops, frozenset(), frozenset())
+    value, nest = peak(graph.ops, frozenset(), frozenset())
+    return (value, nest) if witness else value
+
+
+def show(nest, indent=0):
+    pad = ' ' * indent
+    if nest[0] == 'scalars':
+        print(pad + 'scalars', nest[1])
+    elif nest[0] == 'loop':
+        print(pad + f'loop {nest[1]}, held {nest[2]}')
+        show(nest[3], indent + 2)
+    else:
+        for group, across, (cost, inner) in nest[1]:
+            print(pad + f'group {group}, kept across groups {across}, cost {cost}')
+            show(inner, indent + 2)
 
 
 def coupling(ni, nj, nk, nl, cross):
@@ -117,16 +137,25 @@ def ffn(m, d, f):
 
 
 if __name__ == '__main__':
-    import sys
-    for label, graph, measured in [
-        ('square n=4 same', coupling(4, 4, 4, 4, False), 21),
-        ('square n=8 cross', coupling(8, 8, 8, 8, True), 73),
-        ('square n=16 same', coupling(16, 16, 16, 16, False), 273),
-        ('T2 64,8,8,8 same', coupling(64, 8, 8, 8, False), 201),
-        ('T2 64,8,8,8 cross', coupling(64, 8, 8, 8, True), 201),
-        ('T3 8,32,32,32 cross', coupling(8, 32, 32, 32, True), 265),
-        ('FFN M8 D4 F8', ffn(8, 4, 8), 147),
-        ('FFN M16 D4 F8', ffn(16, 4, 8), 147),
-        ('FFN M4 D4 F16', ffn(4, 4, 16), 81),
-    ]:
-        print(f'{label:22s} model {plateau(graph):6} measured {measured}', flush=True)
+    # (label, graph, measured FFM plateau, role). Calibration points were seen
+    # before the model was written; held-out points were frozen in PROTOCOL.md.
+    cases = [
+        ('square n=4 same', coupling(4, 4, 4, 4, False), 21, 'calibration'),
+        ('square n=8 cross', coupling(8, 8, 8, 8, True), 73, 'calibration'),
+        ('square n=16 same', coupling(16, 16, 16, 16, False), 273, 'calibration'),
+        ('T2 64,8,8,8 same', coupling(64, 8, 8, 8, False), 201, 'calibration'),
+        ('T2 64,8,8,8 cross', coupling(64, 8, 8, 8, True), 201, 'calibration'),
+        ('T3 8,32,32,32 cross', coupling(8, 32, 32, 32, True), 265, 'calibration'),
+        ('FFN M8 D4 F8', ffn(8, 4, 8), 147, 'calibration'),
+        ('FFN M16 D4 F8', ffn(16, 4, 8), 147, 'calibration'),
+        ('FFN M4 D4 F16', ffn(4, 4, 16), 81, 'calibration'),
+        ('C1 16,4,32,8 same', coupling(16, 4, 32, 8, False), 337, 'held-out'),
+        ('C1 16,4,32,8 cross', coupling(16, 4, 32, 8, True), 337, 'held-out'),
+        ('C2 8,16,4,32 same', coupling(8, 16, 4, 32, False), 37, 'held-out'),
+        ('C2 8,16,4,32 cross', coupling(8, 16, 4, 32, True), 37, 'held-out'),
+        ('F3 FFN M8 D2 F16', ffn(8, 2, 16), 75, 'held-out'),
+        ('F4 FFN M16 D8 F4', ffn(16, 8, 4), 153, 'held-out'),
+    ]
+    for label, graph, measured, role in cases:
+        value = plateau(graph)
+        print(f'{label:22s} {role:11s} model {value:5} FFM {measured:5} FFM-model {measured - value:+d}', flush=True)

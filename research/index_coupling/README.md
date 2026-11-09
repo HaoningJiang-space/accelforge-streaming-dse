@@ -133,3 +133,28 @@ P7 (which resident set) is only indirectly supported: each plateau is below
 the other set's size (256 B in both cases). F1's plateau equals the M=8
 calibration's 147 B, consistent with weight-resident streaming being
 independent of token count. Each run took about 6 minutes with one worker.
+
+## Search-free nest model
+
+`nest_model.py` predicts the plateau (minimum buffer with zero extra DRAM
+traffic) without mapping search, from recursive loop nests: a tensor that lacks
+the current loop index, or is used by several sibling groups, stays whole; a
+loop must be iterated by every einsum in its group; copies are aliases.
+Each prediction takes well under a second.
+
+| Set | Points | Exact | Within 1 B | Worse |
+| --- | ---: | ---: | ---: | --- |
+| Calibration (seen before writing the model) | 9 | 7 | 9 | — |
+| Held-out C1, C2 (coupling) | 4 | 4 | 4 | — |
+| Held-out F3, F4 (FFN training step) | 2 | 0 | 1 | F4: FFM 153 vs model 149 |
+
+Frozen P8 (exact) passes 4 of 6 held-out points; P8′ (within 2 B) passes 5 of
+6. Where FFM is 1 B below the model, FFM saves one scalar the model counts.
+F4 is the opposite: the model's best nest (printed by
+`plateau(ffn(16, 8, 4), witness=True)`) looks legal, with no recomputation and
+every tensor read once, but FFM needs 4 B more. Its cause is unresolved because
+no-detail FFM results carry no mapping witness; see CODEX_REVIEW.md item 2.
+
+The first version of the model let an einsum sit inside a loop over an index
+it does not iterate, i.e. recompute it. That gave the same F4 value of 149 and
+was fixed; no other prediction changed. Full table: `results/nest_scores.txt`.
