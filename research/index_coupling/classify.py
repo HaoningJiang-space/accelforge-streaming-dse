@@ -1,4 +1,7 @@
-"""Run P11-P13 (PROTOCOL.md): write-through switch and chain view."""
+"""Run P11-P13 (PROTOCOL.md): write-through switch and chain view.
+
+Version 2: scores against Q_FFM(C) and uses the corrected chain view.
+"""
 import json
 import sys
 import time
@@ -32,5 +35,9 @@ if __name__ == '__main__':
         print(json.dumps({
             'case': name, 'seconds': round(time.time() - t0, 1), 'ffm': ffm,
             'graph': pts(on), 'no_write_through': pts(off), 'chain': pts(chain),
-            'vs_ffm': [[c, t, at(c, on) - t, at(c, off) - t, at(c, chain) - t] for c, t in ffm],
+            # Q_FFM(C) = best saved FFM traffic within capacity C (the archive keeps
+            # dominated records at equal capacity). Columns: C, Q_FFM, then
+            # graph, no-write-through and chain minus Q_FFM.
+            'vs_ffm_best': [[c, at(c, ffm), at(c, on) - at(c, ffm), at(c, off) - at(c, ffm),
+                             at(c, chain) - at(c, ffm)] for c in sorted({c for c, _ in ffm})],
         }), flush=True)

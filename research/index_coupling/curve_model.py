@@ -11,6 +11,8 @@ be left out of the buffer and pay DRAM traffic:
   through DRAM: an intermediate is written once and read by each consuming group;
   a graph input is read once per group.
 - Loops may be split by powers of two; inner levels see the tile extent.
+- written: intermediates whose single DRAM write the caller charges; passing
+  them via DRAM then costs only the reads.
 - write_through=False forbids an intermediate from both feeding a consumer in its
   producer's group on chip and going to DRAM for another group.
 Compulsory traffic (graph inputs read once, graph outputs written once) is added
@@ -78,7 +80,8 @@ def combine_max_sum(a, b, max_capacity=float('inf'), grid=None):
     return pareto(out, grid=grid)
 
 
-def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_through=True):
+def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_through=True,
+          written=frozenset()):
     # Points above max_capacity are dropped in every subproblem: capacities only grow
     # when subresults are combined, so the curve up to max_capacity is unchanged.
     dims_of = {}
@@ -131,7 +134,9 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                     gs = users[t]
                     writers = [g for g in gs if any(output_of(op) == t for op in groups[g])]
                     if writers and t in consumed:
-                        extra += size(t, ext) * (1 + len(gs) - len(writers))
+                        # The write is skipped for tensors whose one DRAM write the
+                        # caller charges separately (chain_view.py).
+                        extra += size(t, ext) * ((t not in written) + len(gs) - len(writers))
                     elif writers:
                         extra += 2 * size(t, ext) * (len(writers) - 1)
                     else:
