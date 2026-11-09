@@ -92,3 +92,59 @@ communication bounds and their tilings (Christ, Demmel et al.; Dinh and
 Demmel), and fused-loop retention models (LoopTree). Our angle is comparative:
 how input/output roles on a DAG's index structure change S(q), and what that
 implies for buffer sizing and mapper mapspaces (FFM's sharing gaps).
+
+## 6. Obligations per axis, and a proved bound on the coupling cost
+
+**Obligations.** Splitting a fused group along v into T trips makes every tensor
+lacking v an obligation: keep its tile (capacity) or revisit it, at
+(T-1)|t| for an input and 2(T-1)|t| for a partial sum. Per byte retained, a
+partial sum saves twice what an input saves, so capacity goes to partial sums
+first. For the fork (X has axes i, k):
+
+| Outer axis | same | cross |
+| --- | --- | --- |
+| i | B, C, D (all inputs) | B, C inputs; V partial sum |
+| k | A input; U, V partial sums | A, D inputs; U partial sum |
+
+Each matmul consumer of X contributes exactly one partial-sum obligation (on the
+axis it contracts) and one input obligation (on its other axis). The multiset is
+the same for both graphs; coupling only decides how it is distributed over the
+axes. Same concentrates both partial sums on k and leaves i input-only; cross
+puts one on each axis. The outer loop picks the cheaper axis, so concentration
+helps. Unretained single-split cost per extra trip: same min(JK+2KL, IJ+4IL),
+cross min(JK+3KL, IJ+3IL).
+
+**Derived, not fitted.** To match same's traffic, cross either keeps the
+exposed partial sum whole (|V| = KL, which is IL when I = K) or keeps half an X
+strip instead (IK/2 with a two-way power-of-two split). With I = K this is
+I·min(L, I/2), the formula P15 had fitted; its small misses come from inner
+levels.
+
+**Proposition (recursive model, any shape, write-through on or off).**
+
+    S_same(q) - IL  <=  S_cross(q)  <=  S_same(q) + KL   for every q.
+
+Proof sketch. Take any same construction m and map it to cross by the D/V swap
+(ROLE_SYMMETRY_AND_SYSTEMS_CASE.md). In the image, choose "keep" for cross's V
+(K x L) at the outermost level where it lacks the loop variable. Its revisits
+vanish, so traffic is Q_same(m) - B_KL(m) - B_IL(m) <= Q_same(m); V is external
+inside, so the peak grows by at most one V tile, at most KL. Symmetrically,
+from cross to same keeping same's V (I x L). So the capacity cost of a coupling
+is bounded by the size of the accumulator it exposes.
+
+**Checked on all 287 swept shapes** (exploratory; the bound was written after
+the sweeps): max dS <= min(KL, IK/2) and min dS >= -min(IL, IK/2) hold in all
+287. The proved part is the KL / IL bound; the IK/2 alternative is a
+construction, not proved in general. The upper bound is attained exactly in
+174 shapes (11 more within 5%); the lower one in 88 of the 194 shapes where
+cross is better somewhere. Where the first-split costs above favour cross,
+cross is better somewhere in 95 of 96 shapes; when they favour same, cross
+still wins somewhere in 99 of 191, so this indicator is sufficient, not
+necessary.
+
+**General form, for any fused group.** For each shared axis v, the obligation
+set is the tensors lacking v, with weight 2 for outputs contracted over v and
+1 for inputs not indexed by v. The index relations across operators fix how
+this multiset spreads over axes; buffer capacity buys partial sums first, then
+inputs; and the price of an unfavourable spread is at most the size of the
+partial sums it exposes on the best axis.
