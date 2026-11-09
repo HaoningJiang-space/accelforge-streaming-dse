@@ -144,3 +144,30 @@ FFM's 288 B at capacity 6 for n4 cross; both chain curves are identical).
 - Measurement, no prediction: chain-view minus graph-view traffic at each
   capacity for coupling and FFN M8 D4 F8. At unbounded capacity the gap is by
   construction the extra reads and writes of multi-consumer tensors.
+
+# Amendment to P11's scope (after the union-breakpoint check)
+
+P11 passed as frozen (scored at FFM's saved capacities). Scored on the union of
+FFM and model breakpoints, the no-write-through model is still below FFM's
+archived best at 19 non-attention breakpoints (n8/n16/T1/T3 cross, T2/C1/C2
+same and cross), all between FFM's saved capacities. So write-through does not
+explain every coupling gap; the README claim that it did is withdrawn.
+
+# FFM-like sharing, frozen before running (P14)
+
+Witnesses for n8 cross and T2 same at 18 B (seen before freezing) run EX alone,
+send X via DRAM, and tile EU and EV jointly so one fetched X tile serves both.
+Hypothesis: FFM shares a tensor between einsums only through its backing
+reservation, so a DRAM-backed tensor is fetched separately by each consumer.
+`ffm_like.py` restricts the curve model accordingly (multi-consumer
+intermediates stay on chip for all consumers or are fully materialized;
+multi-consumer graph inputs are read per consumer). Calibration: n4 same/cross
+match FFM exactly on the union of breakpoints.
+
+- **P14.** On the union of breakpoints, the FFM-like curve equals FFM's archived
+  best traffic at every capacity for the other 14 coupling cases (n8 to C2,
+  same and cross).
+- **P14-FFN.** Same for FFN M8 D4 F8 (copies as aliases), allowing the known
+  1 B plateau offset (147 vs 148).
+- **P14′.** For the three attention cases (no multi-consumer tensor) the
+  FFM-like curve equals the graph curve, so their gaps remain unexplained.

@@ -13,6 +13,7 @@ be left out of the buffer and pay DRAM traffic:
 - Loops may be split by powers of two; inner levels see the tile extent.
 - written: intermediates whose single DRAM write the caller charges; passing
   them via DRAM then costs only the reads.
+- split_shared=False forbids a multi-consumer intermediate from going via DRAM.
 - write_through=False forbids an intermediate from both feeding a consumer in its
   producer's group on chip and going to DRAM for another group.
 Compulsory traffic (graph inputs read once, graph outputs written once) is added
@@ -81,7 +82,7 @@ def combine_max_sum(a, b, max_capacity=float('inf'), grid=None):
 
 
 def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_through=True,
-          written=frozenset()):
+          written=frozenset(), split_shared=True):
     # Points above max_capacity are dropped in every subproblem: capacities only grow
     # when subresults are combined, so the curve up to max_capacity is unchanged.
     dims_of = {}
@@ -91,6 +92,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
     produced = {t for op in graph.ops for t in [list(graph.access[op])[-1]]}
     consumed = {t for op in graph.ops for t in list(graph.access[op])[:-1]}
     names = sorted(graph.sizes)
+    n_consumers = {t: sum(t in graph.access[op] and list(graph.access[op])[-1] != t for op in graph.ops)
+                   for t in dims_of}
 
     def size(t, ext):
         return prod(ext[names.index(v)] for v in dims_of[t])
@@ -119,6 +122,11 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
             shared = sorted(t for t, gs in users.items() if len(gs) > 1)
             for keep_bits in product((True, False), repeat=len(shared)):
                 kept = {t for t, k in zip(shared, keep_bits) if k}
+                if not split_shared and any(not k and t in produced and n_consumers[t] > 1
+                                            for t, k in zip(shared, keep_bits)):
+                    # A multi-consumer intermediate either stays on chip for all its
+                    # consumers or is fully materialized by rewriting (ffm_like.py).
+                    continue
                 if not write_through and any(
                         not k and any(output_of(op) == t for op in groups[g]) and
                         any(t in graph.access[op] and output_of(op) != t for op in groups[g])
