@@ -1,0 +1,12 @@
+GPT-3 6.7B FFN training step (D=4096, F=16384), bf16
+  tokens    512: plateau      16.0 MiB  (outer loop F, resident ['X', 'Y', 'dX', 'dY'])
+  tokens   2048: plateau      64.0 MiB  (outer loop F, resident ['X', 'Y', 'dX', 'dY'])
+  tokens   8192: plateau     256.0 MiB  (outer loop F, resident ['X', 'Y', 'dX', 'dY'])
+  tokens  16384: plateau     512.0 MiB  (outer loop F, resident ['X', 'Y', 'dX', 'dY'])
+  tokens  32768: plateau     512.0 MiB  (outer loop M, resident ['W1', 'W2', 'dW1', 'dW2'])
+Attention core, one head (E=F=128), bf16
+  prefill 2048                  : plateau     1.000 MiB  (outer loop M, resident ['K', 'V'])
+  prefill 8192                  : plateau     4.000 MiB  (outer loop M, resident ['K', 'V'])
+  decode 1 query, 2048 keys     : plateau     0.000 MiB  (outer loop P, resident ['O', 'Q'])
+  decode 1 query, 32768 keys    : plateau     0.000 MiB  (outer loop P, resident ['O', 'Q'])
+  decode 64 queries, 32768 keys : plateau     0.031 MiB  (outer loop P, resident ['O', 'Q'])

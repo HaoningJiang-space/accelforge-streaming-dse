@@ -174,3 +174,28 @@ DRAM breakdown (X read twice, 32 B, total 96 B; with the copy X_in is read once,
 The first version of the model let an einsum sit inside a loop over an index
 it does not iterate, i.e. recompute it. That gave the same F4 value of 149 and
 was fixed; no other prediction changed. Full table: `results/nest_scores.txt`.
+
+## Attention core and real-size application
+
+Frozen attention-core predictions (PROTOCOL.md, P10/P10′) all match FFM
+exactly, with FFM's detailed evaluation enabled: 74, 56 and 56 B for A1–A3
+(`results/attention_heldout.jsonl`). The model's nests are the FlashAttention
+dataflow when queries are many (query-outer, K and V resident) and a key-outer
+dataflow with Q and O resident when keys dominate.
+
+`real_scale.py` applies the model at GPT-3 6.7B sizes (bf16;
+`results/real_scale.txt`). These numbers are model outputs only; FFM cannot
+check them at this size.
+
+| Workload | Plateau (zero extra DRAM traffic) | Resident set |
+| --- | ---: | --- |
+| FFN training step, 2,048 tokens | 64 MiB | X, Y, dY, dX (loop over FFN hidden) |
+| FFN training step, 16,384 tokens | 512 MiB | same (tie with weights) |
+| FFN training step, 32,768 tokens | 512 MiB | W1, W2, dW1, dW2 (loop over tokens) |
+| Attention prefill, 2,048 tokens, one head | 1 MiB | K, V |
+| Attention decode, 1 query, 32,768 keys | < 1 KiB | Q, O |
+
+The resident set switches at tokens = FFN hidden size (min(4·M·D, 4·D·F)) for
+the FFN step, and at queries = keys for attention. Limits: only the zero-extra-
+traffic point is modeled, not the capacity-traffic curve below it; online
+softmax statistics, heads, projections and GQA are omitted.
