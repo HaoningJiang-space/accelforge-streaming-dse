@@ -32,8 +32,8 @@ def spec_for(case, n):
                                  jinja_parse_data=dict(N=n, COPY=case == 'shared_input_copy'))
     if case.startswith('ffn_'):
         return af.Spec.from_yaml(af.examples.arches.snowcat, ROOT / 'ffn_train.yaml',
-                                 jinja_parse_data=dict(M=2 * n, D=n, F=2 * n,
-                                                       FORWARD_WGRAD_ONLY=case == 'ffn_fwd_wgrad'))
+                                 jinja_parse_data=dict(M=2 * n, D=n, F=2 * n, COPY=case.endswith('_copy'),
+                                                       FORWARD_WGRAD_ONLY=case.startswith('ffn_fwd_wgrad')))
     cross, join = {'same': (False, False), 'cross': (True, False), 'same_join': (False, True),
                    'cross_join': (True, True)}[case]
     return af.Spec.from_yaml(af.examples.arches.snowcat, ROOT / 'coupling.yaml',
@@ -53,7 +53,7 @@ def frontier(results, glb_bits):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('cases', nargs='+', choices=['same', 'cross', 'same_join', 'cross_join', 'gpt_scaled', 'ffn_full', 'ffn_fwd_wgrad', 'shared_input', 'shared_input_copy'])
+    parser.add_argument('cases', nargs='+', choices=['same', 'cross', 'same_join', 'cross_join', 'gpt_scaled', 'ffn_full', 'ffn_fwd_wgrad', 'shared_input', 'shared_input_copy', 'ffn_full_copy'])
     parser.add_argument('--n', type=int, default=4)
     parser.add_argument('--actions', action='store_true', help='also record per-tensor DRAM actions at minimum traffic')
     args = parser.parse_args()

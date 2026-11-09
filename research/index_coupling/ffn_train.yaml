@@ -7,10 +7,20 @@
 # reconvergent X -> H -> dH -> dW1 path.
 {% set M = M | default(8) %}{% set D = D | default(4) %}{% set F = F | default(8) %}
 {% set FORWARD_WGRAD_ONLY = FORWARD_WGRAD_ONLY | default(False) %}
+{% set COPY = COPY | default(False) %}
+# COPY wraps every multi-consumer graph input in a copy einsum. FFM shares only
+# intermediates between einsums; without the copy each consumer rereads the input.
 workload:
   rank_sizes: {M: {{M}}, D: {{D}}, F: {{F}}, E: {{D}}}
   bits_per_value: {All: 8}
   einsums:
+  {% if COPY %}
+  {% for t, proj in [('X', '[m, d]'), ('W1', '[d, f]'), ('W2', '[f, e]'), ('dY', '[m, e]')] %}
+  {% if not (FORWARD_WGRAD_ONLY and t == 'W1') %}
+  - {name: Copy{{t}}, is_copy_operation: True, tensor_accesses: [{name: {{t}}_in, projection: {{proj}}}, {name: {{t}}, projection: {{proj}}, output: True}]}
+  {% endif %}
+  {% endfor %}
+  {% endif %}
   - name: EH
     tensor_accesses:
     - {name: X, projection: [m, d]}
