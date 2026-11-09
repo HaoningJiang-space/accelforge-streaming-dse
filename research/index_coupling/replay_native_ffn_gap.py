@@ -5,6 +5,7 @@ checkout on PYTHONPATH. One worker; set memory/time limits in the launcher.
 Search remains ENERGY | RESOURCE_USAGE, with detailed metrics only afterward.
 """
 from copy import deepcopy
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -21,7 +22,26 @@ def emit(record):
     print(json.dumps(record), flush=True)
 
 
+def node_summary(node):
+    result = {'type': type(node).__name__}
+    for key in ('rank_variable', 'tile_shape', 'initial_tile_shape',
+                'calculated_n_iterations', 'component', 'resource', 'tensors',
+                'purposes', 'einsum'):
+        try:
+            value = getattr(node, key)
+        except (AttributeError, ValueError, TypeError):
+            continue
+        result[key] = value if value is None or isinstance(value, (str, int, float, bool)) else str(value)
+    if hasattr(node, 'nodes'):
+        result['nodes'] = [node_summary(n) for n in node.nodes]
+    return result
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--trace-merge', action='store_true', help='observe original merge calls, without changing their result')
+    parser.add_argument('--save-sources', help='optional local pickle of selected native source rows, for repeatable diagnosis')
+    args = parser.parse_args()
     start = perf_counter()
     upstream = Path(af.__file__).resolve().parent.parent
     research = Path(__file__).resolve().parents[2]
@@ -40,6 +60,30 @@ def main():
     emit({'kind': 'search', 'seconds': perf_counter()-start,
           'rows': len(results.data), 'frontier': frontier(results, bits)})
     reserve = next(c for c in results.data.columns if c.startswith('reservation<SEP>GlobalBuffer<SEP>'))
+    from accelforge.frontend.mapping import Nested, Compute
+    original_merge = Nested._merge
+    merge_trace = []
+
+    def observed_merge(left, right, n_shared_loops):
+        record = {'left_ops': [str(n.einsum) for n in left.get_nodes_of_type(Compute)],
+                  'right_ops': [str(n.einsum) for n in right.get_nodes_of_type(Compute)],
+                  'requested_shared_loops': n_shared_loops,
+                  'adjacent_shared_loops': left._get_n_shared_loops(right),
+                  'left_nodes_before': node_summary(left),
+                  'right_nodes_before': node_summary(right)}
+        merge_trace.append(record)
+        try:
+            merged = original_merge(left, right, n_shared_loops)
+        except Exception as error:
+            record['status'] = 'failed'
+            record['error'] = type(error).__name__+': '+str(error)
+            raise
+        record['status'] = 'merged'
+        return merged
+
+    if args.trace_merge:
+        Nested._merge = observed_merge
+    selected_sources = []
     for budget in (80, 147):
         # Match the archived frontier's three-decimal capacity contract. Resource
         # fractions are float32; a nominal integer can expand to 147.0000... B.
@@ -48,6 +92,8 @@ def main():
                       if round(float(row[reserve])*bits/8, 3) <= budget]
         traffic, capacity, index = min(candidates)
         row = results.data.iloc[index]
+        selected_sources.append({'capacity_budget': budget, 'row': row})
+        merge_trace.clear()
         record = {'kind': 'native_replay', 'capacity_budget': budget,
                   'source_index': index, 'joined_peak': capacity, 'joined_traffic': traffic,
                   'joined_peak_raw': float(row[reserve])*bits/8,
@@ -76,7 +122,23 @@ def main():
             record['status'] = 'failed'
             record['phase'] = phase
             record['error'] = (type(error).__name__+': '+str(error)).replace(str(upstream), '<upstream>').replace(str(research), '<research>')[:1500]
+        if args.trace_merge:
+            record['merge_trace'] = deepcopy(merge_trace)
         emit(record)
+    Nested._merge = original_merge
+    if args.save_sources:
+        try:
+            import cloudpickle
+            payload = {'spec': spec, 'sources': selected_sources,
+                       'flattened_arches': results.flattened_arches,
+                       'evaluated_specs': results.evaluated_specs}
+            data = cloudpickle.dumps(payload)
+            Path(args.save_sources).write_bytes(data)
+            emit({'kind': 'source_snapshot', 'status': 'saved', 'bytes': len(data),
+                  'sha256': hashlib.sha256(data).hexdigest()})
+        except Exception as error:
+            emit({'kind': 'source_snapshot', 'status': 'failed',
+                  'error': type(error).__name__+': '+str(error)})
     emit({'kind': 'done', 'seconds': perf_counter()-start})
 
 
