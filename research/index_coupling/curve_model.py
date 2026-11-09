@@ -17,7 +17,7 @@ The result is a Pareto set over this restricted model, not a lower bound.
 """
 from functools import lru_cache
 from itertools import product
-from math import prod
+from math import floor, log, prod
 
 
 _CAT = object()  # witness concatenation node; flattened once at the end
@@ -38,19 +38,28 @@ def flatten(witness):
     return tuple(out)
 
 
-def pareto(points, max_capacity=float('inf')):
+def pareto(points, max_capacity=float('inf'), grid=None):
     # points: (capacity, traffic, witness); keep the first witness per Pareto point.
+    # With grid g > 1, only the lowest-traffic point per capacity bucket [g^k, g^(k+1))
+    # is kept: every dropped point has a kept one with traffic no higher and capacity
+    # less than g times larger. Kept points stay exact and executable.
     out, best = [], float('inf')
     for point in sorted(points, key=lambda p: (p[0], p[1])):
         if point[0] > max_capacity:
             break
         if point[1] < best:
+            if grid and out and bucket(out[-1][0], grid) == bucket(point[0], grid):
+                out.pop()
             out.append(point)
             best = point[1]
     return tuple(out)
 
 
-def combine_max_sum(a, b, max_capacity=float('inf')):
+def bucket(capacity, grid):
+    return floor(log(capacity, grid)) if capacity > 0 else -1
+
+
+def combine_max_sum(a, b, max_capacity=float('inf'), grid=None):
     # a, b are Pareto staircases (capacity ascending, traffic descending). The best
     # pair within capacity c is the staircase value of each at c, so one sweep over
     # the union of capacities replaces the |a|·|b| cross product.
@@ -64,10 +73,10 @@ def combine_max_sum(a, b, max_capacity=float('inf')):
             j += 1
         if i >= 0 and j >= 0:
             out.append((max(a[i][0], b[j][0]), a[i][1] + b[j][1], cat(a[i][2], b[j][2])))
-    return pareto(out)
+    return pareto(out, grid=grid)
 
 
-def curve(graph, witness=False, max_capacity=float('inf')):
+def curve(graph, witness=False, max_capacity=float('inf'), grid=None):
     # Points above max_capacity are dropped in every subproblem: capacities only grow
     # when subresults are combined, so the curve up to max_capacity is unchanged.
     dims_of = {}
@@ -122,11 +131,11 @@ def curve(graph, witness=False, max_capacity=float('inf')):
                 for g, group in enumerate(groups):
                     across = sum(size(t, ext) for t in kept if min(users[t]) <= g <= max(users[t]))
                     inner = group_curve(group, ext, external | frozenset(kept))
-                    level = combine_max_sum(level, pareto(((across + c, t, w) for c, t, w in inner), max_capacity), max_capacity)
+                    level = combine_max_sum(level, pareto(((across + c, t, w) for c, t, w in inner), max_capacity), max_capacity, grid)
                     if not level:
                         break
                 results.extend(level)
-        return pareto(results, max_capacity)
+        return pareto(results, max_capacity, grid)
 
     @lru_cache(maxsize=None)
     def group_curve(group, ext, external):
@@ -160,7 +169,7 @@ def curve(graph, witness=False, max_capacity=float('inf')):
                                  'refetched', tuple(t for t, k in zip(lacking, keep_bits) if not k)),)
                         results.extend((cap + c, extra + trips * t, cat(note, w)) for c, t, w in inner)
                 b //= 2
-        return pareto(results, max_capacity)
+        return pareto(results, max_capacity, grid)
 
     ext0 = tuple(graph.sizes[v] for v in names)
     inputs = consumed - produced
