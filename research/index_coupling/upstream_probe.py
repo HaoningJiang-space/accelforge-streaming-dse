@@ -27,6 +27,10 @@ def spec_for(case, n):
             raise KeyError(f'upstream GPT has no ranks {missing}; available {sorted(sizes)}')
         sizes.update(GPT_SHRINK)
         return spec
+    if case.startswith('ffn_'):
+        return af.Spec.from_yaml(af.examples.arches.snowcat, ROOT / 'ffn_train.yaml',
+                                 jinja_parse_data=dict(M=2 * n, D=n, F=2 * n,
+                                                       FORWARD_WGRAD_ONLY=case == 'ffn_fwd_wgrad'))
     cross, join = {'same': (False, False), 'cross': (True, False), 'same_join': (False, True),
                    'cross_join': (True, True)}[case]
     return af.Spec.from_yaml(af.examples.arches.snowcat, ROOT / 'coupling.yaml',
@@ -46,7 +50,7 @@ def frontier(results, glb_bits):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('cases', nargs='+', choices=['same', 'cross', 'same_join', 'cross_join', 'gpt_scaled'])
+    parser.add_argument('cases', nargs='+', choices=['same', 'cross', 'same_join', 'cross_join', 'gpt_scaled', 'ffn_full', 'ffn_fwd_wgrad'])
     parser.add_argument('--n', type=int, default=4)
     args = parser.parse_args()
     af.set_n_parallel_jobs(1)

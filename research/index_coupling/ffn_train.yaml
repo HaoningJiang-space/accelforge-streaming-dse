@@ -1,0 +1,56 @@
+# One FFN layer training step: forward, backward and weight gradients.
+# Elementwise GELU and its derivative are modeled as copy-like einsums (same data
+# movement, no arithmetic model). dY is a graph input.
+# X is consumed by H = X W1 (contracts d) and dW1 = X^T dH (contracts m): a cross pair.
+# Z is consumed by Y = Z W2 (contracts f) and dW2 = Z^T dY (contracts m): a cross pair.
+# FORWARD_WGRAD_ONLY drops dZ/dH/dX and makes dH an input, which removes the
+# reconvergent X -> H -> dH -> dW1 path.
+{% set M = M | default(8) %}{% set D = D | default(4) %}{% set F = F | default(8) %}
+{% set FORWARD_WGRAD_ONLY = FORWARD_WGRAD_ONLY | default(False) %}
+workload:
+  rank_sizes: {M: {{M}}, D: {{D}}, F: {{F}}, E: {{D}}}
+  bits_per_value: {All: 8}
+  einsums:
+  - name: EH
+    tensor_accesses:
+    - {name: X, projection: [m, d]}
+    - {name: W1, projection: [d, f]}
+    - {name: H, projection: [m, f], output: True}
+  - name: EZ
+    tensor_accesses:
+    - {name: H, projection: [m, f]}
+    - {name: Z, projection: [m, f], output: True}
+  - name: EY
+    tensor_accesses:
+    - {name: Z, projection: [m, f]}
+    - {name: W2, projection: [f, e]}
+    - {name: Y, projection: [m, e], output: True}
+  - name: EdW2
+    tensor_accesses:
+    - {name: Z, projection: [m, f]}
+    - {name: dY, projection: [m, e]}
+    - {name: dW2, projection: [f, e], output: True}
+  {% if not FORWARD_WGRAD_ONLY %}
+  - name: EdZ
+    tensor_accesses:
+    - {name: dY, projection: [m, e]}
+    - {name: W2, projection: [f, e]}
+    - {name: dZ, projection: [m, f], output: True}
+  - name: EdH
+    tensor_accesses:
+    - {name: dZ, projection: [m, f]}
+    - {name: H, projection: [m, f]}
+    - {name: dH, projection: [m, f], output: True}
+  {% endif %}
+  - name: EdW1
+    tensor_accesses:
+    - {name: X, projection: [m, d]}
+    - {name: dH, projection: [m, f]}
+    - {name: dW1, projection: [d, f], output: True}
+  {% if not FORWARD_WGRAD_ONLY %}
+  - name: EdX
+    tensor_accesses:
+    - {name: dH, projection: [m, f]}
+    - {name: W1, projection: [d, f]}
+    - {name: dX, projection: [m, d], output: True}
+  {% endif %}
