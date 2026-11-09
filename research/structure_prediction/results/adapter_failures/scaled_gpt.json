@@ -1,0 +1,232 @@
+{
+  "case": "scaled_gpt",
+  "phase": "structure",
+  "source": {
+    "workload_path": "examples/workloads/gpt3_6.7B.yaml",
+    "parameters": {
+      "N_TOKENS": 2
+    },
+    "rank_overrides": {
+      "D": 4,
+      "G": 4,
+      "J": 4,
+      "H": 1,
+      "E": 4,
+      "F": 4,
+      "C": 16
+    },
+    "workload_sha256": "d35e2372d28158671f0939ef38e36d1b08b7cad58b620e53a41569127bf11e4b"
+  },
+  "tensor_bytes": {
+    "FFA": 32,
+    "QK_softmax": 4,
+    "WV": 16,
+    "WZ": 16,
+    "QK": 4,
+    "Q": 8,
+    "I": 8,
+    "V": 8,
+    "K": 8,
+    "AV": 8,
+    "WFFB": 64,
+    "FFB": 8,
+    "WQ": 16,
+    "WK": 16,
+    "Z": 8,
+    "WFFA": 64,
+    "I_in": 8
+  },
+  "operators": [
+    {
+      "name": "I",
+      "inputs": [
+        "I_in"
+      ],
+      "outputs": [
+        "I"
+      ]
+    },
+    {
+      "name": "V",
+      "inputs": [
+        "I",
+        "WV"
+      ],
+      "outputs": [
+        "V"
+      ]
+    },
+    {
+      "name": "K",
+      "inputs": [
+        "I",
+        "WK"
+      ],
+      "outputs": [
+        "K"
+      ]
+    },
+    {
+      "name": "Q",
+      "inputs": [
+        "I",
+        "WQ"
+      ],
+      "outputs": [
+        "Q"
+      ]
+    },
+    {
+      "name": "QK",
+      "inputs": [
+        "K",
+        "Q"
+      ],
+      "outputs": [
+        "QK"
+      ]
+    },
+    {
+      "name": "QK_softmax",
+      "inputs": [
+        "QK"
+      ],
+      "outputs": [
+        "QK_softmax"
+      ]
+    },
+    {
+      "name": "AV",
+      "inputs": [
+        "QK_softmax",
+        "V"
+      ],
+      "outputs": [
+        "AV"
+      ]
+    },
+    {
+      "name": "Z",
+      "inputs": [
+        "AV",
+        "WZ"
+      ],
+      "outputs": [
+        "Z"
+      ]
+    },
+    {
+      "name": "FFA",
+      "inputs": [
+        "WFFA",
+        "Z"
+      ],
+      "outputs": [
+        "FFA"
+      ]
+    },
+    {
+      "name": "FFB",
+      "inputs": [
+        "FFA",
+        "WFFB"
+      ],
+      "outputs": [
+        "FFB"
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "op": "I",
+      "pass_tensors": [],
+      "pass_bytes": 0,
+      "smallest_operand_bytes": 8
+    },
+    {
+      "op": "V",
+      "pass_tensors": [],
+      "pass_bytes": 0,
+      "smallest_operand_bytes": 8
+    },
+    {
+      "op": "K",
+      "pass_tensors": [
+        "V"
+      ],
+      "pass_bytes": 8,
+      "smallest_operand_bytes": 8
+    },
+    {
+      "op": "Q",
+      "pass_tensors": [
+        "K",
+        "V"
+      ],
+      "pass_bytes": 16,
+      "smallest_operand_bytes": 8
+    },
+    {
+      "op": "QK",
+      "pass_tensors": [
+        "V"
+      ],
+      "pass_bytes": 8,
+      "smallest_operand_bytes": 4
+    },
+    {
+      "op": "QK_softmax",
+      "pass_tensors": [
+        "V"
+      ],
+      "pass_bytes": 8,
+      "smallest_operand_bytes": 4
+    },
+    {
+      "op": "AV",
+      "pass_tensors": [],
+      "pass_bytes": 0,
+      "smallest_operand_bytes": 4
+    },
+    {
+      "op": "Z",
+      "pass_tensors": [],
+      "pass_bytes": 0,
+      "smallest_operand_bytes": 8
+    },
+    {
+      "op": "FFA",
+      "pass_tensors": [],
+      "pass_bytes": 0,
+      "smallest_operand_bytes": 8
+    },
+    {
+      "op": "FFB",
+      "pass_tensors": [],
+      "pass_bytes": 0,
+      "smallest_operand_bytes": 8
+    }
+  ],
+  "envelope_bytes": 296,
+  "predictions": {
+    "P0": {
+      "plateau_bytes": 8,
+      "breakpoint_candidates": [
+        4,
+        8
+      ]
+    },
+    "P1": {
+      "plateau_bytes": 24,
+      "breakpoint_candidates": [
+        4,
+        8,
+        12,
+        16,
+        24
+      ]
+    }
+  },
+  "protocol_sha256": "acdc200dad2dfbca7abd22e606b6d03207d1af1c5ed4571d03dfbeeafaa57010",
+  "local_curves": []
+}

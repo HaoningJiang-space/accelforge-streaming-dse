@@ -1,0 +1,24 @@
+# Unit-cost backing-store bits; zero-cost buffer/compute. One serial compute unit.
+arch:
+  nodes:
+  - !Memory
+    name: MainMemory
+    size: inf
+    leak_power: 0
+    tensors: {keep: ~Intermediates, may_keep: All}
+    actions:
+    - {name: read, energy: 1, latency: 0}
+    - {name: write, energy: 1, latency: 0}
+  - !Memory
+    name: GlobalBuffer
+    size: 8388608
+    leak_power: 0
+    tensors: {keep: All}
+    actions:
+    - {name: read, energy: 0, latency: 0}
+    - {name: write, energy: 0, latency: 0}
+  - !Compute
+    name: MAC
+    leak_power: 0
+    actions:
+    - {name: compute, energy: 0, latency: 0}

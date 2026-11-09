@@ -1,0 +1,1279 @@
+{
+  "case": "held_attention_4_1_4",
+  "phase": "predictions_frozen_before_graph_search",
+  "source": {
+    "workload_path": "research/workloads/attention_qk_av.yaml",
+    "parameters": {
+      "N_TOKENS": 4,
+      "N_HEADS": 1,
+      "D_HEAD": 4
+    },
+    "rank_overrides": {},
+    "workload_sha256": "388f444e084a1b3ce444e94ba4d1d5a7ef785ca9d77082a6e158a2d10c7bdc7d"
+  },
+  "tensor_bytes": {
+    "AV": 16,
+    "QK": 16,
+    "QK_softmax": 16,
+    "Q": 16,
+    "V": 16,
+    "K": 16
+  },
+  "operators": [
+    {
+      "name": "QK",
+      "inputs": [
+        "K",
+        "Q"
+      ],
+      "outputs": [
+        "QK"
+      ]
+    },
+    {
+      "name": "QK_softmax",
+      "inputs": [
+        "QK"
+      ],
+      "outputs": [
+        "QK_softmax"
+      ]
+    },
+    {
+      "name": "AV",
+      "inputs": [
+        "QK_softmax",
+        "V"
+      ],
+      "outputs": [
+        "AV"
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "op": "QK",
+      "pass_tensors": [],
+      "pass_bytes": 0,
+      "smallest_operand_bytes": 16
+    },
+    {
+      "op": "QK_softmax",
+      "pass_tensors": [],
+      "pass_bytes": 0,
+      "smallest_operand_bytes": 16
+    },
+    {
+      "op": "AV",
+      "pass_tensors": [],
+      "pass_bytes": 0,
+      "smallest_operand_bytes": 16
+    }
+  ],
+  "envelope_bytes": 96,
+  "predictions": {
+    "P0": {
+      "plateau_bytes": 16,
+      "breakpoint_candidates": [
+        16
+      ]
+    },
+    "P1": {
+      "plateau_bytes": 16,
+      "breakpoint_candidates": [
+        16
+      ]
+    },
+    "P2": {
+      "plateau_bytes": 21,
+      "breakpoint_candidates": [
+        2,
+        3,
+        4,
+        6,
+        7,
+        11,
+        21
+      ]
+    }
+  },
+  "protocol_sha256": "acdc200dad2dfbca7abd22e606b6d03207d1af1c5ed4571d03dfbeeafaa57010",
+  "local_curves": [
+    {
+      "op": "QK",
+      "points": [
+        {
+          "capacity_bytes": 3,
+          "traffic_bytes": 144.0,
+          "dram_actions_bits": {
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>read": 512.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>write": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>read": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>write": 128.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>read": 512.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>write": 0.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['QK', 'Q', 'K']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK', 'Q', 'K']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "e",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['K', 'Q']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['K', 'Q']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "QK"
+              }
+            ]
+          }
+        },
+        {
+          "capacity_bytes": 4,
+          "traffic_bytes": 112.0,
+          "dram_actions_bits": {
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>read": 512.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>write": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>read": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>write": 128.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>read": 256.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>write": 0.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['QK', 'Q', 'K']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK', 'Q', 'K']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "2",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "e",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['K']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['K']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['Q']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['Q']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "QK"
+              }
+            ]
+          }
+        },
+        {
+          "capacity_bytes": 6,
+          "traffic_bytes": 96.0,
+          "dram_actions_bits": {
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>read": 512.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>write": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>read": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>write": 128.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>read": 128.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>write": 0.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['QK', 'Q', 'K']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK', 'Q', 'K']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['K']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['K']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "e",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['Q']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['Q']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "QK"
+              }
+            ]
+          }
+        },
+        {
+          "capacity_bytes": 7,
+          "traffic_bytes": 80.0,
+          "dram_actions_bits": {
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>read": 256.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>write": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>read": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>write": 128.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>read": 256.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>write": 0.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['QK', 'Q', 'K']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK', 'Q', 'K']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "2",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "2",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "e",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['K']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['K']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['Q']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['Q']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "QK"
+              }
+            ]
+          }
+        },
+        {
+          "capacity_bytes": 11,
+          "traffic_bytes": 64.0,
+          "dram_actions_bits": {
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>read": 256.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>write": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>read": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>write": 128.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>read": 128.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>write": 0.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['QK', 'Q', 'K']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK', 'Q', 'K']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "2",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['K']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['K']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "e",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['Q']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['Q']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "QK"
+              }
+            ]
+          }
+        },
+        {
+          "capacity_bytes": 21,
+          "traffic_bytes": 48.0,
+          "dram_actions_bits": {
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>read": 128.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>Q<SEP>write": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>read": 0.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>QK<SEP>write": 128.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>read": 128.0,
+            "QK<SEP>action<SEP>MainMemory<SEP>K<SEP>write": 0.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['QK', 'Q', 'K']",
+                "persistent": "False"
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['K']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK', 'Q', 'K']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['K']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['Q']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['Q']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "e",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "QK"
+              }
+            ]
+          }
+        }
+      ],
+      "search_seconds": 3.5806082999915816,
+      "replay_seconds": 0.18855229998007417,
+      "stats": {
+        "make_s": 3.569626900018193,
+        "join_s": 0.010920499975327402,
+        "rows_generated": 6,
+        "rows_front": 6
+      }
+    },
+    {
+      "op": "QK_softmax",
+      "points": [
+        {
+          "capacity_bytes": 2,
+          "traffic_bytes": 32.0,
+          "dram_actions_bits": {
+            "QK_softmax<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>read": 0.0,
+            "QK_softmax<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>write": 128.0,
+            "QK_softmax<SEP>action<SEP>MainMemory<SEP>QK<SEP>read": 128.0,
+            "QK_softmax<SEP>action<SEP>MainMemory<SEP>QK<SEP>write": 0.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['QK_softmax', 'QK']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK_softmax', 'QK']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK', 'QK_softmax']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK', 'QK_softmax']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "QK_softmax"
+              }
+            ]
+          }
+        }
+      ],
+      "search_seconds": 0.1044838999514468,
+      "replay_seconds": 0.024862400023266673,
+      "stats": {
+        "make_s": 0.1001055000233464,
+        "join_s": 0.004291100020054728,
+        "rows_generated": 1,
+        "rows_front": 1
+      }
+    },
+    {
+      "op": "AV",
+      "points": [
+        {
+          "capacity_bytes": 3,
+          "traffic_bytes": 144.0,
+          "dram_actions_bits": {
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>read": 512.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>read": 512.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>read": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>write": 128.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['V', 'QK_softmax', 'AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['V', 'QK_softmax', 'AV']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "f",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['AV']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK_softmax', 'V']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK_softmax', 'V']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "AV"
+              }
+            ]
+          }
+        },
+        {
+          "capacity_bytes": 4,
+          "traffic_bytes": 112.0,
+          "dram_actions_bits": {
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>read": 256.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>read": 512.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>read": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>write": 128.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['V', 'QK_softmax', 'AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['V', 'QK_softmax', 'AV']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "f",
+                "tile_shape": "2",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['AV']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK_softmax']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK_softmax']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "f",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['V']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['V']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "AV"
+              }
+            ]
+          }
+        },
+        {
+          "capacity_bytes": 6,
+          "traffic_bytes": 96.0,
+          "dram_actions_bits": {
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>read": 128.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>read": 512.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>read": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>write": 128.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['V', 'QK_softmax', 'AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['V', 'QK_softmax', 'AV']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['AV']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK_softmax']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK_softmax']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "f",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['V']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['V']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "AV"
+              }
+            ]
+          }
+        },
+        {
+          "capacity_bytes": 7,
+          "traffic_bytes": 80.0,
+          "dram_actions_bits": {
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>read": 256.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>read": 256.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>read": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>write": 128.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['V', 'QK_softmax', 'AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['V', 'QK_softmax', 'AV']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "f",
+                "tile_shape": "2",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "2",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['AV']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK_softmax']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK_softmax']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "f",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['V']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['V']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "AV"
+              }
+            ]
+          }
+        },
+        {
+          "capacity_bytes": 11,
+          "traffic_bytes": 64.0,
+          "dram_actions_bits": {
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>read": 128.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>read": 256.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>read": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>write": 128.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['V', 'QK_softmax', 'AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['V', 'QK_softmax', 'AV']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "2",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['AV']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK_softmax']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK_softmax']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "f",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['V']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['V']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "AV"
+              }
+            ]
+          }
+        },
+        {
+          "capacity_bytes": 21,
+          "traffic_bytes": 48.0,
+          "dram_actions_bits": {
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>read": 128.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>QK_softmax<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>read": 128.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>V<SEP>write": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>read": 0.0,
+            "AV<SEP>action<SEP>MainMemory<SEP>AV<SEP>write": 128.0
+          },
+          "mapping": {
+            "type": "Mapping",
+            "nodes": [
+              {
+                "type": "Storage",
+                "component": "MainMemory",
+                "tensors": "['V', 'QK_softmax', 'AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['AV']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['V', 'QK_softmax', 'AV']",
+                "resource": "MainMemory",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['AV']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "p",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['QK_softmax']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['QK_softmax']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "f",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Storage",
+                "component": "GlobalBuffer",
+                "tensors": "['V']",
+                "persistent": "False"
+              },
+              {
+                "type": "Reservation",
+                "purposes": "['V']",
+                "resource": "GlobalBuffer",
+                "persistent": "False"
+              },
+              {
+                "type": "Temporal",
+                "rank_variable": "m",
+                "tile_shape": "1",
+                "initial_tile_shape": null
+              },
+              {
+                "type": "Compute",
+                "component": "MAC",
+                "einsum": "AV"
+              }
+            ]
+          }
+        }
+      ],
+      "search_seconds": 0.28937980002956465,
+      "replay_seconds": 0.17620809999061748,
+      "stats": {
+        "make_s": 0.28385940002044663,
+        "join_s": 0.005346199963241816,
+        "rows_generated": 6,
+        "rows_front": 6
+      }
+    }
+  ],
+  "prediction_sha256": "e7b0958d29342f3217e304f15364b7040da7446dc8eebde99bea14de8e64a51c"
+}
