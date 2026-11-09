@@ -1,0 +1,17 @@
+# Minimal check: graph input X read by two einsums, U = X C and V = X D.
+# Unlimited buffer should allow reading X from DRAM once.
+{% set N = N | default(4) %}
+workload:
+  rank_sizes: {I: {{N}}, K: {{N}}, L: {{N}}}
+  bits_per_value: {All: 8}
+  einsums:
+  - name: EU
+    tensor_accesses:
+    - {name: X, projection: [i, k]}
+    - {name: C, projection: [k, l]}
+    - {name: U, projection: [i, l], output: True}
+  - name: EV
+    tensor_accesses:
+    - {name: X, projection: [i, k]}
+    - {name: D, projection: [k, l]}
+    - {name: V, projection: [i, l], output: True}
