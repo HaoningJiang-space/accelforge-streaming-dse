@@ -121,6 +121,12 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
    192 versus 64 B. Native already shares X/dY and rereads W1/W2. This explains
    these schedules' transaction difference, not whether FFM excludes or prunes
    the graph schedule. See FFN_EXECUTION_AUDIT.md and FFN_NATIVE_ATTRIBUTION.md.
+10. **Span-legal ranks (theorem) and P21 attribution (exploratory).** Whole-span
+   loops are legal only over ranks R(S) that every op and internal tensor carry;
+   the tensors lacking each rank, weighted by role, reproduce the fork
+   obligations of §7 and the 448 B FFN witness (F row at two trips). Chaining I
+   loops above P21's fixed boundary removes 54% of its wrong capacities at depth
+   2 and 20% at depth 8; the rest is cut placement. See FIRST_PRINCIPLES.md §8.
 
 ## Withdrawn or corrected claims
 
@@ -163,6 +169,7 @@ The graph models live in the `graph/` package (module path
 | `plateau.py` | Zero-extra-traffic plateau (nest model), `show` |
 | `curve.py` | Capacity-traffic curve; cache keys projected per subproblem since `7b891c7c` |
 | `views.py` | Chain view and FFM-like view (`chain_curve`, `ffm_like_curve`, `ffm_like_part`) |
+| `context.py` | Span-legal ranks R(S) and loop-chain composition above any bottom curve (`span_ranks`, `lifted_curve`) |
 | `analysis.py` | Q(C) `traffic_at`, S(q) `capacity_for`, `delta`, `gap_steps`, `compare_to_reference` |
 | `references.py` | Archived FFM frontiers (`cases`, `ffn_case`) |
 | `experiments.py` | One command line for every runner: `plateau`, `compare`, `classify`, `ffm-like`, `ffn-part`, `sweep`, `p17`, `p18`, `p19`, `witness` |
@@ -202,6 +209,7 @@ Other files at the top level:
 | `memory_probe/`, `verify_projection.txt` | Cache diagnosis and its exact fix |
 | `projected_effect_replay/` | 227 independent executions, common-buffer effects and figures |
 | `p21/` | 16 residual graphs, 64 conditional interfaces (56 feasible), 596 witness replays, full error/choice intervals, static comparison figure |
+| `p21_attribution/` | Exploratory: fixed vs I-chain-lifted vs unrestricted curves for the 16 P21 graphs (`attribute_p21.py`) |
 
 Heavy runs go to the experiment server with memory and time caps, one process
 per curve for FFN. Local runs are limited to checks that take seconds.

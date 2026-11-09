@@ -179,3 +179,28 @@ The runner automatically enforces per-case limits and records incomplete cases.
 Scoring rejects missing, incomplete, wrong-shape, or wrong-protocol records.
 Use the later scoring/plotting commit with the unchanged solver for those
 commands. `manifest.json` records the source archive and protocol SHA-256.
+
+## Exploratory attribution: loop context versus cut placement
+
+Not frozen; run after the results above (`04f464c3`, `attribute_p21.py`,
+records in `results/p21_attribution/`, 4 GiB/1800 s per case, slowest 175 s).
+The only span-legal whole-graph rank is I (FIRST_PRINCIPLES.md §8). For each
+case, `graph/context.py` composes every power-of-two chain of I loops (with
+keep/refetch choices for W0 and W1) above a bottom curve, independently of the
+solver's recursion.
+
+- Accounting check: the chain over the unrestricted curve reproduces the
+  unrestricted curve exactly in 16/16 cases.
+- Chain over the fixed EX|H|EAdd partition ("lifted"), counted as integer
+  capacities where the curve is above the unrestricted one:
+
+| Depth | Fixed above unrestricted | Lifted above unrestricted | Removed |
+| ---: | ---: | ---: | ---: |
+| 2 | 158 | 72 | 54% |
+| 8 | 244 | 196 | 20% |
+| all | 402 | 268 | 33% |
+
+Lifting closes the gap completely in no case. At depth 8 with I=2 it removes
+nothing: there the unrestricted witnesses also move the bottom cut (for example
+EX,EH0 | EH1..EAdd, or fusing EH7 with EAdd), so H_last never crosses a group
+boundary. The remaining gap is cut placement, not loop context.

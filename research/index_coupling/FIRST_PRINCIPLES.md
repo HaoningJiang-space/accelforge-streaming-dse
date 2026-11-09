@@ -188,3 +188,41 @@ obligation lists coincide and the gap vanishes.
 This is a first-split heuristic, not a proof: deeper levels and other groupings
 can change either fork's optimum. P19 (frozen) tests its first new consequence: the
 maximum doubles at kkkiii.
+
+## 8. Span-legal ranks: one obligation table for forks, FFN and residual blocks
+
+A group may loop over rank v only if every op in it uses v and every tensor
+produced and consumed inside it carries v. For a contiguous span S call these
+ranks R(S); they follow from the einsum incidence alone (`graph/context.py`).
+Every plan for S in the grammar is a chain of loops over R(S) ending at a
+nontrivial partition or a leaf. A loop over v with T trips exposes the tensors
+of S lacking v: each is kept whole (capacity) or refetched with weight 1 per
+extra trip (input) or 2 (accumulated output). This is a theorem of the grammar,
+not a measurement.
+
+| Graph | R(whole graph) | Tensors lacking each rank (weight 2 if accumulated output) |
+| --- | --- | --- |
+| fork, kk...ii | I, K | I: B, C_k, V_i (2) · K: A, D_i, U_k (2) |
+| FFN fwd+bwd | M, F | M: W1, W2, dW1 (2), dW2 (2) · F: X, dY, Y (2), dX (2) |
+| attention core | M, P | M: K, V · P: Q, O (2) |
+| residual block | I | I: W0, W1 |
+
+The rows unify results obtained separately:
+
+- §7's fork obligations are exactly the I and K rows: the mixed fork's minority
+  outputs are the weight-2 entries.
+- The executed FFN witness at 80 B (FFN_EXECUTION_AUDIT.md) splits F in two:
+  64 B is the F row's inputs X and dY read once more, 128 B its outputs Y and dX
+  spilled once. 256+64+128 = 448 is the F row priced at T=2.
+- In attention the P row is the online-softmax tradeoff: splitting keys exposes
+  O as a partial accumulator.
+- All 117 frontier witnesses of the unrestricted P21 curves loop over I only at
+  whole-graph level, as R = {I} requires (K is illegal because H0 lacks K).
+
+What R(S) does not decide is where the bottom partition cuts. The exploratory
+attribution in P21_RESULTS.md (`attribute_p21.py`) separates the two: chaining
+I loops above the fixed EX|H|EAdd boundary removes 54% of its wrong integer
+capacities at depth 2 but only 20% at depth 8, where the cut placement
+dominates. A composable summary therefore needs (a) the R(S) chain context and
+(b) freedom in which tensors cross the bottom cut; a fixed cut cannot be
+summarized by one curve however rich its residency state.
