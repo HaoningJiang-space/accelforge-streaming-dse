@@ -77,3 +77,23 @@ Let R = min(R_m, R_f). Frozen before running:
 
 These are join values from FFM without detailed re-evaluation, so P5–P7 test
 the model against FFM's own mapspace, not against a replayed execution.
+
+# Nest model (`nest_model.py`), frozen before C1, C2, F3, F4
+
+The model computes the minimum buffer with zero extra DRAM traffic over
+recursive loop nests (see its docstring), with no mapping search. Calibration
+points already seen: all six coupling plateaus (exact), FFN F2 (81, exact) and
+the two D4·F8 FFN cases (model 148, measured 147). Copy einsums are aliases.
+
+| Case | Workload | Sizes | Prediction, B |
+| --- | --- | --- | ---: |
+| C1 same / cross | coupling, no join | I16 J4 K32 L8 | 337 / 337 |
+| C2 same / cross | coupling, no join | I8 J16 K4 L32 | 37 / 37 |
+| F3 | FFN with copies | M8 D2 F16 | 76 |
+| F4 | FFN with copies | M16 D8 F4 | 149 |
+
+- **P8.** Each measured plateau equals the prediction exactly.
+- **P8′.** Each measured plateau is within 2 B of the prediction (allows the
+  calibration's one-scalar excess).
+Coupling cases use the fork's `run.py` with replay; FFN cases use the upstream
+probe without detailed evaluation.
