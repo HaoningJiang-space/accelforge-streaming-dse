@@ -10,7 +10,7 @@ import subprocess
 from time import perf_counter
 
 from .constructive_fork import Plan, candidates as strips, frontier
-from .tiled_fork import TiledPlan, candidates as tiled, execute
+from .tiled_fork import TiledPlan, candidates as tiled, duals, execute
 
 RESULTS = Path(__file__).parent / "results"
 MODES = ("strips", "tiles_no_retention", "tiles_scoped_retention")
@@ -33,6 +33,8 @@ def build(shape, cross, all_tiles, mode):
     alternatives = list(strips(shape, cross, all_tiles))
     if mode != "strips":
         alternatives.extend(tiled(shape, cross, all_tiles, retention=mode == "tiles_scoped_retention"))
+    if mode == "tiles_dual_retention":
+        alternatives.extend(duals(shape, cross, all_tiles))
     plans = frontier(alternatives)
     seconds = perf_counter()-start
     points = [(p.metrics()["peak"], p.metrics()["traffic"]) for p in plans]
@@ -89,10 +91,10 @@ def cases():
             yield tuple(record["shape"]), cross, record[("cross" if cross else "same")+"_wt"]
 
 
-def sweep():
+def sweep(modes=MODES):
     for shape, cross, reference in cases():
         for all_tiles in (False, True):
-            for mode in MODES:
+            for mode in modes:
                 plans, points, count, seconds = build(shape, cross, all_tiles, mode)
                 coverage, comparisons = score(reference, points, {c for c, _ in reference})
                 union, union_comparisons = score(reference, points, {c for c, _ in chain(reference, points)})
@@ -107,6 +109,23 @@ def sweep():
                      candidates=count, seconds=seconds, frontier=points, coverage=coverage,
                      comparisons=comparisons, union_coverage=union, union_comparisons=union_comparisons,
                      targets=selected)
+
+
+def dual_sweep():
+    # Post-observation experiment, separately labeled in TILED_PROTOCOL.md.
+    checked = 0
+    for shape, cross, _ in cases():
+        i, j, k, l = shape
+        for plan in duals(shape, cross, all_tiles=True):
+            rows = plan.outer == "I"
+            b = plan.rows if rows else plan.cols
+            original = Plan(shape, cross, "rows" if rows else "cols", b).metrics()
+            alternative = plan.metrics()
+            assert all(original[key] == alternative[key] for key in ("traffic", "reads", "writes"))
+            assert alternative["peak"] == b*(j+2*l+1)+1
+            checked += 1
+    emit(kind="dual_relation_check", pairs=checked, passed=True)
+    sweep(modes=("tiles_dual_retention",))
 
 
 def replay(item):
@@ -145,7 +164,7 @@ def audit():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("validate", "sweep", "audit"))
+    parser.add_argument("mode", choices=("validate", "sweep", "audit", "dual_sweep"))
     args = parser.parse_args()
     emit(kind="metadata", mode=args.mode, host=platform.node(), python=platform.python_version(),
          commit=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),

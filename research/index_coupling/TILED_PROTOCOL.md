@@ -48,3 +48,26 @@ partitioning and deeper nests. It is not assumed complete. No change to FFM,
 curve_model, the old constructor or the independent simulator is required.
 Any timing advantage over the broader recursive-nest search is a time/quality
 result, not an exact-search speedup claim.
+
+## Follow-up after observing the three-way sweep
+
+The original ablation has run: the power-of-two scoped family matches 121/128
+midpoint targets, versus 116/128 for both other modes. The reverse exception
+is recovered at 137/133 bytes. No result is retroactively called a prediction.
+
+The same-pattern witness suggests a cheaper subset. A nonretaining row strip
+of width r keeps rK cells of X. An alternative instead retains A/U/V (same)
+or A/U/D (cross), tiles K by one, and keeps only r cells of X. Both read/write
+counts are identical: inputs have the same number of passes and outputs the
+same number of partial-sum writebacks. The capacities are respectively
+`r(K+1)+1` and `r(J+2L+1)+1`. The column analogue substitutes I for K and
+retains B/C/D (same) or B/C/V (cross). These are two constructive alternatives,
+not a lower bound or a proof that other retention masks are redundant.
+
+Test one additional, separately labeled mode: old strips + no-retention 2D
+tiles + only these two sets of residence alternatives. Check the traffic
+identity for every integer strip on all archived shapes. Measure whether it
+preserves the midpoint gains, how much full-curve quality it loses relative
+to all masks, and how much construction work it avoids. Do not replace or
+rewrite the original three-way sweep. This adds I/K strip choices, not their
+Cartesian product, beyond the no-retention 2D baseline.

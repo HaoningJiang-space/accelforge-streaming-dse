@@ -87,6 +87,22 @@ def candidates(shape, cross, all_tiles=False, retention=True):
                     yield TiledPlan(tuple(shape), cross, outer, rows, cols, kept)
 
 
+def duals(shape, cross, all_tiles=False):
+    """Cost-preserving alternatives to nonretaining row/column strips.
+
+    Instead of retaining the X strip, retain the operand/output slices and
+    stream the other X axis one cell wide. This is a post-ablation candidate
+    subset; it is NOT claimed to replace all scoped-retention alternatives.
+    """
+    i, _, k, _ = shape
+    def tiles(n):
+        return range(1, n+1) if all_tiles else sorted({n} | {1 << s for s in range(n.bit_length())})
+    for r in tiles(i):
+        yield TiledPlan(tuple(shape), cross, "I", r, 1, ("A", "U", "D" if cross else "V"))
+    for c in tiles(k):
+        yield TiledPlan(tuple(shape), cross, "K", 1, c, ("B", "C", "V" if cross else "D"))
+
+
 def execute(plan):
     """Cell execution chooses microkernel order from explicit reservations.
 
