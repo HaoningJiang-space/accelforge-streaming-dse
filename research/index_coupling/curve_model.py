@@ -104,7 +104,29 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         return list(graph.access[op])[-1]
 
     @lru_cache(maxsize=None)
+    def project(ops):
+        tensors = frozenset(graph.tensors(ops))
+        used = graph.rank_vars(ops)
+        return tensors, tuple(i for i, v in enumerate(names) if v not in used)
+
+    def projected(ops, ext, external):
+        # A subproblem's curve depends only on the tensors its ops access and the
+        # extents they use; ancestors' kept tensors are charged by the caller.
+        # Projecting the cache key is exact and removes duplicate subproblems.
+        tensors, unused = project(ops)
+        ext = list(ext)
+        for i in unused:
+            ext[i] = 1
+        return ops, tuple(ext), external & tensors
+
     def solve(ops, ext, external):
+        return _solve(*projected(ops, ext, external))
+
+    def group_curve(group, ext, external):
+        return _group_curve(*projected(group, ext, external))
+
+    @lru_cache(maxsize=None)
+    def _solve(ops, ext, external):
         live = graph.tensors(ops) - external
         if all(size(t, ext) == 1 for t in live):
             return ((len(live), 0, ()),)
@@ -164,7 +186,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         return pareto(results, max_capacity, grid)
 
     @lru_cache(maxsize=None)
-    def group_curve(group, ext, external):
+    def _group_curve(group, ext, external):
         live = graph.tensors(group) - external
         if all(size(t, ext) == 1 for t in live):
             return ((len(live), 0, ()),)
