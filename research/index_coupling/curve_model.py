@@ -13,6 +13,8 @@ be left out of the buffer and pay DRAM traffic:
 - Loops may be split by powers of two; inner levels see the tile extent.
 - written: intermediates whose single DRAM write the caller charges; passing
   them via DRAM then costs only the reads.
+- spill_cost: DRAM transfers per element for a partial sum spilled between trips
+  (2 = write and read back; 1 models accumulate-in-place at DRAM).
 - split_shared=False forbids a multi-consumer intermediate from going via DRAM.
 - write_through=False forbids an intermediate from both feeding a consumer in its
   producer's group on chip and going to DRAM for another group.
@@ -82,7 +84,7 @@ def combine_max_sum(a, b, max_capacity=float('inf'), grid=None):
 
 
 def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_through=True,
-          written=frozenset(), split_shared=True):
+          written=frozenset(), split_shared=True, spill_cost=2):
     # Points above max_capacity are dropped in every subproblem: capacities only grow
     # when subresults are combined, so the curve up to max_capacity is unchanged.
     dims_of = {}
@@ -187,7 +189,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                         for t, k in zip(lacking, keep_bits):
                             if not k:
                                 accumulated = any(output_of(op) == t for op in group)
-                                extra += (2 if accumulated else 1) * (trips - 1) * size(t, ext)
+                                extra += (spill_cost if accumulated else 1) * (trips - 1) * size(t, ext)
                         inner = solve(group, inner_ext, external | kept)
                         note = () if not witness else (('loop', group, v, f'tile {b} x{trips}', 'kept', tuple(sorted(kept)),
                                  'refetched', tuple(t for t, k in zip(lacking, keep_bits) if not k)),)

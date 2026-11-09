@@ -191,3 +191,23 @@ for I in {8, 16, 32}, J in {4, 16}; 31 shapes, write-through on.
 - **P15′.** Within 5% of I·min(L, I/2) in all 31.
 - **P16.** dS(q) ≥ -0.05·S_same(q) at every q in every held-out shape, and the
   plateau dS(0) = 0 in all 31.
+
+# Read-write asymmetry as the source of the coupling cost, frozen before running (P17)
+
+First-principles argument. EU and EV both iterate (i,k,l). Every tensor is a
+projection onto one plane: ik holds X; kl holds C,D (same) or C,V (cross); il
+holds U,V (same) or U,D (cross). Both graphs put the same number of tensors on
+each plane, and with I = K the same sizes. They differ only in which tensor on
+a plane is a read-only input and which is an accumulated output. I/O bounds
+that charge loads and stores alike (Hong-Kung pebbling, HBL) are therefore the
+same for both. The only asymmetry left in the curve model is the cost of a
+partial sum leaving the buffer: 2 transfers (write, read back) versus 1 for
+refetching an input. Calibration seen before freezing: (4,4,4,4), (8,4,8,4),
+(4,8,4,16), (8,8,8,8) give identical curves with spill_cost=1 and different
+ones with spill_cost=2.
+
+- **P17.** With `spill_cost=1` (accumulate in place at DRAM), the same and cross
+  curves are identical, point for point, for all 95 I = K shapes of
+  coupling_sweep.jsonl and coupling_sweep_heldout.jsonl, with write-through on.
+- **P17-control.** With the default `spill_cost=2` they differ in all 95 (already
+  implied by the sweeps; rechecked in the same run).
