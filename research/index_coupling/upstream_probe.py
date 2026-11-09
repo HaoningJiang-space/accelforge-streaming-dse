@@ -41,8 +41,11 @@ def spec_for(case, n):
 
 
 def frontier(results, glb_bits):
-    pts = sorted((float(u) * glb_bits / 8, float(e) / 8)
-                 for u, e in zip(results.resource_usage()['GlobalBuffer'], results.energy()))
+    # Raw joined columns exist with and without detailed evaluation; reservation is a
+    # fraction of the GlobalBuffer size, and MainMemory costs 1 J/bit.
+    data = results.data
+    reserve = next(c for c in data.columns if c.startswith('reservation<SEP>GlobalBuffer<SEP>'))
+    pts = sorted((float(u) * glb_bits / 8, float(e) / 8) for u, e in zip(data[reserve], data['Total<SEP>energy']))
     out, best = [], math.inf
     for cap, traffic in pts:
         if traffic < best - 1e-9:
@@ -74,7 +77,7 @@ def main():
             else:
                 results = spec.map_workload_to_arch()
             record.update(status='ok', frontier=frontier(results, float(spec.arch.find('GlobalBuffer').size)))
-            if args.actions:
+            if args.actions and not args.no_detail:
                 # Snowcat MainMemory costs 1 J/bit, so its per-tensor energy is DRAM bits.
                 idx = int(results.data['Total<SEP>energy'].reset_index(drop=True).idxmin())
                 per = results[idx].energy(per_tensor=True, per_component=True)
