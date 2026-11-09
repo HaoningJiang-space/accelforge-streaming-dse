@@ -139,11 +139,14 @@ def ffn(paths):
     for name in ('graph', 'nowt', 'chain'):
         if name in parts:
             report(name, parts[name])
-    like = {k: v for k, v in parts.items() if k.startswith('ffm_like')}
-    union = [p[:2] for p in pareto((c, t, ()) for v in like.values() for c, t in v)]
-    report(f'ffm_like ({len(like)}/8 subsets)', union)
-    if len(like) < 8:
-        print('  incomplete union: missing subsets can only lower it')
+    for prefix in ('ffm_like:', 'ffm_like_si:'):
+        like = {k: v for k, v in parts.items() if k.startswith(prefix)}
+        if not like:
+            continue
+        union = [p[:2] for p in pareto((c, t, ()) for v in like.values() for c, t in v)]
+        report(f'{prefix} ({len(like)}/8 subsets)', union)
+        if len(like) < 8:
+            print('  incomplete union: missing subsets can only lower it')
 
 
 def main(argv):

@@ -36,7 +36,8 @@ whether both can be kept at the same time.
 | P13 | Chain view makes square same and cross identical | pass | `results/classify_v2_small.jsonl` |
 | P14 | An FFM-like restriction (a DRAM-backed tensor is fetched once per consumer) equals FFM on 14 coupling cases | 12/14; C1 fails | `results/p14_small.jsonl` |
 | P14′ | Attention: FFM-like curve equals the graph curve | pass (attention gaps stay unexplained) | same |
-| P14-FFN | Same restriction explains the FFN gaps | **fails**: complete 8/8 union equal at 15 breakpoints, higher at 15; forced input copies impose a 384 B floor vs FFM's 256 B | FFN_SHARING_RESULTS.md |
+| P14-FFN | Same restriction explains the FFN gaps | **fails**: union of all 8 subsets is never below FFM (0 breakpoints) but above it at 15; it ends at 384 = 256 + 4·32 because copy-wrapped inputs were read once per consumer | `results/ffn_parts/`, `graph/scoring.py ffn` |
+| P14-FFN′ | Same, with copy-wrapped inputs shareable | **running** (frozen before running) | PROTOCOL.md |
 | P15 / P15′ | max_q dS = I·min(L, I/2) on 31 held-out shapes | P15 fails (24/31 exact, needed 28); P15′ passes (31/31 within 5%) | `results/p15_p16_scores.txt` |
 | P16 | Cross never needs >5% less capacity | 31/31 | same |
 | P17 | spill_cost = 1 makes same and cross identical | 95/95; also proved | P17_RESULTS.md, ROLE_SYMMETRY_AND_SYSTEMS_CASE.md |

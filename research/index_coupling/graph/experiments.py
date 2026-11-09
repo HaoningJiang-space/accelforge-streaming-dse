@@ -6,7 +6,8 @@ Usage: python -m research.index_coupling.graph.experiments <command> [args]
   classify [small] [ffn]        P11-P13: write-through switch and chain view
   ffm-like [small]              P14: FFM-like curve vs FFM (default: FFN)
   ffn-part PART [max_capacity]  one FFN M8 D4 F8 curve: graph, nowt, chain,
-                                or ffm_like:<materialized intermediates joined by +>
+                                ffm_like:<materialized intermediates joined by +>,
+                                or ffm_like_si:<...> (inputs shareable, P14-FFN')
   sweep [jobs] [heldout]        two-consumer coupling sweep (P15/P16 data)
   p17 [jobs]                    same vs cross with spill cost 1 and 2
   p18 [jobs] | p19 [jobs]       multi-consumer forks
@@ -168,7 +169,11 @@ def ffn_part(part, max_capacity=None):
     elif part == 'chain':
         points = chain_curve(graph, **kw)
     else:
-        points = ffm_like_part(graph, {x for x in part.split(':', 1)[1].split('+') if x}, **kw)
+        # ffm_like:<...> separates multi-consumer inputs (P14-FFN); ffm_like_si:<...>
+        # keeps them shareable (P14-FFN').
+        kind, chosen = part.split(':', 1)
+        points = ffm_like_part(graph, {x for x in chosen.split('+') if x},
+                               separate_inputs=kind == 'ffm_like', **kw)
     # ru_maxrss is in KiB on Linux, where these runs belong.
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2**20
     print(json.dumps({'part': part, 'seconds': round(time.time() - t), 'peak_gib': round(peak, 2),

@@ -277,3 +277,25 @@ kkkkkk, kkkkki, kkkkii, kkkiii. dS(q) and extra traffic as in P18.
 
 A P19a failure with kkkiii's maximum equal to n·L means the first-split
 knapsack does not explain the cap, whatever the P18 agreement.
+
+# P14-FFN outcome and an amended FFN test, frozen before running (P14-FFN')
+
+P14-FFN failed: with all 8 subsets the FFM-like union is never below FFM's best
+on the union of breakpoints (0 points), but it is above it at 15 points. Seen
+before freezing: its lowest traffic is 384 = 256 + 4·32, one extra read of each
+multi-consumer graph input (X, W1, W2, dY). FFM's reference case wraps these
+inputs in copy einsums (ffn_full_copy), so each is read once and its copy can be
+shared on chip like an intermediate. The frozen rule "multi-consumer graph
+inputs are read separately" therefore does not describe this case.
+
+Amended view (`ffm_like_si`): multi-consumer graph inputs are left to the curve
+model (kept on chip across groups or read once per group); intermediates are
+unchanged from P14 (on chip for all consumers or materialized). Same 8 subsets
+of {H, Z, dH}, same scoring (graph/scoring.py ffn).
+
+- **P14-FFN'.** On the union of breakpoints, the ffm_like_si union equals FFM's
+  best at every saved-capacity breakpoint, allowing the known 1 B plateau
+  offset (147 vs 148).
+- **P14-FFN'-weak.** It is never above FFM's best (it may be below: reading an
+  input once per group is cheaper than materializing a copy, which FFM also
+  writes).

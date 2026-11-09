@@ -68,10 +68,13 @@ def multi_consumer(graph):
     return {t for t in multi if t not in produced}, sorted(t for t in multi if t in produced)
 
 
-def ffm_like_part(graph, materialized, **kwargs):
+def ffm_like_part(graph, materialized, separate_inputs=True, **kwargs):
     # One member of the FFM-like union: these intermediates are materialized.
+    # separate_inputs=False leaves multi-consumer graph inputs to the curve model
+    # (shared on chip, or read once per group), as for copy-wrapped inputs (P14-FFN').
     inputs, _ = multi_consumer(graph)
-    return curve(separate(graph, inputs | set(materialized)), split_shared=False, **kwargs)
+    return curve(separate(graph, (inputs if separate_inputs else set()) | set(materialized)),
+                 split_shared=False, **kwargs)
 
 
 def ffm_like_curve(graph, **kwargs):
