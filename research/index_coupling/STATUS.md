@@ -53,8 +53,8 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
 
 1. **Curve model vs FFM.** Over 216 points the two agree at 206, the model is
    lower at 10 and higher at none (`results/curve_comparison.txt`). On FFN M8
-   D4 F8 the model is lower at 56 union breakpoints and higher only at 147 B
-   (the 1 B plateau offset).
+   D4 F8 it is lower at 34 breakpoints (union of FFM's and the model's) and
+   higher only at 147 B (the 1 B plateau offset).
 2. **What FFM cannot represent.**
    - *Write-through* (one tensor feeds a consumer on chip and is also written
      to DRAM). Source lines are in REVIEW_NOTES_2.md.
@@ -89,6 +89,13 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
    - Scalar retention: (r+1)h+1 with h = J+2L.
    - Strip-width elimination.
    - Loop normal form.
+8. **Common-buffer execution evidence.** Replayed established examples at
+   37/137/529 B show 11.1%/11.1%/14.8% crossed traffic premiums. The actual
+   input reads and partial-sum stores/reloads explain the difference. After
+   cache projection, all 212 P18 small-curve witnesses and 15 focused plans
+   independently execute correctly. These are workload contrasts and regression
+   checks, not an optimizer speedup; the 1,004 B wider-tile witness is retained
+   alongside the 1,041 B restricted threshold. See BUDGET_EFFECT_RESULTS.md.
 
 ## Withdrawn or corrected claims
 
@@ -118,17 +125,40 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
   HANDOFF.md).
 - Literature check before any novelty claim (FIRST_PRINCIPLES.md §5).
 
-## Code map (module path `research.index_coupling.<name>`)
+## Code map
+
+The graph models live in the `graph/` package (module path
+`research.index_coupling.graph.<name>`):
+
+| Module | Content |
+| --- | --- |
+| `model.py` | `Graph` (accesses, sizes, output/consumers/produced) and the graphs: `coupling`, `fork`, `ffn`, `attention` |
+| `plateau.py` | Zero-extra-traffic plateau (nest model), `show` |
+| `curve.py` | Capacity-traffic curve; cache keys projected per subproblem since `7b891c7c` |
+| `views.py` | Chain view and FFM-like view (`chain_curve`, `ffm_like_curve`, `ffm_like_part`) |
+| `analysis.py` | Q(C) `traffic_at`, S(q) `capacity_for`, `delta`, `gap_steps`, `compare_to_reference` |
+| `references.py` | Archived FFM frontiers (`cases`, `ffn_case`) |
+| `experiments.py` | One command line for every runner: `plateau`, `compare`, `classify`, `ffm-like`, `ffn-part`, `sweep`, `p17`, `p18`, `p19`, `witness` |
+| `scoring.py` | `sweep`, `p15`, `p18`, `p19`, `ffn` |
+
+Example: `python -m research.index_coupling.graph.experiments p19 3`, then
+`python -m research.index_coupling.graph.scoring p19 p19.jsonl`.
+
+The old top-level modules (`nest_model`, `curve_model`, `chain_view`, `ffm_like`,
+`compare_curves`, `classify`, `sweep_analysis`, `coupling_sweep`, `run_p17/18/19`,
+`ffn_parts`, `fork_witness`, `score_*`) are forwarding stubs. Commands frozen in
+PROTOCOL.md and Codex's scripts still run unchanged. New code should import
+from `graph/`.
+
+Other files at the top level:
 
 | Role | Files |
 | --- | --- |
-| Core models | `nest_model.py` (graphs: `coupling`, `fork`, `ffn`, attention; plateau), `curve_model.py` (capacity-traffic curve; cache keys projected per subproblem since `7b891c7c`), `chain_view.py`, `ffm_like.py` |
-| Independent checks | `simulate_nest.py` (cell-level execution of witnesses), `verify_projection.py` (475 archived curves, 0 mismatches), `upstream_probe.py` |
-| FFM side (needs AccelForge) | `run.py`, `evaluate.py`, `compare_curves.py`, `*.yaml` |
-| Prediction runners | `classify.py` (P11–P13), `score_ffm_like.py` (P14), `ffn_parts.py` (FFN curves one per process), `coupling_sweep.py` (P15/16 data), `run_p17.py`, `run_p18.py`, `run_p19.py` |
-| Scoring and analysis | `score_ffn.py`, `score_p15.py`, `score_p18.py`, `score_p19.py`, `sweep_analysis.py` (`delta`, `s_of`), `analyze_p18_profile.py`, `fork_witness.py`, `run_fork_order_check.py` |
+| Independent checks | `simulate_nest.py` (cell-level execution of witnesses), `verify_projection.py` (archived curves, 0 mismatches), `upstream_probe.py` |
+| FFM side (needs AccelForge) | `run.py`, `evaluate.py`, `*.yaml` |
+| Follow-up analyses (Codex) | `analyze_p18_profile.py`, `run_fork_order_check.py`, `replay_budget_effects.py` |
 | Constructive families (Codex) | `constructive_fork.py`, `tiled_fork.py`, `scalar_retention.py`, `loop_normal_form.py`; runners `run_constructive_fork.py`, `run_tiled_fork.py`, `run_scalar_retention.py`, `run_loop_normal_form.py`, `validate_constructive.py`; summaries `summarize_*.py`, `inspect_heldout_miss.py`, `test_validate_constructive.py` |
-| Diagnostics | `mem_probe.py` (FFN time and memory), `probe_curve_memory.py` (cache-growth diagnosis), `real_scale.py` |
+| Diagnostics | `probe_curve_memory.py` (cache-growth diagnosis; Linux only), `real_scale.py` |
 
 ## Results map
 
@@ -142,6 +172,7 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
 | `p17/`, `p18.jsonl`, `p18_scores.txt`, `p18_profile/`, `fork_witness/` | Role symmetry, multi-consumer forks, witnesses |
 | `tiled_fork/`, `constructive_fork/`, `constructive_heldout/`, `scalar_retention/`, `loop_normal_form/` | Codex constructive work |
 | `memory_probe/`, `verify_projection.txt` | Cache diagnosis and its exact fix |
+| `projected_effect_replay/` | 227 independent executions, common-buffer effects and figures |
 
 Heavy runs go to the experiment server with memory and time caps, one process
 per curve for FFN. Local runs are limited to checks that take seconds.

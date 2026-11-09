@@ -1,38 +1,8 @@
-"""Analyze coupling_sweep output: capacity needed for an extra-traffic target.
-
-Targets are extra traffic q above each curve's plateau traffic. For the paired
-coupling graphs, compulsory traffic is actually identical even off-square:
-the private input and output swap I*L and K*L footprints, preserving their sum.
-S(q) is the least capacity whose curve point has extra traffic at most q;
-dS(q) = S_cross(q) - S_same(q), over q where both are finite.
-"""
-import json
+"""Moved to graph/analysis.py and graph/scoring.py (sweep); kept so existing commands and imports keep working."""
 import sys
-from collections import Counter
 
-
-def s_of(points, q):
-    base = points[-1][1]
-    return min(c for c, t in points if t - base <= q)
-
-
-def delta(same, cross):
-    qs = sorted({t - same[-1][1] for _, t in same} | {t - cross[-1][1] for _, t in cross})
-    # Every q >= 0 is reachable (the plateau has zero extra traffic).
-    return [(q, s_of(cross, q) - s_of(same, q), s_of(same, q)) for q in qs]
-
-
-def sign(ds):
-    signs = {(d > 0) - (d < 0) for _, d, _ in ds}
-    return {frozenset({1}): 'cross needs more', frozenset({-1}): 'cross needs less',
-            frozenset({0}): 'equal'}.get(frozenset(signs), 'mixed' if {1, -1} <= signs else
-                                         'cross more or equal' if 1 in signs else 'cross less or equal')
-
+from research.index_coupling.graph.analysis import capacity_for as s_of, delta, sign  # noqa: F401
 
 if __name__ == '__main__':
-    rows = [json.loads(line) for line in open(sys.argv[1])]
-    for mode in ('wt', 'nowt'):
-        tally = Counter()
-        for r in rows:
-            tally[sign(delta(r[f'same_{mode}'], r[f'cross_{mode}']))] += 1
-        print(mode, dict(tally))
+    from research.index_coupling.graph.scoring import sweep
+    sweep(sys.argv[1])

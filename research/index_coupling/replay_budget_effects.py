@@ -31,7 +31,7 @@ def replay():
     archived = {tuple(r['shape']): r for r in
                 map(json.loads, reference_path.read_text().splitlines())}
     hashes = {name: hashlib.sha256((DIRECTORY / name).read_bytes()).hexdigest()
-              for name in ('curve_model.py', 'nest_model.py', 'simulate_nest.py',
+              for name in ('graph/curve.py', 'graph/model.py', 'simulate_nest.py',
                            'constructive_fork.py', 'results/coupling_sweep.jsonl')}
     emit(dict(kind='metadata', commit=subprocess.check_output(
         ['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),

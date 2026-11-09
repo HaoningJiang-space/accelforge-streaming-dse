@@ -1,4 +1,4 @@
-"""Check that projected cache keys (curve_model.py) reproduce archived curves.
+"""Check that projected cache keys (graph/curve.py) reproduce archived curves.
 
 Usage: python -m research.index_coupling.verify_projection [workers] [--witness-only]
 Recomputes every small archived curve: graph, no write-through and chain views
@@ -11,12 +11,11 @@ import sys
 from multiprocessing import Pool
 from pathlib import Path
 
-from research.index_coupling.chain_view import chain_curve
-from research.index_coupling.compare_curves import cases
-from research.index_coupling.coupling_sweep import run as sweep_run
-from research.index_coupling.curve_model import curve
-from research.index_coupling.ffm_like import ffm_like_curve
-from research.index_coupling.nest_model import fork
+from research.index_coupling.graph.curve import curve
+from research.index_coupling.graph.experiments import run_sweep as sweep_run
+from research.index_coupling.graph.model import fork
+from research.index_coupling.graph.references import cases
+from research.index_coupling.graph.views import chain_curve, ffm_like_curve
 from research.index_coupling.simulate_nest import simulate
 
 R = Path(__file__).parent / 'results'

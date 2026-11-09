@@ -1,7 +1,7 @@
 """Bounded memory diagnosis; instrument the original curve without changing its recurrence."""
 import functools, hashlib, json, resource, signal, sys, time
 from pathlib import Path
-from research.index_coupling import curve_model as cm
+from research.index_coupling.graph import curve as cm
 from research.index_coupling.nest_model import fork
 roles, mode = sys.argv[1:3]
 shape = tuple(map(int, sys.argv[3:7]))
