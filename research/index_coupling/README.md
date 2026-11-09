@@ -74,3 +74,28 @@ python -m research.index_coupling.run --n 16 --cross --no-join --output /tmp/n16
 ```
 
 Each case took about 15 s with one worker on the Linux server.
+
+## Held-out test of frozen predictions
+
+Predictions in [PROTOCOL.md](PROTOCOL.md) were committed before these runs
+(P3′ was added mid-run, before any output was read). Scores from
+`evaluate.py` are in [heldout_scores.json](results/heldout_scores.json).
+
+| Prediction | T1 square 32 | T2 64·8·8·8 | T3 8·32·32·32 |
+| --- | --- | --- | --- |
+| P1 equal plateau | pass (1057 B both) | pass (201 B both) | pass (265 B both) |
+| P2 plateau location | pass (exactly 1057) | pass (201 ∈ [192, 321]) | pass (265 ∈ [256, 321]) |
+| P3 transfer law, as frozen | fail at 1 of 5 points | pass (7 points) | pass (1 point) |
+| P3′ narrower law | pass (2 points) | pass (4 points) | no applicable point |
+| P4 cross onset 273 B | pass | — | — |
+
+- P3's T1 miss is the failure mode already seen in training: at 273 B the same
+  graph itself spills U and V, so the cross graph matches it (14,336) instead of
+  paying the predicted extra (15,360).
+- The sign of the cross penalty depends on shape. In T2, cross is better than
+  same at 3–7 B (for example 25,664 vs 26,112 at 3 B); in T3, cross is better at
+  137 B (4,864 vs 5,120). The plateau is identical in every case.
+- P1, P2 and P4 need no mapping search. P3/P3′ transfer the same-index
+  frontier to the cross graph, so they still need one graph search.
+- All values are this fork's FFM mapspace on the abstract Snowcat, not an
+  independent proof; each case took 15–17 s.
