@@ -235,3 +235,45 @@ ikk, iik, kkkk, kkki, kkii. dS(q) as in sweep_analysis.py (extra traffic).
 - **P18e.** iik and kki give identical curves (transposition symmetry, I = K,
   A and B both n x J). kki and ikk may differ (consumer order matters in the
   grammar); no prediction.
+
+# Six-consumer forks, frozen before running (P19)
+
+Seen before freezing (fork_witness.py at the max-gap q; two consumers (8,4,8,2)
+and (4,4,4,8); four consumers (8,4,8,2) kkkk/kkki/kkii and (4,4,4,8) kkkk/kkii):
+
+- n·L branch. The pure fork splits I outermost (no consumer contracts I), so the
+  split's obligations are inputs only: B and every C, refetch weight 1. A mixed
+  fork splits the axis contracted by fewer consumers; each of those b consumers
+  leaves a partial sum lacking the split axis, refetch weight 2 (spill). All
+  consumer tensors have size s = nL. Keeping an item costs s capacity, dropping
+  it costs s (input) or 2s (partial sum) traffic. At kkii q=80 the pure fork
+  keeps one C (53) and kkii keeps U0 and U1 (69); at kkii's next budget it keeps
+  one U and spills the other. Gap s in every case.
+- n·n/2 branch (L > n/2). Keeping or spilling an exposed partial sum costs more
+  than abandoning the fused outer split: the mixed fork holds X whole (n²) where
+  the pure fork holds an I-half (n²/2).
+
+First-split knapsack (heuristic: deeper levels are not modelled). With the
+shared input (A or B) dropped first and budget k·s for the consumer items, the
+pure fork drops min(m, k) items; the mixed fork drops k items while k <= m-b,
+then one partial sum per 2s. The kept-count difference peaks at k = m with
+value ceil(b/2), and is positive for k in [m-b+1, m+b-1]. Hence the predicted
+max_q dS = n·min(ceil(b/2)·L, n/2), b = min(#k, #i). For m <= 4 this equals
+n·min(L, n/2) for every mixture, which is why P18c and P18d (equality) held. It
+first differs at b = 3.
+
+Shapes (n, J, n, L): n in {8, 16}, J in {4, 8}, L in {2, 4} (8 shapes). Roles
+kkkkkk, kkkkki, kkkkii, kkkiii. dS(q) and extra traffic as in P18.
+
+- **P19a.** max_q dS(kkkiii vs kkkkkk) = n·min(2L, n/2) in at least 7 of 8
+  shapes, and is strictly greater than max_q dS(kkkkii vs kkkkkk) in all 6
+  shapes with L <= n/4 (n=8,L=2 and all n=16).
+- **P19b.** max_q dS = n·min(L, n/2) for kkkkki and for kkkkii, each in at least
+  7 of 8 shapes.
+- **P19c.** The length of q with dS > 0 (common domain [0, q_hi] per shape as in
+  P18_PROFILE_PROTOCOL.md) strictly increases kkkkki < kkkkii < kkkiii in at
+  least 7 of 8 shapes.
+- **P19d.** -b·IL <= dS(q) <= b·KL at every q for every mixed string (P18a).
+
+A P19a failure with kkkiii's maximum equal to n·L means the first-split
+knapsack does not explain the cap, whatever the P18 agreement.
