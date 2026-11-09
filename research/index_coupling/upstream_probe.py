@@ -52,6 +52,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('cases', nargs='+', choices=['same', 'cross', 'same_join', 'cross_join', 'gpt_scaled', 'ffn_full', 'ffn_fwd_wgrad'])
     parser.add_argument('--n', type=int, default=4)
+    parser.add_argument('--actions', action='store_true', help='also record per-tensor DRAM actions at minimum traffic')
     args = parser.parse_args()
     af.set_n_parallel_jobs(1)
     for case in args.cases:
@@ -60,8 +61,14 @@ def main():
         try:
             spec = spec_for(case, args.n)
             spec.mapper.metrics = af.Metrics.ENERGY | af.Metrics.RESOURCE_USAGE
+            if args.actions:
+                spec.mapper.metrics |= af.Metrics.ACTIONS
             results = spec.map_workload_to_arch()
             record.update(status='ok', frontier=frontier(results, float(spec.arch.find('GlobalBuffer').size)))
+            if args.actions:
+                best = results.data.sort_values('Total<SEP>energy').iloc[0]
+                record['min_traffic_actions_bytes'] = {k.split('<SEP>', 1)[1]: float(v) / 8 for k, v in best.items()
+                                                       if '<SEP>action<SEP>MainMemory<SEP>' in k and float(v)}
         except Exception as error:
             record.update(status='error', error=f'{type(error).__name__}: {error}'[:600],
                           where=traceback.format_exc().strip().splitlines()[-3][:300])
