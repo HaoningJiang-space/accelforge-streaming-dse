@@ -214,13 +214,20 @@ where the model is lower, none where it is higher.** Only n=4 and n=8 coupling
 were inspected while writing the model; the rest were not used to build it but
 also were not frozen predictions.
 
-The 10 lower points are unverified:
-- Cross coupling (n4, n8, n16, T1, C2): the model's witness fuses X into one
-  consumer while also writing X to DRAM for the other (write-through). FFM gives
-  each shared tensor a single backing storage, which plausibly excludes this.
-  The saving is 5.6% of traffic at those capacities.
-- Attention core (4 points, 32 B each): the witness is a FlashAttention-style
-  tiling (query blocks refetching K and V, key blocks with an O accumulator,
-  Q refetched per key block). Hand accounting reproduces the model's traffic,
-  but no reason for FFM's higher value has been found; a model accounting error
-  is not ruled out.
+Codex's independent element-level simulator (`simulate_nest.py`,
+REVIEW_NOTES_2.md) executed the model witness at all 216 points, checking
+every dependence, and reproduced the model's peak buffer and DRAM traffic
+exactly at every point. No accounting bug was found. The 10 lower points:
+- **Cross coupling, 6 points (n4, n8, n16, T1, C2 ×2): excluded by FFM's
+  representation.** The witness fuses X into EU while also writing X to DRAM
+  for EV (write-through). FFM shares a tensor between einsums only through its
+  first (backing) reservation, so one tensor cannot be both a buffer tile for
+  EX/EU and a DRAM channel for EV (source lines in REVIEW_NOTES_2.md, fork and
+  upstream). The saving is 3–6% of traffic at those capacities.
+- **Attention core, 4 points (32 B each): executable but unresolved.** The
+  most likely cause is FFM's default of one fused loop per rank variable, but
+  no rejected template has been shown.
+
+On the FFN training step (`results/curve_comparison_ffn.txt`) the model is
+lower at 25 of 27 FFM points, by 32–384 B, and higher at 147 B. These are not
+yet simulated and are not claimed as findings.
