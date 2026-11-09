@@ -162,8 +162,14 @@ the model's best nest (printed by `plateau(ffn(16, 8, 4), witness=True)`). This
 does not prove FFM cannot express 149 B. The review's hypothesis is copy order:
 `CopydY` is first in the einsum order, so the dY row stays live from the start;
 adding that lifetime to the model gives exactly 153 B and leaves F1–F3 unchanged.
-P9 in PROTOCOL.md tests it by moving the copy. The probe's JSON omits mapping
-witnesses, although no-detail FFM objects retain per-einsum mappings.
+P9 in PROTOCOL.md tested it by moving the copy just before EdW2: F4 dropped
+only from 153 to 152 B, not to the predicted 149 B (P9 fails), while F1 stayed
+at 147 B (P9′ passes). Copy order accounts for at most 1 B of the gap; the other
+3 B remain unexplained. The probe's JSON omits mapping witnesses, although
+no-detail FFM objects retain per-einsum mappings, so the next step is to extract
+F4's per-einsum mappings. The uncopied shared-input run is now saved with its
+DRAM breakdown (X read twice, 32 B, total 96 B; with the copy X_in is read once,
+80 B): `results/late_copy_and_shared_input.jsonl`.
 
 The first version of the model let an einsum sit inside a loop over an index
 it does not iterate, i.e. recompute it. That gave the same F4 value of 149 and
