@@ -11,6 +11,7 @@ Usage: python -m research.index_coupling.graph.experiments <command> [args]
   sweep [jobs] [heldout]        two-consumer coupling sweep (P15/P16 data)
   p17 [jobs]                    same vs cross with spill cost 1 and 2
   p18 [jobs] | p19 [jobs]       multi-consumer forks
+  fork I J K L roles            one fork curve, same record format as p18/p19
   witness I J K L pure mixed    witnesses at the maximum capacity gap
 PROTOCOL.md defines every prediction. Heavy commands belong on the experiment
 server with memory and time caps.
@@ -217,6 +218,8 @@ def main(argv):
     elif command in ('p18', 'p19'):
         shapes, roles = (p18_shapes(), P18_ROLES) if command == 'p18' else (p19_shapes(), P19_ROLES)
         pool_map(run_fork, [(s, r) for s in shapes for r in roles], workers or 4)
+    elif command == 'fork':
+        print(json.dumps(run_fork((tuple(map(int, args[:4])), args[4]))), flush=True)
     elif command == 'witness':
         witness(*args)
     else:
