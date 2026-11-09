@@ -111,7 +111,7 @@ def replay_improvement(item):
     return dict(kind="improvement_execution", plan=plan.record(), targets=targets, execution=actual)
 
 
-def audit():
+def audit(union=False):
     # Post-observation validation: audit EVERY knot at which the wider family
     # beats the archived power-of-two grammar, not only the best improvement.
     chosen = {}
@@ -120,22 +120,32 @@ def audit():
         shape = tuple(record["shape"])
         for cross in (False, True):
             plans = frontier(candidates(shape, cross, all_tiles=True))
-            for cap, traffic in record[("cross" if cross else "same") + "_wt"]:
+            reference = record[("cross" if cross else "same") + "_wt"]
+            capacities = {c for c, _ in reference}
+            if union:
+                capacities.update(p.metrics()["peak"] for p in plans)
+            for cap in sorted(capacities):
+                traffic = at(reference, cap)
                 eligible = [p for p in plans if p.metrics()["peak"] <= cap]
                 if not eligible:
                     continue
                 best = min(eligible, key=lambda p: p.metrics()["traffic"])
                 if best.metrics()["traffic"] < traffic:
                     chosen.setdefault(best, []).append(dict(capacity=cap, reference_traffic=traffic))
-    emit(kind="improvement_audit_size", plans=len(chosen), points=sum(map(len, chosen.values())))
+    emit(kind="improvement_audit_size", union_breakpoints=union,
+         plans=len(chosen), points=sum(map(len, chosen.values())))
     with Pool(4) as pool:
         for result in pool.imap(replay_improvement, chosen.items()):
             emit(**result)
 
 
+def audit_union():
+    audit(union=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("validate", "sweep", "focus", "audit"))
+    parser.add_argument("mode", choices=("validate", "sweep", "focus", "audit", "audit_union"))
     args = parser.parse_args()
     emit(kind="metadata", mode=args.mode, host=platform.node(), python=platform.python_version(),
          commit=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
