@@ -32,6 +32,11 @@ def snapshot(status, **extra):
 def audit_cache(maxsize=None):
     def decorate(fn):
         name = fn.__name__
+        if name == 'project':
+            # Key-projection helper added by the production fix (7b891c7c); not a
+            # curve subproblem. Since that fix, mode "original" measures the projected
+            # implementation; pre-fix numbers are in results/memory_probe/.
+            return functools.lru_cache(maxsize=maxsize)(fn)
         s = stats[name] = dict(rows=0, states_with_irrelevant_external=0,
             irrelevant_external_members=0, max_frontier=0, calls_started=0)
         def compute(ops, ext, external):

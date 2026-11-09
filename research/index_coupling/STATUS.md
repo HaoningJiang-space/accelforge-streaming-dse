@@ -36,7 +36,7 @@ whether both can be kept at the same time.
 | P13 | Chain view makes square same and cross identical | pass | `results/classify_v2_small.jsonl` |
 | P14 | An FFM-like restriction (a DRAM-backed tensor is fetched once per consumer) equals FFM on 14 coupling cases | 12/14; C1 fails | `results/p14_small.jsonl` |
 | P14′ | Attention: FFM-like curve equals the graph curve | pass (attention gaps stay unexplained) | same |
-| P14-FFN | Same restriction explains the FFN gaps | **open**: 6/8 subsets never below FFM; Z and H+Z are running | `results/ffn_parts/` |
+| P14-FFN | Same restriction explains the FFN gaps | **fails**: complete 8/8 union equal at 15 breakpoints, higher at 15; forced input copies impose a 384 B floor vs FFM's 256 B | FFN_SHARING_RESULTS.md |
 | P15 / P15′ | max_q dS = I·min(L, I/2) on 31 held-out shapes | P15 fails (24/31 exact, needed 28); P15′ passes (31/31 within 5%) | `results/p15_p16_scores.txt` |
 | P16 | Cross never needs >5% less capacity | 31/31 | same |
 | P17 | spill_cost = 1 makes same and cross identical | 95/95; also proved | P17_RESULTS.md, ROLE_SYMMETRY_AND_SYSTEMS_CASE.md |
@@ -55,11 +55,14 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
    lower at 10 and higher at none (`results/curve_comparison.txt`). On FFN M8
    D4 F8 it is lower at 34 breakpoints (union of FFM's and the model's) and
    higher only at 147 B (the 1 B plateau offset).
-2. **What FFM cannot represent.**
+2. **Sharing mechanisms and the FFM comparison.**
    - *Write-through* (one tensor feeds a consumer on chip and is also written
      to DRAM). Source lines are in REVIEW_NOTES_2.md.
-   - *Shared on-chip fetch of a DRAM-backed tensor.* FFM charges such a fetch
-     once per consumer (P14).
+   - *Shared on-chip fetch of a DRAM-backed tensor.* This is the P14 hypothesis;
+     the restricted view matches 12/14 held-out coupling cases. Its completed
+     FFN union is not FFM-equivalent: always separating shared graph inputs
+     excludes the known 256 B plateau and creates a 384 B compulsory floor.
+     See FFN_SHARING_RESULTS.md before making a causal attribution.
    - *Unexplained.* The attention gaps and C1.
 3. **Role symmetry (proved).** Exchanging I and K and flipping every
    consumer's role preserves the curve. With spill_cost = 1, every role mix of
@@ -115,7 +118,9 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
 
 ## Open
 
-- P19 verdict, and P14-FFN once the Z and H+Z parts finish.
+- P19 verdict. P14-FFN is now scored as failed; a corrected sharing control
+  must distinguish whole-input retention from shared DRAM refetch and preserve
+  the known FFM plateau before further causal claims.
 - The C1 and attention gaps vs FFM.
 - The closure proof of the bound.
 - An integer-tile retest of dS; the power-of-two grid is a known artifact
