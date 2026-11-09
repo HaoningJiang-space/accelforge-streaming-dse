@@ -93,7 +93,9 @@ def counterfactual(path):
     plan = next(row for row in records if row.get('capacity_budget') == 80)
     graph = ffn(8, 4, 8)
     spec = oracle.Specification(graph)
-    root = oracle.parse_witness(spec, plan['witness'])
+    def tuples(value):
+        return tuple(tuples(x) for x in value) if isinstance(value, list) else value
+    root = oracle.parse_witness(spec, tuples(plan['witness']))
     for selected in ((), ('X',), ('dY',), ('X', 'dY'), ('W1', 'W2', 'X', 'dY')):
         machine = SeparateInputConsumers(spec, selected)
         for kind, payload in oracle.events(spec, root):
