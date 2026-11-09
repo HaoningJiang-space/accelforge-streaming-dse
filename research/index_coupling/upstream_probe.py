@@ -55,16 +55,24 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('cases', nargs='+', choices=['same', 'cross', 'same_join', 'cross_join', 'gpt_scaled', 'ffn_full', 'ffn_fwd_wgrad', 'shared_input', 'shared_input_copy', 'ffn_full_copy'])
     parser.add_argument('--n', type=int, default=4)
+    parser.add_argument('--no-detail', action='store_true', help='skip post-join detailed evaluation')
     parser.add_argument('--actions', action='store_true', help='also record per-tensor DRAM actions at minimum traffic')
     args = parser.parse_args()
     af.set_n_parallel_jobs(1)
     for case in args.cases:
         start = perf_counter()
-        record = dict(case=case, n=args.n)
+        record = dict(case=case, n=args.n, detailed_evaluation=not args.no_detail)
         try:
             spec = spec_for(case, args.n)
             spec.mapper.metrics = af.Metrics.ENERGY | af.Metrics.RESOURCE_USAGE
-            results = spec.map_workload_to_arch()
+            if args.no_detail:
+                # Skip the post-join detailed re-evaluation, which rebuilds full mapping
+                # trees and crashes in Nested._merge on cross-index shared tensors.
+                # Frontier values then come from the join itself and are not replayed.
+                from accelforge.mapper.FFM.main import map_workload_to_arch
+                results = map_workload_to_arch(spec, eval_in_detail=False)
+            else:
+                results = spec.map_workload_to_arch()
             record.update(status='ok', frontier=frontier(results, float(spec.arch.find('GlobalBuffer').size)))
             if args.actions:
                 # Snowcat MainMemory costs 1 J/bit, so its per-tensor energy is DRAM bits.
