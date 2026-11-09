@@ -1,0 +1,164 @@
+{
+  "upstream_commit": "04cf894e3f33aae6ea9814104a852c160f4d9e25",
+  "trace_commit": "dc2b3669c372b1767f87fb70f12db65ab8ffd719",
+  "order_runner_commit": "53c6a553",
+  "frontier_reproduced_rows": 27,
+  "queries": [
+    {
+      "budget": 80,
+      "orders_checked": 24,
+      "reconstructed_and_reevaluated": 4,
+      "failed_during_reconstruction": 20,
+      "all_successful_evaluations_equal": [
+        76,
+        576
+      ],
+      "successful_orders": [
+        [
+          "CopyW1",
+          "CopyW2",
+          "CopyX",
+          "CopydY"
+        ],
+        [
+          "CopyW1",
+          "CopyW2",
+          "CopydY",
+          "CopyX"
+        ],
+        [
+          "CopyW2",
+          "CopyW1",
+          "CopyX",
+          "CopydY"
+        ],
+        [
+          "CopyW2",
+          "CopyW1",
+          "CopydY",
+          "CopyX"
+        ]
+      ],
+      "per_tensor": {
+        "W1": {
+          "read": 128.0
+        },
+        "W2": {
+          "read": 128.0
+        },
+        "X": {
+          "read": 32.0
+        },
+        "Y": {
+          "write": 32.0
+        },
+        "dW1": {
+          "read": 32.0,
+          "write": 64.0
+        },
+        "dW2": {
+          "read": 32.0,
+          "write": 64.0
+        },
+        "dX": {
+          "write": 32.0
+        },
+        "dY": {
+          "read": 32.0
+        }
+      }
+    },
+    {
+      "budget": 147,
+      "orders_checked": 24,
+      "reconstructed_and_reevaluated": 4,
+      "failed_during_reconstruction": 20,
+      "all_successful_evaluations_equal": [
+        147,
+        256
+      ],
+      "successful_orders": [
+        [
+          "CopyW1",
+          "CopyW2",
+          "CopyX",
+          "CopydY"
+        ],
+        [
+          "CopyW1",
+          "CopyW2",
+          "CopydY",
+          "CopyX"
+        ],
+        [
+          "CopyW2",
+          "CopyW1",
+          "CopyX",
+          "CopydY"
+        ],
+        [
+          "CopyW2",
+          "CopyW1",
+          "CopydY",
+          "CopyX"
+        ]
+      ],
+      "per_tensor": {
+        "W1": {
+          "read": 32.0
+        },
+        "W2": {
+          "read": 32.0
+        },
+        "X": {
+          "read": 32.0
+        },
+        "Y": {
+          "write": 32.0
+        },
+        "dW1": {
+          "write": 32.0
+        },
+        "dW2": {
+          "write": 32.0
+        },
+        "dX": {
+          "write": 32.0
+        },
+        "dY": {
+          "read": 32.0
+        }
+      }
+    }
+  ],
+  "same_80B_budget_accounting": [
+    {
+      "policy": "native",
+      "compulsory": 256,
+      "extra_input_reads": 192.0,
+      "partial_reloads": 64.0,
+      "partial_stores": 64.0,
+      "total": 576.0
+    },
+    {
+      "policy": "graph",
+      "compulsory": 256,
+      "extra_input_reads": 64,
+      "partial_reloads": 64,
+      "partial_stores": 64,
+      "total": 448
+    }
+  ],
+  "limitations": [
+    "Native costs are re-evaluated by the native model, not the independent cell executor.",
+    "Reordering copy einsums creates a legal new schedule; original serialized order still fails.",
+    "These two source rows do not classify all FFN curve gaps or prove mapspace exclusion.",
+    "The native 147 B plateau remains outside the graph model 148 B plateau."
+  ],
+  "sha256": {
+    "merge_trace.jsonl": "069811b99944c1c0f18cd217e5ff7fecee30260604595ea77440ff7d54ca160f",
+    "copy_order_replay.jsonl": "15db38f9cf02f6c946a66aa1822eef6a8305a554790b04f916b698b80dd3ca4f",
+    "all_copy_orders.jsonl": "cd5ee0e622bd631a2d3e368bcb04bc5657d08d0e065d0c81163abe89ac489c7e",
+    "model.jsonl": "ee0bcceb68017fbf007acba2102f71012a6d39bdcf7391034b63c71ec2a4fa85"
+  }
+}

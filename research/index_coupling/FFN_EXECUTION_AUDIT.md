@@ -1,4 +1,4 @@
-# FFN: executable sharing benefit, native attribution still open
+# FFN: executable sharing benefit and fixed-witness ablation
 
 Completed 2026-11-09 on the designated experiment server. This follows the
 failed P14-FFN' equality prediction. It changes no frozen prediction, production
@@ -9,10 +9,12 @@ DRAM traffic. Keeping exactly that schedule and its reservations, but requiring
 separate consumer reads of X and dY, raises traffic to 576 B with the same
 80 B peak. All outputs, reduction completion, and no-recomputation checks pass.
 
-**Limit:** 576 B also matches a freshly reproduced native FFM frontier point,
-but the native selected source has different storage templates and fails
-whole-mapping reconstruction. Numerical equality does not identify its
-per-tensor traffic or prove this is the unique reason FFM misses 448 B.
+**Follow-up:** [FFN_NATIVE_ATTRIBUTION.md](FFN_NATIVE_ATTRIBUTION.md) resolves
+the reconstruction blockage for two sources by legally reordering independent
+copies. Native detailed evaluation gives 76 B / 576 B and 147 B / 256 B.
+Native already shares X/dY; it rereads W1/W2 instead. The ablation's matching
+576 B is therefore not a per-tensor explanation of the native gap. The initial
+failure and the superseded strict-float 147 B query remain recorded below.
 
 ## Execution evidence
 
@@ -106,19 +108,26 @@ whole mapping using the native `_for_model=True` path fails before evaluation:
     ValueError: No matching loop found for [] and
     [Temporal(... rank_variable='d', tile_shape=1, ...)]
 
-The captured template reservations also prevent a misleading interpretation:
+At this initial diagnostic stage, the captured template reservations already
+prevented a misleading interpretation:
 CopyX and CopydY place their outputs in GlobalBuffer, while CopyW1 and CopyW2
 place theirs in MainMemory. These are stored template annotations, not a
-successfully instantiated execution. The native choice is not established to
+successfully instantiated execution. The native choice was not established to
 be the model schedule with X/dY sharing switched off. No native per-tensor
-traffic decomposition or physical capacity validation was obtained.
+traffic decomposition or capacity validation was obtained in this first run.
+The subsequent copy-order replay obtains both from native detailed evaluation;
+it does not independently execute native mappings cell by cell.
 
 The initial secondary 147 B query used an excessively strict raw-float
 comparison and selected a 140 B/384 B row instead of the archive-rounded
 147 B plateau. That raw record is preserved but **excluded from plateau
 conclusions**. The runner is corrected to use the archive's three-decimal
-capacity convention and retain raw capacity. This correction was not rerun;
-the primary 80 B result and full archived-frontier reproduction are unaffected.
+capacity convention and retain raw capacity. At the end of that first run it
+had not been rerun; the primary 80 B result and full archived-frontier
+reproduction were unaffected.
+**Update:** the corrected query has now been rerun at `dc2b3669`; it selects
+147 B / 256 B, and legal copy reordering at `53c6a553` reproduces both values
+under detailed native evaluation. See the follow-up report.
 The model's 147/148 B replay above is independently valid for its own grammar.
 
 ## Research consequence

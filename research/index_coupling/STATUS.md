@@ -113,9 +113,14 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
    schedule uses 448 B traffic. Keeping its schedule/reservations fixed while
    separating X and dY consumer reads raises traffic to 576 B; 3 model and 5
    ablation executions pass. A fresh upstream run reproduces all 27 archived
-   frontier rows, but the selected 80 B-budget source fails whole-mapping
-   reconstruction. This establishes the schedule's sharing benefit, not the
-   unique cause of the native gap. See FFN_EXECUTION_AUDIT.md.
+   frontier rows. Original source reconstruction fails on incompatible copy
+   loops; reordering the four independent input copies enables 4/24 orders
+   for each of two sources, all reproducing native 76 B / 576 B and 147 B /
+   256 B under detailed evaluation. At the 80 B budget, native and graph
+   schedules have the same 128 B partial-sum overhead; extra input reads are
+   192 versus 64 B. Native already shares X/dY and rereads W1/W2. This explains
+   these schedules' transaction difference, not whether FFM excludes or prunes
+   the graph schedule. See FFN_EXECUTION_AUDIT.md and FFN_NATIVE_ATTRIBUTION.md.
 
 ## Withdrawn or corrected claims
 
@@ -190,7 +195,7 @@ Other files at the top level:
 | `curve_comparison*.txt`, `ffn_simulated.txt`, `nest_scores.txt` | Model vs FFM; simulator checks |
 | `classify_v2_small.jsonl` (`classify_small.jsonl` is superseded), `p14_small.jsonl` | P11–P14 |
 | `ffn_parts/` | FFN graph, no-write-through and FFM-like subset curves |
-| `ffn_shared_input_replay/` | Executed FFN witnesses, fixed-schedule sharing ablation, fresh native frontier and reconstruction failure |
+| `ffn_shared_input_replay/` | Executed FFN witnesses, fixed-schedule sharing ablation, native merge trace, copy-order replays and per-tensor attribution |
 | `coupling_sweep.jsonl` (256), `coupling_sweep_heldout.jsonl` (31), `p15_p16_scores.txt` | Two-consumer gap law |
 | `p17/`, `p18.jsonl`, `p18_scores.txt`, `p18_profile/`, `fork_witness/` | Role symmetry, multi-consumer forks, witnesses |
 | `tiled_fork/`, `constructive_fork/`, `constructive_heldout/`, `scalar_retention/`, `loop_normal_form/` | Codex constructive work |
