@@ -82,6 +82,11 @@ FFM cannot run.
    frontier, or the failure is reported. This reuses graph/curve.py. No new
    oracle is needed for the current grammar. A streaming oracle outside the
    grammar is a later extension.
+   **P21 outcome:** all 56 feasible interface queries compose exactly; all
+   eight read-X full cases refute the capacity-only interface. These include
+   repeated tile queries (40 distinct feasible interfaces). Unrestricted
+   curves differ in all 16 full cases: preserve partition/entry, extents and
+   residency before claiming a whole-graph summary. See P21_RESULTS.md.
 4. **P22, after P21: overlap and buffer occupancy.** A single-channel extension
    must charge double buffering and in-flight tiles against the same capacity
    budget as retained tensors. Prefetch scheduling follows this model; it does
@@ -102,6 +107,11 @@ is optimal at every positive bandwidth B. Bandwidth rescales traffic-related
 time differences; it cannot reverse their sign. Do not claim bandwidth-driven
 mapping crossovers without recomputation, shape-dependent utilization, or
 compute/transfer overlap.
+
+Even the aggregate roofline T = max(W/P, Q/B) cannot reverse rankings when
+W/P is identical for every mapping: it remains monotone in Q. An overlap-based
+crossover needs mapping-dependent overlap opportunities or phase timing, with
+their buffer occupancy represented; merely replacing plus by max is insufficient.
 
 For serial stages, fixed-interface (capacity, compute time, traffic) Pareto
 summaries compose by max capacity and additive compute/traffic. Their supported

@@ -1,0 +1,29 @@
+import json
+from multiprocessing import Pool
+import resource
+import time
+from research.index_coupling.verify_projection import tasks, job
+
+def run(item):
+    index, task = item
+    result = job(task)
+    return index, result
+
+def init():
+    resource.setrlimit(resource.RLIMIT_AS, (8*2**30, 8*2**30))
+
+if __name__ == '__main__':
+    start = time.monotonic()
+    pending = list(tasks())
+    total = bad = executed = 0
+    with open('../results/regression_records.jsonl', 'w') as output, Pool(4, initializer=init) as pool:
+        for index, (kind, key, ok, count) in pool.imap_unordered(run, enumerate(pending)):
+            output.write(json.dumps(dict(index=index, kind=kind, key=key, match=ok, executed=count))+'\n')
+            output.flush()
+            total += 1
+            bad += not ok
+            executed += count
+            if total % 25 == 0 or not ok:
+                print(f'checked {total}/{len(pending)}, mismatches {bad}, executed {executed}', flush=True)
+    print(json.dumps(dict(total=total, expected=len(pending), mismatches=bad, executed=executed, seconds=time.monotonic()-start)), flush=True)
+    raise SystemExit(1 if bad or total != len(pending) else 0)

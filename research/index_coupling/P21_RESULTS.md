@@ -42,6 +42,12 @@ whole-graph witnesses, and independent cell-execution results.
 - Serial experiment time: 198.393 seconds; slowest case: 42.471 seconds;
   maximum peak RSS: 68,704 KiB (67.09 MiB). Limits: 180 seconds and 8 GiB per
   case, one worker. Python 3.10.12, PYTHONHASHSEED=0, no approximate pruning.
+- Default-API regression: **475/475** archived comparisons match and **212/212**
+  historical witnesses replay exactly. The initial serial regression reached
+  its 600-second wall limit and is recorded as incomplete; a four-worker run
+  completed all 475 checks in 356.511 seconds, with 8 GiB per worker. The indexed
+  records cover every task exactly once. Four small local interface contract
+  tests also pass. These checks are separate from the 16 P21 experiments.
 
 The table counts incorrect **integer capacities through the union's final
 breakpoint**, with the constant tail checked separately. A wrong constant
@@ -166,7 +172,7 @@ PYTHONHASHSEED=0 python3 -B -m research.index_coupling.run_p21 --case 0
 python3 -B -m research.index_coupling.score_p21 research/index_coupling/results/p21
 python3 -B -m research.index_coupling.plot_p21 research/index_coupling/results/p21
 python3 -B -m unittest research.index_coupling.test_p21
-python3 -B -m research.index_coupling.verify_projection 1
+python3 -B -m research.index_coupling.verify_projection 4
 ```
 
 The runner automatically enforces per-case limits and records incomplete cases.
