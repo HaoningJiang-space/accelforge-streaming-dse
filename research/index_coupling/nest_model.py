@@ -137,6 +137,16 @@ def ffn(m, d, f):
     return Graph(dict(M=m, D=d, F=f, E=d), ops)
 
 
+def attention(m, p, e, f):
+    # One head of attention core: S = Q K^T, P = softmax(S), O = P V. Softmax is
+    # modeled elementwise (online softmax makes streaming over keys legal).
+    return Graph(dict(M=m, P=p, E=e, F=f), [
+        ('ES', {'Q': ('M', 'E'), 'K': ('P', 'E'), 'S': ('M', 'P')}),
+        ('ESoft', {'S': ('M', 'P'), 'A': ('M', 'P')}),
+        ('EO', {'A': ('M', 'P'), 'V': ('P', 'F'), 'O': ('M', 'F')}),
+    ])
+
+
 if __name__ == '__main__':
     # (label, graph, measured FFM plateau, role). Calibration points were seen
     # before the model was written; held-out points were frozen in PROTOCOL.md.

@@ -1,0 +1,20 @@
+# One attention head core: S = Q K^T, A = softmax(S) modeled elementwise, O = A V.
+{% set M = M | default(8) %}{% set P = P | default(8) %}{% set E = E | default(4) %}{% set F = F | default(4) %}
+workload:
+  rank_sizes: {M: {{M}}, P: {{P}}, E: {{E}}, F: {{F}}}
+  bits_per_value: {All: 8}
+  einsums:
+  - name: ES
+    tensor_accesses:
+    - {name: Q, projection: [m, e]}
+    - {name: K, projection: [p, e]}
+    - {name: S, projection: [m, p], output: True}
+  - name: ESoft
+    tensor_accesses:
+    - {name: S, projection: [m, p]}
+    - {name: A, projection: [m, p], output: True}
+  - name: EO
+    tensor_accesses:
+    - {name: A, projection: [m, p]}
+    - {name: V, projection: [p, f]}
+    - {name: O, projection: [m, f], output: True}

@@ -108,3 +108,18 @@ moving `CopydY` to just before its first consumer (EdW2) should remove it.
 - **P9.** With the late dY copy, F4 (M16 D8 F4) reaches the algorithmic
   minimum (640 B) at exactly 149 B, the nest model's value.
 - **P9′.** With the late dY copy, F1 (M16 D4 F8) stays at 147 B.
+
+# Attention core, frozen before running
+
+`attention_core.yaml` (S = QKᵀ, softmax as elementwise, O = AV; Q, K, V are
+graph inputs read once). Nest model predictions:
+
+| Case | M | P | E | F | Prediction, B | Model's resident set |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| A1 | 8 | 8 | 4 | 4 | 74 | K, V (query-outer) |
+| A2 | 16 | 4 | 4 | 8 | 56 | K, V (query-outer) |
+| A3 | 4 | 16 | 8 | 4 | 56 | Q, O (key-outer) |
+
+- **P10.** Each FFM plateau is within 2 B of the prediction.
+- **P10′.** Each is exact.
+The model ignores online-softmax row statistics (max and sum, 2·M values).

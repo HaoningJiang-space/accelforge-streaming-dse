@@ -30,6 +30,9 @@ def spec_for(case, n, dims=None):
     if case in ('shared_input', 'shared_input_copy'):
         return af.Spec.from_yaml(af.examples.arches.snowcat, ROOT / 'shared_input.yaml',
                                  jinja_parse_data=dict(N=n, COPY=case == 'shared_input_copy'))
+    if case == 'attention':
+        return af.Spec.from_yaml(af.examples.arches.snowcat, ROOT / 'attention_core.yaml',
+                                 jinja_parse_data=dims or {})
     if case.startswith('ffn_'):
         return af.Spec.from_yaml(af.examples.arches.snowcat, ROOT / 'ffn_train.yaml',
                                  jinja_parse_data=dict(dict(M=2 * n, D=n, F=2 * n), **(dims or {}),
@@ -58,7 +61,7 @@ def frontier(results, glb_bits):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('cases', nargs='+', choices=['same', 'cross', 'same_join', 'cross_join', 'gpt_scaled', 'ffn_full', 'ffn_fwd_wgrad', 'shared_input', 'shared_input_copy', 'ffn_full_copy', 'ffn_full_copy_late'])
+    parser.add_argument('cases', nargs='+', choices=['same', 'cross', 'same_join', 'cross_join', 'gpt_scaled', 'ffn_full', 'ffn_fwd_wgrad', 'shared_input', 'shared_input_copy', 'ffn_full_copy', 'ffn_full_copy_late', 'attention'])
     parser.add_argument('--n', type=int, default=4)
     parser.add_argument('--dims', default='', help='FFN sizes, e.g. M=16,D=4,F=8')
     parser.add_argument('--no-detail', action='store_true', help='skip post-join detailed evaluation')
