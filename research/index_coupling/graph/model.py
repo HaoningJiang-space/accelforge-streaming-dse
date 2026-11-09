@@ -91,3 +91,26 @@ def attention(m, p, e, f):
         ('ESoft', {'S': ('M', 'P'), 'A': ('M', 'P')}),
         ('EO', {'A': ('M', 'P'), 'V': ('P', 'F'), 'O': ('M', 'F')}),
     ])
+
+
+def residual(ni, nk, nl, depth=8, reads_x=False):
+    """X = copy(R); H; Z = H_last + X (depth + 2 operators).
+
+    H starts with two contractions I,K -> I,L -> I,K, then elementwise
+    operations. In the control H reads an independent D with X's shape;
+    in the residual case its first operation reads X. Addition has the same
+    access/traffic semantics as an elementwise product in the curve grammar.
+    """
+    if min(ni, nk, nl) < 1 or depth < 2:
+        raise ValueError('positive dimensions and depth >= 2 required')
+    source = 'X' if reads_x else 'D'
+    ops = [
+        ('EX', {'R': ('I', 'K'), 'X': ('I', 'K')}),
+        ('EH0', {source: ('I', 'K'), 'W0': ('K', 'L'), 'H0': ('I', 'L')}),
+        ('EH1', {'H0': ('I', 'L'), 'W1': ('L', 'K'), 'H1': ('I', 'K')}),
+    ]
+    for j in range(2, depth):
+        ops.append((f'EH{j}', {f'H{j-1}': ('I', 'K'), f'W{j}': ('I', 'K'),
+                                f'H{j}': ('I', 'K')}))
+    ops.append(('EAdd', {f'H{depth-1}': ('I', 'K'), 'X': ('I', 'K'), 'Z': ('I', 'K')}))
+    return Graph(dict(I=ni, K=nk, L=nl), ops)

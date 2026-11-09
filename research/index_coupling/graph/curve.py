@@ -84,7 +84,27 @@ def combine_max_sum(a, b, max_capacity=float('inf'), grid=None):
 
 
 def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_through=True,
-          written=frozenset(), split_shared=True, spill_cost=2):
+          written=frozenset(), split_shared=True, spill_cost=2, *,
+          external=frozenset(), entry='solve', root_groups=None, root_kept=None):
+    # Conditional interface: external tensors are resident, and their allocation
+    # and compulsory transfers belong to the caller. entry='group' queries the
+    # exact child interface used by a sibling partition. Root constraints apply
+    # only once; recursive children retain the original grammar.
+    external = frozenset(external)
+    if entry not in ('solve', 'group'):
+        raise ValueError("entry must be 'solve' or 'group'")
+    if root_groups is not None:
+        root_groups = tuple(tuple(g) for g in root_groups)
+        if (entry != 'solve' or any(not g for g in root_groups)
+                or tuple(op for g in root_groups for op in g) != graph.ops):
+            raise ValueError('root_groups must partition the ordered graph at solve entry')
+        shared = {t for t in graph.tensors(graph.ops) - external
+                  if sum(t in graph.tensors(g) for g in root_groups) > 1}
+        if root_kept is not None and not set(root_kept) <= shared:
+            raise ValueError('root_kept contains a tensor not shared at the root')
+    elif root_kept is not None:
+        raise ValueError('root_kept requires root_groups')
+    root_kept = None if root_kept is None else frozenset(root_kept)
     # Points above max_capacity are dropped in every subproblem: capacities only grow
     # when subresults are combined, so the curve up to max_capacity is unchanged.
     dims_of = {}
@@ -115,26 +135,29 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
             ext[i] = 1
         return ops, tuple(ext), external & tensors
 
-    def solve(ops, ext, external):
-        return _solve(*projected(ops, ext, external))
+    def solve(ops, ext, external, constrained=False):
+        return _solve(*projected(ops, ext, external), constrained)
 
     def group_curve(group, ext, external):
         return _group_curve(*projected(group, ext, external))
 
     @lru_cache(maxsize=None)
-    def _solve(ops, ext, external):
+    def _solve(ops, ext, external, constrained=False):
         live = graph.tensors(ops) - external
-        if all(size(t, ext) == 1 for t in live):
+        if not constrained and all(size(t, ext) == 1 for t in live):
             return ((len(live), 0, ()),)
         results = []
         n = len(ops)
-        for mask in range(1 << (n - 1)):
+        masks = (0,) if constrained else range(1 << (n - 1))
+        for mask in masks:
             groups, start = [], 0
             for i in range(n - 1):
                 if mask >> i & 1:
                     groups.append(ops[start:i + 1])
                     start = i + 1
             groups.append(ops[start:])
+            if constrained:
+                groups = root_groups
             users = {}
             for g, group in enumerate(groups):
                 for t in graph.tensors(group) - external:
@@ -142,6 +165,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
             shared = sorted(t for t, gs in users.items() if len(gs) > 1)
             for keep_bits in product((True, False), repeat=len(shared)):
                 kept = {t for t, k in zip(shared, keep_bits) if k}
+                if constrained and root_kept is not None and kept != root_kept:
+                    continue
                 if not split_shared and any(not k and t in produced and n_consumers[t] > 1
                                             for t, k in zip(shared, keep_bits)):
                     # A multi-consumer intermediate either stays on chip for all its
@@ -218,6 +243,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
     ext0 = tuple(graph.sizes[v] for v in names)
     inputs = consumed - produced
     outputs = produced - consumed
-    compulsory = sum(size(t, ext0) for t in inputs | outputs)
-    points = solve(graph.ops, ext0, frozenset())
+    compulsory = sum(size(t, ext0) for t in (inputs | outputs) - external)
+    points = (group_curve(graph.ops, ext0, external) if entry == 'group' else
+              solve(graph.ops, ext0, external, root_groups is not None))
     return tuple((c, compulsory + t) + ((flatten(w),) if witness else ()) for c, t, w in points)
