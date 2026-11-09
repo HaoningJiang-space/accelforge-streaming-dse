@@ -77,7 +77,8 @@ banking or precision changes may require a different Gamma and cost model.
 
 1. **Close the open tests.** These decide whether the next steps build on the
    first-split account or on multi-level retention scopes.
-   - P19: whether the first-split knapsack generalizes.
+   - P19 (done): the first-split knapsack predicts the maximum gap exactly
+     (P19a, b pass) but not the width of the positive range (P19c fails, 0/8).
    - P14-FFN′ equality failed (26 lower points, plus the known 1 B offset).
      Classify remaining differences using executed witnesses and native source
      reconstruction; do not infer a unique mechanism from numerical agreement.

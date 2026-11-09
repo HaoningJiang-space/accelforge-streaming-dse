@@ -43,13 +43,13 @@ whether both can be kept at the same time.
 | P16 | Cross never needs >5% less capacity | 31/31 | same |
 | P17 | spill_cost = 1 makes same and cross identical | 95/95; also proved | P17_RESULTS.md, ROLE_SYMMETRY_AND_SYSTEMS_CASE.md |
 | P18a–e | 3- and 4-consumer forks: bounds, max gap, symmetry | all pass; **P18d only by equality** | `results/p18_scores.txt` |
-| P19a–d | 6-consumer forks: max gap doubles at kkkiii (first-split knapsack) | **running** (frozen before any record) | PROTOCOL.md, `score_p19.py` |
+| P19a–d | 6-consumer forks: max gap doubles at kkkiii (first-split knapsack) | **a, b, d pass; c fails**: max gap exact in 8/8 (a) and 16/16 (b), strictly above kkkkii in 6/6; bounds 24/24. Positive width is not ordered kkkkki < kkkkii < kkkiii in any shape (0/8): kkkkii is widest in 8/8 | `results/p19.jsonl`, `results/p19_scores.txt` |
 | P21a | Unused X shifts H's capacity; fixed-boundary retain/spill composition | **pass**: 28/28 feasible interfaces exact; 4 empty controls excluded from evidence | P21_RESULTS.md, `results/p21/` |
 | P21b | Capacity-only fails when H reads X; conditional residency/extents repair it | **pass**: coarse fails in 8/8 full graphs; 28/28 feasible interfaces repaired; 596/596 whole witnesses replay exactly across P21 | same |
 
 P21 does not assert unrestricted whole-graph equality: all 16 free curves
 differ from the fixed partition with H_last materialized. Granularity alone
-does not distinguish resident X from DRAM X. P20 still awaits P19; P22 is deferred.
+does not distinguish resident X from DRAM X. P19 is scored; P22 is deferred.
 
 ## What is established, and how firmly
 

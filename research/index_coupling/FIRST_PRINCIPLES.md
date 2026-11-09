@@ -189,6 +189,15 @@ This is a first-split heuristic, not a proof: deeper levels and other groupings
 can change either fork's optimum. P19 (frozen) tests its first new consequence: the
 maximum doubles at kkkiii.
 
+**P19 outcome.** The maximum is exact in every shape: n·min(2L, n/2) for
+kkkiii (8/8) and n·min(L, n/2) for kkkkki and kkkkii (16/16), so the
+first-split knapsack predicts the cap beyond b <= 2. Its second consequence,
+that the positive-gap range (about 2b-1 budget steps) widens with b, fails in
+8/8 shapes: kkkkii's range is the widest everywhere, and at L=4 kkkiii's is
+also below kkkkki's. The knapsack fixes the peak, set at the first split; the
+range depends on budgets where deeper levels or the other branch decide, which
+it does not model.
+
 ## 8. Span-legal ranks: one obligation table for forks, FFN and residual blocks
 
 A group may loop over rank v only if every op in it uses v and every tensor
