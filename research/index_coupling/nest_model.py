@@ -119,6 +119,16 @@ def coupling(ni, nj, nk, nl, cross):
     ])
 
 
+def fork(ni, nj, nk, nl, roles):
+    # X = AB feeds one consumer per character of roles: 'k' contracts K
+    # (U_c = X C_c, U_c is I x L), 'i' contracts I (V_c = D_c X, V_c is L x K).
+    ops = [('EX', {'A': ('I', 'J'), 'B': ('J', 'K'), 'X': ('I', 'K')})]
+    for c, role in enumerate(roles):
+        ops.append((f'E{c}', {'X': ('I', 'K'), f'C{c}': ('K', 'L'), f'U{c}': ('I', 'L')} if role == 'k' else
+                    {f'D{c}': ('L', 'I'), 'X': ('I', 'K'), f'V{c}': ('L', 'K')}))
+    return Graph(dict(I=ni, J=nj, K=nk, L=nl), ops)
+
+
 def ffn(m, d, f):
     # Copy einsums are modeled as aliases sharing one reservation with their source
     # (AccelForge deduplicates same-memory aliases); their position in the einsum

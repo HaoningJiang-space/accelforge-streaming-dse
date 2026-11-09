@@ -211,3 +211,27 @@ ones with spill_cost=2.
   coupling_sweep.jsonl and coupling_sweep_heldout.jsonl, with write-through on.
 - **P17-control.** With the default `spill_cost=2` they differ in all 95 (already
   implied by the sweeps; rechecked in the same run).
+
+# Forks with three and four consumers, frozen before running (P18)
+
+`nest_model.fork(I, J, K, L, roles)`: X = AB feeds one consumer per role;
+'k' contracts K (U = X C, U is I x L), 'i' contracts I (V = D X, V is L x K).
+With a 'k' and b 'i' consumers (m = a + b), the obligation table gives the
+unretained first-split cost per extra trip nJ + nL(m + min(a, b)) when I = K = n:
+every minority consumer exposes one partial sum on the cheaper axis. Seen before
+freezing: only that fork(4,4,4,4,'kk') and 'ki' reproduce the two-consumer
+curves. Shapes: (n, J, n, L), n in {4, 8, 16}, J, L in {4, 8}; roles kkk, kki,
+ikk, iik, kkkk, kkki, kkii. dS(q) as in sweep_analysis.py (extra traffic).
+
+- **P18a.** For each mixed roles string with b 'i' consumers, versus the all-'k'
+  string of the same length: -b·IL <= dS(q) <= b·KL at every q.
+- **P18b.** Mixed strings never need more than 5% less capacity than all-'k'
+  at any q (all shapes have I = K).
+- **P18c.** For kki versus kkk, max_q dS = n·min(L, n/2) in at least 10 of 12
+  shapes and within 5% in all 12 (one exposed partial sum, as for two
+  consumers).
+- **P18d.** max_q dS(kkii vs kkkk) >= max_q dS(kkki vs kkkk) in every shape
+  (cost grows with the number of minority consumers).
+- **P18e.** iik and kki give identical curves (transposition symmetry, I = K,
+  A and B both n x J). kki and ikk may differ (consumer order matters in the
+  grammar); no prediction.

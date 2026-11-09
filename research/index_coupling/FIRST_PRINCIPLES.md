@@ -98,8 +98,9 @@ implies for buffer sizing and mapper mapspaces (FFM's sharing gaps).
 **Obligations.** Splitting a fused group along v into T trips makes every tensor
 lacking v an obligation: keep its tile (capacity) or revisit it, at
 (T-1)|t| for an input and 2(T-1)|t| for a partial sum. Per byte retained, a
-partial sum saves twice what an input saves, so capacity goes to partial sums
-first. For the fork (X has axes i, k):
+partial sum saves twice what an input saves. Retention is whole-tile, so the
+choice is a 0/1 knapsack: this density does NOT imply keeping partial sums
+first (capacity 10: a size-4 partial sum saves 8, a size-10 input saves 10). For the fork (X has axes i, k):
 
 | Outer axis | same | cross |
 | --- | --- | --- |
@@ -107,9 +108,10 @@ first. For the fork (X has axes i, k):
 | k | A input; U, V partial sums | A, D inputs; U partial sum |
 
 Each matmul consumer of X contributes exactly one partial-sum obligation (on the
-axis it contracts) and one input obligation (on its other axis). The multiset is
-the same for both graphs; coupling only decides how it is distributed over the
-axes. Same concentrates both partial sums on k and leaves i input-only; cross
+axis it contracts) and one input obligation (on its other axis). The set of
+obligated tensors is the same for both graphs; coupling decides how it is
+distributed over the axes. The weighted totals are not conserved when I != K
+(summing the two axes, cross minus same is (K-I)L). Same concentrates both partial sums on k and leaves i input-only; cross
 puts one on each axis. The outer loop picks the cheaper axis, so concentration
 helps. Unretained single-split cost per extra trip: same min(JK+2KL, IJ+4IL),
 cross min(JK+3KL, IJ+3IL).
@@ -124,7 +126,10 @@ levels.
 
     S_same(q) - IL  <=  S_cross(q)  <=  S_same(q) + KL   for every q.
 
-Proof sketch. Take any same construction m and map it to cross by the D/V swap
+Proof sketch (incomplete: it still needs a closure argument that the modified
+construction stays in the recursive grammar, in particular that making V
+external cannot trigger the scalar leaf earlier; see LOOP_NORMAL_FORM.md for
+the same issue). Take any same construction m and map it to cross by the D/V swap
 (ROLE_SYMMETRY_AND_SYSTEMS_CASE.md). In the image, choose "keep" for cross's V
 (K x L) at the outermost level where it lacks the loop variable. Its revisits
 vanish, so traffic is Q_same(m) - B_KL(m) - B_IL(m) <= Q_same(m); V is external
@@ -139,8 +144,8 @@ construction, not proved in general. The upper bound is attained exactly in
 174 shapes (11 more within 5%); the lower one in 88 of the 194 shapes where
 cross is better somewhere. Where the first-split costs above favour cross,
 cross is better somewhere in 95 of 96 shapes; when they favour same, cross
-still wins somewhere in 99 of 191, so this indicator is sufficient, not
-necessary.
+still wins somewhere in 99 of 191. This is an empirical heuristic, not a
+sufficient condition.
 
 **General form, for any fused group.** For each shared axis v, the obligation
 set is the tensors lacking v, with weight 2 for outputs contracted over v and
