@@ -1,4 +1,4 @@
-"""Scoped-retention ablation. Run only on eex005; outputs JSONL provenance."""
+"""Scoped-retention ablation. Run only on the experiment server; outputs JSONL provenance."""
 import argparse
 from collections import Counter
 import hashlib

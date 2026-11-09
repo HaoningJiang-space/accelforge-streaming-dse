@@ -1,6 +1,6 @@
 # Constructive fork experiment
 
-Start point: c82f2ee8. Run experiments only on eex005, in a separate checkout.
+Start point: c82f2ee8. Run experiments only on the experiment server, in a separate checkout.
 Existing FFN processes and frozen P11–P14 experiments are not changed.
 
 The objective is to turn the observed capacity/traffic effect into executable

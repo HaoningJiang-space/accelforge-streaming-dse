@@ -1,4 +1,4 @@
-# Two-axis tiles and scoped retention: results on eex005
+# Two-axis tiles and scoped retention: results on the experiment server
 
 The new family recovers the known 137/133-byte reverse exception and five
 additional midpoint capacity targets. A much smaller, analytically motivated
@@ -162,7 +162,7 @@ Candidate counts grow to 112–2688 (reduced) versus 328–16960 (full).
 
 ## Validation and reproducibility
 
-All experiments ran as `wangziheng@eex005`, Python 3.12.16. The original FFN
+All experiments ran as the experiment server, Python 3.12.16. The original FFN
 job and its checkout were not modified. Experimental code is independent of
 native FFM, and requires only the existing cell simulator for validation.
 
@@ -196,6 +196,6 @@ python -B -m research.index_coupling.summarize_tiled research/index_coupling/res
 ```
 
 Raw results, summary and figures: [results/tiled_fork](results/tiled_fork/).
-Remote originals: `/home/wangziheng/graph_dse/runs/tiled-fork-f4f4c7dc/` and
-`/home/wangziheng/graph_dse/runs/tiled-reduced-f1ac7c5a/`. Independent replay uses
+Remote originals: `~/graph_dse/runs/tiled-fork-f4f4c7dc/` and
+`~/graph_dse/runs/tiled-reduced-f1ac7c5a/`. Independent replay uses
 at most four workers; construction and paired timing are serial.

@@ -2,7 +2,7 @@
 
 Starting point: 52aee77d, 256 archived shapes already observed. This is an
 exploratory extension and ablation, not a held-out prediction. All experiments
-run on eex005 in the existing isolated worktree; ongoing FFN runs are untouched.
+run on the experiment server in the existing isolated worktree; ongoing FFN runs are untouched.
 
 The two known nested-retention witnesses for (32,8,32,4) motivate the extension:
 same retains A/U/V across K; cross retains B/V across I. Do not encode the

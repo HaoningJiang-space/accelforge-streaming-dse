@@ -1,4 +1,4 @@
-"""Run the constructive fork experiment on eex005; emit auditable JSONL."""
+"""Run the constructive fork experiment on the experiment server; emit auditable JSONL."""
 import argparse
 from collections import Counter
 import json

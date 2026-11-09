@@ -1,12 +1,12 @@
-# Constructive fork schedules: eex005 results
+# Constructive fork schedules: the experiment server results
 
 Direct construction recovers most of the preselected middle-of-curve capacity
 targets without recursive nest enumeration. It does **not** recover the full
 frontier. Allowing nondivisor strips yields independently executable traffic
 improvements and slightly reduces one previously reported capacity separation.
 
-All runs below executed as `wangziheng@eex005`, Python 3.12.16, in
-`/home/wangziheng/graph_dse/accelforge-index-bounds`. Original FFN runs continued
+All runs below executed as the experiment server, Python 3.12.16, in
+`~/graph_dse/accelforge-index-bounds`. Original FFN runs continued
 in their original checkout. Neither FFM nor the existing curve model/simulator
 was modified. The only existing documentation correction is the README's
 half-strip scratch formula (`n/2+1`, not `n+1`).
@@ -170,17 +170,17 @@ establish a complete non-incremental optimizer or a universal separation theorem
 
 ## Reproduce and inspect
 
-From the independent eex005 checkout, with `PYTHONHASHSEED=0`:
+From the independent the experiment server checkout, with `PYTHONHASHSEED=0`:
 
 ```sh
-/home/wangziheng/graph_dse/venv-main/bin/python -B -m research.index_coupling.run_constructive_fork validate
-/home/wangziheng/graph_dse/venv-main/bin/python -B -m research.index_coupling.run_constructive_fork sweep
-/home/wangziheng/graph_dse/venv-main/bin/python -B -m research.index_coupling.run_constructive_fork focus
-/home/wangziheng/graph_dse/venv-main/bin/python -B -m research.index_coupling.run_constructive_fork audit_union
+~/graph_dse/venv-main/bin/python -B -m research.index_coupling.run_constructive_fork validate
+~/graph_dse/venv-main/bin/python -B -m research.index_coupling.run_constructive_fork sweep
+~/graph_dse/venv-main/bin/python -B -m research.index_coupling.run_constructive_fork focus
+~/graph_dse/venv-main/bin/python -B -m research.index_coupling.run_constructive_fork audit_union
 ```
 
 Replay uses at most four workers; the rest is serial. Raw records are in
 [results/constructive_fork](results/constructive_fork/), including complete
 curves, all scored points, source commits, execution counters and reconstructible
 plan parameters. Remote originals are under
-`/home/wangziheng/graph_dse/runs/constructive-fork-34e273d6/`.
+`~/graph_dse/runs/constructive-fork-34e273d6/`.
