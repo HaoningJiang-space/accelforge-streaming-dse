@@ -1,8 +1,8 @@
 """Run the constructive fork experiment on eex005; emit auditable JSONL."""
 import argparse
 from collections import Counter
-from dataclasses import replace
 import json
+from multiprocessing import Pool
 from pathlib import Path
 import platform
 import statistics
@@ -104,9 +104,38 @@ def focus():
                  constructive_timing_repetitions=len(times), full_curve_seconds=curve_seconds)
 
 
+def replay_improvement(item):
+    plan, targets = item
+    actual = execute(plan)
+    assert all(actual[k] == plan.metrics()[k] for k in ("peak", "traffic", "reads", "writes"))
+    return dict(kind="improvement_execution", plan=plan.record(), targets=targets, execution=actual)
+
+
+def audit():
+    # Post-observation validation: audit EVERY knot at which the wider family
+    # beats the archived power-of-two grammar, not only the best improvement.
+    chosen = {}
+    for line in (RESULTS / "coupling_sweep.jsonl").read_text().splitlines():
+        record = json.loads(line)
+        shape = tuple(record["shape"])
+        for cross in (False, True):
+            plans = frontier(candidates(shape, cross, all_tiles=True))
+            for cap, traffic in record[("cross" if cross else "same") + "_wt"]:
+                eligible = [p for p in plans if p.metrics()["peak"] <= cap]
+                if not eligible:
+                    continue
+                best = min(eligible, key=lambda p: p.metrics()["traffic"])
+                if best.metrics()["traffic"] < traffic:
+                    chosen.setdefault(best, []).append(dict(capacity=cap, reference_traffic=traffic))
+    emit(kind="improvement_audit_size", plans=len(chosen), points=sum(map(len, chosen.values())))
+    with Pool(4) as pool:
+        for result in pool.imap(replay_improvement, chosen.items()):
+            emit(**result)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("validate", "sweep", "focus"))
+    parser.add_argument("mode", choices=("validate", "sweep", "focus", "audit"))
     args = parser.parse_args()
     emit(kind="metadata", mode=args.mode, host=platform.node(), python=platform.python_version(),
          commit=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),

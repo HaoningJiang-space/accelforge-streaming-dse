@@ -28,7 +28,7 @@ n=16, so each tensor is 256 B and the algorithmic minimum is 6n² = 1536 B.
 - Below 73 B, the cross frontier equals the materialized one. Fusion gives no
   benefit there, while the same-index graph already gains at 19 B. Same holds
   at n=8 (equal up to 19 B).
-- Capacity needed for traffic 9n²: same needs n²/2+n+1 B (37 at n=8, 137 at
+- Capacity needed for traffic 9n²: same needs n²/2+n/2+1 B (37 at n=8, 137 at
   n=16); cross needs 69 and 265 B (n²+5, n²+9), about 1.9×.
 - Both graphs reach the algorithmic minimum at the same capacity n²+n+1
   (21, 73, 273 B), by keeping X whole and streaming the other operands. So the
