@@ -8,6 +8,7 @@
 {% set M = M | default(8) %}{% set D = D | default(4) %}{% set F = F | default(8) %}
 {% set FORWARD_WGRAD_ONLY = FORWARD_WGRAD_ONLY | default(False) %}
 {% set COPY = COPY | default(False) %}
+{% set LATE_DY_COPY = LATE_DY_COPY | default(False) %}
 # COPY wraps every multi-consumer graph input in a copy einsum. FFM shares only
 # intermediates between einsums; without the copy each consumer rereads the input.
 workload:
@@ -16,7 +17,7 @@ workload:
   einsums:
   {% if COPY %}
   {% for t, proj in [('X', '[m, d]'), ('W1', '[d, f]'), ('W2', '[f, e]'), ('dY', '[m, e]')] %}
-  {% if not (FORWARD_WGRAD_ONLY and t == 'W1') %}
+  {% if not (FORWARD_WGRAD_ONLY and t == 'W1') and not (LATE_DY_COPY and t == 'dY') %}
   - {name: Copy{{t}}, is_copy_operation: True, tensor_accesses: [{name: {{t}}_in, projection: {{proj}}}, {name: {{t}}, projection: {{proj}}, output: True}]}
   {% endif %}
   {% endfor %}
@@ -35,6 +36,10 @@ workload:
     - {name: Z, projection: [m, f]}
     - {name: W2, projection: [f, e]}
     - {name: Y, projection: [m, e], output: True}
+  {% if COPY and LATE_DY_COPY %}
+  # Copy dY just before its first consumer instead of at the start.
+  - {name: CopydY, is_copy_operation: True, tensor_accesses: [{name: dY_in, projection: [m, e]}, {name: dY, projection: [m, e], output: True}]}
+  {% endif %}
   - name: EdW2
     tensor_accesses:
     - {name: Z, projection: [m, f]}

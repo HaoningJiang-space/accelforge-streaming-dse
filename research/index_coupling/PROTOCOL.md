@@ -97,3 +97,14 @@ the two D4·F8 FFN cases (model 148, measured 147). Copy einsums are aliases.
   calibration's one-scalar excess).
 Coupling cases use the fork's `run.py` with replay; FFN cases use the upstream
 probe without detailed evaluation.
+
+# F4 copy-order test, frozen before running
+
+Codex's review (REVIEW_NOTES.md) found that placing `CopydY` first makes the dY
+token row live from the start; adding that lifetime to the nest model gives
+exactly F4's measured 153 B and leaves F1–F3 unchanged. If this is the cause,
+moving `CopydY` to just before its first consumer (EdW2) should remove it.
+
+- **P9.** With the late dY copy, F4 (M16 D8 F4) reaches the algorithmic
+  minimum (640 B) at exactly 149 B, the nest model's value.
+- **P9′.** With the late dY copy, F1 (M16 D4 F8) stays at 147 B.
