@@ -45,9 +45,26 @@ Adding the join `Y = U ∘ V` (a diamond) makes this fork's FFM fail for **both*
 variants at n=4: same raises `No mappings found for EX <--> EU`, cross raises a
 missing rank-variable translation (`'k' not found`). This matches the Join
 failures on the GPT block (Q/QK) and MobileNet in `research/structure_prediction`.
-The research fork is 550 commits behind upstream AccelForge, which includes
-"Add rank variable translation check & filter for to-be-failed merges"; whether
-upstream handles reconvergent graphs is untested.
+The research fork is 550 commits behind upstream AccelForge.
+
+### Upstream AccelForge (04cf894e)
+
+`upstream_probe.py` uses only the public upstream API in a separate venv with
+one job ([results](results/upstream_probe.jsonl), n=4):
+
+| Case | Upstream result |
+| --- | --- |
+| same, no join | Same frontier as the fork (96 B at 21 B) |
+| cross, no join | Same frontier as the fork (96 B at 21 B) |
+| same + `Y` (diamond) | Joins: reaches 80 B (A–D read once, Y written once) at 25 B |
+| cross + `Y` (diamond) | Fails: `assert len(my_loop_group) == 1 or len(other_loop_group) == 1` |
+| scaled GPT block (fork fails at Q/QK) | Joins: 10-point frontier, 416 B at 50 B, 53 s |
+
+The cross diamond fails in `Nested._merge` (`accelforge/frontend/mapping/mapping.py`),
+in a branch marked TODO that assumes rank-variable translation can match the
+remaining loops. It is an unfinished merge path, not evidence that no fused
+execution exists. Whether 416 B is the GPT block's algorithmic minimum was not
+checked.
 
 ## Reproduce
 
