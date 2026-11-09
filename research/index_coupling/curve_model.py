@@ -11,6 +11,8 @@ be left out of the buffer and pay DRAM traffic:
   through DRAM: an intermediate is written once and read by each consuming group;
   a graph input is read once per group.
 - Loops may be split by powers of two; inner levels see the tile extent.
+- write_through=False forbids an intermediate from both feeding a consumer in its
+  producer's group on chip and going to DRAM for another group.
 Compulsory traffic (graph inputs read once, graph outputs written once) is added
 at the top. Every einsum in a group must iterate the group's loop (no recompute).
 The result is a Pareto set over this restricted model, not a lower bound.
@@ -76,7 +78,7 @@ def combine_max_sum(a, b, max_capacity=float('inf'), grid=None):
     return pareto(out, grid=grid)
 
 
-def curve(graph, witness=False, max_capacity=float('inf'), grid=None):
+def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_through=True):
     # Points above max_capacity are dropped in every subproblem: capacities only grow
     # when subresults are combined, so the curve up to max_capacity is unchanged.
     dims_of = {}
@@ -114,6 +116,14 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None):
             shared = sorted(t for t, gs in users.items() if len(gs) > 1)
             for keep_bits in product((True, False), repeat=len(shared)):
                 kept = {t for t, k in zip(shared, keep_bits) if k}
+                if not write_through and any(
+                        not k and any(output_of(op) == t for op in groups[g]) and
+                        any(t in graph.access[op] and output_of(op) != t for op in groups[g])
+                        for t, k in zip(shared, keep_bits) for g in users[t]):
+                    # Write-through: t feeds a consumer in its producer's group on chip
+                    # and also goes to DRAM for another group. FFM shares a tensor
+                    # between einsums through one backing reservation only.
+                    continue
                 extra = 0
                 for t, k in zip(shared, keep_bits):
                     if k:

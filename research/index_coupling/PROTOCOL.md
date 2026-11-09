@@ -123,3 +123,24 @@ graph inputs read once). Nest model predictions:
 - **P10.** Each FFM plateau is within 2 B of the prediction.
 - **P10′.** Each is exact.
 The model ignores online-softmax row statistics (max and sum, 2·M values).
+
+# Write-through switch and chain view, frozen before running
+
+`curve_model.curve(..., write_through=False)` forbids an intermediate from both
+feeding a consumer in its producer's group on chip and going to DRAM for another
+group (the sharing FFM cannot encode, REVIEW_NOTES_2.md E1). `chain_view.py`
+rewrites a graph so each tensor passes on chip to its first consumer only.
+Calibration seen before freezing: n4 same/cross only (write-through off gives
+FFM's 288 B at capacity 6 for n4 cross; both chain curves are identical).
+
+- **P11.** With write-through off, the model equals FFM's best traffic at the
+  six cross points L1–L6, and the four attention points L7–L10 stay lower
+  (attention has no multi-consumer tensor).
+- **P12.** With write-through off, the FFN M8 D4 F8 model is never below FFM's
+  best at any saved FFM capacity. A failure means write-through is not the
+  whole explanation of the FFN gaps.
+- **P13.** For square coupling (n8, n16, T1), the chain-view curves of same and
+  cross are identical, while the graph-view curves differ.
+- Measurement, no prediction: chain-view minus graph-view traffic at each
+  capacity for coupling and FFN M8 D4 F8. At unbounded capacity the gap is by
+  construction the extra reads and writes of multi-consumer tensors.
