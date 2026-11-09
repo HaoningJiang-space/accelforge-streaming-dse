@@ -74,7 +74,7 @@ def main():
                                                     if c == 'MainMemory' and float(v)}
         except Exception as error:
             record.update(status='error', error=f'{type(error).__name__}: {error}'[:600],
-                          where=traceback.format_exc().strip().splitlines()[-3][:300])
+                          where=[l.strip()[:200] for l in traceback.format_exc().strip().splitlines() if l.strip().startswith('File')][-12:])
         record['seconds'] = round(perf_counter() - start, 1)
         print(json.dumps(record), flush=True)
 
