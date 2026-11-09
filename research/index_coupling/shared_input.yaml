@@ -1,10 +1,15 @@
 # Minimal check: graph input X read by two einsums, U = X C and V = X D.
 # Unlimited buffer should allow reading X from DRAM once.
 {% set N = N | default(4) %}
+{% set COPY = COPY | default(False) %}
 workload:
   rank_sizes: {I: {{N}}, K: {{N}}, L: {{N}}}
   bits_per_value: {All: 8}
   einsums:
+  {% if COPY %}
+  # Copy the input into an intermediate so FFM can share it between consumers.
+  - {name: ECopy, is_copy_operation: True, tensor_accesses: [{name: X_in, projection: [i, k]}, {name: X, projection: [i, k], output: True}]}
+  {% endif %}
   - name: EU
     tensor_accesses:
     - {name: X, projection: [i, k]}

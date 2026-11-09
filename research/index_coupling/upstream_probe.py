@@ -27,8 +27,9 @@ def spec_for(case, n):
             raise KeyError(f'upstream GPT has no ranks {missing}; available {sorted(sizes)}')
         sizes.update(GPT_SHRINK)
         return spec
-    if case == 'shared_input':
-        return af.Spec.from_yaml(af.examples.arches.snowcat, ROOT / 'shared_input.yaml', jinja_parse_data=dict(N=n))
+    if case in ('shared_input', 'shared_input_copy'):
+        return af.Spec.from_yaml(af.examples.arches.snowcat, ROOT / 'shared_input.yaml',
+                                 jinja_parse_data=dict(N=n, COPY=case == 'shared_input_copy'))
     if case.startswith('ffn_'):
         return af.Spec.from_yaml(af.examples.arches.snowcat, ROOT / 'ffn_train.yaml',
                                  jinja_parse_data=dict(M=2 * n, D=n, F=2 * n,
@@ -52,7 +53,7 @@ def frontier(results, glb_bits):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('cases', nargs='+', choices=['same', 'cross', 'same_join', 'cross_join', 'gpt_scaled', 'ffn_full', 'ffn_fwd_wgrad', 'shared_input'])
+    parser.add_argument('cases', nargs='+', choices=['same', 'cross', 'same_join', 'cross_join', 'gpt_scaled', 'ffn_full', 'ffn_fwd_wgrad', 'shared_input', 'shared_input_copy'])
     parser.add_argument('--n', type=int, default=4)
     parser.add_argument('--actions', action='store_true', help='also record per-tensor DRAM actions at minimum traffic')
     args = parser.parse_args()
