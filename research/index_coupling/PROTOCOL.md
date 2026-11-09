@@ -37,3 +37,17 @@ from |D_same| to 2|V_cross|.
   the materialized frontier is (n/2)² + n/2 + 1 = 273 B for T1.
 
 Any miss is reported as a miss; the statements are not revised for these cases.
+
+## Amendment before reading held-out output
+
+Running `evaluate.py` on the training runs (n = 8, 16) shows that P3 as
+written already fails at one point per size: n=8 at 21 B (predicted 960,
+measured 896) and n=16 at 73 B (3840 vs 3584). At those points the same
+graph's mapping itself spills both U and V partial sums, so transposition adds
+no cost. P3 remains scored as written. A narrower statement is added:
+
+- **P3′.** As P3, but only at same-frontier points whose mapping also writes
+  V_same exactly once (D is the resident tensor, V is not spilled).
+
+This amendment was committed while the held-out runs were in progress and
+before any of their output was read.
