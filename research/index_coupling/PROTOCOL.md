@@ -51,3 +51,29 @@ no cost. P3 remains scored as written. A narrower statement is added:
 
 This amendment was committed while the held-out runs were in progress and
 before any of their output was read.
+
+# FFN training step (upstream FFM, copy-wrapped inputs, no detailed evaluation)
+
+Calibration seen before freezing: M=8, D=4, F=8 reaches the algorithmic
+minimum 256 B at 147 B. There the two single-nest resident sets tie at 128 B.
+
+Single loop nest with outermost index s; every tensor lacking s stays on chip:
+- s = m (tokens): {W1, W2, dW1, dW2}, R_m = 4·D·F.
+- s = f (FFN hidden): {X, Y, dY, dX}, R_f = 4·M·D.
+
+Let R = min(R_m, R_f). Frozen before running:
+
+| Case | M | D | F | R_m | R_f | Predicted resident set |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| F1 token-heavy | 16 | 4 | 8 | 128 | 256 | weights and weight gradients |
+| F2 hidden-heavy | 4 | 4 | 16 | 256 | 64 | activations and their gradients |
+
+- **P5.** Each case reaches the algorithmic minimum (inputs read once,
+  outputs written once).
+- **P6.** The plateau capacity lies in [R, 1.25·R]: F1 in [128, 160], F2 in
+  [64, 80].
+- **P7.** At the plateau, the mapping keeps the predicted set on chip: in F1,
+  F2's set does not fit (R_f = 256 > 160), and vice versa.
+
+These are join values from FFM without detailed re-evaluation, so P5–P7 test
+the model against FFM's own mapspace, not against a replayed execution.

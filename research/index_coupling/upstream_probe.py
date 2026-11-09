@@ -17,7 +17,7 @@ ROOT = Path(__file__).parent
 GPT_SHRINK = dict(D=4, G=4, J=4, H=1, E=4, F=4, C=16)
 
 
-def spec_for(case, n):
+def spec_for(case, n, dims=None):
     if case == 'gpt_scaled':
         spec = af.Spec.from_yaml(af.examples.arches.snowcat, af.examples.workloads.transformers.gpt.gpt3_6_7B,
                                  jinja_parse_data=dict(BATCH_SIZE=1, DECODE=False, N_NEW_TOKENS=2))
@@ -32,7 +32,8 @@ def spec_for(case, n):
                                  jinja_parse_data=dict(N=n, COPY=case == 'shared_input_copy'))
     if case.startswith('ffn_'):
         return af.Spec.from_yaml(af.examples.arches.snowcat, ROOT / 'ffn_train.yaml',
-                                 jinja_parse_data=dict(M=2 * n, D=n, F=2 * n, COPY=case.endswith('_copy'),
+                                 jinja_parse_data=dict(dict(M=2 * n, D=n, F=2 * n), **(dims or {}),
+                                                       COPY=case.endswith('_copy'),
                                                        FORWARD_WGRAD_ONLY=case.startswith('ffn_fwd_wgrad')))
     cross, join = {'same': (False, False), 'cross': (True, False), 'same_join': (False, True),
                    'cross_join': (True, True)}[case]
@@ -58,15 +59,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('cases', nargs='+', choices=['same', 'cross', 'same_join', 'cross_join', 'gpt_scaled', 'ffn_full', 'ffn_fwd_wgrad', 'shared_input', 'shared_input_copy', 'ffn_full_copy'])
     parser.add_argument('--n', type=int, default=4)
+    parser.add_argument('--dims', default='', help='FFN sizes, e.g. M=16,D=4,F=8')
     parser.add_argument('--no-detail', action='store_true', help='skip post-join detailed evaluation')
     parser.add_argument('--actions', action='store_true', help='also record per-tensor DRAM actions at minimum traffic')
     args = parser.parse_args()
+    dims = {k: int(v) for k, v in (x.split('=') for x in args.dims.split(',') if x)}
     af.set_n_parallel_jobs(1)
     for case in args.cases:
         start = perf_counter()
-        record = dict(case=case, n=args.n, detailed_evaluation=not args.no_detail)
+        record = dict(case=case, n=args.n, dims=dims, detailed_evaluation=not args.no_detail)
         try:
-            spec = spec_for(case, args.n)
+            spec = spec_for(case, args.n, dims)
             spec.mapper.metrics = af.Metrics.ENERGY | af.Metrics.RESOURCE_USAGE
             if args.no_detail:
                 # Skip the post-join detailed re-evaluation, which rebuilds full mapping
