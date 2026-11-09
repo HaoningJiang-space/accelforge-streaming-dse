@@ -3,6 +3,7 @@
 This page is the index to the directory. README.md keeps the chronological record.
 PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
+Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.md.
 
 ## Question
 
@@ -37,7 +38,7 @@ whether both can be kept at the same time.
 | P14 | An FFM-like restriction (a DRAM-backed tensor is fetched once per consumer) equals FFM on 14 coupling cases | 12/14; C1 fails | `results/p14_small.jsonl` |
 | P14′ | Attention: FFM-like curve equals the graph curve | pass (attention gaps stay unexplained) | same |
 | P14-FFN | Same restriction explains the FFN gaps | **fails**: union of all 8 subsets is never below FFM (0 breakpoints) but above it at 15; it ends at 384 = 256 + 4·32 because copy-wrapped inputs were read once per consumer | `results/ffn_parts/`, `graph/scoring.py ffn` |
-| P14-FFN′ | Same, with copy-wrapped inputs shareable | **running** (frozen before running) | PROTOCOL.md |
+| P14-FFN′ | Same, with copy-wrapped inputs shareable | **equality fails**: 8/8 subsets, lower/equal/higher at 26/8/1 breakpoints; weak rule passes only with the declared 147/148 B plateau exception | FFN_SHARED_INPUT_RESULTS.md |
 | P15 / P15′ | max_q dS = I·min(L, I/2) on 31 held-out shapes | P15 fails (24/31 exact, needed 28); P15′ passes (31/31 within 5%) | `results/p15_p16_scores.txt` |
 | P16 | Cross never needs >5% less capacity | 31/31 | same |
 | P17 | spill_cost = 1 makes same and cross identical | 95/95; also proved | P17_RESULTS.md, ROLE_SYMMETRY_AND_SYSTEMS_CASE.md |
@@ -63,7 +64,9 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
      the restricted view matches 12/14 held-out coupling cases. Its completed
      FFN union is not FFM-equivalent: always separating shared graph inputs
      excludes the known 256 B plateau and creates a 384 B compulsory floor.
-     See FFN_SHARING_RESULTS.md before making a causal attribution.
+     See FFN_SHARING_RESULTS.md before making a causal attribution. The amended
+     shared-input control restores the 256 B floor but still differs at 26 lower
+     points and the known 1 B plateau offset (FFN_SHARED_INPUT_RESULTS.md).
    - *Unexplained.* The attention gaps and C1.
 3. **Role symmetry (proved).** Exchanging I and K and flipping every
    consumer's role preserves the curve. With spill_cost = 1, every role mix of
