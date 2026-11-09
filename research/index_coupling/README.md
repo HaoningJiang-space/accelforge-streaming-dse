@@ -1,5 +1,8 @@
 # Index coupling between consumers of a shared tensor
 
+**Current status, prediction ledger and code map: [STATUS.md](STATUS.md).** This
+README is the chronological record of the early experiments.
+
 Same operator DAG, tensor shapes and MAC count; only the index that one consumer
 contracts differs. `X = AB` feeds `U = XC` and either `V = XD` (same: both
 consumers contract X's column index) or `V = DX` (cross: V contracts X's row
@@ -235,6 +238,6 @@ each capacity the model is lower at 19 of 20 distinct capacities by 32–96 B an
 higher only at 147 B (the plateau, model 148). The simulator executed the
 model's witness at 7, 19, 57 and 140 B and reproduced its buffer and traffic
 exactly (`results/ffn_simulated.txt`); e.g. at 140 B the model needs 320 B of
-DRAM traffic versus FFM's 384 B. The mechanism behind these FFN gaps has not
-been classified; write-through of FFN's many multi-consumer tensors is the
-leading hypothesis, not a finding.
+DRAM traffic versus FFM's 384 B. Write-through does not explain these gaps (P12
+failed). The model restricted to FFM-like sharing (P14-FFN) is not below FFM
+at any breakpoint for 6 of its 8 subsets; the last two are pending (STATUS.md).

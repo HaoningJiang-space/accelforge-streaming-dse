@@ -1,0 +1,147 @@
+# Index coupling: current status (entry point)
+
+This page is the index to the directory. README.md keeps the chronological record.
+PROTOCOL.md holds every frozen prediction, unchanged after freezing.
+Numbers below are copied from the linked result files.
+
+## Question
+
+Fix an operator graph, its tensor shapes and its MAC count. How much on-chip
+buffer does a given DRAM-traffic budget need? How much of that is decided by the
+**index relations between operators**, that is, which index each consumer of a
+shared tensor contracts? The answer should not depend on a particular search
+method.
+
+Current thesis (FIRST_PRINCIPLES.md):
+
+> 缓冲容量是在保留可复用输入与保留未完成累加之间分配；跨算子索引关系决定这些保留能否同时成立。
+
+In English: buffer capacity is split between keeping reusable inputs and keeping
+unfinished accumulations, and the index relations between operators decide
+whether both can be kept at the same time.
+
+## Prediction ledger
+
+| ID | Claim (short) | Verdict | Evidence |
+| --- | --- | --- | --- |
+| P1, P2 | Same and cross reach the minimum traffic at the same plateau; plateau location | pass | README, `evaluate.py` |
+| P3 / P3′ | Transfer law from same to cross | P3 fails at 1 of 5 points (T1); P3′ passes | README |
+| P4 | Capacity where cross fusion starts to help, square shapes | pass | README |
+| P5–P7 | FFN plateau reaches the minimum, lies in [R, 1.25R], keeps the predicted resident set | P5 passes; P6 misses by 1 B (F2); P7 only indirect | README |
+| P8 / P8′ | Nest model plateau exact / within 2 B on held-out cases | 4/6 / 5/6 (F4: FFM 153, model 149) | `results/nest_scores.txt` |
+| P9 / P9′ | F4 copy order explains the F4 gap | P9 fails (153→152); P9′ passes | README |
+| P10 / P10′ | Attention-core plateaus | pass, exact | `results/attention_heldout.jsonl` |
+| P11 | Write-through explains the coupling gaps vs FFM | passes at FFM's saved capacities; **withdrawn as an explanation**: 19 gaps remain on the union of breakpoints | PROTOCOL amendment |
+| P12 | Write-through explains the FFN gaps | **fails** (no-write-through model still lower than FFM at 30 breakpoints) | `classify.py`, `results/classify_v2_small.jsonl` |
+| P13 | Chain view makes square same and cross identical | pass | `results/classify_v2_small.jsonl` |
+| P14 | An FFM-like restriction (a DRAM-backed tensor is fetched once per consumer) equals FFM on 14 coupling cases | 12/14; C1 fails | `results/p14_small.jsonl` |
+| P14′ | Attention: FFM-like curve equals the graph curve | pass (attention gaps stay unexplained) | same |
+| P14-FFN | Same restriction explains the FFN gaps | **open**: 6/8 subsets never below FFM; Z and H+Z are running | `results/ffn_parts/` |
+| P15 / P15′ | max_q dS = I·min(L, I/2) on 31 held-out shapes | P15 fails (24/31 exact, needed 28); P15′ passes (31/31 within 5%) | `results/p15_p16_scores.txt` |
+| P16 | Cross never needs >5% less capacity | 31/31 | same |
+| P17 | spill_cost = 1 makes same and cross identical | 95/95; also proved | P17_RESULTS.md, ROLE_SYMMETRY_AND_SYSTEMS_CASE.md |
+| P18a–e | 3- and 4-consumer forks: bounds, max gap, symmetry | all pass; **P18d only by equality** | `results/p18_scores.txt` |
+| P19a–d | 6-consumer forks: max gap doubles at kkkiii (first-split knapsack) | **running** (frozen before any record) | PROTOCOL.md, `score_p19.py` |
+
+## What is established, and how firmly
+
+Scope: these statements are about the recursive loop-nest grammar of
+`curve_model.py`. Within that grammar the model is exact. It covers serial
+execution, no recomputation, and divisible power-of-two tiles. Its witnesses
+are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
+216 FFM-comparison points.
+
+1. **Curve model vs FFM.** Over 216 points the two agree at 206, the model is
+   lower at 10 and higher at none (`results/curve_comparison.txt`). On FFN M8
+   D4 F8 the model is lower at 56 union breakpoints and higher only at 147 B
+   (the 1 B plateau offset).
+2. **What FFM cannot represent.**
+   - *Write-through* (one tensor feeds a consumer on chip and is also written
+     to DRAM). Source lines are in REVIEW_NOTES_2.md.
+   - *Shared on-chip fetch of a DRAM-backed tensor.* FFM charges such a fetch
+     once per consumer (P14).
+   - *Unexplained.* The attention gaps and C1.
+3. **Role symmetry (proved).** Exchanging I and K and flipping every
+   consumer's role preserves the curve. With spill_cost = 1, every role mix of
+   the same consumer count gives the same curve (P17, P18e). So in this grammar
+   the coupling cost comes entirely from the read/write asymmetry of partial
+   sums.
+4. **Bounds (empirical; proof incomplete).** -b·IL ≤ dS ≤ b·KL held on all 287
+   two-consumer shapes and on every P18 shape. The closure step of the proof is
+   still missing (FIRST_PRINCIPLES.md §6).
+5. **Mechanism of the maximum gap (witnesses; heuristic).** See
+   FIRST_PRINCIPLES.md §7 and `results/fork_witness/`.
+   - A pure fork can split an axis that no consumer contracts.
+   - In a mixed fork every axis of X is some consumer's contraction axis, so a
+     split leaves b partial sums unfinished. Each must be kept (s = nL) or
+     spilled (2s).
+   - A first-split knapsack then gives max dS = n·min(ceil(b/2)·L, n/2). This
+     fits P15/P18 and explains why P18d held only by equality. P19 is its first
+     test outside the data it was read from.
+6. **Extent of the penalty (exploratory).** More minority consumers widen the
+   range of traffic budgets with a positive gap, without raising its peak:
+   12/12 shapes on signed area and positive-domain length
+   (P18_PROFILE_RESULTS.md). Order completion removes one local
+   fixed-order artifact at (16,4,16,4), but the coupling gap remains.
+7. **Constructive side (Codex).** These results are proved, but each holds only
+   within its own construction family, and none recovers the full curve
+   (HELDOUT_RESULTS.md: the frozen quality gate fails).
+   - Scalar retention: (r+1)h+1 with h = J+2L.
+   - Strip-width elimination.
+   - Loop normal form.
+
+## Withdrawn or corrected claims
+
+- "Write-through explains every coupling gap." This was scored only at FFM's
+  saved capacities; 19 gaps remain on the union of breakpoints.
+- The chain view at first charged X's write twice (448 vs 432). This was fixed
+  with `written`; the v1 chain columns in `classify_small.jsonl` are
+  superseded by `classify_v2_small.jsonl`.
+- Several obligation rules were corrected after Codex's review
+  (FIRST_PRINCIPLES.md §6):
+  - "Accumulator-free loops outermost" is not a pruning rule.
+  - Charging partial sums twice is not a lower bound.
+  - Partial sums are not kept first; retention is a knapsack.
+  - The 95/96 rule is a heuristic.
+- "I≠K shapes are confounded by size": false. They are fair role-only
+  controls (P17 proof).
+
+## Open
+
+- P19 verdict, and P14-FFN once the Z and H+Z parts finish.
+- The C1 and attention gaps vs FFM.
+- The closure proof of the bound.
+- An integer-tile retest of dS; the power-of-two grid is a known artifact
+  source (CONSTRUCTIVE_RESULTS.md).
+- Other graph structures (GLU, residual joins).
+- Skeleton enumeration plus analytic tile sizing (FIRST_PRINCIPLES.md §4,
+  HANDOFF.md).
+- Literature check before any novelty claim (FIRST_PRINCIPLES.md §5).
+
+## Code map (module path `research.index_coupling.<name>`)
+
+| Role | Files |
+| --- | --- |
+| Core models | `nest_model.py` (graphs: `coupling`, `fork`, `ffn`, attention; plateau), `curve_model.py` (capacity-traffic curve; cache keys projected per subproblem since `7b891c7c`), `chain_view.py`, `ffm_like.py` |
+| Independent checks | `simulate_nest.py` (cell-level execution of witnesses), `verify_projection.py` (475 archived curves, 0 mismatches), `upstream_probe.py` |
+| FFM side (needs AccelForge) | `run.py`, `evaluate.py`, `compare_curves.py`, `*.yaml` |
+| Prediction runners | `classify.py` (P11–P13), `score_ffm_like.py` (P14), `ffn_parts.py` (FFN curves one per process), `coupling_sweep.py` (P15/16 data), `run_p17.py`, `run_p18.py`, `run_p19.py` |
+| Scoring and analysis | `score_ffn.py`, `score_p15.py`, `score_p18.py`, `score_p19.py`, `sweep_analysis.py` (`delta`, `s_of`), `analyze_p18_profile.py`, `fork_witness.py`, `run_fork_order_check.py` |
+| Constructive families (Codex) | `constructive_fork.py`, `tiled_fork.py`, `scalar_retention.py`, `loop_normal_form.py`; runners `run_constructive_fork.py`, `run_tiled_fork.py`, `run_scalar_retention.py`, `run_loop_normal_form.py`, `validate_constructive.py`; summaries `summarize_*.py`, `inspect_heldout_miss.py`, `test_validate_constructive.py` |
+| Diagnostics | `mem_probe.py` (FFN time and memory), `probe_curve_memory.py` (cache-growth diagnosis), `real_scale.py` |
+
+## Results map
+
+| Files | Content |
+| --- | --- |
+| `results/{n4,n8,n16,T1,T2,T3,C1,C2}_{same,cross}.json`, `upstream_*.jsonl`, `attention_heldout.jsonl` | FFM frontiers (reference) |
+| `curve_comparison*.txt`, `ffn_simulated.txt`, `nest_scores.txt` | Model vs FFM; simulator checks |
+| `classify_v2_small.jsonl` (`classify_small.jsonl` is superseded), `p14_small.jsonl` | P11–P14 |
+| `ffn_parts/` | FFN graph, no-write-through and FFM-like subset curves |
+| `coupling_sweep.jsonl` (256), `coupling_sweep_heldout.jsonl` (31), `p15_p16_scores.txt` | Two-consumer gap law |
+| `p17/`, `p18.jsonl`, `p18_scores.txt`, `p18_profile/`, `fork_witness/` | Role symmetry, multi-consumer forks, witnesses |
+| `tiled_fork/`, `constructive_fork/`, `constructive_heldout/`, `scalar_retention/`, `loop_normal_form/` | Codex constructive work |
+| `memory_probe/`, `verify_projection.txt` | Cache diagnosis and its exact fix |
+
+Heavy runs go to the experiment server with memory and time caps, one process
+per curve for FFN. Local runs are limited to checks that take seconds.
