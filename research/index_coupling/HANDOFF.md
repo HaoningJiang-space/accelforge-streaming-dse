@@ -26,3 +26,19 @@
    constraint costs the extra bytes.
 
 Write findings to `REVIEW_NOTES_2.md`; do not edit PROTOCOL.md.
+
+## Update (after merging index-coupling-bounds and scalar-retention-proof)
+
+Both branches are merged into research/main and deleted. Please commit directly
+to research/main (fetch first), as before; keep server user/host names and
+absolute server paths out of committed files.
+
+Your scalar-retention theorem and the residence substitution are now the basis
+of FIRST_PRINCIPLES.md. Suggested next task, in place of further constructor
+speed work: generalize Theorem 3 from one strip width to a skeleton (fusion
+grouping, loop order, retention position per tensor) whose tile factors are
+solved analytically (posynomial Q and S; closed form or geometric program),
+with integer rounding checked by simulate_nest.py. Start with the coupling fork
+and compare against curve_model at the same integer tile grid. Also check
+P17's outcome (PROTOCOL.md): if partial-sum spill cost 1 makes same and cross
+identical, a write-aware lower bound is the matching lower-bound task.
