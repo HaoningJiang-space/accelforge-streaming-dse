@@ -138,3 +138,37 @@ keep nothing). The free K,I block has only C local. Reordering it to I,K would
 prematurely invoke the implicit scalar leaf. The guard convention must preserve
 its partial spills. Before executing this follow-up, the hand prediction is
 peak=21 cells, reads={A:16,B:8,C:24}, writes={C:32}, traffic=80.
+
+## Observed validation results
+
+Both runs used clean, pinned checkouts on the designated experiment machine.
+The reference curve implementation and independent simulator were unchanged.
+
+| Check | Result |
+| --- | --- |
+| Original frozen graph cases, revision `2ee6b2f4` | 16/16 pass |
+| Original frontier witnesses | 102 |
+| Canonicalized witnesses differing syntactically | 51 |
+| Static loop nodes, all original frontier witnesses | 796 -> 721 |
+| Independent before/after executions for that set | 204, identical checked metrics |
+| Injected-refinement coverage in the original run | 0; not counted as tested |
+| Follow-up revision `2eea7277` | 18 refinements, 54 executions, all pass |
+| Implicit-leaf guard example | 2 executions; predicted 21 peak / 80 traffic |
+| Total independent executions | 260 |
+
+For the 4x4x4x4 same fork, static loop nodes across the six returned frontier
+witnesses shrink from 64 to 49 and maximum loop depth from 6 to 4. For its cross
+counterpart, the seven witnesses shrink from 89 to 68 and depth from 6 to 5.
+These counts describe program representation, not tensor operations, model
+evaluations or search work avoided. The experiments still generate the original
+reference frontier before transforming it. No end-to-end acceleration follows.
+
+The exact bound is loose: for the fork it gives depth <=47, while the tested
+original depth is at most 6. It proves that dimension-independent structural
+representation exists in this grammar, not that exhaustive skeleton enumeration
+is practical. The FFN and attention cases validate only the declared proxy
+graphs, not real alias lifetimes or normalized softmax.
+
+[Original run](results/loop_normal_form/checks.jsonl) ·
+[Follow-up](results/loop_normal_form/supplement.jsonl) ·
+[Counts and checksums](results/loop_normal_form/audit.json)

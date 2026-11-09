@@ -213,3 +213,36 @@ with a declared scope bound, executable plans, and the existing exact sizing
 rules where applicable. Its first test is coverage of previously unseen useful
 residency structures, before making a new claim about all schedules or hardware
 accumulation. No new optimizer name or universal lower-bound claim is needed.
+
+## 6. Boundaries of the subsequent obligation argument
+
+The obligation table added at `7e6487ce` is a useful *fixed-loop* accounting
+description. Three additional distinctions matter before making it a search
+rule:
+
+1. Twice the marginal benefit per byte does not prove a global greedy policy.
+   Even with one fixed trip count and no changing inner cost, whole-tensor
+   retention is a discrete choice. With 10 units of available capacity, keeping
+   a 4-unit partial sum saves 8 units per extra trip; keeping a 10-unit input
+   saves 10. The former leaves insufficient room for the latter. A density-first
+   choice is worse. Actual scope-dependent footprints and different revisit
+   counts add further coupling.
+2. The unweighted footprint of the paired terminal objects is conserved for
+   any I,K. The sum of *weighted*, first-split obligations is not. Using the
+   note's table, cross minus same is `(K-I)*L` when the two axis scores are
+   summed. It vanishes at I=K, but role-only comparison at other shapes remains
+   valid without this additional conservation claim.
+3. A 95/96 successful predictor is a heuristic with a counterexample, not a
+   sufficient condition. A sufficient condition must exclude or correctly
+   account for that failed case by an independently justified premise.
+
+The proposed `-IL <= S_cross(q)-S_same(q) <= KL` replacement has a constructive
+physical interpretation: protect the newly exposed terminal accumulator while
+the opposite terminal object becomes a read-only input. To claim this precisely
+for `S` minimized over the recursive grammar, also prove closure under that
+reservation promotion. Its implicit scalar-leaf rule can change the residual
+tree when an additional tensor becomes external; scope membership and peak
+must be checked after that change. No counterexample to the capacity bound is
+asserted here, and the existing 287-shape check remains supporting exploratory
+evidence. A general fused group with intermediate outputs and multiple consumers
+needs a new replacement argument; the terminal D/V swap does not establish it.
