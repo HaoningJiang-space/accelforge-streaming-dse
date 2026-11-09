@@ -113,7 +113,9 @@ The correctness is exact only inside these six families.
 
 ## Corollary: full frontier in O(sqrt(I)+sqrt(K)) representatives
 
-ceil(n/r)=floor((n-1)/r)+1 takes O(sqrt(n)) distinct values. Within each
+ceil(n/r)=floor((n-1)/r)+1 takes O(sqrt(n)) distinct values: there are
+O(sqrt(n)) widths below sqrt(n), and above it the quotient has only
+O(sqrt(n)) possible values. Within each
 constant-quotient interval all traffic is identical; each of the three peak
 functions is increasing, so retain only the smallest width. Starting at r=1,
 advance to floor((n-1)/(p-1))+1 for p=ceil(n/r)>1; finish when p=1. Evaluate
