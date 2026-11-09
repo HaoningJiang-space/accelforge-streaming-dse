@@ -223,7 +223,8 @@ exactly at every point. No accounting bug was found. The 10 lower points:
   for EV (write-through). FFM shares a tensor between einsums only through its
   first (backing) reservation, so one tensor cannot be both a buffer tile for
   EX/EU and a DRAM channel for EV (source lines in REVIEW_NOTES_2.md, fork and
-  upstream). The saving is 3–6% of traffic at those capacities.
+  upstream). The saving is 5.6% of traffic for the square cases and 0.9–1.5%
+  for C2.
 - **Attention core, 4 points (32 B each): executable but unresolved.** The
   most likely cause is FFM's default of one fused loop per rank variable, but
   no rejected template has been shown.
