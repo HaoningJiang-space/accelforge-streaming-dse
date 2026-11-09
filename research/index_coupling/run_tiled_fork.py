@@ -1,6 +1,7 @@
 """Scoped-retention ablation. Run only on eex005; outputs JSONL provenance."""
 import argparse
 from collections import Counter
+import hashlib
 from itertools import chain
 import json
 from multiprocessing import Pool
@@ -185,15 +186,48 @@ def audit():
             emit(**result)
 
 
+def audit_reduced(prior_path):
+    raw = prior_path.read_bytes()
+    records = [json.loads(line) for line in raw.splitlines()]
+    prior = set()
+    for record in records:
+        if record["kind"] != "execution":
+            continue
+        p = record["plan"]
+        plan = TiledPlan(tuple(p["shape"]), p["cross"], p["outer"], p["rows"], p["cols"], tuple(p["kept"]))
+        assert record["execution"]["valid"]
+        assert all(record["execution"][k] == plan.metrics()[k] for k in ("peak", "traffic", "reads", "writes"))
+        prior.add(plan)
+    assert len(prior) == next(r["plans"] for r in records if r["kind"] == "audit_size")
+    chosen = set()
+    for shape, cross, _ in cases():
+        for grid in (False, True):
+            plans, _, _, _ = build(shape, cross, grid, "tiles_dual_retention")
+            chosen.update(p for p in plans if isinstance(p, TiledPlan))
+    pending = sorted(chosen-prior, key=lambda p: (p.shape, p.cross, p.outer, p.rows, p.cols, p.kept))
+    emit(kind="reduced_audit_size", selected=len(chosen), prior_validated=len(chosen & prior),
+         new_replays=len(pending), prior_sha256=hashlib.sha256(raw).hexdigest(),
+         prior_commit=records[0]["commit"])
+    with Pool(4) as pool:
+        for result in pool.imap(replay, ((p, ["reduced_frontier"]) for p in pending), chunksize=1):
+            emit(**result)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("validate", "sweep", "audit", "dual_sweep", "benchmark"))
+    parser.add_argument("mode", choices=("validate", "sweep", "audit", "dual_sweep", "benchmark", "audit_reduced"))
+    parser.add_argument("--prior-audit", type=Path)
     args = parser.parse_args()
     emit(kind="metadata", mode=args.mode, host=platform.node(), python=platform.python_version(),
          commit=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
          tracked_dirty=bool(subprocess.check_output(["git", "diff", "--name-only", "HEAD"], text=True)),
          reference_commit="c82f2ee8", strip_baseline="52aee77d")
-    globals()[args.mode]()
+    if args.mode == "audit_reduced":
+        if args.prior_audit is None:
+            parser.error("audit_reduced requires --prior-audit")
+        audit_reduced(args.prior_audit)
+    else:
+        globals()[args.mode]()
 
 
 if __name__ == "__main__":
