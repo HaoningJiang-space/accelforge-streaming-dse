@@ -1,0 +1,38 @@
+# X = AB feeds U = XC and V; Y combines U and V elementwise (data-movement proxy for U+V).
+# CROSS=False: V = XD (both consumers contract X's column index k).
+# CROSS=True:  V = DX (V contracts X's row index i), same DAG, shapes and MACs.
+{% set N = N | default(4) %}
+{% set CROSS = CROSS | default(False) %}
+{% set JOIN = JOIN | default(True) %}
+workload:
+  rank_sizes: {I: {{N}}, J: {{N}}, K: {{N}}, L: {{N}}}
+  bits_per_value: {All: 8}
+  einsums:
+  - name: EX
+    tensor_accesses:
+    - {name: A, projection: [i, j]}
+    - {name: B, projection: [j, k]}
+    - {name: X, projection: [i, k], output: True}
+  - name: EU
+    tensor_accesses:
+    - {name: X, projection: [i, k]}
+    - {name: C, projection: [k, l]}
+    - {name: U, projection: [i, l], output: True}
+  - name: EV
+    tensor_accesses:
+    {% if CROSS %}
+    - {name: D, projection: [l, i]}
+    - {name: X, projection: [i, k]}
+    - {name: V, projection: {I: l, L: k}, output: True}
+    {% else %}
+    - {name: X, projection: [i, k]}
+    - {name: D, projection: [k, l]}
+    - {name: V, projection: [i, l], output: True}
+    {% endif %}
+  {% if JOIN %}
+  - name: EY
+    tensor_accesses:
+    - {name: U, projection: [i, l]}
+    - {name: V, projection: [i, l]}
+    - {name: Y, projection: [i, l], output: True}
+  {% endif %}
