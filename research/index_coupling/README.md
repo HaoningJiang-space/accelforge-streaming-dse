@@ -93,7 +93,7 @@ Predictions in [PROTOCOL.md](PROTOCOL.md) were committed before these runs
   graph itself spills U and V, so the cross graph matches it (14,336) instead of
   paying the predicted extra (15,360).
 - The sign of the cross penalty depends on shape. In T2, cross is better than
-  same at 3–7 B (for example 25,664 vs 26,112 at 3 B); in T3, cross is better at
+  same at 3, 4 and 7 B (for example 25,664 vs 26,112 at 3 B); in T3, cross is better at
   137 B (4,864 vs 5,120). The plateau is identical in every case.
 - P1, P2 and P4 need no mapping search. P3/P3′ transfer the same-index
   frontier to the cross graph, so they still need one graph search.
