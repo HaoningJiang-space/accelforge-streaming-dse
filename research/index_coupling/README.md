@@ -107,14 +107,19 @@ X (H = X·W1 vs dW1 = Xᵀ·dH) and Z (Y = Z·W2 vs dW2 = Zᵀ·dY) are cross pa
 
 Two upstream modeling issues had to be handled first:
 
-- **Shared graph inputs.** FFM shares only intermediates between einsums.
-  A graph input read by two einsums is fetched by each. In the minimal case
-  `U = X·C, V = X·D`, the unlimited-buffer minimum is 96 B instead of 80 B. Wrapping
-  the input in a copy einsum (as upstream's GPT workload does for `I`) gives 80 B.
+- **Shared graph inputs under Snowcat.** Snowcat's MainMemory keeps
+  `~Intermediates`, so a graph input is backed in DRAM, and the join sums each
+  consumer's read energy. A graph input read by two einsums is therefore charged
+  once per consumer. (Upstream FFM does treat multi-einsum inputs as fusable;
+  this is the architecture spec's backing policy, corrected after review.) In
+  the minimal case `U = X·C, V = X·D`, the unlimited-buffer minimum is 96 B
+  instead of 80 B. Wrapping the input in a copy einsum (as upstream's GPT
+  workload does for `I`) makes it an intermediate and gives 80 B.
   Without copies the FFN minimum is 384 B; with copies it reaches the algorithmic 256 B.
 - **Detailed re-evaluation crash.** With copies, X and dY become cross-index
   shared intermediates. The join completes, but FFM's post-join detailed
-  evaluation crashes rebuilding mapping trees (`Nested._merge`). Running with
+  evaluation crashed with `ValueError: No matching loop found` in
+  `Nested._merge` (FFN; reproduce with `upstream_probe.py ffn_full_copy`). Running with
   `eval_in_detail=False` returns the joined frontier. On `shared_input_copy`,
   joined and detailed values agree row for row; the FFN values are not replayed.
   The cross diamond `Y = U∘V` also joins this way and reaches the 80 B minimum at
@@ -134,13 +139,15 @@ the other set's size (256 B in both cases). F1's plateau equals the M=8
 calibration's 147 B, consistent with weight-resident streaming being
 independent of token count. Each run took about 6 minutes with one worker.
 
-## Search-free nest model
+## Nest model (no FFM search)
 
 `nest_model.py` predicts the plateau (minimum buffer with zero extra DRAM
-traffic) without mapping search, from recursive loop nests: a tensor that lacks
-the current loop index, or is used by several sibling groups, stays whole; a
-loop must be iterated by every einsum in its group; copies are aliases.
-Each prediction takes well under a second.
+traffic) without running FFM. It exhaustively minimizes over a restricted
+model of recursive loop nests: a tensor that lacks the current loop index, or
+is used by several sibling groups, stays whole; a loop must be iterated by
+every einsum in its group; a copy and its source share one reservation and the
+copy's position in the einsum order is ignored. The minimum is over this model,
+not over all legal mappings. Each prediction takes well under a second.
 
 | Set | Points | Exact | Within 1 B | Worse |
 | --- | ---: | ---: | ---: | --- |
@@ -149,11 +156,14 @@ Each prediction takes well under a second.
 | Held-out F3, F4 (FFN training step) | 2 | 0 | 1 | F4: FFM 153 vs model 149 |
 
 Frozen P8 (exact) passes 4 of 6 held-out points; P8′ (within 2 B) passes 5 of
-6. Where FFM is 1 B below the model, FFM saves one scalar the model counts.
-F4 is the opposite: the model's best nest (printed by
-`plateau(ffn(16, 8, 4), witness=True)`) looks legal, with no recomputation and
-every tensor read once, but FFM needs 4 B more. Its cause is unresolved because
-no-detail FFM results carry no mapping witness; see CODEX_REVIEW.md item 2.
+6. The 1 B gaps where FFM is below the model are unexplained; no buffer element
+has been identified. F4 is the opposite: FFM's saved frontier needs 4 B more than
+the model's best nest (printed by `plateau(ffn(16, 8, 4), witness=True)`). This
+does not prove FFM cannot express 149 B. The review's hypothesis is copy order:
+`CopydY` is first in the einsum order, so the dY row stays live from the start;
+adding that lifetime to the model gives exactly 153 B and leaves F1–F3 unchanged.
+P9 in PROTOCOL.md tests it by moving the copy. The probe's JSON omits mapping
+witnesses, although no-detail FFM objects retain per-einsum mappings.
 
 The first version of the model let an einsum sit inside a loop over an index
 it does not iterate, i.e. recompute it. That gave the same F4 value of 149 and

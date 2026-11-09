@@ -1,4 +1,4 @@
-"""Search-free plateau model: minimum buffer for zero extra DRAM traffic.
+"""Plateau model without FFM search: minimum buffer for zero extra DRAM traffic.
 
 An execution is a recursive loop nest over the einsums in their given order.
 At each level, the current einsum sequence is split into consecutive groups and
@@ -120,8 +120,9 @@ def coupling(ni, nj, nk, nl, cross):
 
 
 def ffn(m, d, f):
-    # Copy einsums (is_copy_operation) reserve no buffer in AccelForge; they only
-    # make a multi-consumer input shareable. They are modeled as aliases: X, W1, W2
+    # Copy einsums are modeled as aliases sharing one reservation with their source
+    # (AccelForge deduplicates same-memory aliases); their position in the einsum
+    # order is ignored, which can underestimate lifetimes (see REVIEW_NOTES.md). X, W1, W2
     # and dY are inputs read once, kept whole by the cross-group rule when needed.
     ops = [
         ('EH', {'X': ('M', 'D'), 'W1': ('D', 'F'), 'H': ('M', 'F')}),
