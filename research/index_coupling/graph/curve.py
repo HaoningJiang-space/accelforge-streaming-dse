@@ -89,7 +89,7 @@ def combine_max_sum(a, b, max_capacity=float('inf'), grid=None):
 def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_through=True,
           written=frozenset(), split_shared=True, spill_cost=2, *,
           external=frozenset(), entry='solve', root_groups=None, root_kept=None,
-          whole_span_cuts=None, legacy_nested_writes=False):
+          whole_span_cuts=None, legacy_nested_writes=False, partitions='enumerate'):
     # Conditional interface: external tensors are resident, and their allocation
     # and compulsory transfers belong to the caller. entry='group' queries the
     # exact child interface used by a sibling partition. Root constraints apply
@@ -109,6 +109,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         allowed_mask = sum(1 << (k-1) for k in whole_span_cuts)
     if entry not in ('solve', 'group'):
         raise ValueError("entry must be 'solve' or 'group'")
+    if partitions not in ('enumerate', 'dp'):
+        raise ValueError("partitions must be 'enumerate' or 'dp'")
     if root_groups is not None:
         root_groups = tuple(tuple(g) for g in root_groups)
         if (entry != 'solve' or any(not g for g in root_groups)
@@ -163,6 +165,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         live = graph.tensors(ops) - external
         if not constrained and all(size(t, ext) == 1 for t in live):
             return ((len(live), 0, ()),)
+        if partitions == 'dp' and not constrained:
+            return cut_dp(ops, ext, external, owned)
         results = []
         n = len(ops)
         masks = (0,) if constrained else range(1 << (n - 1))
@@ -226,6 +230,94 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                         break
                 results.extend(level)
         return pareto(results, max_capacity, grid)
+
+    def cut_dp(ops, ext, external, owned):
+        # Same partitions, costs and witnesses as the enumeration in _solve, built
+        # left to right over cut positions. A tensor crosses cut p when ops on both
+        # sides use it; at a chosen cut that means it is shared by two groups.
+        # The state at p is the keep/DRAM choice of each crossing tensor: every
+        # later cost depends on the prefix only through it, and capacity (max)
+        # and traffic (sum) are monotone, so Pareto-pruning each state is exact.
+        live = graph.tensors(ops) - external
+        n = len(ops)
+        use = [graph.tensors((op,)) & live for op in ops]
+        first = {t: min(i for i in range(n) if t in use[i]) for t in live}
+        last = {t: max(i for i in range(n) if t in use[i]) for t in live}
+        writer = {t: next((i for i, op in enumerate(ops) if output_of(op) == t), None) for t in live}
+        crossing = [tuple(sorted(t for t in live if first[t] < p <= last[t])) for p in range(n + 1)]
+        allowed = [p == n or allowed_mask is None or ops != graph.ops or allowed_mask >> (p - 1) & 1
+                   for p in range(n + 1)]
+        states = [dict() for _ in range(n + 1)]
+        # Witness while building: (groups, decisions, concatenated group witnesses).
+        states[0][()] = ((0, 0, ((), frozenset(), ()) if witness else ()),)
+        for p in range(n):
+            for bits_p, prefix in states[p].items():
+                decided = dict(zip(crossing[p], bits_p))
+                for q in range(p + 1, n + 1):
+                    if not allowed[q]:
+                        continue
+                    new = [t for t in crossing[q] if t not in decided]
+                    group = ops[p:q]
+                    touched = set().union(*use[p:q])
+                    for new_bits in product((True, False), repeat=len(new)):
+                        choice = dict(decided, **dict(zip(new, new_bits)))
+                        if not split_shared and any(not choice[t] and t in produced and n_consumers[t] > 1
+                                                    for t in new):
+                            continue
+                        dropped = {t for t in touched if t in choice and not choice[t]}
+                        if not write_through and any(
+                                writer[t] is not None and p <= writer[t] < q and
+                                any(t in graph.access[op] and output_of(op) != t for op in group)
+                                for t in dropped):
+                            continue
+                        kept = frozenset(t for t, k in choice.items() if k)
+                        across = sum(size(t, ext) for t in set(crossing[p]) | set(crossing[q]) if choice[t])
+                        extra = 0
+                        for t in dropped:
+                            if writer[t] is not None and t in consumed:
+                                extra += size(t, ext) * ((t not in owned) if p <= writer[t] < q else 1)
+                            elif writer[t] is None and first[t] < p:
+                                extra += size(t, ext)
+                        written_here = frozenset(t for t, k in choice.items()
+                                                 if not k and writer[t] is not None and t in consumed)
+                        child_owned = owned if legacy_nested_writes else owned | written_here
+                        inner = pareto(((across + c, t, w) for c, t, w in
+                                        group_curve(group, ext, external | kept, child_owned)), max_capacity)
+                        bits_q = tuple(choice[t] for t in crossing[q])
+                        decisions = frozenset(choice.items())
+                        merged = [(c, t + extra, w if not witness else
+                                   (w[0] + (group,), w[1] | decisions, cat(w[2], wg)))
+                                  for c, t, w, wg in merge_staircases(prefix, inner)]
+                        if merged:
+                            states[q][bits_q] = pareto(list(states[q].get(bits_q, ())) + merged, max_capacity)
+        results = []
+        for c, t, w in states[n].get((), ()):
+            if witness:
+                groups, decisions, inner = w
+                note = ('groups', groups, 'kept', tuple(sorted(x for x, k in decisions if k)),
+                        'via DRAM', tuple(sorted(x for x, k in decisions if not k)))
+                w = cat((note,), inner)
+            results.append((c, t, w))
+        return pareto(results, max_capacity, grid)
+
+    def merge_staircases(a, b):
+        # combine_max_sum keeping both witnesses separate for the caller.
+        out, i, j = [], -1, -1
+        for c in sorted({p[0] for p in a} | {p[0] for p in b}):
+            if c > max_capacity:
+                break
+            while i + 1 < len(a) and a[i + 1][0] <= c:
+                i += 1
+            while j + 1 < len(b) and b[j + 1][0] <= c:
+                j += 1
+            if i >= 0 and j >= 0:
+                out.append((max(a[i][0], b[j][0]), a[i][1] + b[j][1], a[i][2], b[j][2]))
+        best, kept = float('inf'), []
+        for point in sorted(out, key=lambda p: (p[0], p[1])):
+            if point[1] < best:
+                kept.append(point)
+                best = point[1]
+        return kept
 
     @lru_cache(maxsize=None)
     def _group_curve(group, ext, external, owned):
