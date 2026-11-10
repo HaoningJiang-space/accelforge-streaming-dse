@@ -70,3 +70,19 @@ Questions: do residual state counts remain constant per operator with fixed
 widths and rank domains? Do the actual stack definitions satisfy the assumed
 constant widths? Which dimensions of context grow when counts do not follow
 the proposed product? No fit or timeout will be promoted into a structural proof.
+
+## Separate ancestor-residency control (specified after the 34-case study)
+
+`run_ancestor_width.py` fixes one operator with k ranks of extent two. Input
+T_i carries every rank except v_i; Y carries every rank. Hence n=1, w_cut=0
+and every legal loop has at most one obligation. Before running k=1...8,
+predict 3^k solve keys and 3^k-2^k group keys: each rank can be unsliced,
+sliced with T_i dropped, or sliced with T_i kept. All fully sliced states
+stop at solve. The maximum ancestor external-set size is k. The experiment
+uses exact DP, witnesses, no optional shortcuts, 60 seconds and 1 GiB per
+fresh Linux process. It has separate records and source provenance.
+
+This is a counterexample to bounding accumulated contexts by the maximum
+local obligation width. Rank count and tensor volume grow here; this is not
+a lower bound for all exact algorithms. Even the 2^k extent grid alone omits
+the distinct retained-input contexts. No existing prediction is revised.
