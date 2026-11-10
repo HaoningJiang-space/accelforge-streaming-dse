@@ -5,6 +5,15 @@ PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
 Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.md.
 
+Two-contraction conditional interfaces:
+[TWO_CONTRACTION_INTERFACE_RESULTS.md](TWO_CONTRACTION_INTERFACE_RESULTS.md).
+Predictions frozen at `5b2b6169` match 208/208 full v2 response curves and
+4,000/4,000 capacity points (678 positive-traffic points), with 571 exact framed
+executions. All four endpoint-residency contexts and solve/group entries are
+checked independently; 50/104 matched entry pairs have different frontiers.
+The complete solve formula includes materializing the intermediate, while group
+must respect its first-loop contract. No solver replacement or speedup is claimed.
+
 Remainder implementation: [REMAINDER_SEARCH_RESULTS.md](REMAINDER_SEARCH_RESULTS.md).
 Exact ordered-remainder reuse (including rank restoration) and infeasible-group
 pruning are now default-off core options. Exact matching rejects WL collisions;
