@@ -30,6 +30,7 @@ from itertools import product
 from math import floor, isqrt, log, prod
 from time import perf_counter
 from .span_names import SpanNames
+from .remainder import InfeasibleGroups, RemainderNames
 
 
 _CAT = object()  # witness concatenation node; flattened once at the end
@@ -47,12 +48,13 @@ def flatten(witness):
         if w and w[0] is _CAT:
             stack.extend(((w[2], names), (w[1], names)))
         elif w and w[0] is _RENAME:
-            maps = w[2] if names is None else tuple(
-                {k: outer.get(v, v) for k, v in inner.items()}
-                for inner, outer in zip(w[2], names))
+            inner_maps = w[2] if len(w[2]) == 3 else (*w[2], {})
+            maps = inner_maps if names is None else tuple(
+                {k: outer.get(inner.get(k, k), inner.get(k, k)) for k in inner.keys() | outer.keys()}
+                for inner, outer in zip(inner_maps, names))
             stack.append((w[1], maps))
         elif names is not None:
-            op, tensor = names
+            op, tensor, rank = names
             for note in w:
                 if note[0] == 'groups':
                     out.append(('groups', tuple(tuple(op[x] for x in g) for g in note[1]),
@@ -60,7 +62,7 @@ def flatten(witness):
                                 'via DRAM', tuple(sorted(tensor[t] for t in note[5]))))
                 else:
                     assert note[0] == 'loop'
-                    out.append(('loop', tuple(op[x] for x in note[1]), note[2], note[3],
+                    out.append(('loop', tuple(op[x] for x in note[1]), rank.get(note[2], note[2]), note[3],
                                 'kept', tuple(sorted(tensor[t] for t in note[5])),
                                 'refetched', tuple(sorted(tensor[t] for t in note[7]))))
         else:
@@ -145,7 +147,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
           external=frozenset(), entry='solve', root_groups=None, root_kept=None,
           whole_span_cuts=None, legacy_nested_writes=False, partitions='enumerate',
           ownership_projection=True, stats=None, canonical_spans=False, independent_ops=False,
-          tile_domain='halving'):
+          tile_domain='halving', canonical_remainders=False, prune_infeasible_groups=False):
     """Exact frontiers when grid=None; optional per-call performance ledger.
 
     stats is populated even if search raises (e.g. a caller's timeout). Timed
@@ -155,6 +157,11 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
     tile_domain='divisors' admits every proper divisor at every recursive
     extent. The default 'halving' retains the original integer-halving sequence
     filtered by divisibility, including its omissions on non-power-of-two sizes.
+    canonical_remainders reuses ordered remaining problems only after an exact
+    tensor/rank isomorphism check. prune_infeasible_groups rejects intrinsic
+    empty groups before response caching and skips impossible retention batches.
+    Both are opt-in and currently require exact, unlimited, unconstrained,
+    single-writer queries. They do not change the operator-order grammar.
     """
     if tile_domain not in ('halving', 'divisors'):
         raise ValueError("tile_domain must be 'halving' or 'divisors'")
@@ -247,6 +254,17 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
     elif root_kept is not None:
         raise ValueError('root_kept requires root_groups')
     root_kept = None if root_kept is None else frozenset(root_kept)
+    if canonical_remainders or prune_infeasible_groups:
+        if (grid is not None or max_capacity != float('inf') or whole_span_cuts is not None
+                or root_groups is not None or len(graph.produced()) != len(graph.ops)):
+            raise ValueError('remainder options require exact unlimited unconstrained single-writer queries')
+        if any(type(e) is not int or e < 1 for e in graph.sizes.values()):
+            raise ValueError('remainder options require positive integer extents')
+        if any(tuple(ds) != tuple(graph.dims(t)) or len(ds) != len(set(ds))
+               for op in graph.ops for t,ds in graph.access[op].items()):
+            raise ValueError('remainder options require consistent tensor rank projections')
+        if canonical_remainders and canonical_spans:
+            raise ValueError('choose canonical_remainders or canonical_spans, not both')
     # Points above max_capacity are dropped in every subproblem: capacities only grow
     # when subresults are combined, so the curve up to max_capacity is unchanged.
     dims_of = {}
@@ -256,6 +274,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
     produced, consumed = graph.produced(), graph.consumed()
     output_of = graph.output
     names = sorted(graph.sizes)
+    remainder_names = RemainderNames(graph,names,measure=stats is not None) if canonical_remainders else None
+    empty_groups = InfeasibleGroups(graph,names) if prune_infeasible_groups else None
     axes = {t: tuple(names.index(v) for v in dims) for t, dims in dims_of.items()}
     n_consumers = {t: len(graph.consumers(t)) for t in dims_of}
 
@@ -318,6 +338,9 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
 
     def solve(ops, ext, external, owned, constrained=False):
         state = projected(ops, ext, external, owned)
+        if remainder_names is not None:
+            state, restore = remainder_names.state('solve', *state)
+            return restore_names(_solve(*state, constrained), restore)
         if span_names is None or constrained:
             return _solve(*state, constrained)
         state, restore = span_names.state(*state)
@@ -325,10 +348,24 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
 
     def group_curve(group, ext, external, owned):
         state = projected(group, ext, external, owned)
+        if empty_groups is not None and infeasible(*state[:3]):
+            return ()
+        if remainder_names is not None:
+            state, restore = remainder_names.state('group', *state)
+            return restore_names(_group_curve(*state), restore)
         if span_names is None:
             return _group_curve(*state)
         state, restore = span_names.state(*state)
         return restore_names(_group_curve(*state), restore)
+
+    def infeasible(ops, ext, external):
+        if empty_groups is None:
+            return False
+        result = empty_groups.empty(ops,ext,external)
+        if stats is not None:
+            stats['group_prechecks'] = stats.get('group_prechecks',0) + 1
+            stats['empty_group_skips'] = stats.get('empty_group_skips',0) + result
+        return result
 
     def restore_names(points, restore):
         if restore is None:
@@ -399,6 +436,10 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                 for t in project(group)[0] - external:
                     users.setdefault(t, []).append(g)
             shared = sorted(t for t, gs in users.items() if len(gs) > 1)
+            if empty_groups is not None and any(infeasible(g,ext,external | frozenset(shared)) for g in groups):
+                if stats is not None:
+                    stats['retention_batches_skipped'] = stats.get('retention_batches_skipped',0) + 1
+                continue
             for keep_bits in product((True, False), repeat=len(shared)):
                 if stats is not None:
                     stats['partition_choices'] += 1
@@ -473,6 +514,12 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                         continue
                     new = [t for t in crossing[q] if t not in decided]
                     group = ops[p:q]
+                    if empty_groups is not None:
+                        possible_kept = frozenset(t for t,k in decided.items() if k) | frozenset(new)
+                        if infeasible(group,ext,external | possible_kept):
+                            if stats is not None:
+                                stats['retention_batches_skipped'] = stats.get('retention_batches_skipped',0) + 1
+                            continue
                     for new_bits in product((True, False), repeat=len(new)):
                         if stats is not None:
                             stats['dp_transitions'] += 1
@@ -565,4 +612,9 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
             stats['group_cache'] = _group_curve.cache_info()._asdict()
             stats['cut_metadata_cache'] = cut_metadata.cache_info()._asdict()
             stats['span_classes'] = len(span_names.representatives) if span_names is not None else None
+            if remainder_names is not None:
+                stats['remainder'] = dict(remainder_names.counts, seconds=remainder_names.seconds,
+                                          aliases=remainder_names.lookup.cache_info()._asdict())
+            if empty_groups is not None:
+                stats['feasibility_metadata_cache'] = empty_groups.metadata.cache_info()._asdict()
             stats['seconds'] = perf_counter() - started

@@ -5,8 +5,9 @@ with these settings:
 
 - exact frontiers (`grid=None`) and `max_capacity = ∞`;
 - no `whole_span_cuts` and no root constraint;
-- single-writer spans, or the enumeration fallback, which treats both the same
-  way below.
+- single-writer spans. The initial opt-in implementation conservatively
+  requires a single-writer graph; the multi-writer fallback is not part of
+  this implementation contract.
 
 Both lemmas are statements about this grammar's responses, not about physical
 optimality. Evidence for the finite checks: REDUNDANCY_RESULTS.md §5 and
@@ -28,6 +29,7 @@ accesses.
 
 **The remainder ρ(σ)** is the labelled structure made of the following:
 
+- the entry kind (`solve` or `group`);
 - the operators of S, in order, each with its domain D(o);
 - the live tensors t ∈ L, each with:
   - its rank set;
@@ -36,7 +38,7 @@ accesses.
   - whether t ∈ W;
 - the extents e and full sizes of the ranks in ∪D(o).
 
-An isomorphism of remainders is a triple of bijections, on operators, live
+An isomorphism of remainders preserves the entry and is a triple of bijections, on operators, live
 tensors and ranks, that preserves the operator order and every listed
 incidence and label.
 
@@ -46,13 +48,17 @@ If ρ(σ) ≅ ρ(σ′) under φ, then σ and σ′ have the same frontier F(σ)
 as a set of (capacity, traffic) points. Applying φ to every operator, tensor
 and rank in a witness of σ gives a witness of σ′ with the same cost.
 
-Resident tensors therefore influence a state only through the operator
-domains D(o). Their identities, number and sizes do not matter.
+Resident tensors therefore influence the **internal** response only through
+the operator domains D(o). Their identities, number and sizes do not matter
+inside this query. Caller reservations and compulsory transfers are still
+charged outside it and cannot be shared blindly with the cached response.
 
-**Proof.** We use induction on the recursion. Every recursive call strictly
-shrinks either the span, or the extent product at an equal span:
+**Proof.** Use the lexicographic measure `(span length, used-extent product,
+entry phase)`, where solve has phase 1 and group has phase 0. Every call
+strictly decreases this measure:
 
-- a partition child is a proper sub-span;
+- a partition child is a proper sub-span, or the one-group partition moves
+  from solve to group at the same span and extents;
 - a loop child has a tile b < e_v.
 
 So the order is well-founded. It suffices to show two things:
@@ -114,16 +120,22 @@ fork same6 (1,384) and FFN training (15). With a resident tensor's ranks
 removed, a rank can wrongly appear to be outside an operator, which changes
 the common loop set.
 
-**Finite check.** A Weisfeiler-Leman label of ρ (op positions, live-tensor
-labels, rank sizes/extents, domain edges) separates every differing pair on
-all 47 censuses. The check finds 0 violations, which is consistent with the
-lemma. The label is isomorphism-invariant, so the lemma predicts this.
+**Finite check.** The WL-based diagnostic finds 0 conflicting label classes
+on all 47 censuses. This is consistent finite evidence, not a consequence of
+the theorem: equal WL labels can describe non-isomorphic graphs. Moreover,
+the archived `sufficient_stat.py` appends domain edges once per tensor incidence,
+so its domain multiplicities preserve more information than the domain **set**
+in this lemma. Those historical records are not regenerated. The implementation
+uses domain sets, then requires an exact explicit isomorphism inside each
+invariant bucket. It never equates WL equality with graph isomorphism.
 
 **Consequences.**
 
-- The Fork quotient, alpha-equivalent spans and the ancestor control's
-  (k+1)² classes are all special cases of sharing responses between
-  isomorphic remainders.
+- Alpha-equivalent spans and the ancestor control's (k+1)² classes are
+  special cases of sharing responses between isomorphic remainders.
+- The Fork quotient uses the same equivariance argument after closing the
+  grammar over legal operator orders. It is not a direct application of
+  this order-preserving lemma to a reordered fixed-order state.
 - Name-based canonicalization misses rank renaming. That is why
   `canonical_spans` finds nothing in FFN or attention stacks, whose layers
   use distinct rank variables.
@@ -138,8 +150,12 @@ where M is the set of tensors that are made in S and read by an operator in S.
 Then F(σ) = ∅ if and only if some t ∈ L has size > 1 at e and V(σ) = ∅.
 Solve states are never empty.
 
-The test needs only S, e and R ∩ M; residency of every other tensor is
-irrelevant. It runs in time linear in the span's incidence.
+The scalar-leaf check needs R on **all** tensors that can be nonscalar.
+After that check fails, the admissible-rank test depends only on S, e and
+R ∩ M. Together these checks run in time linear in the span's incidence.
+For example, `fork(1,2,1,2,'k')` has an empty group at R=empty, but the same
+group returns `(1,0)` at R={A,B,C0,U0}. Both have R ∩ M=empty. Thus R ∩ M
+alone is not a sufficient key for the whole emptiness predicate.
 
 **Proof.** We first show that every solve state is nonempty, by induction in
 the same order.
@@ -155,7 +171,7 @@ the same order.
     never also its input. So v ∈ V.
   - `tile_sizes` always contains 1 for e_v > 1: the halving sequence ends
     at 1, and 1 divides every extent. So at least one tile exists.
-  - The inner solve is nonempty by induction.
+  - The inner solve is nonempty by induction on the measure above.
 - max/sum merging of nonempty frontiers is nonempty (max_capacity = ∞), and
   the cut DP realizes the same partition.
 
@@ -177,8 +193,13 @@ one of them, with 0 false predictions (`results/redundancy/*.empty.json`).
 
 **Consequence.** Callers query a group from the partition enumeration and
 from the cut DP, where each group is merged into the prefix. Lemma 2 lets the
-caller skip an empty group before the recursive call. It also skips the
-enclosing keep-bit enumeration whenever no kept set can change R ∩ M. The
-skipped work adds no point to any frontier, so the response is unchanged.
+caller skip an empty group before the recursive call. An entire keep-bit batch
+can be skipped if the group remains empty after **every potentially kept
+tensor** has been added to R, including their effect on the scalar leaf.
+Increasing R can only remove nonscalar live tensors and enlarge the admissible
+rank set. Therefore, if this optimistic state is still empty, every allowed
+subset is empty too. Merely checking whether a kept set changes R ∩ M would
+not justify this batch skip. The skipped work adds no point to any frontier,
+so the response is unchanged.
 Infeasible keys are 27-43% of all cache entries in the forks and the FFN and
 attention stacks.
