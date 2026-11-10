@@ -60,6 +60,8 @@ def flatten(witness):
                     out.append(('groups', tuple(tuple(op[x] for x in g) for g in note[1]),
                                 'kept', tuple(sorted(tensor[t] for t in note[3])),
                                 'via DRAM', tuple(sorted(tensor[t] for t in note[5]))))
+                elif note[0] == 'hold':
+                    out.append(('hold', tuple(op[x] for x in note[1])))
                 else:
                     assert note[0] == 'loop'
                     out.append(('loop', tuple(op[x] for x in note[1]), rank.get(note[2], note[2]), note[3],
@@ -147,7 +149,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
           external=frozenset(), entry='solve', root_groups=None, root_kept=None,
           whole_span_cuts=None, legacy_nested_writes=False, partitions='enumerate',
           ownership_projection=True, stats=None, canonical_spans=False, independent_ops=False,
-          tile_domain='halving', canonical_remainders=False, prune_infeasible_groups=False):
+          tile_domain='halving', canonical_remainders=False, prune_infeasible_groups=False,
+          scalar_leaf='v1'):
     """Exact frontiers when grid=None; optional per-call performance ledger.
 
     stats is populated even if search raises (e.g. a caller's timeout). Timed
@@ -162,9 +165,16 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
     empty groups before response caching and skips impossible retention batches.
     Both are opt-in and currently require exact, unlimited, unconstrained,
     single-writer queries. They do not change the operator-order grammar.
+    scalar_leaf='v2' selects grammar v2 (GRAMMAR_V2.md): a multi-operator span
+    whose live tensors are all scalar may be partitioned instead of being held
+    whole, at both entries; holding it whole remains one option, witnessed as
+    ('hold', ops). The default 'v1' keeps the original mandatory leaf, to which
+    all archived curves and frozen verdicts refer.
     """
     if tile_domain not in ('halving', 'divisors'):
         raise ValueError("tile_domain must be 'halving' or 'divisors'")
+    if scalar_leaf not in ('v1', 'v2'):
+        raise ValueError("scalar_leaf must be 'v1' or 'v2'")
     started = perf_counter()
     span_names = SpanNames(graph) if canonical_spans else None
     prune, merge, join, sweep = pareto, combine_max_sum, cat, merge_staircases
@@ -367,6 +377,15 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
             stats['empty_group_skips'] = stats.get('empty_group_skips',0) + result
         return result
 
+    def part_curve(group, ops, ext, external, owned):
+        # v2: the trivial partition of an all-scalar span holds every live cell.
+        # Routing it through group_curve would re-enter solve for the same span.
+        if scalar_leaf == 'v2' and len(group) > 1 and group == ops:
+            live = project(group)[0] - external
+            if all(size(t, ext) == 1 for t in live):
+                return ((len(live), 0, (('hold', group),) if witness else ()),)
+        return group_curve(group, ext, external, owned)
+
     def restore_names(points, restore):
         if restore is None:
             return points
@@ -391,7 +410,10 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
             record_miss('solve', ops, ext, external, owned)
         live = project(ops)[0] - external
         if not constrained and all(size(t, ext) == 1 for t in live):
-            return ((len(live), 0, ()),)
+            # v2 keeps multi-operator scalar spans partitionable (GRAMMAR_V2.md).
+            # The test above is matched textually by unified_search.make_kernel.
+            if scalar_leaf == 'v1' or len(ops) == 1:
+                return ((len(live), 0, ()),)
         if (independent_ops and len(ops) > 1 and not constrained
                 and not (allowed_mask is not None and ops == graph.ops)
                 and shared_tensors(ops) <= external):
@@ -480,7 +502,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                           if witness else ()),)
                 for g, group in enumerate(groups):
                     across = sum(size(t, ext) for t in kept if min(users[t]) <= g <= max(users[t]))
-                    inner = group_curve(group, ext, external | frozenset(kept), child_owned)
+                    inner = part_curve(group, ops, ext, external | frozenset(kept), child_owned)
                     level = merge(level, prune(((across + c, t, w) for c, t, w in inner), max_capacity), max_capacity, grid)
                     if not level:
                         break
@@ -545,7 +567,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                                                  if not k and writer[t] is not None and t in consumed)
                         child_owned = owned if legacy_nested_writes else owned | written_here
                         inner = prune(((across + c, t, w) for c, t, w in
-                                        group_curve(group, ext, external | kept, child_owned)), max_capacity)
+                                        part_curve(group, ops, ext, external | kept, child_owned)), max_capacity)
                         bits_q = tuple(choice[t] for t in crossing[q])
                         decisions = frozenset(choice.items())
                         merged = [(c, t + extra, w if not witness else
@@ -569,6 +591,10 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
             record_miss('group', group, ext, external, owned)
         live = project(group)[0] - external
         if all(size(t, ext) == 1 for t in live):
+            if scalar_leaf == 'v2' and len(group) > 1:
+                # v2: co-iterating scalars is sequential execution, so a scalar
+                # group has the solve response; loops there are dominated (Lemma A).
+                return solve(group, ext, external, owned)
             return ((len(live), 0, ()),)
         common, inside_made = loop_metadata(group)
         results = []

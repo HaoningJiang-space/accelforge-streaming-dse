@@ -93,15 +93,27 @@ class Node:
     children: tuple = ()
 
 
-def parse_witness(spec, witness):
-    """Recover implicit leaves and subtree boundaries, without cost recurrences."""
+def parse_witness(spec, witness, scalar_leaf="v1"):
+    """Recover implicit leaves and subtree boundaries, without cost recurrences.
+
+    scalar_leaf="v2" (GRAMMAR_V2.md): an all-scalar span of several operators
+    carries an explicit record, either ("hold", ops) for the whole-span leaf or
+    a partition; single-operator scalar leaves stay implicit.
+    """
     position = 0
 
     def parse(ops, bounds, external, mode):
         nonlocal position
         local = spec.tensors(ops) - external
         if all(len(bounds[v]) == 1 for t in local for v in spec.dims[t]):
-            return Node("leaf", ops)
+            if scalar_leaf == "v1" or len(ops) == 1:
+                return Node("leaf", ops)
+            require(position < len(witness), "truncated flat witness")
+            if witness[position][0] == "hold":
+                require(tuple(witness[position][1]) == ops, "bad hold record")
+                position += 1
+                return Node("leaf", ops)
+            mode = "groups"
         require(position < len(witness), "truncated flat witness")
         record = witness[position]
         position += 1
@@ -299,9 +311,9 @@ class Machine:
                 "outputs_checked": len(outputs), "valid": True}
 
 
-def simulate(graph, witness, trace=False):
+def simulate(graph, witness, trace=False, scalar_leaf="v1"):
     spec = Specification(graph)
-    root = parse_witness(spec, witness)
+    root = parse_witness(spec, witness, scalar_leaf)
     machine = Machine(spec, trace=trace)
     for kind, payload in events(spec, root):
         if kind == "step":
