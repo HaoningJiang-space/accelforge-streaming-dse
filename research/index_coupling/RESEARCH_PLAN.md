@@ -199,6 +199,20 @@ banking or precision changes may require a different Gamma and cost model.
    sums; preserve joint profiles, ownership and execution entry. Do not apply
    count merging to fixed-order `curve.py`, infer greedy guarantees, or claim
    that this settles minimal physical state. See FORK_QUOTIENT_RESULTS.md.
+   **Dependent-branch follow-up:** whole-branch permutations remain valid with
+   two-op tails and a symmetric product join. Joint continuation types give
+   81→45 / 100→55 boundary states; all 221 completed literal-order comparisons
+   match. Separate counts lose input pairing and progress/residency correlation.
+   A completed asymmetric prefix can expose a symmetric remaining subgraph:
+   local certification halves two conditional solves in that control. The
+   remaining typed problem and boundary contracts, rather than only the full
+   graph's group, are the next quotient target. Progress is already encoded
+   by remaining operators, not a new history coordinate. Global order orbits
+   still number (2m-1)!! for two-op chains, and the three-branch join times out
+   at 60 s. Next prove transition closure for a dynamic remaining-state quotient
+   before claiming a scalable search; preserve joint profiles, lifetime,
+   ownership and entry. Shared multi-writer sums remain a separate model.
+   See BRANCH_SYMMETRY_RESULTS.md for 852 exact replays and all attempts.
 4. **P22, after P21: overlap and buffer occupancy.** A single-channel extension
    must charge double buffering and in-flight tiles against the same capacity
    budget as retained tensors. Prefetch scheduling follows this model; it does

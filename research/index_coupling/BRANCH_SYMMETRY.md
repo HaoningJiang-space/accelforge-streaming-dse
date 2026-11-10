@@ -86,6 +86,9 @@ Continuation queries use the induced remaining graph. Its ready tensors are
 inputs; its traffic excludes resident-input compulsory reads. This is a clearly
 defined suffix response, not an unproved composition of full prefix/suffix
 optima or an alias for the old recurrence's internal extra-traffic convention.
+Resident inputs remain pinned throughout this query. Progress is already
+encoded by the remaining operator set and local tensor roles, not an extra
+history variable. Arbitrary last-use release needs a different contract.
 Physical replay wraps a conditional plan in the previously tested retaining
 loop, restoring caller capacity A and traffic: (c,q) becomes (A+c,A+2q).
 
@@ -155,3 +158,5 @@ different prefix costs are outside the conditional suffix and remain charged.
 the original seven-job records and their one incomplete order search. As with
 the census, the continuation input contract is explicit. This is a direct
 constructed test of the conditional renaming theorem, not a held-out prediction.
+
+Completed measurements and the retained timeout: [BRANCH_SYMMETRY_RESULTS.md](BRANCH_SYMMETRY_RESULTS.md).

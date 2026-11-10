@@ -16,6 +16,17 @@ at 60 s and remain incomplete. A bound on the quotient's joint contexts is
 polynomial in consumer multiplicities at fixed four-rank shape domains;
 fixed-order defaults, frozen scores and general-graph claims remain unchanged.
 
+Downstream branches: [BRANCH_SYMMETRY_RESULTS.md](BRANCH_SYMMETRY_RESULTS.md).
+Whole-branch swaps survive dependent tails and a symmetric product join, but
+separate residency/progress counts fail; the joint continuation types give
+81→45 and 100→55 states. All 221 completed literal-order comparisons agree;
+844 main executions, two component constructions and six recovery executions
+are exact. An asymmetric completed prefix can leave a symmetric suffix, so
+the conditional remaining graph admits more reuse than the original graph's
+group. The three-branch join still times out at 60 s; exhaustive order-orbit
+enumeration is not a scalable general-DAG solver. Shared multi-writer sums and
+arbitrary last-use release are not covered by this pinned-input interface.
+
 Width/stack study: [WIDTH_RESULTS.md](WIDTH_RESULTS.md). Of 34 bounded jobs,
 29 complete with 146 exact replays and five time out. Fixed-width residuals
 still grow superlinearly; forward stack obligation width is 2L, and valid FFN
