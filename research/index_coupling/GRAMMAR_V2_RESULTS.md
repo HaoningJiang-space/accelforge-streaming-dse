@@ -68,3 +68,5 @@ residual depth 16/24).
 3. **Stacks and small forks are unaffected at the root.** Their v1 internal
    states still violate monotonicity (FFN training, forks), but the root
    optimum does not depend on those states.
+
+Reproduce one case: `python -m research.index_coupling.check_v2 CASE OUT_DIR [SECONDS] [MEM_GIB]` (run under caps on the server).

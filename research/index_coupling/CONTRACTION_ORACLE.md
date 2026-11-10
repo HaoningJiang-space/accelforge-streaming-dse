@@ -17,6 +17,16 @@ recomputation.
 
 Records are in [results/contraction_oracle/](results/contraction_oracle/).
 
+**Code location (2026-11-10).** The modules named in §6-18
+(`chain2_closed_form`, `elementwise_chain`, `matmul_keep`, `op_projection`,
+`closed_form_work`, `exact_search`, `sandwich`) were merged into
+[response/](response/). The commands quoted below are those of the commits
+that produced each record. [response/README.md](response/README.md) maps
+every old module and command to its new place. All frozen predictions and
+recorded outputs were reproduced identically after the move. Run
+`python -m research.index_coupling.response.experiments verify` to re-check
+the frozen predictions.
+
 ## 1. Theorem for C = 2
 
 **Theorem.** With two cells, the least extra traffic is (a − 1)(b − 1).

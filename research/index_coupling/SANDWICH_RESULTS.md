@@ -1,7 +1,8 @@
 # Sandwich certificate: results
 
 Protocol: [SANDWICH_PROTOCOL.md](SANDWICH_PROTOCOL.md), frozen in `699815bb`
-before measurement. Code: `sandwich.py`. Records:
+before measurement. Code: `sandwich.py`, now `response/bounds.py` with
+`response/experiments.py sandwich`. Records:
 `results/contraction_oracle/sandwich.jsonl`.
 
 ## Validity and coverage
