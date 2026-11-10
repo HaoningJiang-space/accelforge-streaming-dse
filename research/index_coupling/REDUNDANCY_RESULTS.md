@@ -146,7 +146,7 @@ whole-span group query are infeasible because I = K = 1.
 
 **Lower-bound responses are not a single formula.** On five small censuses,
 the point's capacity equals the maximum per-operator non-external occupancy
-in only 523 of 2,675 lower-bound states. It equals all live tensors in 74.
+in only 523 of 2,671 lower-bound states. It equals all live tensors in 74.
 The scalar-X bridge covers the subset whose capacity equals that maximum.
 
 ### 5.2 Residency acts by deleting tensors, not by counts
