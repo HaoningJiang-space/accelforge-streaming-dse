@@ -373,3 +373,44 @@ from "pinned until exit". It does not prove that these labels alone form a
 sufficient or minimal quotient. The five-family envelope was selected on seen
 data and its children still use the full recursive solver. A held-out contract
 check, not a broader hardware model, is the next discriminating experiment.
+
+## 11. P21d: local cut contexts and ownership of a physical store
+
+The frozen P21d experiment tests one topology-only generator on unseen
+depths/shapes. Adjacent whole-prefix/suffix rank changes and last crossing
+uses select every cut except the one after EX. Four valid paired frontiers
+are unequal, two are equal, two have an accounting validity failure, and
+four depth-12 cases are incomplete at the frozen time limit. See
+P21D_RESULTS.md for the rule, coverage and raw witnesses.
+
+At (8,2,4), depth 4, H not reading X, capacity 4, the restricted and free
+curves give 336 and 328. Both schedules execute exactly. The free witness
+uses `EX | EH0 | tail`: the two cuts isolate EH0 and let it put L outside I.
+The restricted witness fixes I outside before separating EX and EH0. The
+free witness saves 56 W0 reads at the cost of 48 additional D reads. Thus
+the opportunity is local to the child exposed by a **pair of endpoints**.
+It need not appear as a whole-prefix or whole-suffix rank event at each
+endpoint. This refutes the frozen generator; it does not prove that a
+lifecycle-state quotient is insufficient.
+
+The second finding concerns physical accounting. At (4,8,2), H reading X,
+two structural witnesses predict 32 more transfers than they execute. A
+parent and its child both charge the final write of the same 32-cell X.
+The cell executor stores X once; later reads reuse its DRAM backing. This
+also occurs with pre-P21d source. No rule for adding costs can count the
+same physical store in two nested scopes.
+
+An ancestor-owned final-write ledger matches all 160 saved executions;
+the unmodified ledger reproduces all 160 predicted prices. This is a
+post-hoc diagnosis, not a repaired optimizer: discarded schedules have not
+been re-evaluated. A compositional proof must assign each physical transfer
+to exactly one scope, with partial-sum spills handled separately. It may
+require backing/charge state or a different ownership convention; these
+records do not prove a minimal representation.
+
+The cache projection theorem establishes equivalence for its recurrence.
+It does not establish that the recurrence prices physical execution
+correctly. Likewise, exact replay of all selected frontier witnesses does
+not certify prices of candidates discarded during search. Preserve the
+frozen P21d verdict and repair that correctness obligation before another
+sufficiency experiment or the P22 overlap extension.

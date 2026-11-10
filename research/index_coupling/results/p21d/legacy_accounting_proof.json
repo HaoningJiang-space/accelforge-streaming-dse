@@ -1,0 +1,476 @@
+{
+  "kind": "post-hoc tiny legacy implementation check",
+  "source_revision": "4b3f7f02",
+  "curve_sha256": "9d814bf78665c584e282305d153b94a19d304ffb7e22349eaffebebc042350fd",
+  "shape": [
+    4,
+    8,
+    2
+  ],
+  "depth": 4,
+  "reads_x": true,
+  "max_capacity": 3,
+  "root_groups": [
+    [
+      "EX",
+      "EH0"
+    ],
+    [
+      "EH1",
+      "EH2",
+      "EH3",
+      "EAdd"
+    ]
+  ],
+  "rows": [
+    {
+      "predicted": [
+        3,
+        488
+      ],
+      "actual": {
+        "peak": 3,
+        "reads": {
+          "H0": 64,
+          "R": 32,
+          "W0": 64,
+          "W1": 64,
+          "W2": 32,
+          "W3": 32,
+          "X": 96
+        },
+        "writes": {
+          "H0": 8,
+          "X": 32,
+          "Z": 32
+        },
+        "traffic": 456,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "H0": 1,
+          "W0": 1,
+          "X": 1
+        },
+        "steps": 256,
+        "consumer_checks": 480,
+        "outputs_checked": 32,
+        "valid": true
+      },
+      "witness": [
+        [
+          "groups",
+          [
+            [
+              "EX",
+              "EH0"
+            ],
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "H0",
+            "X"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EX",
+            "EH0"
+          ],
+          "I",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "W0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX",
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX",
+            "EH0"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "W0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ],
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "X"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "K",
+          "tile 4 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "K",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "X"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "K",
+          "tile 4 x2",
+          "kept",
+          [
+            "H0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "K",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH1",
+            "EH2",
+            "EH3",
+            "EAdd"
+          ],
+          "K",
+          "tile 4 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "H0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH1",
+            "EH2",
+            "EH3",
+            "EAdd"
+          ],
+          "K",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "H0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH1",
+            "EH2",
+            "EH3",
+            "EAdd"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "H0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH1",
+            "EH2",
+            "EH3",
+            "EAdd"
+          ],
+          "I",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "W1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH1",
+            "EH2",
+            "EH3",
+            "EAdd"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "W1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH1"
+            ],
+            [
+              "EH2"
+            ],
+            [
+              "EH3"
+            ],
+            [
+              "EAdd"
+            ]
+          ],
+          "kept",
+          [
+            "H1",
+            "H2",
+            "H3"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    }
+  ]
+}

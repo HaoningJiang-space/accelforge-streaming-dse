@@ -1,0 +1,5759 @@
+{
+  "verdict": "falsified on valid cases",
+  "expected_cases": 12,
+  "complete_pairs": 8,
+  "clean_pairs": 6,
+  "clean_equal_cases": 2,
+  "clean_unequal_cases": 4,
+  "pending": [
+    {
+      "case": 4,
+      "arm": "structural",
+      "status": "incomplete",
+      "stage": "search",
+      "error": "TimeoutError: frozen 600-second curve/replay limit"
+    },
+    {
+      "case": 4,
+      "arm": "unrestricted",
+      "status": "incomplete",
+      "stage": "search",
+      "error": "TimeoutError: frozen 600-second curve/replay limit"
+    },
+    {
+      "case": 5,
+      "arm": "structural",
+      "status": "incomplete",
+      "stage": "search",
+      "error": "TimeoutError: frozen 600-second curve/replay limit"
+    },
+    {
+      "case": 5,
+      "arm": "unrestricted",
+      "status": "incomplete",
+      "stage": "search",
+      "error": "TimeoutError: frozen 600-second curve/replay limit"
+    },
+    {
+      "case": 10,
+      "arm": "structural",
+      "status": "incomplete",
+      "stage": "search",
+      "error": "TimeoutError: frozen 600-second curve/replay limit"
+    },
+    {
+      "case": 10,
+      "arm": "unrestricted",
+      "status": "incomplete",
+      "stage": "search",
+      "error": "TimeoutError: frozen 600-second curve/replay limit"
+    },
+    {
+      "case": 11,
+      "arm": "structural",
+      "status": "incomplete",
+      "stage": "search",
+      "error": "TimeoutError: frozen 600-second curve/replay limit"
+    },
+    {
+      "case": 11,
+      "arm": "unrestricted",
+      "status": "incomplete",
+      "stage": "search",
+      "error": "TimeoutError: frozen 600-second curve/replay limit"
+    }
+  ],
+  "invalid": [
+    {
+      "case": 7,
+      "issues": [
+        "structural: witness differs at capacity 3"
+      ]
+    },
+    {
+      "case": 9,
+      "issues": [
+        "structural: witness differs at capacity 3"
+      ]
+    }
+  ],
+  "replayed": 160,
+  "replay_mismatches": [
+    {
+      "case": 7,
+      "arm": "structural",
+      "predicted": [
+        3,
+        488
+      ],
+      "actual": [
+        3,
+        456
+      ],
+      "valid_execution": true
+    },
+    {
+      "case": 9,
+      "arm": "structural",
+      "predicted": [
+        3,
+        552
+      ],
+      "actual": [
+        3,
+        520
+      ],
+      "valid_execution": true
+    }
+  ],
+  "counterexamples": [
+    {
+      "case": 0,
+      "shape": [
+        8,
+        2,
+        4
+      ],
+      "depth": 4,
+      "reads_x": false,
+      "capacity": 4,
+      "restricted_traffic": 336,
+      "unrestricted_traffic": 328,
+      "reference_point": [
+        4,
+        328,
+        [
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "EH0"
+              ],
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            [
+              "H0",
+              "X"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "D"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "D"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [
+              "W0"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [
+              "H0"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "H0"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ],
+              [
+                "EH2"
+              ],
+              [
+                "EH3"
+              ],
+              [
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [
+              "H1",
+              "H2",
+              "H3"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      ],
+      "restricted_point": [
+        4,
+        336,
+        [
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0"
+              ],
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            [
+              "H0",
+              "X"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [
+              "D"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [
+              "H0"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "H0"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ],
+              [
+                "EH2"
+              ],
+              [
+                "EH3"
+              ],
+              [
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [
+              "H1",
+              "H2",
+              "H3"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      ],
+      "reference_first_partition": {
+        "cuts": [
+          1,
+          2
+        ],
+        "groups": [
+          [
+            "EX"
+          ],
+          [
+            "EH0"
+          ],
+          [
+            "EH1",
+            "EH2",
+            "EH3",
+            "EAdd"
+          ]
+        ],
+        "outer_loops": [],
+        "kept": [],
+        "via_dram": [
+          "H0",
+          "X"
+        ]
+      },
+      "excluded_reference_cuts": [
+        1
+      ]
+    },
+    {
+      "case": 1,
+      "shape": [
+        8,
+        2,
+        4
+      ],
+      "depth": 4,
+      "reads_x": true,
+      "capacity": 6,
+      "restricted_traffic": 256,
+      "unrestricted_traffic": 224,
+      "reference_point": [
+        6,
+        224,
+        [
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "EH0",
+                "EH1"
+              ],
+              [
+                "EH2"
+              ],
+              [
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [
+              "H1",
+              "X"
+            ],
+            "via DRAM",
+            [
+              "H2"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0",
+              "EH1"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0",
+                "EH1"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0",
+              "EH1"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ],
+              [
+                "EH1"
+              ]
+            ],
+            "kept",
+            [
+              "H0"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH3",
+              "EAdd"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      ],
+      "restricted_point": [
+        6,
+        256,
+        [
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0"
+              ],
+              [
+                "EH1"
+              ],
+              [
+                "EH2"
+              ],
+              [
+                "EH3",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [
+              "H0",
+              "H2"
+            ],
+            "via DRAM",
+            [
+              "H1",
+              "X"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [
+              "X"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [
+              "H1"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH3",
+              "EAdd"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      ],
+      "reference_first_partition": {
+        "cuts": [
+          1,
+          3,
+          4
+        ],
+        "groups": [
+          [
+            "EX"
+          ],
+          [
+            "EH0",
+            "EH1"
+          ],
+          [
+            "EH2"
+          ],
+          [
+            "EH3",
+            "EAdd"
+          ]
+        ],
+        "outer_loops": [
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EAdd"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ]
+        ],
+        "kept": [
+          "H1",
+          "X"
+        ],
+        "via_dram": [
+          "H2"
+        ]
+      },
+      "excluded_reference_cuts": [
+        1
+      ]
+    },
+    {
+      "case": 2,
+      "shape": [
+        8,
+        2,
+        4
+      ],
+      "depth": 6,
+      "reads_x": false,
+      "capacity": 4,
+      "restricted_traffic": 368,
+      "unrestricted_traffic": 360,
+      "reference_point": [
+        4,
+        360,
+        [
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "EH0"
+              ],
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            [
+              "H0",
+              "X"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "D"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "D"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [
+              "W0"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [
+              "H0"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "H0"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ],
+              [
+                "EH2"
+              ],
+              [
+                "EH3"
+              ],
+              [
+                "EH4"
+              ],
+              [
+                "EH5"
+              ],
+              [
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [
+              "H1",
+              "H2",
+              "H3",
+              "H4",
+              "H5"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      ],
+      "restricted_point": [
+        4,
+        368,
+        [
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0"
+              ],
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            [
+              "H0",
+              "X"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [
+              "D"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [
+              "H0"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "H0"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ],
+              [
+                "EH2"
+              ],
+              [
+                "EH3"
+              ],
+              [
+                "EH4"
+              ],
+              [
+                "EH5"
+              ],
+              [
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [
+              "H1",
+              "H2",
+              "H3",
+              "H4",
+              "H5"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      ],
+      "reference_first_partition": {
+        "cuts": [
+          1,
+          2
+        ],
+        "groups": [
+          [
+            "EX"
+          ],
+          [
+            "EH0"
+          ],
+          [
+            "EH1",
+            "EH2",
+            "EH3",
+            "EH4",
+            "EH5",
+            "EAdd"
+          ]
+        ],
+        "outer_loops": [],
+        "kept": [],
+        "via_dram": [
+          "H0",
+          "X"
+        ]
+      },
+      "excluded_reference_cuts": [
+        1
+      ]
+    },
+    {
+      "case": 3,
+      "shape": [
+        8,
+        2,
+        4
+      ],
+      "depth": 6,
+      "reads_x": true,
+      "capacity": 6,
+      "restricted_traffic": 288,
+      "unrestricted_traffic": 272,
+      "reference_point": [
+        6,
+        272,
+        [
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "EH0",
+                "EH1"
+              ],
+              [
+                "EH2"
+              ],
+              [
+                "EH3"
+              ],
+              [
+                "EH4"
+              ],
+              [
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [
+              "H1",
+              "H2",
+              "H3",
+              "H4"
+            ],
+            "via DRAM",
+            [
+              "X"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0",
+              "EH1"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [
+              "X"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0",
+                "EH1"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0",
+              "EH1"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ],
+              [
+                "EH1"
+              ]
+            ],
+            "kept",
+            [
+              "H0"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH3"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH4"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH5",
+              "EAdd"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      ],
+      "restricted_point": [
+        6,
+        288,
+        [
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0",
+                "EH1",
+                "EH2",
+                "EH3",
+                "EH4",
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "EH0"
+              ],
+              [
+                "EH1"
+              ],
+              [
+                "EH2",
+                "EH3"
+              ],
+              [
+                "EH4"
+              ],
+              [
+                "EH5",
+                "EAdd"
+              ]
+            ],
+            "kept",
+            [
+              "H0",
+              "H3",
+              "H4"
+            ],
+            "via DRAM",
+            [
+              "H1",
+              "X"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [
+              "X"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH0"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH0"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [
+              "H1"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EH1"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH1"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH2",
+              "EH3"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH4"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EH5",
+              "EAdd"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      ],
+      "reference_first_partition": {
+        "cuts": [
+          1,
+          3,
+          4,
+          5,
+          6
+        ],
+        "groups": [
+          [
+            "EX"
+          ],
+          [
+            "EH0",
+            "EH1"
+          ],
+          [
+            "EH2"
+          ],
+          [
+            "EH3"
+          ],
+          [
+            "EH4"
+          ],
+          [
+            "EH5",
+            "EAdd"
+          ]
+        ],
+        "outer_loops": [
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 4 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "EH0",
+              "EH1",
+              "EH2",
+              "EH3",
+              "EH4",
+              "EH5",
+              "EAdd"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "W0",
+              "W1"
+            ]
+          ]
+        ],
+        "kept": [
+          "H1",
+          "H2",
+          "H3",
+          "H4"
+        ],
+        "via_dram": [
+          "X"
+        ]
+      },
+      "excluded_reference_cuts": [
+        1
+      ]
+    }
+  ],
+  "source_revisions": [
+    "0a1d5cff428b386c0c97ea6cb58e94d0350aa8ce"
+  ],
+  "protocol_hashes": [
+    "d4389e8d936dbd3e27cc22e6097790cf65ce272c7438889296076e0e0b8f7b34"
+  ],
+  "completed_arm_seconds": 4824.491875004256,
+  "max_peak_rss_kib": 3203500,
+  "rows": [
+    {
+      "case": 0,
+      "shape": [
+        8,
+        2,
+        4
+      ],
+      "depth": 4,
+      "reads_x": false,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          }
+        ],
+        "selected_positions": 4,
+        "total_positions": 5,
+        "allowed_partitions": 16,
+        "total_partitions": 32,
+        "nontrivial_allowed_partitions": 15,
+        "vacuous": false
+      },
+      "complete_pair": true,
+      "valid": true,
+      "nominal_comparison": {
+        "exact": false,
+        "informative": true,
+        "checked_through": 24,
+        "constant_tail_equal": true,
+        "wrong_capacities": 11,
+        "errors": [
+          {
+            "lo": 4,
+            "hi": 5,
+            "value": {
+              "predicted": 336,
+              "actual": 328,
+              "error": 8
+            }
+          },
+          {
+            "lo": 5,
+            "hi": 6,
+            "value": {
+              "predicted": 304,
+              "actual": 288,
+              "error": 16
+            }
+          },
+          {
+            "lo": 6,
+            "hi": 7,
+            "value": {
+              "predicted": 272,
+              "actual": 240,
+              "error": 32
+            }
+          },
+          {
+            "lo": 8,
+            "hi": 9,
+            "value": {
+              "predicted": 240,
+              "actual": 208,
+              "error": 32
+            }
+          },
+          {
+            "lo": 11,
+            "hi": 13,
+            "value": {
+              "predicted": 208,
+              "actual": 176,
+              "error": 32
+            }
+          },
+          {
+            "lo": 15,
+            "hi": 16,
+            "value": {
+              "predicted": 176,
+              "actual": 144,
+              "error": 32
+            }
+          },
+          {
+            "lo": 16,
+            "hi": 17,
+            "value": {
+              "predicted": 152,
+              "actual": 144,
+              "error": 8
+            }
+          },
+          {
+            "lo": 21,
+            "hi": 23,
+            "value": {
+              "predicted": 144,
+              "actual": 128,
+              "error": 16
+            }
+          },
+          {
+            "lo": 23,
+            "hi": 24,
+            "value": {
+              "predicted": 128,
+              "actual": 96,
+              "error": 32
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case": 1,
+      "shape": [
+        8,
+        2,
+        4
+      ],
+      "depth": 4,
+      "reads_x": true,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          }
+        ],
+        "selected_positions": 4,
+        "total_positions": 5,
+        "allowed_partitions": 16,
+        "total_partitions": 32,
+        "nontrivial_allowed_partitions": 15,
+        "vacuous": false
+      },
+      "complete_pair": true,
+      "valid": true,
+      "nominal_comparison": {
+        "exact": false,
+        "informative": true,
+        "checked_through": 24,
+        "constant_tail_equal": true,
+        "wrong_capacities": 12,
+        "errors": [
+          {
+            "lo": 6,
+            "hi": 7,
+            "value": {
+              "predicted": 256,
+              "actual": 224,
+              "error": 32
+            }
+          },
+          {
+            "lo": 7,
+            "hi": 9,
+            "value": {
+              "predicted": 224,
+              "actual": 192,
+              "error": 32
+            }
+          },
+          {
+            "lo": 11,
+            "hi": 13,
+            "value": {
+              "predicted": 192,
+              "actual": 160,
+              "error": 32
+            }
+          },
+          {
+            "lo": 13,
+            "hi": 16,
+            "value": {
+              "predicted": 160,
+              "actual": 128,
+              "error": 32
+            }
+          },
+          {
+            "lo": 16,
+            "hi": 17,
+            "value": {
+              "predicted": 136,
+              "actual": 128,
+              "error": 8
+            }
+          },
+          {
+            "lo": 21,
+            "hi": 22,
+            "value": {
+              "predicted": 128,
+              "actual": 96,
+              "error": 32
+            }
+          },
+          {
+            "lo": 22,
+            "hi": 23,
+            "value": {
+              "predicted": 112,
+              "actual": 96,
+              "error": 16
+            }
+          },
+          {
+            "lo": 23,
+            "hi": 24,
+            "value": {
+              "predicted": 112,
+              "actual": 80,
+              "error": 32
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case": 2,
+      "shape": [
+        8,
+        2,
+        4
+      ],
+      "depth": 6,
+      "reads_x": false,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EH4",
+          "EH5",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          },
+          {
+            "position": 6,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H3",
+                "accesses": [
+                  4,
+                  5
+                ],
+                "consumers": [
+                  5
+                ],
+                "producer": 4
+              }
+            ]
+          },
+          {
+            "position": 7,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H4",
+                "accesses": [
+                  5,
+                  6
+                ],
+                "consumers": [
+                  6
+                ],
+                "producer": 5
+              }
+            ]
+          }
+        ],
+        "selected_positions": 6,
+        "total_positions": 7,
+        "allowed_partitions": 64,
+        "total_partitions": 128,
+        "nontrivial_allowed_partitions": 63,
+        "vacuous": false
+      },
+      "complete_pair": true,
+      "valid": true,
+      "nominal_comparison": {
+        "exact": false,
+        "informative": true,
+        "checked_through": 24,
+        "constant_tail_equal": true,
+        "wrong_capacities": 11,
+        "errors": [
+          {
+            "lo": 4,
+            "hi": 5,
+            "value": {
+              "predicted": 368,
+              "actual": 360,
+              "error": 8
+            }
+          },
+          {
+            "lo": 5,
+            "hi": 6,
+            "value": {
+              "predicted": 336,
+              "actual": 320,
+              "error": 16
+            }
+          },
+          {
+            "lo": 6,
+            "hi": 7,
+            "value": {
+              "predicted": 304,
+              "actual": 272,
+              "error": 32
+            }
+          },
+          {
+            "lo": 8,
+            "hi": 9,
+            "value": {
+              "predicted": 272,
+              "actual": 240,
+              "error": 32
+            }
+          },
+          {
+            "lo": 11,
+            "hi": 13,
+            "value": {
+              "predicted": 240,
+              "actual": 208,
+              "error": 32
+            }
+          },
+          {
+            "lo": 15,
+            "hi": 16,
+            "value": {
+              "predicted": 208,
+              "actual": 176,
+              "error": 32
+            }
+          },
+          {
+            "lo": 16,
+            "hi": 17,
+            "value": {
+              "predicted": 184,
+              "actual": 176,
+              "error": 8
+            }
+          },
+          {
+            "lo": 21,
+            "hi": 23,
+            "value": {
+              "predicted": 176,
+              "actual": 160,
+              "error": 16
+            }
+          },
+          {
+            "lo": 23,
+            "hi": 24,
+            "value": {
+              "predicted": 160,
+              "actual": 128,
+              "error": 32
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case": 3,
+      "shape": [
+        8,
+        2,
+        4
+      ],
+      "depth": 6,
+      "reads_x": true,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EH4",
+          "EH5",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          },
+          {
+            "position": 6,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H3",
+                "accesses": [
+                  4,
+                  5
+                ],
+                "consumers": [
+                  5
+                ],
+                "producer": 4
+              }
+            ]
+          },
+          {
+            "position": 7,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H4",
+                "accesses": [
+                  5,
+                  6
+                ],
+                "consumers": [
+                  6
+                ],
+                "producer": 5
+              }
+            ]
+          }
+        ],
+        "selected_positions": 6,
+        "total_positions": 7,
+        "allowed_partitions": 64,
+        "total_partitions": 128,
+        "nontrivial_allowed_partitions": 63,
+        "vacuous": false
+      },
+      "complete_pair": true,
+      "valid": true,
+      "nominal_comparison": {
+        "exact": false,
+        "informative": true,
+        "checked_through": 24,
+        "constant_tail_equal": true,
+        "wrong_capacities": 12,
+        "errors": [
+          {
+            "lo": 6,
+            "hi": 7,
+            "value": {
+              "predicted": 288,
+              "actual": 272,
+              "error": 16
+            }
+          },
+          {
+            "lo": 7,
+            "hi": 9,
+            "value": {
+              "predicted": 256,
+              "actual": 224,
+              "error": 32
+            }
+          },
+          {
+            "lo": 11,
+            "hi": 13,
+            "value": {
+              "predicted": 224,
+              "actual": 192,
+              "error": 32
+            }
+          },
+          {
+            "lo": 13,
+            "hi": 16,
+            "value": {
+              "predicted": 192,
+              "actual": 160,
+              "error": 32
+            }
+          },
+          {
+            "lo": 16,
+            "hi": 17,
+            "value": {
+              "predicted": 168,
+              "actual": 160,
+              "error": 8
+            }
+          },
+          {
+            "lo": 21,
+            "hi": 22,
+            "value": {
+              "predicted": 160,
+              "actual": 128,
+              "error": 32
+            }
+          },
+          {
+            "lo": 22,
+            "hi": 23,
+            "value": {
+              "predicted": 144,
+              "actual": 128,
+              "error": 16
+            }
+          },
+          {
+            "lo": 23,
+            "hi": 24,
+            "value": {
+              "predicted": 144,
+              "actual": 112,
+              "error": 32
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case": 4,
+      "shape": [
+        8,
+        2,
+        4
+      ],
+      "depth": 12,
+      "reads_x": false,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EH4",
+          "EH5",
+          "EH6",
+          "EH7",
+          "EH8",
+          "EH9",
+          "EH10",
+          "EH11",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          },
+          {
+            "position": 6,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H3",
+                "accesses": [
+                  4,
+                  5
+                ],
+                "consumers": [
+                  5
+                ],
+                "producer": 4
+              }
+            ]
+          },
+          {
+            "position": 7,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H4",
+                "accesses": [
+                  5,
+                  6
+                ],
+                "consumers": [
+                  6
+                ],
+                "producer": 5
+              }
+            ]
+          },
+          {
+            "position": 8,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H5",
+                "accesses": [
+                  6,
+                  7
+                ],
+                "consumers": [
+                  7
+                ],
+                "producer": 6
+              }
+            ]
+          },
+          {
+            "position": 9,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H6",
+                "accesses": [
+                  7,
+                  8
+                ],
+                "consumers": [
+                  8
+                ],
+                "producer": 7
+              }
+            ]
+          },
+          {
+            "position": 10,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H7",
+                "accesses": [
+                  8,
+                  9
+                ],
+                "consumers": [
+                  9
+                ],
+                "producer": 8
+              }
+            ]
+          },
+          {
+            "position": 11,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H8",
+                "accesses": [
+                  9,
+                  10
+                ],
+                "consumers": [
+                  10
+                ],
+                "producer": 9
+              }
+            ]
+          },
+          {
+            "position": 12,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H9",
+                "accesses": [
+                  10,
+                  11
+                ],
+                "consumers": [
+                  11
+                ],
+                "producer": 10
+              }
+            ]
+          },
+          {
+            "position": 13,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H10",
+                "accesses": [
+                  11,
+                  12
+                ],
+                "consumers": [
+                  12
+                ],
+                "producer": 11
+              }
+            ]
+          }
+        ],
+        "selected_positions": 12,
+        "total_positions": 13,
+        "allowed_partitions": 4096,
+        "total_partitions": 8192,
+        "nontrivial_allowed_partitions": 4095,
+        "vacuous": false
+      },
+      "complete_pair": false,
+      "valid": false
+    },
+    {
+      "case": 5,
+      "shape": [
+        8,
+        2,
+        4
+      ],
+      "depth": 12,
+      "reads_x": true,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EH4",
+          "EH5",
+          "EH6",
+          "EH7",
+          "EH8",
+          "EH9",
+          "EH10",
+          "EH11",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          },
+          {
+            "position": 6,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H3",
+                "accesses": [
+                  4,
+                  5
+                ],
+                "consumers": [
+                  5
+                ],
+                "producer": 4
+              }
+            ]
+          },
+          {
+            "position": 7,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H4",
+                "accesses": [
+                  5,
+                  6
+                ],
+                "consumers": [
+                  6
+                ],
+                "producer": 5
+              }
+            ]
+          },
+          {
+            "position": 8,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H5",
+                "accesses": [
+                  6,
+                  7
+                ],
+                "consumers": [
+                  7
+                ],
+                "producer": 6
+              }
+            ]
+          },
+          {
+            "position": 9,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H6",
+                "accesses": [
+                  7,
+                  8
+                ],
+                "consumers": [
+                  8
+                ],
+                "producer": 7
+              }
+            ]
+          },
+          {
+            "position": 10,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H7",
+                "accesses": [
+                  8,
+                  9
+                ],
+                "consumers": [
+                  9
+                ],
+                "producer": 8
+              }
+            ]
+          },
+          {
+            "position": 11,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H8",
+                "accesses": [
+                  9,
+                  10
+                ],
+                "consumers": [
+                  10
+                ],
+                "producer": 9
+              }
+            ]
+          },
+          {
+            "position": 12,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H9",
+                "accesses": [
+                  10,
+                  11
+                ],
+                "consumers": [
+                  11
+                ],
+                "producer": 10
+              }
+            ]
+          },
+          {
+            "position": 13,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H10",
+                "accesses": [
+                  11,
+                  12
+                ],
+                "consumers": [
+                  12
+                ],
+                "producer": 11
+              }
+            ]
+          }
+        ],
+        "selected_positions": 12,
+        "total_positions": 13,
+        "allowed_partitions": 4096,
+        "total_partitions": 8192,
+        "nontrivial_allowed_partitions": 4095,
+        "vacuous": false
+      },
+      "complete_pair": false,
+      "valid": false
+    },
+    {
+      "case": 6,
+      "shape": [
+        4,
+        8,
+        2
+      ],
+      "depth": 4,
+      "reads_x": false,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          }
+        ],
+        "selected_positions": 4,
+        "total_positions": 5,
+        "allowed_partitions": 16,
+        "total_partitions": 32,
+        "nontrivial_allowed_partitions": 15,
+        "vacuous": false
+      },
+      "complete_pair": true,
+      "valid": true,
+      "nominal_comparison": {
+        "exact": true,
+        "informative": true,
+        "checked_through": 47,
+        "constant_tail_equal": true,
+        "wrong_capacities": 0,
+        "errors": []
+      }
+    },
+    {
+      "case": 7,
+      "shape": [
+        4,
+        8,
+        2
+      ],
+      "depth": 4,
+      "reads_x": true,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          }
+        ],
+        "selected_positions": 4,
+        "total_positions": 5,
+        "allowed_partitions": 16,
+        "total_partitions": 32,
+        "nontrivial_allowed_partitions": 15,
+        "vacuous": false
+      },
+      "complete_pair": true,
+      "valid": false,
+      "nominal_comparison": {
+        "exact": false,
+        "informative": true,
+        "checked_through": 47,
+        "constant_tail_equal": true,
+        "wrong_capacities": 1,
+        "errors": [
+          {
+            "lo": 3,
+            "hi": 4,
+            "value": {
+              "predicted": 488,
+              "actual": 456,
+              "error": 32
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case": 8,
+      "shape": [
+        4,
+        8,
+        2
+      ],
+      "depth": 6,
+      "reads_x": false,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EH4",
+          "EH5",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          },
+          {
+            "position": 6,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H3",
+                "accesses": [
+                  4,
+                  5
+                ],
+                "consumers": [
+                  5
+                ],
+                "producer": 4
+              }
+            ]
+          },
+          {
+            "position": 7,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H4",
+                "accesses": [
+                  5,
+                  6
+                ],
+                "consumers": [
+                  6
+                ],
+                "producer": 5
+              }
+            ]
+          }
+        ],
+        "selected_positions": 6,
+        "total_positions": 7,
+        "allowed_partitions": 64,
+        "total_partitions": 128,
+        "nontrivial_allowed_partitions": 63,
+        "vacuous": false
+      },
+      "complete_pair": true,
+      "valid": true,
+      "nominal_comparison": {
+        "exact": true,
+        "informative": true,
+        "checked_through": 47,
+        "constant_tail_equal": true,
+        "wrong_capacities": 0,
+        "errors": []
+      }
+    },
+    {
+      "case": 9,
+      "shape": [
+        4,
+        8,
+        2
+      ],
+      "depth": 6,
+      "reads_x": true,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EH4",
+          "EH5",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          },
+          {
+            "position": 6,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H3",
+                "accesses": [
+                  4,
+                  5
+                ],
+                "consumers": [
+                  5
+                ],
+                "producer": 4
+              }
+            ]
+          },
+          {
+            "position": 7,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H4",
+                "accesses": [
+                  5,
+                  6
+                ],
+                "consumers": [
+                  6
+                ],
+                "producer": 5
+              }
+            ]
+          }
+        ],
+        "selected_positions": 6,
+        "total_positions": 7,
+        "allowed_partitions": 64,
+        "total_partitions": 128,
+        "nontrivial_allowed_partitions": 63,
+        "vacuous": false
+      },
+      "complete_pair": true,
+      "valid": false,
+      "nominal_comparison": {
+        "exact": false,
+        "informative": true,
+        "checked_through": 47,
+        "constant_tail_equal": true,
+        "wrong_capacities": 1,
+        "errors": [
+          {
+            "lo": 3,
+            "hi": 4,
+            "value": {
+              "predicted": 552,
+              "actual": 520,
+              "error": 32
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case": 10,
+      "shape": [
+        4,
+        8,
+        2
+      ],
+      "depth": 12,
+      "reads_x": false,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EH4",
+          "EH5",
+          "EH6",
+          "EH7",
+          "EH8",
+          "EH9",
+          "EH10",
+          "EH11",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          },
+          {
+            "position": 6,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H3",
+                "accesses": [
+                  4,
+                  5
+                ],
+                "consumers": [
+                  5
+                ],
+                "producer": 4
+              }
+            ]
+          },
+          {
+            "position": 7,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H4",
+                "accesses": [
+                  5,
+                  6
+                ],
+                "consumers": [
+                  6
+                ],
+                "producer": 5
+              }
+            ]
+          },
+          {
+            "position": 8,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H5",
+                "accesses": [
+                  6,
+                  7
+                ],
+                "consumers": [
+                  7
+                ],
+                "producer": 6
+              }
+            ]
+          },
+          {
+            "position": 9,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H6",
+                "accesses": [
+                  7,
+                  8
+                ],
+                "consumers": [
+                  8
+                ],
+                "producer": 7
+              }
+            ]
+          },
+          {
+            "position": 10,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H7",
+                "accesses": [
+                  8,
+                  9
+                ],
+                "consumers": [
+                  9
+                ],
+                "producer": 8
+              }
+            ]
+          },
+          {
+            "position": 11,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H8",
+                "accesses": [
+                  9,
+                  10
+                ],
+                "consumers": [
+                  10
+                ],
+                "producer": 9
+              }
+            ]
+          },
+          {
+            "position": 12,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H9",
+                "accesses": [
+                  10,
+                  11
+                ],
+                "consumers": [
+                  11
+                ],
+                "producer": 10
+              }
+            ]
+          },
+          {
+            "position": 13,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H10",
+                "accesses": [
+                  11,
+                  12
+                ],
+                "consumers": [
+                  12
+                ],
+                "producer": 11
+              }
+            ]
+          }
+        ],
+        "selected_positions": 12,
+        "total_positions": 13,
+        "allowed_partitions": 4096,
+        "total_partitions": 8192,
+        "nontrivial_allowed_partitions": 4095,
+        "vacuous": false
+      },
+      "complete_pair": false,
+      "valid": false
+    },
+    {
+      "case": 11,
+      "shape": [
+        4,
+        8,
+        2
+      ],
+      "depth": 12,
+      "reads_x": true,
+      "audit": {
+        "ops": [
+          "EX",
+          "EH0",
+          "EH1",
+          "EH2",
+          "EH3",
+          "EH4",
+          "EH5",
+          "EH6",
+          "EH7",
+          "EH8",
+          "EH9",
+          "EH10",
+          "EH11",
+          "EAdd"
+        ],
+        "positions": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "excluded": [
+          1
+        ],
+        "reasons": [
+          {
+            "position": 1,
+            "events": []
+          },
+          {
+            "position": 2,
+            "events": [
+              {
+                "kind": "suffix_rank_change",
+                "before": [
+                  "I"
+                ],
+                "after": [
+                  "I",
+                  "K"
+                ]
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "events": [
+              {
+                "kind": "prefix_rank_change",
+                "before": [
+                  "I",
+                  "K"
+                ],
+                "after": [
+                  "I"
+                ]
+              },
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H0",
+                "accesses": [
+                  1,
+                  2
+                ],
+                "consumers": [
+                  2
+                ],
+                "producer": 1
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H1",
+                "accesses": [
+                  2,
+                  3
+                ],
+                "consumers": [
+                  3
+                ],
+                "producer": 2
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H2",
+                "accesses": [
+                  3,
+                  4
+                ],
+                "consumers": [
+                  4
+                ],
+                "producer": 3
+              }
+            ]
+          },
+          {
+            "position": 6,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H3",
+                "accesses": [
+                  4,
+                  5
+                ],
+                "consumers": [
+                  5
+                ],
+                "producer": 4
+              }
+            ]
+          },
+          {
+            "position": 7,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H4",
+                "accesses": [
+                  5,
+                  6
+                ],
+                "consumers": [
+                  6
+                ],
+                "producer": 5
+              }
+            ]
+          },
+          {
+            "position": 8,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H5",
+                "accesses": [
+                  6,
+                  7
+                ],
+                "consumers": [
+                  7
+                ],
+                "producer": 6
+              }
+            ]
+          },
+          {
+            "position": 9,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H6",
+                "accesses": [
+                  7,
+                  8
+                ],
+                "consumers": [
+                  8
+                ],
+                "producer": 7
+              }
+            ]
+          },
+          {
+            "position": 10,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H7",
+                "accesses": [
+                  8,
+                  9
+                ],
+                "consumers": [
+                  9
+                ],
+                "producer": 8
+              }
+            ]
+          },
+          {
+            "position": 11,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H8",
+                "accesses": [
+                  9,
+                  10
+                ],
+                "consumers": [
+                  10
+                ],
+                "producer": 9
+              }
+            ]
+          },
+          {
+            "position": 12,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H9",
+                "accesses": [
+                  10,
+                  11
+                ],
+                "consumers": [
+                  11
+                ],
+                "producer": 10
+              }
+            ]
+          },
+          {
+            "position": 13,
+            "events": [
+              {
+                "kind": "last_crossing_use",
+                "tensor": "H10",
+                "accesses": [
+                  11,
+                  12
+                ],
+                "consumers": [
+                  12
+                ],
+                "producer": 11
+              }
+            ]
+          }
+        ],
+        "selected_positions": 12,
+        "total_positions": 13,
+        "allowed_partitions": 4096,
+        "total_partitions": 8192,
+        "nontrivial_allowed_partitions": 4095,
+        "vacuous": false
+      },
+      "complete_pair": false,
+      "valid": false
+    }
+  ]
+}

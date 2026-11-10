@@ -46,6 +46,7 @@ whether both can be kept at the same time.
 | P19a–d | 6-consumer forks: max gap doubles at kkkiii (first-split knapsack) | **a, b, d pass; c fails**: max gap exact in 8/8 (a) and 16/16 (b), strictly above kkkkii in 6/6; bounds 24/24. Positive width is not ordered kkkkki < kkkkii < kkkiii in any shape (0/8): kkkkii is widest in 8/8 | `results/p19.jsonl`, `results/p19_scores.txt` |
 | P21a | Unused X shifts H's capacity; fixed-boundary retain/spill composition | **pass**: 28/28 feasible interfaces exact; 4 empty controls excluded from evidence | P21_RESULTS.md, `results/p21/` |
 | P21b | Capacity-only fails when H reads X; conditional residency/extents repair it | **pass**: coarse fails in 8/8 full graphs; 28/28 feasible interfaces repaired; 596/596 whole witnesses replay exactly across P21 | same |
+| P21d | Frozen rank-change/last-use cuts recover unrestricted curves on 12 unseen residual cases | **fails on four valid cases**; 2 equal, 2 invalid from inherited duplicate final-write charges, 4 depth-12 cases incomplete at 600 s/arm. 158/160 saved witnesses replay exactly | P21D_RESULTS.md, `results/p21d/` |
 
 P21 does not assert unrestricted whole-graph equality: all 16 free curves
 differ from the fixed partition with H_last materialized. Granularity alone
@@ -54,10 +55,14 @@ does not distinguish resident X from DRAM X. P19 is scored; P22 is deferred.
 ## What is established, and how firmly
 
 Scope: these statements are about the recursive loop-nest grammar of
-`curve_model.py`. Within that grammar the model is exact. It covers serial
-execution, no recomputation, and divisible power-of-two tiles. Its witnesses
-are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
-216 FFM-comparison points.
+`curve_model.py`. It covers serial execution, no recomputation, and divisible
+power-of-two tiles. Its witnesses are executed cell by cell by
+`simulate_nest.py` and reproduced exactly at all 216 FFM-comparison points.
+**General execution-exactness is no longer established:** P21d found two
+nested-partition witnesses whose traffic is overcounted by 32, reproduced
+with pre-P21d source. Existing replay successes remain valid for the checked
+schedules; recurrence/cache equivalence is distinct from physical accounting
+correctness. See P21D_RESULTS.md before using unrestricted exactness claims.
 
 1. **Curve model vs FFM.** Over 216 points the two agree at 206, the model is
    lower at 10 and higher at none (`results/curve_comparison.txt`). On FFN M8
@@ -125,8 +130,11 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
    loops in an unconditioned span are legal only over ranks R(S) that every op and internal tensor carry;
    the tensors lacking each rank, weighted by role, reproduce the fork
    obligations of §7 and the 448 B FFN witness (F row at two trips). Chaining I
-   loops above P21's fixed boundary with flexible H_last residency removes 54% of its wrong capacities at depth
-   2 and 20% at depth 8; the rest is cut placement. See FIRST_PRINCIPLES.md §8.
+   loops above P21's fixed boundary leave substantial cut-placement effects.
+   The controlled sequence starting from frozen H_last materialization has
+   423 → 402 → 268 → 7 → 0 wrong capacities as freedoms are added. The last
+   family was selected after inspecting misses; these are order-dependent
+   attributions, not independent causal shares. See P21_CUT_ANALYSIS.md.
 11. **Whole-curve ranking is budget-dependent.** Reanalysis of all 32 P19
    curves finds b=2/b=3 crossings in 8/8 shapes. At (16,4,16,4), total traffic
    1344 B needs 201/265 B capacity (b=2/b=3), but 2624 B needs 69/55 B.
@@ -142,6 +150,14 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
    16/16, with 560 exact new witness replays. This is seen-data attribution,
    not a general five-family theorem. A tail counterexample distinguishes
    entry mode and last-use release from full-span pinning. See P21_CUT_ANALYSIS.md.
+13. **P21d structural cuts (frozen; failed).** All selected cuts are generated
+   before search. The frozen whole-prefix/suffix rule excludes EX's exit;
+   at (8,2,4), depth 4, capacity 4 this gives 336 versus 328, with both plans
+   independently exact. Isolating EH0 changes local loop order and weight
+   reuse. This refutes that cut generator, not the sufficiency of lifecycle
+   labels. Separately, nested parent/child final-X-store charges invalidate
+   two cases. A unique-owner ledger matches all 160 saved executions, but is
+   only a post-hoc repricing, not a repaired solver or new equality score.
 
 ## Withdrawn or corrected claims
 
@@ -161,6 +177,10 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
 
 ## Open
 
+- Repair and prove final-write charge ownership across nested partitions;
+  revalidate the cost recurrence before a new lifecycle-sufficiency test.
+  Keep P21d's failed, invalid and timed-out cases distinct; do not add cuts
+  post hoc or claim a physical optimum from replayed frontiers alone.
 - P19 is complete; its maximum-gap conjecture still needs a proof. Explain
   the whole-curve crossings without substituting a new metric for failed P19c.
 - Complete the FFN comparison beyond the two replayed native sources. Distinguish
@@ -186,6 +206,7 @@ The graph models live in the `graph/` package (module path
 | `curve.py` | Capacity-traffic curve; cache keys projected per subproblem since `7b891c7c` |
 | `views.py` | Chain view and FFM-like view (`chain_curve`, `ffm_like_curve`, `ffm_like_part`) |
 | `context.py` | Span-legal ranks R(S) and loop-chain composition above any bottom curve (`span_ranks`, `lifted_curve`) |
+| `structural_cuts.py` | Frozen P21d topology-only rank-change/last-crossing-use event generator |
 | `analysis.py` | Q(C) `traffic_at`, S(q) `capacity_for`, `delta`, `gap_steps`, `compare_to_reference` |
 | `references.py` | Archived FFM frontiers (`cases`, `ffn_case`) |
 | `experiments.py` | One command line for every runner: `plateau`, `compare`, `classify`, `ffm-like`, `ffn-part`, `sweep`, `p17`, `p18`, `p19`, `witness` |
@@ -227,6 +248,7 @@ Other files at the top level:
 | `p21/` | 16 residual graphs, 64 conditional interfaces (56 feasible), 596 witness replays, full error/choice intervals, static comparison figure |
 | `p21_attribution/` | Exploratory: fixed vs I-chain-lifted vs unrestricted curves for the 16 P21 graphs (`attribute_p21.py`) |
 | `p21_cuts/` | Exploratory cut families, 560 executable witnesses, conditional residency value, and tail entry/release counterexample |
+| `p21d/` | Frozen 12-case audit, 24 bounded arm records, four clean inequality cases, two accounting-invalid cases, four incomplete cases, per-tensor diagnosis and figure |
 | `p19_profile.{json,png,pdf}` | Post-hoc interval integration, budget-dependent b=2/b=3 crossings, and a full-curve comparison; no new search |
 
 Heavy runs go to the experiment server with memory and time caps, one process

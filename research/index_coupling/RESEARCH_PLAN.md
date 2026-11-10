@@ -134,8 +134,17 @@ banking or precision changes may require a different Gamma and cost model.
    seen curves, with 560 exact witness replays. The final family was selected
    from misses. A conditional tail distinguishes `group` from `solve` entry,
    and an input needed only at entry from one pinned through the whole span.
-   Test last-use release contracts on unseen depths/shapes before extending
-   to overlap; this next test is not yet frozen. See P21_CUT_ANALYSIS.md.
+   See P21_CUT_ANALYSIS.md.
+   **P21d, frozen and tested:** the whole-prefix/suffix rank-change plus
+   last-crossing-use cut rule fails on four independently replayed cases;
+   two cases have equal curves, two have inherited duplicate final-write
+   charges, and four depth-12 cases time out at the frozen 600-second limit.
+   A cut pair can expose a useful local rank even without a whole-prefix/
+   suffix event at both endpoints. This tests that generator, not the
+   sufficiency of lifecycle labels. First repair unique final-store ownership
+   in recursive accounting and its cache state; then freeze a separate
+   contract test. Repricing saved witnesses is not a solver repair. Do not
+   add cut families to rescue this score. See P21D_RESULTS.md.
 4. **P22, after P21: overlap and buffer occupancy.** A single-channel extension
    must charge double buffering and in-flight tiles against the same capacity
    budget as retained tensors. Prefetch scheduling follows this model; it does
