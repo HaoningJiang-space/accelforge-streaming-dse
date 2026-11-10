@@ -264,5 +264,69 @@ elementwise operators, should therefore reduce to a DP over boundaries:
   segments it spans, or sent via DRAM, adding 2 × its size;
 - the segment forms are also needed with a resident input or output.
 
-This is a conjecture. It has not been derived for segments with resident
-boundaries, or with elementwise operators, which share all their ranks.
+§9 derives the resident-boundary forms and tests the DP. Elementwise
+operators, which share all their ranks, remain open.
+
+## 9. Pure contraction chains: boundary DP
+
+The chain is V_0 → c_0 → V_1 → ... → V_m, with unit M, resident weights and
+grammar v2. K is the number of cells a segment receives after subtracting
+its kept boundary vectors.
+
+**Segment forms.** These come from the same cost rules. A resident (kept)
+boundary is external inside the segment.
+
+- **Single contraction p → q.**
+  - Both ends resident: 0 at K ≥ 0.
+  - One end resident: 0 at K ≥ 1. The other end streams through one cell.
+  - Neither resident: f(p, q, K) of §6.
+- **Pair a → b → c, fused under F with tile u ∈ R(b), trips t = b/u.** Each
+  entry is (cells, extra):
+  - both ends streamed: the four rows of §8;
+  - input resident: (u + 1, 2(t − 1)c), (c + u, 0);
+  - output resident: (u + 1, (t − 1)a), (a + u, 0);
+  - both resident: (u, 0).
+
+**DP.**
+
+- Segments have one or two contractions. Three dense contractions share no
+  rank, so no larger grammar group can loop.
+- Each interior boundary V_j is either kept, which subtracts n_j from the K of
+  both neighbouring segments, or sent via DRAM, which adds 2 n_j.
+- The capacity constraint is a max over groups, so at fixed C the segments
+  are independent given the boundary choices.
+- Implemented as `chain2_closed_form.chain_predict`. At m = 2 it reproduces
+  §8 exactly.
+
+**Held-out test.**
+
+- Predictions were frozen in `36bd1736` (`chain_predictions.json`) before
+  any chain curve was computed (`chain_check.jsonl`).
+- Coverage: 10 chains of 3 to 5 contractions, with mixed sizes up to 8; C
+  from 1 to 2 max n + 2; both tile domains.
+- **Result: 268 of 268 agree.**
+  - 92 have positive traffic, with 33 distinct positive values.
+  - 156 are zero.
+  - 20 are infeasible.
+
+**Ablation.** This is in-sample and diagnostic only.
+
+- Removing pair segments raises the prediction in 69 rows.
+- Removing kept boundaries raises it in 161 rows.
+
+Both mechanisms are therefore needed.
+
+**Meaning.**
+
+- For pure unit-M contraction chains, the grammar's exact response is no
+  longer a search result. It is a DP with O(m) states and O(|R(n)|) work per
+  segment.
+- The whole curve is piecewise constant in C, with breakpoints at the sums
+  of kept vector sizes and reachable tiles. That gives an exact, cheap child
+  response for C2-style pruning in this family.
+- **Limits.**
+  - The archived FFN and attention stacks contain elementwise operators.
+    These share every rank with their neighbours, so groups can be larger
+    and loop over more ranks.
+  - Their M > 1 parents add an outer row loop.
+  - Neither is covered yet.
