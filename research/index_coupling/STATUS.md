@@ -5,6 +5,19 @@ PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
 Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.md.
 
+Width/stack study: [WIDTH_RESULTS.md](WIDTH_RESULTS.md). Of 34 bounded jobs,
+29 complete with 146 exact replays and five time out. Fixed-width residuals
+still grow superlinearly; forward stack obligation width is 2L, and valid FFN
+training has cut width 5L. A separate single-op family has local obligation
+width one but exactly 3^k solve keys (8/8 count predictions, 36 exact replays).
+Local widths do not yet bound the number of ancestor-conditioned contexts.
+
+P21f is complete: [P21F_RESULTS.md](P21F_RESULTS.md). All 140 arms are valid,
+with 1,919 exact replays. Existence passes 32/32; the plateau prediction matches
+31/32 and fails the frozen all-strata-perfect criterion. The sole counterexample
+has 61/62 B plateaus; full peak reservations explain why the two-row sketch
+misses it. The frozen protocol and score thresholds remain unchanged.
+
 Complete joint residency-state census: [RESIDENCY_STATE_AUDIT.md](RESIDENCY_STATE_AUDIT.md).
 Both tiny six-consumer forks have 106,604 states. The independent-solve
 equivalence applies to only 4,350/58,884 states in the four dominant buckets;
@@ -69,8 +82,8 @@ whether both can be kept at the same time.
 | P21a | Unused X shifts H's capacity; fixed-boundary retain/spill composition | **pass**: 28/28 feasible interfaces exact; 4 empty controls excluded from evidence | P21_RESULTS.md, `results/p21/` |
 | P21b | Capacity-only fails when H reads X; conditional residency/extents repair it | **pass**: coarse fails in 8/8 full graphs; 28/28 feasible interfaces repaired; 596/596 whole witnesses replay exactly across P21 | same |
 | P21d | Frozen rank-change/last-use cuts recover unrestricted curves on 12 unseen residual cases | **fails on four valid cases**; 2 equal, 2 invalid from inherited duplicate final-write charges, 4 depth-12 cases incomplete at 600 s/arm. 158/160 saved witnesses replay exactly | P21D_RESULTS.md, `results/p21d/` |
-| P21e | EH0 must leave EX's group iff L > K (row model) | **a pass 16/16; b fail 13/16; c fail 13/16**. Post-hoc: plateau threshold is L > K when EH0 reads X, L > 2K otherwise (d-row residency, V_X); untested | P21E_RESULTS.md, `results/p21e/` |
-| P21f | Input-residency correction: read-X plateau gap for L>K; independent-input gap for L>2K, equality for K<L<2K | **frozen, not run**: four primary strata of 8, each requires 8/8; existence scored separately on 32 cases. Tile diagnostic has 16 new L<K cases and 3 seen P21e controls; 140 total arm jobs | PROTOCOL.md (P21f), `p21f_manifest.json`, `run_p21f.py`, `score_p21f.py` |
+| P21e | EH0 must leave EX's group iff L > K (row model) | **a pass 16/16; b fail 13/16; c fail 13/16**. Post-hoc plateau candidate L > K when EH0 reads X, L > 2K otherwise was subsequently tested and refuted by P21f | P21E_RESULTS.md, `results/p21e/` |
+| P21f | Input-residency correction: read-X plateau gap for L>K; independent-input gap for L>2K, equality for K<L<2K | **plateau fails, existence passes**: independent-between 7/8; other three strata 8/8; existence 32/32. All 140 arms valid, 1,919 exact replays. Tile diagnostics remain separate | P21F_RESULTS.md, `results/p21f/score.json` |
 
 P21 does not assert unrestricted whole-graph equality: all 16 free curves
 differ from the fixed partition with H_last materialized. Granularity alone
@@ -79,14 +92,16 @@ does not distinguish resident X from DRAM X. P19 is scored; P22 is deferred.
 ## What is established, and how firmly
 
 Scope: these statements are about the recursive loop-nest grammar of
-`curve_model.py`. It covers serial execution, no recomputation, and divisible
-power-of-two tiles. Its witnesses are executed cell by cell by
+`curve_model.py`. It covers serial execution, no recomputation, and the
+historical halving tile domain (all divisors only when explicitly requested).
+Its witnesses are executed cell by cell by
 `simulate_nest.py` and reproduced exactly at all 216 FFM-comparison points.
-**General execution-exactness is no longer established:** P21d found two
-nested-partition witnesses whose traffic is overcounted by 32, reproduced
-with pre-P21d source. Existing replay successes remain valid for the checked
-schedules; recurrence/cache equivalence is distinct from physical accounting
-correctness. See P21D_RESULTS.md before using unrestricted exactness claims.
+**General execution-exactness is not established by finite replay tests.**
+P21d exposed inherited duplicate final-write charges; the ownership repair and
+subsequent audit/regression are recorded in OWNERSHIP_AND_CUT_DP.md (item 14
+below). Existing replay successes establish the checked schedules' costs;
+recurrence/cache equivalence remains distinct from a general physical-optimum
+claim. P21d's original frozen failures and incomplete arms remain recorded.
 
 1. **Curve model vs FFM.** Over 216 points the two agree at 206, the model is
    lower at 10 and higher at none (`results/curve_comparison.txt`). On FFN M8
@@ -210,12 +225,14 @@ correctness. See P21D_RESULTS.md before using unrestricted exactness claims.
 
 ## Open
 
-- Run frozen P21f on the designated experiment server. Keep primary halving
-  scores separate from the all-divisors diagnostic. The manifest audits new
-  shapes against declared residual inputs and locks sources before search;
-  no P21f held-out curves have been computed at freeze time.
-- Repair and prove final-write charge ownership across nested partitions;
-  revalidate the cost recurrence before a new lifecycle-sufficiency test.
+- P21f is closed with a failed plateau prediction. Any replacement theorem
+  must compare complete conditional peak reservations, not silently change
+  the frozen threshold or count the tile diagnostic as primary evidence.
+- Bound or quotient the joint `(span, extents, external, owned, entry)`
+  contexts; local cut/obligation widths alone do not justify linear stacks.
+  See WIDTH_RESULTS.md and the conditional-state census.
+- Complete a general proof of the repaired final-write charge ownership
+  across nested partitions before a new lifecycle-sufficiency theorem.
   Keep P21d's failed, invalid and timed-out cases distinct; do not add cuts
   post hoc or claim a physical optimum from replayed frontiers alone.
 - P19 is complete; its maximum-gap conjecture still needs a proof. Explain

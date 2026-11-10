@@ -145,14 +145,25 @@ banking or precision changes may require a different Gamma and cost model.
    in recursive accounting and its cache state; then freeze a separate
    contract test. Repricing saved witnesses is not a solver repair. Do not
    add cut families to rescue this score. See P21D_RESULTS.md.
-   **P21e outcome / P21f next:** P21e's existence prediction passed 16/16,
+   **P21e / P21f outcomes:** P21e's existence prediction passed 16/16,
    but full-curve equality and the original plateau prediction each failed
-   13/16. Keeping the independent d row corrects the post-hoc plateau
-   condition to L>2K without X reads, versus L>K with X reads. P21f is frozen
-   in PROTOCOL.md on 32 new primary cases (four strata, each requires 8/8),
-   with a separate 32/32 existence prediction. Sixteen new L<K cases and
-   three seen failures compare halving and all-divisor tile domains without
-   contributing to the primary score. No P21f held-out search has run.
+   13/16. Keeping the independent d row suggested a post-hoc plateau
+   candidate L>2K without X reads, versus L>K with X reads.
+   Frozen P21f now fails the plateau prediction: independent-between is 7/8,
+   the other three strata are 8/8; each required 8/8. Existence passes 32/32.
+   All 140 arms complete with 1,919 exact replays. The (6,4,6), independent-H
+   counterexample has plateaus 61/62 B: both peaks already reserve H1, so the
+   incremental free cost is D plus scalar H0, not two new K rows. This is
+   attribution, not a replacement threshold. The 16 new and three seen tile
+   diagnostics remain separate from the primary score. See P21F_RESULTS.md.
+   **Width study:** 29/34 curves complete with exact replays; five searches
+   time out at 60 s. Fixed-width residuals are not linear in this DP; global
+   obligations grow as 2L in forward stacks, and valid FFN training has cut
+   width 5L. A one-op control has local obligation width one but 3^k solve
+   contexts. The next theorem must bound or quotient joint ancestor residency
+   and rank/extent contexts, in addition to local branching and interval work.
+   See WIDTH_RESULTS.md. Do not reintroduce cut heuristics or cap fusion spans
+   to obtain an apparent linear scaling result.
    **Conditional-state census:** the complete tiny six-consumer same/mixed
    audits record 106,604 states each. The independent-solve theorem covers
    7.4% of the four dominant buckets; in producer-containing whole spans,

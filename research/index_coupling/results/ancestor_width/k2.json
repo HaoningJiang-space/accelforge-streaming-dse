@@ -1,0 +1,322 @@
+{
+  "k": 2,
+  "widths": {
+    "n_ops": 1,
+    "n_ranks": 2,
+    "w_cut": 0,
+    "cut_tensors": [],
+    "root_legal_obligations": {
+      "v0": [
+        "T0"
+      ],
+      "v1": [
+        "T1"
+      ]
+    },
+    "w_obl_unconditional_spans": 1,
+    "w_obl_conditional_upper": 1,
+    "conditional_upper_example": {
+      "span": [
+        0,
+        1
+      ],
+      "rank": "v0",
+      "must_be_external": [],
+      "obligations": [
+        "T0"
+      ]
+    },
+    "rank_extent_choices": {
+      "v0": [
+        1,
+        2
+      ],
+      "v1": [
+        1,
+        2
+      ]
+    },
+    "extent_grid_upper": 4
+  },
+  "source_sha256": {
+    "run_ancestor_width.py": "bb50940a230d1320c2984f1ff9b40cc98ffb3db6bcaaaac55bc77c163992d0f4",
+    "graph/curve.py": "41110acdd8684e55ca440b3980eff8ac6669348f08a7688fb38386ade2f6446e",
+    "graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "graph/widths.py": "51469d2f8ceffac199fdc2c45baac1d60d30a37f3cf4bbb167bec96a81dd9f66",
+    "graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "simulate_nest.py": "778e9bbe6ae57790911e89e9362150657ab46f89c07c422ba7caf946b24ce79f"
+  },
+  "revision": "58e0a26cf1f825f7fed79ef14d623464c77791d7",
+  "python": "3.10.12",
+  "hash_seed": "0",
+  "budgets": {
+    "seconds": 60,
+    "mem_gib": 1
+  },
+  "options": {
+    "partitions": "dp",
+    "witness": true,
+    "canonical_spans": false,
+    "independent_ops": false
+  },
+  "predicted": {
+    "solve": 9,
+    "group": 5
+  },
+  "stats": {
+    "pareto_calls": 20,
+    "pareto_candidates": 30,
+    "pareto_points": 24,
+    "max_frontier": 2,
+    "merge_calls": 5,
+    "merge_inputs": 11,
+    "merge_points": 6,
+    "partition_masks": 0,
+    "partition_choices": 0,
+    "loop_choices": 12,
+    "dp_states": 5,
+    "dp_transitions": 5,
+    "max_crossing": 0,
+    "dp_multiwriter_fallbacks": 0,
+    "witness_nodes": 10,
+    "pareto_seconds": 2.261810004711151e-05,
+    "merge_seconds": 1.1058058589696884e-05,
+    "cache_misses_by_span": {
+      "solve:E": 9,
+      "group:E": 5
+    },
+    "cache_misses_by_extents": {
+      "solve:(2, 2)": 1,
+      "group:(2, 2)": 1,
+      "solve:(1, 2)": 2,
+      "group:(1, 2)": 2,
+      "solve:(1, 1)": 4,
+      "solve:(2, 1)": 2,
+      "group:(2, 1)": 2
+    },
+    "cache_misses_by_residency": {
+      "solve:n=1,external=0,local_outputs=0,owned=0": 4,
+      "group:n=1,external=0,local_outputs=0,owned=0": 3,
+      "solve:n=1,external=1,local_outputs=0,owned=0": 4,
+      "group:n=1,external=1,local_outputs=0,owned=0": 2,
+      "solve:n=1,external=2,local_outputs=0,owned=0": 1
+    },
+    "renamed_calls": 0,
+    "rename_nodes": 0,
+    "independent_splits": 0,
+    "solve_cache": {
+      "hits": 4,
+      "misses": 9,
+      "maxsize": null,
+      "currsize": 9
+    },
+    "group_cache": {
+      "hits": 0,
+      "misses": 5,
+      "maxsize": null,
+      "currsize": 5
+    },
+    "cut_metadata_cache": {
+      "hits": 4,
+      "misses": 1,
+      "maxsize": null,
+      "currsize": 1
+    },
+    "span_classes": null,
+    "seconds": 0.0005556398537009954
+  },
+  "search_seconds": 0.0005797359626740217,
+  "witnesses": [
+    [
+      3,
+      10,
+      [
+        [
+          "groups",
+          [
+            [
+              "E"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E"
+          ],
+          "v0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "T0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "E"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E"
+          ],
+          "v1",
+          "tile 1 x2",
+          "kept",
+          [
+            "T1"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      4,
+      8,
+      [
+        [
+          "groups",
+          [
+            [
+              "E"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E"
+          ],
+          "v0",
+          "tile 1 x2",
+          "kept",
+          [
+            "T0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E"
+          ],
+          "v1",
+          "tile 1 x2",
+          "kept",
+          [
+            "T1"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ]
+  ],
+  "points": [
+    [
+      3,
+      10
+    ],
+    [
+      4,
+      8
+    ]
+  ],
+  "replays": [
+    {
+      "capacity": 3,
+      "traffic": 10,
+      "actual": {
+        "peak": 3,
+        "reads": {
+          "T0": 4,
+          "T1": 2
+        },
+        "writes": {
+          "Y": 4
+        },
+        "traffic": 10,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "T0": 1,
+          "T1": 1,
+          "Y": 1
+        },
+        "steps": 4,
+        "consumer_checks": 8,
+        "outputs_checked": 4,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "capacity": 4,
+      "traffic": 8,
+      "actual": {
+        "peak": 4,
+        "reads": {
+          "T0": 2,
+          "T1": 2
+        },
+        "writes": {
+          "Y": 4
+        },
+        "traffic": 8,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "T0": 2,
+          "T1": 1,
+          "Y": 1
+        },
+        "steps": 4,
+        "consumer_checks": 8,
+        "outputs_checked": 4,
+        "valid": true
+      },
+      "exact": true
+    }
+  ],
+  "observed": {
+    "solve": 9,
+    "group": 5
+  },
+  "count_prediction_matches": true,
+  "max_external": 2,
+  "status": "complete",
+  "seconds": 0.0011008689180016518,
+  "peak_rss_kib": 16704
+}
