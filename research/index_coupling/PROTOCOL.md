@@ -374,3 +374,100 @@ its product-valued join is access-equivalent to addition (numerical addition
 is not a claim). Test default solver regression on archived curves. Resource
 limit per case: one worker, 8 GiB address space, 180 seconds; timeout/error is
 an incomplete case, never a pass. Run on the user-designated experiment server.
+
+# Structural cuts and lifetime events on held-out residuals (P21d)
+
+Frozen before any curve calculation on the P21d shapes/depths. Prior evidence
+is P21_CUT_ANALYSIS.md: five hand-selected first-partition families recovered
+16 seen curves, with the last family chosen after inspecting errors. P21d
+replaces that menu by a topology-only rule; it does not amend P21a/b or turn
+those exploratory families into held-out predictions.
+
+## Fixed cases and execution scope
+
+Use `residual(I,K,L,depth,reads_x)` without changing its operators. Shapes are
+exactly (8,2,4) and (4,8,2); depths exactly 4, 6 and 12; reads_x is False and
+True: 12 cases (6, 8 and 14 operators). These shape/depth combinations were not
+used to select the earlier menus. Keep serial execution, no recomputation,
+unit-byte elements, the existing divisible-halving tile grammar, spill_cost=2,
+write_through=True, split_shared=True, and exact Pareto pruning. No overlap,
+new release primitive, alias rewriting, reordering or change to scalar leaves.
+
+As in the preceding cut analysis, restrict the **first nontrivial partition
+of the whole span**, including after any chain of whole-span loops. All proper
+child spans retain the existing solver. This tests a sufficient menu for that
+interface, not a recursive restriction at every cut and not a proof that a
+small set of lifecycle labels is itself sufficient.
+
+## Deterministic structural rule (no cost or witness input)
+
+Let S=(o_0,...,o_(n-1)) in the existing fixed order. A cut position k means
+between o_(k-1) and o_k, with 1 <= k < n. R(T) is the bare-span legal rank set:
+the intersection of ranks used by all operators in T, excluding any rank
+absent from a tensor both produced and consumed inside T. It is structural;
+unit extents do not remove ranks from R. The whole-span contexts in these
+residuals expose only W0/W1 as external tensors, neither an internal result.
+
+Select k if at least one of these conditions holds:
+
+1. **Adjacent rank-set change.** R(S[k-1:]) != R(S[k:]), or, for k >= 2,
+   R(S[:k-1]) != R(S[:k]). The empty prefix has no rank set and does not
+   automatically select position 1. Record the before/after sets and which
+   transition selected the position.
+2. **Last use of a crossing tensor.** A tensor has accesses in at least two
+   distinct operators of S (a producer's output counts as an access), and its
+   last input/consumer access in S is o_(k-1). This denotes a residence that
+   can span an internal operator boundary. A one-use input/weight is local,
+   not crossing, and does not by itself select a cut. Graph outputs with no
+   later consumer in S create no such event. Record each tensor and its
+   producer/access/consumer indices.
+
+The candidate set K(S) is their union. All nonempty subsets of K(S) are allowed
+first nontrivial partitions; the empty subset remains available to wrap the
+span in a legal loop before partitioning. Retention choices at allowed cuts
+remain exhaustive, including H_last retention. Compute K once from topology
+and keep it fixed across extents and outer input reservations. Tensor names,
+case outcomes and the old hand-selected menu must not affect selection.
+
+These definitions deliberately resolve two possible vacuities: counting
+single-use weights would select essentially every boundary; comparing every
+prefix/suffix only with the whole span rather than adjacent spans could also
+select nearly every boundary. Report excluded positions, candidate-position
+fraction and candidate partition count versus 2^(n-1). If K equals every
+position, equality on that case is an accounting control, not positive evidence
+for pruning or minimality. No new cut event may be added after seeing results.
+
+## Predictions and scoring
+
+- **P21d-equality (primary).** On all 12 cases, the envelope allowed by K(S)
+  equals the unrestricted capacity/total-traffic curve at every capacity.
+  Score the union of both breakpoint sets, including infeasibility and the
+  constant tail. Report all maximal discrepant intervals. One confirmed
+  mismatch falsifies the 12/12 prediction; no tolerance or pass-fraction change.
+- **P21d-validity (required check).** Every saved candidate and reference
+  frontier witness must replay with exactly its predicted peak and traffic.
+  The restricted curve must never fall below the reference. A replay failure
+  or a below-reference curve is an implementation/model issue to investigate,
+  not evidence that the structural prediction passed or failed cleanly.
+- **P21d-scope.** A failure establishes that these two event rules do not cover
+  the optimum in this grammar. Inspect the first counterexample to distinguish
+  missing cut events from insufficient boundary state. It does not by itself
+  prove that occupancy profiles, an additional lifecycle label, or a new
+  hardware mechanism are necessary. A pass would be held-out evidence for this
+  residual family and this first-partition scope, not global minimality.
+
+Save the generated cuts/reasons before starting search, both exact curves,
+full witnesses and cell replays, protocol hash, source revision, Python version,
+runtime and peak RSS. No use of existing unrestricted held-out witnesses in
+candidate generation. A topology-only coverage audit is allowed before runs;
+checks on previously seen small cases are implementation regressions, not
+P21d outcomes.
+
+Run on the designated experiment server, at most four simultaneous processes,
+one process per curve, 8 GiB address-space limit and 600 seconds per curve
+(including witness replay). Each case has separate candidate and unrestricted
+records, so one timeout cannot erase the other result. Timeout, memory failure,
+missing output or simulator failure is recorded as incomplete/invalid, never
+as equality. All cases remain listed; do not silently remove a slow depth.
+If incomplete cases remain, distinguish the global prediction's falsification
+(if a complete counterexample exists) from unfinished full-curve coverage.
