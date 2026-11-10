@@ -1,4 +1,4 @@
-# Research overview after the one-obligation audit
+# Research overview after the unified replacement test
 
 This assessment combines the archived results through the branch-symmetry
 report at `a7cf85a1` with [ONE_OBLIGATION_RESULTS.md](ONE_OBLIGATION_RESULTS.md).
@@ -6,10 +6,22 @@ It distinguishes fixed-order recurrence claims, order-complete claims, and
 physical execution checks. The new one-obligation audit itself used base
 `046c318c`; the later branch work is separately attributed.
 
+Subsequent joint evidence: [UNIFIED_SEARCH_RESULTS.md](UNIFIED_SEARCH_RESULTS.md)
+uses source `b6e2ddbc` and one declared grammar for all three reductions.
+
 The strongest current research story is **exact conditional resource response**:
 which parts of a mapping search can be composed, identified by symmetry, or
 replaced by a proved response? A single graph-width law or a scalar fusion
 threshold is no longer an adequate statement of the problem.
+
+The first joint D/Q/C test is now complete: 24 arms on one six-op family with
+partial symmetry and a downstream join, 1,018,272 equal internal-response
+comparisons and 228 exact server replays. A local scalar shared set can be
+retained over its live intervals and streamed privately; when that concrete
+peak attains the operand-slot bound, it certifies the entire conditional
+frontier. This rule is selected inside cut-DP/order-quotient root witnesses
+containing the join. It establishes compatibility under one grammar, not a
+general-DAG state bound or a dynamic quotient algorithm.
 
 ## 1. Three complementary reductions, with different contracts
 
@@ -120,30 +132,29 @@ non-power-of-two tiling: all its nonunit extents are four.
 
 ## 5. What should be pursued next
 
-The next analytic target should be the smallest extension that distinguishes
-the counterexample: a three-live core {X,t,z}, with t lacking the chosen X axis
-and z carrying it. Preserve whether z also carries the alternative axis,
-whether it belongs before or after the producer cut, its read/reduction role,
-and the ownership of materialization. Derive a complete envelope only after
-proving that other partitions and loop orders are dominated. A feasible
-schedule alone supplies an upper bound, not equality.
+The current priority is one conditional-resource method, rather than parallel
+special-case optimizations. The first joint test has aligned decomposition,
+symmetry and optimality certificates on the same six-op grammar. Next prove
+closure of a dynamic remaining-state quotient: preserve all legal continuations,
+boundary effects and a consistent global order. Use the complete unified census
+to compare internal responses and count states, transitions and frontier work
+separately. The current global order quotient alone does not provide that result.
 
-This target has a concrete purpose: replace the weak per-operator slot bound
-by a lower bound that charges **positive traffic forced by simultaneous buffer
-competition**. The scalar certificates already settle their zero-traffic cases;
-adding many similar special cases without demonstrating new coverage would
-leave the main difficulty unchanged.
+The three-live core {X,t,z} remains a useful negative control and a future
+certificate target within this contract. It must retain joint axis incidence,
+position relative to the producer cut, read/reduction role and write ownership.
+A positive-traffic response would require a matching lower bound and proof that
+other partitions and loop orders are dominated; a feasible schedule is only an
+upper bound. This is not a separate optimization branch in the current plan.
 
-In parallel with that mathematical target, the existing completed mixed-six
-quotient should be the reference workload for measuring where a candidate rule
-matters. Count its eligible contexts and avoided transitions separately from
-whole-run cache size, and report the grammar used. Do not estimate a complete
-coverage fraction from the partial mixed-eight timeout or transfer a fraction
-from the fixed-order 106,604-state audit to the quotient.
+Broader validation can later reuse the completed mixed-six quotient. Do not
+transfer coverage fractions between grammars or extrapolate from the partial
+mixed-eight timeout. First complete the unified-state argument on the small
+partially symmetric graph where all reference responses are available.
 
 The [completed branch-symmetry study](BRANCH_SYMMETRY_RESULTS.md) is a
-complementary generalization of the equivalence contract, not a substitute for
-this cost analysis. All 221 completed literal-reference queries agree and its
+generalization of the equivalence contract that preceded the joint test.
+All 221 completed literal-reference queries agree and its
 852 saved executions are exact, while the three-branch join search remains
 incomplete. Whole dependent branches, rather than their first consumers, are
 the symmetry units. A separate continuation control recovers symmetry after
@@ -169,11 +180,12 @@ decomposition, conditional symmetries and constructive optimality certificates,
 and each transformation has an explicit execution/interface contract. The
 failures identify information that simpler summaries cannot discard.
 
-A stronger next result would combine a nontrivial positive-traffic lower bound
-with an attaining family, then show that this response replaces a substantial
-part of the completed mixed-role search. That would connect a physical
-explanation to algorithmic savings. It would be more informative than another
-large speed ratio on a fully homogeneous Fork or another plateau-only fit.
+A stronger next result should characterize a class of conditional states whose
+redundancy can be recognized before search, with a bound that includes ancestor
+residency and extent contexts. An attaining positive-traffic response is another
+possible certificate inside that method. The new joint test already connects
+one local structural condition to eliminated search and executable witnesses;
+its finite coverage does not establish either broader result.
 
 There is still no general graph optimizer, universal width/runtime law,
 minimal-state theorem, unrestricted physical optimum, or completed novelty

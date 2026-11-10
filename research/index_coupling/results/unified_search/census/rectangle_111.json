@@ -1,0 +1,3024 @@
+{
+  "case": "rectangle",
+  "shape": [
+    2,
+    3,
+    2,
+    4
+  ],
+  "switches": "111",
+  "mode": "census",
+  "revision": "b6e2ddbc",
+  "source_sha256": {
+    "unified_search.py": "1bc942bd32e6579921df4d07c317f9fcc11ba572ce52bd0b3e51672c020402b8",
+    "run_unified_search.py": "ea08d6fb770bd14ac9de7c308ffa49b72a12710ea76e7fc7e6d049038474bd20",
+    "UNIFIED_SEARCH_PROTOCOL.md": "b1b7ac09cafd82809c041fc4ef9c8b4115a7e28f68f03d7426c463ad439927ec",
+    "graph/curve.py": "41110acdd8684e55ca440b3980eff8ac6669348f08a7688fb38386ade2f6446e",
+    "graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "graph/branch_symmetry.py": "0cfd1c44a611ba8cde83315303ee4d4ec6b965c76bdeeccc1a4b9c5d40dcfd1f",
+    "graph/fork_quotient.py": "f9cb95f87be6d5ee97d872c3f4c81341f5905ff5b2d4747116b162359c3e0048",
+    "graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "fork_order_oracle.py": "bb09e2644770e26bc62e755cf0704c16822cf415723fe04d56b3564ade76e510",
+    "simulate_nest.py": "778e9bbe6ae57790911e89e9362150657ab46f89c07c422ba7caf946b24ce79f"
+  },
+  "python": "3.10.12",
+  "hash_seed": "0",
+  "budgets": {
+    "seconds": 180,
+    "mem_gib": 6
+  },
+  "status": "complete",
+  "state_records": 55462,
+  "search_seconds": 7.135623053880408,
+  "points": [
+    {
+      "capacity": 4,
+      "traffic": 134,
+      "plan": {
+        "order": [
+          "EX",
+          "E0",
+          "E1",
+          "E2",
+          "F",
+          "Join"
+        ],
+        "notes": [
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "E0",
+                "E1",
+                "E2",
+                "F",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "E0",
+              "E1",
+              "E2",
+              "F",
+              "Join"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "B",
+              "C0",
+              "C1",
+              "C2",
+              "D0"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "E0",
+                "E1",
+                "E2",
+                "F",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            [
+              "X"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "J",
+            "tile 1 x3",
+            "kept",
+            [
+              "X"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [
+              "A"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1",
+              "E2",
+              "F",
+              "Join"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "X"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0",
+                "E1",
+                "E2",
+                "F",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1",
+              "E2",
+              "F",
+              "Join"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "X"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0"
+              ],
+              [
+                "E1"
+              ],
+              [
+                "E2"
+              ],
+              [
+                "F"
+              ],
+              [
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U2",
+              "V0",
+              "X"
+            ],
+            "via DRAM",
+            [
+              "U0",
+              "U1"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "E0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [
+              "U0"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [
+              "U1"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      },
+      "provenance": {
+        "order": [
+          "EX",
+          "E0",
+          "E1",
+          "E2",
+          "F",
+          "Join"
+        ],
+        "certificates": [],
+        "restore_ops": {
+          "EX": "EX",
+          "E0": "E0",
+          "E1": "E1",
+          "E2": "E2",
+          "F": "F",
+          "Join": "Join"
+        },
+        "restore_tensors": {
+          "X": "X",
+          "U0": "U0",
+          "U1": "U1",
+          "U2": "U2",
+          "V0": "V0",
+          "Y": "Y",
+          "A": "A",
+          "B": "B",
+          "C0": "C0",
+          "C1": "C1",
+          "C2": "C2",
+          "D0": "D0"
+        }
+      }
+    },
+    {
+      "capacity": 5,
+      "traffic": 118,
+      "plan": {
+        "order": [
+          "EX",
+          "E0",
+          "E1",
+          "E2",
+          "F",
+          "Join"
+        ],
+        "notes": [
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "E0",
+                "E1",
+                "E2",
+                "F",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "E0",
+              "E1",
+              "E2",
+              "F",
+              "Join"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "B",
+              "C0",
+              "C1",
+              "C2",
+              "D0"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "E0",
+                "E1",
+                "E2",
+                "F",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            [
+              "X"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "J",
+            "tile 1 x3",
+            "kept",
+            [
+              "X"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [
+              "A"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1",
+              "E2",
+              "F",
+              "Join"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "X"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0",
+                "E1",
+                "E2",
+                "F",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1",
+              "E2",
+              "F",
+              "Join"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "X"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0",
+                "E1"
+              ],
+              [
+                "E2"
+              ],
+              [
+                "F"
+              ],
+              [
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U0",
+              "U1",
+              "U2",
+              "V0"
+            ],
+            "via DRAM",
+            [
+              "X"
+            ]
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      },
+      "provenance": {
+        "order": [
+          "EX",
+          "E0",
+          "E1",
+          "E2",
+          "F",
+          "Join"
+        ],
+        "certificates": [],
+        "restore_ops": {
+          "EX": "EX",
+          "E0": "E0",
+          "E1": "E1",
+          "E2": "E2",
+          "F": "F",
+          "Join": "Join"
+        },
+        "restore_tensors": {
+          "X": "X",
+          "U0": "U0",
+          "U1": "U1",
+          "U2": "U2",
+          "V0": "V0",
+          "Y": "Y",
+          "A": "A",
+          "B": "B",
+          "C0": "C0",
+          "C1": "C1",
+          "C2": "C2",
+          "D0": "D0"
+        }
+      }
+    },
+    {
+      "capacity": 6,
+      "traffic": 82,
+      "plan": {
+        "order": [
+          "EX",
+          "E0",
+          "E1",
+          "F",
+          "E2",
+          "Join"
+        ],
+        "notes": [
+          [
+            "groups",
+            [
+              [
+                "EX",
+                "E0",
+                "E1",
+                "F",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX",
+              "E0",
+              "E1",
+              "F",
+              "E2",
+              "Join"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "B",
+              "C0",
+              "C1",
+              "C2",
+              "D0"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "E0",
+                "E1",
+                "F",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "X"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "J",
+            "tile 1 x3",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [
+              "A"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1",
+              "F",
+              "E2",
+              "Join"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0",
+                "E1",
+                "F",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1",
+              "F",
+              "E2",
+              "Join"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0"
+              ],
+              [
+                "E1"
+              ],
+              [
+                "F"
+              ],
+              [
+                "E2"
+              ],
+              [
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U0",
+              "U1",
+              "U2",
+              "V0"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      },
+      "provenance": {
+        "order": [
+          "EX",
+          "E0",
+          "E1",
+          "F",
+          "E2",
+          "Join"
+        ],
+        "certificates": [
+          "e48598f1b6ce4e8a7cf17c7d"
+        ],
+        "restore_ops": {
+          "EX": "EX",
+          "E0": "E0",
+          "E1": "E1",
+          "E2": "E2",
+          "F": "F",
+          "Join": "Join"
+        },
+        "restore_tensors": {
+          "X": "X",
+          "U0": "U0",
+          "U1": "U1",
+          "U2": "U2",
+          "V0": "V0",
+          "Y": "Y",
+          "A": "A",
+          "B": "B",
+          "C0": "C0",
+          "C1": "C1",
+          "C2": "C2",
+          "D0": "D0"
+        }
+      }
+    },
+    {
+      "capacity": 8,
+      "traffic": 76,
+      "plan": {
+        "order": [
+          "EX",
+          "E0",
+          "E1",
+          "F",
+          "E2",
+          "Join"
+        ],
+        "notes": [
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "E0",
+                "E1",
+                "F",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "X"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "J",
+            "tile 1 x3",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [
+              "B"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1",
+              "F",
+              "E2",
+              "Join"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "C0",
+              "C1",
+              "C2",
+              "D0"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0",
+                "E1",
+                "F",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1",
+              "F",
+              "E2",
+              "Join"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0",
+                "E1",
+                "F",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1",
+              "F",
+              "E2",
+              "Join"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0"
+              ],
+              [
+                "E1"
+              ],
+              [
+                "F"
+              ],
+              [
+                "E2"
+              ],
+              [
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U0",
+              "U1",
+              "U2",
+              "V0"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      },
+      "provenance": {
+        "order": [
+          "EX",
+          "E0",
+          "E1",
+          "F",
+          "E2",
+          "Join"
+        ],
+        "certificates": [
+          "e48598f1b6ce4e8a7cf17c7d"
+        ],
+        "restore_ops": {
+          "EX": "EX",
+          "E0": "E0",
+          "E1": "E1",
+          "E2": "E2",
+          "F": "F",
+          "Join": "Join"
+        },
+        "restore_tensors": {
+          "X": "X",
+          "U0": "U0",
+          "U1": "U1",
+          "U2": "U2",
+          "V0": "V0",
+          "Y": "Y",
+          "A": "A",
+          "B": "B",
+          "C0": "C0",
+          "C1": "C1",
+          "C2": "C2",
+          "D0": "D0"
+        }
+      }
+    },
+    {
+      "capacity": 9,
+      "traffic": 64,
+      "plan": {
+        "order": [
+          "EX",
+          "E0",
+          "F",
+          "E1",
+          "E2",
+          "Join"
+        ],
+        "notes": [
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "E0",
+                "F",
+                "E1",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "X"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "J",
+            "tile 1 x3",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [
+              "B"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "F",
+              "E1",
+              "E2",
+              "Join"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0",
+                "F",
+                "E1",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "F",
+              "E1",
+              "E2",
+              "Join"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0"
+              ],
+              [
+                "F"
+              ],
+              [
+                "E1",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U0",
+              "V0"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E1",
+              "E2",
+              "Join"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "C1",
+              "C2"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "E1"
+              ],
+              [
+                "E2"
+              ],
+              [
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U1",
+              "U2"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      },
+      "provenance": {
+        "order": [
+          "EX",
+          "E0",
+          "F",
+          "E1",
+          "E2",
+          "Join"
+        ],
+        "certificates": [
+          "71804d44c2c3d666f9d00524"
+        ],
+        "restore_ops": {
+          "EX": "EX",
+          "E0": "E0",
+          "E1": "E1",
+          "E2": "E2",
+          "F": "F",
+          "Join": "Join"
+        },
+        "restore_tensors": {
+          "X": "X",
+          "U0": "U0",
+          "U1": "U1",
+          "U2": "U2",
+          "V0": "V0",
+          "Y": "Y",
+          "A": "A",
+          "B": "B",
+          "C0": "C0",
+          "C1": "C1",
+          "C2": "C2",
+          "D0": "D0"
+        }
+      }
+    },
+    {
+      "capacity": 10,
+      "traffic": 56,
+      "plan": {
+        "order": [
+          "EX",
+          "E0",
+          "F",
+          "E1",
+          "E2",
+          "Join"
+        ],
+        "notes": [
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "E0",
+                "F",
+                "E1",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "X"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "J",
+            "tile 1 x3",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [
+              "B"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "F",
+              "E1",
+              "E2",
+              "Join"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0",
+                "F",
+                "E1",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "F",
+              "E1",
+              "E2",
+              "Join"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0"
+              ],
+              [
+                "F"
+              ],
+              [
+                "E1"
+              ],
+              [
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U0",
+              "U1",
+              "V0"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E2",
+              "Join"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            [
+              "C2"
+            ]
+          ],
+          [
+            "groups",
+            [
+              [
+                "E2"
+              ],
+              [
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U2"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      },
+      "provenance": {
+        "order": [
+          "EX",
+          "E0",
+          "F",
+          "E1",
+          "E2",
+          "Join"
+        ],
+        "certificates": [
+          "ecb287f260aeb0a9c05d58d1"
+        ],
+        "restore_ops": {
+          "EX": "EX",
+          "E0": "E0",
+          "E1": "E1",
+          "E2": "E2",
+          "F": "F",
+          "Join": "Join"
+        },
+        "restore_tensors": {
+          "X": "X",
+          "U0": "U0",
+          "U1": "U1",
+          "U2": "U2",
+          "V0": "V0",
+          "Y": "Y",
+          "A": "A",
+          "B": "B",
+          "C0": "C0",
+          "C1": "C1",
+          "C2": "C2",
+          "D0": "D0"
+        }
+      }
+    },
+    {
+      "capacity": 11,
+      "traffic": 48,
+      "plan": {
+        "order": [
+          "EX",
+          "E0",
+          "E1",
+          "F",
+          "E2",
+          "Join"
+        ],
+        "notes": [
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ],
+              [
+                "E0",
+                "E1",
+                "F",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "X"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "J",
+            "tile 1 x3",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "EX"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "EX"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [
+              "B"
+            ],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1",
+              "F",
+              "E2",
+              "Join"
+            ],
+            "L",
+            "tile 2 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0",
+                "E1",
+                "F",
+                "E2",
+                "Join"
+              ]
+            ],
+            "kept",
+            [],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0",
+              "E1",
+              "F",
+              "E2",
+              "Join"
+            ],
+            "L",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "groups",
+            [
+              [
+                "E0"
+              ],
+              [
+                "E1"
+              ],
+              [
+                "F"
+              ],
+              [
+                "E2"
+              ],
+              [
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U0",
+              "U1",
+              "U2",
+              "V0"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "Join"
+            ],
+            "I",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      },
+      "provenance": {
+        "order": [
+          "EX",
+          "E0",
+          "E1",
+          "F",
+          "E2",
+          "Join"
+        ],
+        "certificates": [],
+        "restore_ops": {
+          "EX": "EX",
+          "E0": "E0",
+          "E1": "E1",
+          "E2": "E2",
+          "F": "F",
+          "Join": "Join"
+        },
+        "restore_tensors": {
+          "X": "X",
+          "U0": "U0",
+          "U1": "U1",
+          "U2": "U2",
+          "V0": "V0",
+          "Y": "Y",
+          "A": "A",
+          "B": "B",
+          "C0": "C0",
+          "C1": "C1",
+          "C2": "C2",
+          "D0": "D0"
+        }
+      }
+    }
+  ],
+  "selected_certificates": [
+    {
+      "order": [
+        "EX",
+        "E0",
+        "E1",
+        "F",
+        "E2",
+        "Join"
+      ],
+      "id": "e48598f1b6ce4e8a7cf17c7d",
+      "state": {
+        "stage": "solve",
+        "ops": [
+          "E0",
+          "E1",
+          "F",
+          "E2",
+          "Join"
+        ],
+        "ext": [
+          1,
+          1,
+          2,
+          1
+        ],
+        "external": [
+          "X"
+        ],
+        "owned": [],
+        "constrained": false
+      },
+      "certificate": {
+        "capacity": 4,
+        "extra_traffic": 0,
+        "shared": [
+          "U0",
+          "U1",
+          "U2",
+          "V0"
+        ],
+        "operand_slots": [
+          2,
+          2,
+          3,
+          2,
+          4
+        ],
+        "singleton_peaks": [
+          2,
+          3,
+          4,
+          4,
+          4
+        ],
+        "streams": [
+          [
+            "K"
+          ],
+          [
+            "K"
+          ],
+          [],
+          [
+            "K"
+          ],
+          []
+        ],
+        "notes": [
+          [
+            "groups",
+            [
+              [
+                "E0"
+              ],
+              [
+                "E1"
+              ],
+              [
+                "F"
+              ],
+              [
+                "E2"
+              ],
+              [
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U0",
+              "U1",
+              "U2",
+              "V0"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E0"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      },
+      "ancestors": [
+        {
+          "stage": "solve",
+          "ops": [
+            "EX",
+            "E0",
+            "E1",
+            "F",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            2,
+            3,
+            2,
+            4
+          ],
+          "external": [],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "cut_dp",
+          "ops": [
+            "EX",
+            "E0",
+            "E1",
+            "F",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            2,
+            3,
+            2,
+            4
+          ],
+          "external": [],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "group",
+          "ops": [
+            "EX",
+            "E0",
+            "E1",
+            "F",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            2,
+            3,
+            2,
+            4
+          ],
+          "external": [],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "solve",
+          "ops": [
+            "EX",
+            "E0",
+            "E1",
+            "F",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            3,
+            2,
+            4
+          ],
+          "external": [
+            "B"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "cut_dp",
+          "ops": [
+            "EX",
+            "E0",
+            "E1",
+            "F",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            3,
+            2,
+            4
+          ],
+          "external": [
+            "B"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "group",
+          "ops": [
+            "E0",
+            "E1",
+            "F",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            4
+          ],
+          "external": [
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "solve",
+          "ops": [
+            "E0",
+            "E1",
+            "F",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "external": [
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "cut_dp",
+          "ops": [
+            "E0",
+            "E1",
+            "F",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "external": [
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "group",
+          "ops": [
+            "E0",
+            "E1",
+            "F",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "external": [
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        }
+      ]
+    },
+    {
+      "order": [
+        "EX",
+        "E0",
+        "F",
+        "E1",
+        "E2",
+        "Join"
+      ],
+      "id": "71804d44c2c3d666f9d00524",
+      "state": {
+        "stage": "solve",
+        "ops": [
+          "E1",
+          "E2",
+          "Join"
+        ],
+        "ext": [
+          1,
+          1,
+          2,
+          1
+        ],
+        "external": [
+          "V0",
+          "X"
+        ],
+        "owned": [],
+        "constrained": false
+      },
+      "certificate": {
+        "capacity": 3,
+        "extra_traffic": 0,
+        "shared": [
+          "U1",
+          "U2"
+        ],
+        "operand_slots": [
+          2,
+          2,
+          3
+        ],
+        "singleton_peaks": [
+          2,
+          3,
+          3
+        ],
+        "streams": [
+          [
+            "K"
+          ],
+          [
+            "K"
+          ],
+          []
+        ],
+        "notes": [
+          [
+            "groups",
+            [
+              [
+                "E1"
+              ],
+              [
+                "E2"
+              ],
+              [
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U1",
+              "U2"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E1"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      },
+      "ancestors": [
+        {
+          "stage": "solve",
+          "ops": [
+            "EX",
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            2,
+            3,
+            2,
+            4
+          ],
+          "external": [],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "cut_dp",
+          "ops": [
+            "EX",
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            2,
+            3,
+            2,
+            4
+          ],
+          "external": [],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "group",
+          "ops": [
+            "EX",
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            2,
+            3,
+            2,
+            4
+          ],
+          "external": [],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "solve",
+          "ops": [
+            "EX",
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            3,
+            2,
+            4
+          ],
+          "external": [
+            "B",
+            "C0",
+            "D0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "cut_dp",
+          "ops": [
+            "EX",
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            3,
+            2,
+            4
+          ],
+          "external": [
+            "B",
+            "C0",
+            "D0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "group",
+          "ops": [
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            4
+          ],
+          "external": [
+            "C0",
+            "D0",
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "solve",
+          "ops": [
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "external": [
+            "C0",
+            "D0",
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "cut_dp",
+          "ops": [
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "external": [
+            "C0",
+            "D0",
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "group",
+          "ops": [
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "external": [
+            "V0",
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        }
+      ]
+    },
+    {
+      "order": [
+        "EX",
+        "E0",
+        "F",
+        "E1",
+        "E2",
+        "Join"
+      ],
+      "id": "ecb287f260aeb0a9c05d58d1",
+      "state": {
+        "stage": "solve",
+        "ops": [
+          "E2",
+          "Join"
+        ],
+        "ext": [
+          1,
+          1,
+          2,
+          1
+        ],
+        "external": [
+          "U1",
+          "V0",
+          "X"
+        ],
+        "owned": [],
+        "constrained": false
+      },
+      "certificate": {
+        "capacity": 2,
+        "extra_traffic": 0,
+        "shared": [
+          "U2"
+        ],
+        "operand_slots": [
+          2,
+          2
+        ],
+        "singleton_peaks": [
+          2,
+          2
+        ],
+        "streams": [
+          [
+            "K"
+          ],
+          []
+        ],
+        "notes": [
+          [
+            "groups",
+            [
+              [
+                "E2"
+              ],
+              [
+                "Join"
+              ]
+            ],
+            "kept",
+            [
+              "U2"
+            ],
+            "via DRAM",
+            []
+          ],
+          [
+            "loop",
+            [
+              "E2"
+            ],
+            "K",
+            "tile 1 x2",
+            "kept",
+            [],
+            "refetched",
+            []
+          ]
+        ]
+      },
+      "ancestors": [
+        {
+          "stage": "solve",
+          "ops": [
+            "EX",
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            2,
+            3,
+            2,
+            4
+          ],
+          "external": [],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "cut_dp",
+          "ops": [
+            "EX",
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            2,
+            3,
+            2,
+            4
+          ],
+          "external": [],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "group",
+          "ops": [
+            "EX",
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            2,
+            3,
+            2,
+            4
+          ],
+          "external": [],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "solve",
+          "ops": [
+            "EX",
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            3,
+            2,
+            4
+          ],
+          "external": [
+            "B",
+            "C0",
+            "C1",
+            "D0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "cut_dp",
+          "ops": [
+            "EX",
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            3,
+            2,
+            4
+          ],
+          "external": [
+            "B",
+            "C0",
+            "C1",
+            "D0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "group",
+          "ops": [
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            4
+          ],
+          "external": [
+            "C0",
+            "C1",
+            "D0",
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "solve",
+          "ops": [
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "external": [
+            "C0",
+            "C1",
+            "D0",
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "cut_dp",
+          "ops": [
+            "E0",
+            "F",
+            "E1",
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "external": [
+            "C0",
+            "C1",
+            "D0",
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        {
+          "stage": "group",
+          "ops": [
+            "E2",
+            "Join"
+          ],
+          "ext": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "external": [
+            "U1",
+            "V0",
+            "X"
+          ],
+          "owned": [],
+          "constrained": false
+        }
+      ]
+    }
+  ],
+  "joint_chain": true,
+  "replays": [
+    {
+      "exact": true,
+      "expected": [
+        4,
+        134
+      ],
+      "actual": {
+        "peak": 4,
+        "reads": {
+          "A": 6,
+          "B": 12,
+          "C0": 16,
+          "C1": 16,
+          "C2": 16,
+          "D0": 8,
+          "U0": 8,
+          "U1": 8,
+          "X": 16
+        },
+        "writes": {
+          "U0": 8,
+          "U1": 8,
+          "X": 4,
+          "Y": 8
+        },
+        "traffic": 134,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "A": 1,
+          "B": 1,
+          "X": 2
+        },
+        "steps": 76,
+        "consumer_checks": 160,
+        "outputs_checked": 8,
+        "valid": true
+      }
+    },
+    {
+      "exact": true,
+      "expected": [
+        5,
+        118
+      ],
+      "actual": {
+        "peak": 5,
+        "reads": {
+          "A": 6,
+          "B": 12,
+          "C0": 16,
+          "C1": 16,
+          "C2": 16,
+          "D0": 8,
+          "X": 32
+        },
+        "writes": {
+          "X": 4,
+          "Y": 8
+        },
+        "traffic": 118,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "C0": 1,
+          "C1": 1,
+          "U0": 1,
+          "U1": 1,
+          "X": 1
+        },
+        "steps": 76,
+        "consumer_checks": 160,
+        "outputs_checked": 8,
+        "valid": true
+      }
+    },
+    {
+      "exact": true,
+      "expected": [
+        6,
+        82
+      ],
+      "actual": {
+        "peak": 6,
+        "reads": {
+          "A": 6,
+          "B": 12,
+          "C0": 16,
+          "C1": 16,
+          "C2": 16,
+          "D0": 8
+        },
+        "writes": {
+          "Y": 8
+        },
+        "traffic": 82,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "D0": 1,
+          "U0": 1,
+          "U1": 1,
+          "V0": 1,
+          "X": 2
+        },
+        "steps": 76,
+        "consumer_checks": 160,
+        "outputs_checked": 8,
+        "valid": true
+      }
+    },
+    {
+      "exact": true,
+      "expected": [
+        8,
+        76
+      ],
+      "actual": {
+        "peak": 8,
+        "reads": {
+          "A": 6,
+          "B": 6,
+          "C0": 16,
+          "C1": 16,
+          "C2": 16,
+          "D0": 8
+        },
+        "writes": {
+          "Y": 8
+        },
+        "traffic": 76,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "D0": 1,
+          "U0": 1,
+          "U1": 1,
+          "V0": 1,
+          "X": 4
+        },
+        "steps": 76,
+        "consumer_checks": 160,
+        "outputs_checked": 8,
+        "valid": true
+      }
+    },
+    {
+      "exact": true,
+      "expected": [
+        9,
+        64
+      ],
+      "actual": {
+        "peak": 9,
+        "reads": {
+          "A": 6,
+          "B": 6,
+          "C0": 8,
+          "C1": 16,
+          "C2": 16,
+          "D0": 4
+        },
+        "writes": {
+          "Y": 8
+        },
+        "traffic": 64,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "D0": 1,
+          "U0": 2,
+          "V0": 2,
+          "X": 4
+        },
+        "steps": 76,
+        "consumer_checks": 160,
+        "outputs_checked": 8,
+        "valid": true
+      }
+    },
+    {
+      "exact": true,
+      "expected": [
+        10,
+        56
+      ],
+      "actual": {
+        "peak": 10,
+        "reads": {
+          "A": 6,
+          "B": 6,
+          "C0": 8,
+          "C1": 8,
+          "C2": 16,
+          "D0": 4
+        },
+        "writes": {
+          "Y": 8
+        },
+        "traffic": 56,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "C2": 1,
+          "U1": 2,
+          "U2": 1,
+          "V0": 2,
+          "X": 4
+        },
+        "steps": 76,
+        "consumer_checks": 160,
+        "outputs_checked": 8,
+        "valid": true
+      }
+    },
+    {
+      "exact": true,
+      "expected": [
+        11,
+        48
+      ],
+      "actual": {
+        "peak": 11,
+        "reads": {
+          "A": 6,
+          "B": 6,
+          "C0": 8,
+          "C1": 8,
+          "C2": 8,
+          "D0": 4
+        },
+        "writes": {
+          "Y": 8
+        },
+        "traffic": 48,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "D0": 1,
+          "U0": 2,
+          "U1": 2,
+          "V0": 2,
+          "X": 4
+        },
+        "steps": 76,
+        "consumer_checks": 160,
+        "outputs_checked": 8,
+        "valid": true
+      }
+    }
+  ],
+  "seconds": 7.150019784923643,
+  "cpu_seconds": 7.14964109,
+  "peak_rss_kib": 55184,
+  "stats": {
+    "automorphisms": 2,
+    "automorphism_candidates": 36,
+    "symmetry_setup_seconds": 0.000662617152556777,
+    "queries": 1,
+    "cache_hits": 0,
+    "order_candidates": 12,
+    "order_calls": 6,
+    "order_skips": 6,
+    "symmetry_query_seconds": 4.0662242099642754e-05,
+    "partition_masks": 0,
+    "partition_choices": 0,
+    "dp_states": 128230,
+    "dp_transitions": 410342,
+    "loop_choices": 69691,
+    "pareto_candidates": 1811302,
+    "certificate_checks": 27802,
+    "certificate_hits": 5951,
+    "certificate_seconds": 0.30156435864046216,
+    "solve_entries": 31316,
+    "group_entries": 24146
+  }
+}

@@ -5,9 +5,22 @@ PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
 Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.md.
 
+Unified conditional search: [UNIFIED_SEARCH_RESULTS.md](UNIFIED_SEARCH_RESULTS.md).
+All 24 arms of a three-switch factorial study use the same order-complete serial
+grammar on a six-op partially symmetric graph with a downstream product join.
+Every root frontier agrees; 1,018,272 optimized internal response records match
+literal enumeration, with no missing contexts. A local scalar-shared-set and
+interval-peak certificate handles non-Fork subgraphs containing F/Join and is
+selected inside executed optimal whole-graph witnesses. The two nondegenerate
+roots drop from 90,496/122,408 response entries to 40,472/55,462; sequential
+controls give 4.74x/4.34x median time ratios. All 228 server replays are exact.
+The skinny control has zero certificate hits. Memory rises slightly with the
+current proof ledger; quotienting still enumerates global order representatives,
+so this establishes a restricted joint method rather than general-DAG scaling.
+
 Current synthesis: [RESEARCH_OVERVIEW.md](RESEARCH_OVERVIEW.md), separating exact
 search reductions from capacity-dependent physical conflicts and identifying
-the next target as a three-live-tensor response across competing axes.
+the next target as a unified conditional contract and dynamic quotient closure.
 
 Order-complete Fork symmetry: [FORK_QUOTIENT_RESULTS.md](FORK_QUOTIENT_RESULTS.md).
 A separate exact quotient retains joint input/output residency profiles within

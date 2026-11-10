@@ -189,9 +189,9 @@ banking or precision changes may require a different Gamma and cost model.
    savings stay below 0.41%. A two-live-tensor normal form now covers complete
    positive-traffic curves, including alternate-axis X materialization. An
    equal-summary three-live counterexample identifies joint axis incidence
-   as the next target: derive a response for {X,t,z} with a matching lower
-   bound and measure coverage on the completed mixed-role quotient, without
-   transferring fixed-order census fractions across grammars. General larger-X
+   as a required distinction for a future {X,t,z} response. Defer that separate
+   derivation while consolidating the unified contract and quotient below;
+   do not transfer fixed-order census fractions across grammars. General larger-X
    states and outer mask enumeration remain open. See ONE_OBLIGATION_RESULTS.md
    and RESEARCH_OVERVIEW.md alongside the earlier bridge reports.
    **Order-complete symmetry quotient:** an independent Fork solver now searches
@@ -220,6 +220,21 @@ banking or precision changes may require a different Gamma and cost model.
    before claiming a scalable search; preserve joint profiles, lifetime,
    ownership and entry. Shared multi-writer sums remain a separate model.
    See BRANCH_SYMMETRY_RESULTS.md for 852 exact replays and all attempts.
+   **Unified replacement test:** completed in UNIFIED_SEARCH_RESULTS.md under
+   the single grammar and contract in UNIFIED_SEARCH_PROTOCOL.md. All 24 D/Q/C
+   arms agree; 1,018,272 internal response comparisons and 228 server replays
+   are exact. A local scalar-shared-set certificate charges singleton live
+   intervals and requires its peak to attain the operand bound, replacing the
+   old whole-Fork guard. It is selected for a subgraph containing the downstream
+   branch and join, inside a cut-DP/order-quotient whole-plan witness. Each rule
+   has a distinct measured effect: prefix combination reuse, order/state
+   symmetry, or certified descendant-search removal. Keep one mathematical
+   line: exact conditional-response substitution. The next proof target is a
+   dynamic remaining-state quotient with transition closure and one global
+   order, using this census as a regression oracle. Current Q is only at the
+   query/order boundary; neither the 4.74x/4.34x times nor this finite graph
+   establish a general state bound. Do not add a parallel heuristic or overlap
+   branch to enlarge the headline.
 4. **P22, after P21: overlap and buffer occupancy.** A single-channel extension
    must charge double buffering and in-flight tiles against the same capacity
    budget as retained tensors. Prefetch scheduling follows this model; it does
