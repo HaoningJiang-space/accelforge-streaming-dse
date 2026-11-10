@@ -768,3 +768,58 @@ states need either:
   one op); or
 - a pruning bound that removes whole M > 1 subtrees. §14's operator bound is
   the candidate, and its shared-DAG work accounting is the next measurement.
+
+## 17. Operator bound on the shared call DAG: why edge pruning saves little at M > 1
+
+`op_projection.py work` repeats `c2_bound_audit.analyze`'s ordered shadow
+policy:
+
+- the captured iteration order;
+- the incumbent is the frontier of the preceding actual candidate curves;
+- anchors are never cut;
+- a proper choice is cut when its bound is dominated by the incumbent;
+- saved work is the exclusive work of states made unreachable from the root.
+
+The bound is either C2's slot bound or its pointwise max with the lifted §14
+operator bound. The slot column reproduces C2_BOUND_RESULTS.md: 20.31% of DP
+transitions in FFN-4, and 0.03% and 0.48% in the M8 stacks. See
+`op_bound_work.jsonl`.
+
+| Case | Cut edges, slots / op | Saved DP transitions, slots / op | Saved loop choices, slots / op |
+| --- | --- | --- | --- |
+| FFN 1 layer | 36 / 40 | 13.2% / 15.8% | 8.2% / 11.5% |
+| FFN 2 layers | 121 / 133 | 11.6% / 12.7% | 1.5% / 3.4% |
+| FFN 3 layers | 392 / 413 | 22.7% / 22.9% | 0.6% / 1.3% |
+| FFN 4 layers | 1,277 / 1,307 | 20.31% / 20.34% | 0.2% / 0.5% |
+| attention 2 / 4 layers | as FFN 2 / 4 | | |
+| FFN M8 1 layer | 1,028 / 1,459 | 0.03% / **2.9%** | 0.04% / **9.8%** |
+| FFN M8 2 layers | 3,059 / 4,116 | 0.48% / **2.1%** | 0.36% / **4.7%** |
+
+**Result.** In the M8 stacks the operator bound cuts 35-42% more edges and
+multiplies the saved work by 4-100×. In absolute terms the saving is still
+2-10%.
+
+**Mechanism: confluence of the retention lattice.**
+
+- A loop-child solve state is removed only when *every* incoming edge is
+  cut.
+- Retention and loop order commute. Keeping W1 at an outer loop and W2 at an
+  inner one reaches the same state as the reverse; tiling M then F reaches
+  the same extents as F then M.
+- Among loop-children:
+  - FFN M8-1: 1,034 of 1,084 (95%) are reached from parents with different
+    resident sets or extents, and 617 have five or more parents;
+  - FFN M8-2: 2,863 of 3,143 (91%) are, and 1,693 have five or more parents.
+- Cutting one parent's edge therefore rarely removes a state.
+
+**Consequence.** Per-edge pruning is the wrong granularity at M > 1. Work can
+fall only through state-level reasoning, of two kinds:
+
+- **Fewer distinct states.** Canonicalise retention orders that provably
+  reach equivalent responses. This is search-space reduction, not pruning.
+- **Removing a state from every context at once.** For example, a state-level
+  bound dominated in all of its parents' incumbents, which needs a
+  search-order discipline that makes those incumbents available.
+
+The closed forms and bounds remain correct and useful where work sits under
+unit-M states (§16: 6.8× on FFN-4). They do not address the M > 1 lattice.

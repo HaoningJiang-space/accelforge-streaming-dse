@@ -12,6 +12,7 @@ are resident span ends. Elementwise operators contribute 0.
 
 Usage: python -m research.index_coupling.op_projection check CASE [CASE ...]
        python -m research.index_coupling.op_projection c2 CASE [CASE ...]
+       python -m research.index_coupling.op_projection work CASE [CASE ...]
 """
 from functools import lru_cache
 import gzip
@@ -19,7 +20,10 @@ import json
 from pathlib import Path
 import sys
 
-from research.index_coupling.c2_bound_audit import dominates, frontier
+from collections import Counter, defaultdict
+from math import prod
+
+from research.index_coupling.c2_bound_audit import COUNTERS, dominates, frontier, reachable, transformed
 from research.index_coupling.census_tools import graph_of
 from research.index_coupling.elementwise_chain import KIND
 from research.index_coupling.graph.analysis import traffic_at
@@ -120,5 +124,84 @@ def c2(cases):
         print(json.dumps(dict(case=case, **c)), flush=True)
 
 
+def work(cases):
+    """Ordered shadow pruning on the shared call DAG, as c2_bound_audit.analyze.
+
+    Same captured iteration order, same incumbent (preceding actual curves),
+    anchors never cut. A proper choice is cut when its bound is dominated by
+    the incumbent. Bounds: C2 slot bound, and its pointwise max with the
+    lifted operator bound. Saved work sums exclusive counters of states that
+    become unreachable from the root, so shared children are not counted.
+    """
+    for case in cases:
+        g = graph_of(case)
+        data = json.load(gzip.open(R / case / 'baseline.json.gz', 'rt'))
+        names = sorted(g.sizes)
+        nodes = {n['id']: n for n in data['nodes']}
+        by_parent = defaultdict(list)
+        for e in data['edges']:
+            by_parent[e['parent']].append(e)
+        cuts = {'slots': set(), 'op': set()}
+        cut_axes = {'slots': Counter(), 'op': Counter()}
+        for pid, parent in nodes.items():
+            s = parent['state']
+            if s['stage'] != 'group':
+                continue
+            ops, ext, resident = tuple(s['ops']), tuple(s['ext']), set(s['external'])
+            sizes = dict(zip(names, ext))
+            size = lambda t: prod(sizes[v] for v in g.dims(t))
+            live = g.tensors(ops) - resident
+            if all(size(t) == 1 for t in live):
+                continue
+            made = {g.output(o) for o in ops}
+            actions, anchors = [], {}
+            for edge in by_parent[pid]:
+                cs = nodes[edge['child']]['state']
+                at = next(i for i, (x, y) in enumerate(zip(ext, cs['ext'])) if x != y)
+                v, b = names[at], cs['ext'][at]
+                lacking = sorted(t for t in live if v not in g.dims(t))
+                keep = set(cs['external']) - resident
+                trips = sizes[v] // b
+                allocation = sum(size(t) for t in keep)
+                extra = (trips - 1) * sum((2 if t in made else 1) * size(t) for t in set(lacking) - keep)
+                slots = max(len(set(g.access[o]) - set(cs['external'])) for o in ops)
+                a = dict(child=edge['child'], axis=v, tile=b, allocation=allocation, extra=extra, trips=trips,
+                         slots=slots, full=len(keep) == len(lacking),
+                         actual=transformed(nodes[edge['child']]['points'], allocation, extra, trips))
+                actions.append(a)
+                if a['full']:
+                    anchors[v, b] = nodes[edge['child']]['points']
+            incumbent = ()
+            for a in actions:
+                if not a['full']:
+                    anchor = anchors[a['axis'], a['tile']]
+                    slots_bound = transformed(anchor, a['allocation'], a['extra'], a['trips'], a['slots'])
+                    bounds = {'slots': slots_bound, 'op': slots_bound}
+                    chain = chain_ops(g, nodes[a['child']]['state'])
+                    if chain is not None:
+                        top = max(c for c, _ in a['actual']) - a['allocation'] + 3
+                        child = [(C, bound(chain, C)) for C in range(top)]
+                        bounds['op'] = lifted(slots_bound, child, a['allocation'], a['extra'], a['trips'])
+                        assert dominates(bounds['op'], a['actual'])
+                    for mode, b_ in bounds.items():
+                        if dominates(incumbent, b_):
+                            cuts[mode].add((pid, a['child']))
+                            cut_axes[mode][a['axis'] if a['axis'] == 'M' else 'other'] += 1
+                incumbent = frontier(incumbent + a['actual'])
+            assert incumbent == frontier(parent['points'])
+        total = {k: sum(n['work'][k] for n in nodes.values()) for k in COUNTERS}
+        out = dict(case=case, states=len(nodes), total_work=total)
+        for mode in cuts:
+            keep = reachable(data['root'], data['edges'], cuts[mode])
+            gone = set(nodes) - keep
+            saved = {k: sum(nodes[i]['work'][k] for i in gone) for k in COUNTERS}
+            out[mode] = dict(cut_edges=len(cuts[mode]), cut_by_axis=dict(cut_axes[mode]),
+                             unreachable_states=len(gone),
+                             unreachable_multi_row=sum(nodes[i]['state']['ext'][names.index('M')] > 1 for i in gone),
+                             saved_fraction={k: round(saved[k] / total[k], 4) if total[k] else None
+                                             for k in COUNTERS})
+        print(json.dumps(out), flush=True)
+
+
 if __name__ == '__main__':
-    {'check': check, 'c2': c2}[sys.argv[1]](sys.argv[2:])
+    {'check': check, 'c2': c2, 'work': work}[sys.argv[1]](sys.argv[2:])
