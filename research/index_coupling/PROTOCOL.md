@@ -471,3 +471,56 @@ missing output or simulator failure is recorded as incomplete/invalid, never
 as equality. All cases remain listed; do not silently remove a slow depth.
 If incomplete cases remain, distinguish the global prediction's falsification
 (if a complete counterexample exists) from unfinished full-curve coverage.
+
+# When must EH0 leave EX's group? (P21e), frozen before running
+
+Seen before freezing: `results/p21e_explore/sweep.jsonl` (54 residual shapes,
+I,K,L in {2,4,8}, depth 4, both read modes; commit `30586525`), and the
+witnesses of (8,2,4) and (4,8,2) at capacities 4 to 6. Those shapes and depth
+are excluded below.
+
+**Arms.** `free`: `curve(residual(I,K,L,depth,reads_x), partitions='dp')`.
+`tied`: the same with `whole_span_cuts = 2..n-1`, so the first whole-span
+partition never separates EX from EH0 (P21d's structural rule without its
+other exclusions). Both use corrected final-write ownership and the exact cut
+DP; every frontier witness of both arms is executed.
+
+**Derivation.** A group must loop over ranks every member uses and every
+internal tensor carries. EX lacks L, so while EH0 shares EX's group, no loop
+around EH0 or around {EH0, EH1} can be over L. Consider one I row. The tied
+arm can only complete the h0 row (L elements) and then contract it in EH1
+into the h1 row (K): about L + K resident. Separated from EX, the pair
+{EH0, EH1} has legal ranks {I, L}; looping L, h0 streams element by element
+while the d row and the accumulating h1 row stay resident: about 2K. Row
+tiles of t rows scale both by t. So the free arm reaches each traffic level
+with less capacity when 2K < L + K, i.e. L > K, and the tied arm's
+minimum-traffic capacity is larger. When L < K, materializing the h0 row is
+the cheaper route and is available to both arms. L = K is the tie and is
+excluded. In the seen data this rule holds for 18/18 L > K and 23/24 L < K
+shapes; the exception, (2,8,4) without X reads, differs at two capacities.
+
+**Held-out cases** (depth 6, both read modes, 32 cases). L > K:
+(4,4,6), (8,8,12), (4,8,12), (16,4,8), (2,4,16), (6,4,12), (16,2,8),
+(4,4,16). L < K: (4,6,4), (8,12,8), (4,12,8), (16,8,4), (8,16,4), (12,8,4),
+(6,12,8), (16,16,8). The first three L > K shapes have K < L < 2K and
+separate the derived condition L > K from L >= 2K, which the powers of two
+in the sweep cannot.
+
+Each arm runs in a fresh process with an 8 GiB address-space limit and 1800 s
+including replay. A timeout, memory failure or inexact replay makes a case
+incomplete; incomplete cases count against every prediction below.
+
+- **P21e-a.** For L > K, tied is strictly above free at one or more integer
+  capacities, in at least 15 of 16 cases.
+- **P21e-b.** For L < K, tied equals free at every integer capacity and on the
+  constant tail, in at least 15 of 16 cases.
+- **P21e-c.** For L > K, the least capacity at which tied reaches its minimum
+  traffic is strictly larger than free's, in at least 15 of 16 cases; the
+  minimum traffic itself is equal.
+- **Diagnostic, not scored:** in L > K cases, whether a free witness at the
+  smallest gap capacity contains a group with EH0 but without EX that loops
+  over L.
+
+If P21e-a fails mainly for K < L < 2K, the row model's capacity terms are
+wrong and the threshold is not L > K. If P21e-b fails, materializing h0 is not
+generally available to the tied arm at the needed capacities.
