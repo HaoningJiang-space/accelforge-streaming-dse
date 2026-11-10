@@ -123,6 +123,91 @@ there.
   elements, and at most C − max(u_k, u_{k+1}) can be carried.
 - **Faster oracle.** Symmetry reduction over i and j would reach 5×4 and
   beyond, giving more nontrivial held-out tests.
-- **Grammar-level counterpart.** Derive the grammar's own single-contraction
-  curve in closed form and check it against `grammar` here. The grammar
-  column already contains the data for this.
+- The grammar-level counterpart is now derived (§6).
+
+## 6. The grammar's single-contraction curve in closed form
+
+Let R_dom(n) be the tiles reachable from extent n by a chain of recursive
+tilings in the tile domain (n itself included). `loop_nest` predicts
+
+    f(a, b, C) = min( min over u in R(b), u <= C-1 of  a (b/u - 1),
+                      min over t in R(a), t <= C-1 of 2b (a/t - 1) )
+
+for C >= 2. The first term holds a y tile and re-reads all of x per F tile.
+The second holds an x tile and spills y per D tile. u = b or t = a gives the
+zero-traffic plateau min(a, b) + 1.
+
+**Derivation.** It assumes the grammar's per-loop semantics: a tensor not
+indexed by the loop is either held whole across the loop's iterations or
+re-fetched in every iteration, and traffic multiplies by trip count. Induct on
+the nest.
+
+- Let the outermost loop be over F with tile u, so there are b/u iterations.
+  - If x is held, the capacity is at least a + 1, and t = a gives f = 0.
+  - Otherwise the extra traffic is a (b/u − 1) + (b/u) f(a, u, C).
+- Substitute the inductive form of f(a, u, C):
+  - an inner y tile u' gives a (b/u − 1) + (b/u) a (u/u' − 1) = a (b/u' − 1),
+    which is the one-level term for u' in R(b);
+  - an inner x tile t gives a (b/u − 1) + 2b (a/t − 1) ≥ 2b (a/t − 1);
+  - an inner zero needs C ≥ u + 1 or C ≥ a + 1, and both are one-level terms.
+- An outermost D loop is symmetric, with weight 2.
+
+So deeper nests and mixed orders never beat one level. The minimum depends
+on C only through which tiles fit, which makes it a staircase set by the
+divisor structure.
+
+**Test.**
+
+- **Archived rows.** `grammar_halving` and `grammar_divisors` in all 57
+  oracle rows: 94 of 94 comparisons agree. These were seen while deriving.
+- **Held out.** Predictions for 7 composite shapes × all C × both domains
+  were frozen in `7972bf82` (`nest_predictions.json`) before `grammar` was
+  run (`nest_check.jsonl`).
+  - Result: **112 of 112 agree**. 84 of them have C > 2 and positive traffic.
+  - In 18 shape/C points the two domains differ, so the test also checks the
+    reachable-tile sets.
+
+**Against the blocked serpentine** (conjectural for C ≥ 3), divisors domain:
+
+| C | 12×18 grammar | 12×18 blocked | 18×12 grammar | 18×12 blocked |
+| ---: | ---: | ---: | ---: | ---: |
+| 4 | 60 | 55 | 54 | 51 |
+| 6 | 60 | 32 | 36 | 32 |
+| 9 | 24 | 18 | 18 | 15 |
+| 12 | 12 | 9 | 18 | 12 |
+
+At these sizes the gap is up to about 1.9×. It comes mostly from the
+staircase: the grammar only gains capacity at reachable tiles. The
+carry-over term (n − C + u instead of n per turn) is the smaller part.
+
+**Use for C2.** For one dense contraction with resident weight, f is exact
+and costs O(|divisors|). It is a grammar-level response, so a C2 bound built
+from it is tight for this operator. Whether it composes over chains is open:
+in a chain, the held tile of one contraction is the streamed side of the
+next.
+
+## 7. Literature check (traversal order and divisibility)
+
+The search was brief, not a survey.
+
+- **Divisibility is known.**
+  - Ruby (Horeni et al., ISPASS 2022; Timeloop v3) adds imperfect
+    factorization to accelerator mapspaces and reports EDP gains of up to
+    about 50%.
+  - Peemen et al. pad non-divisor tiles.
+  - GOMA (arXiv 2603.07962) requires strict divisibility.
+- **Inter-tile reuse under a fixed order is known.** Peemen, Mesman and
+  Corporaal ("Inter-tile reuse optimization applied to bandwidth constrained
+  embedded accelerators") model the overlap of consecutive tiles in a strip,
+  for a fixed loop direction.
+- **Reversing loop direction (serpentine or boustrophedon order)** was not
+  found in these accelerator-mapping papers. It appears in GPU rasterization
+  patents, and it is folklore in cache-blocking practice. The novelty of §3's
+  traversal-direction gap is therefore unestablished. It should be claimed
+  only as a measurement against a schedule oracle, not as a new technique.
+- **Pebbling with partial sums.** Sobczyk (arXiv 2410.22237, IPL) shows that
+  red-blue pebbling with fast memory below the in-degree is NP-complete, even
+  for one level with two red pebbles. The complete bipartite case of §1 is a
+  tractable special case with a closed form. Papp, Sobczyk and Yzelman
+  (arXiv 2506.10854) add partial-computation steps, which is this document's
+  spill model. Their results have not yet been read in detail.
