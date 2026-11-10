@@ -211,3 +211,58 @@ The search was brief, not a survey.
   tractable special case with a closed form. Papp, Sobczyk and Yzelman
   (arXiv 2506.10854) add partial-computation steps, which is this document's
   spill model. Their results have not yet been read in detail.
+
+## 8. Two-contraction chain: closed-form grammar response
+
+The chain is x[a] → E0 → h[b] → E1 → z[c], with both weights resident and
+grammar v2. f is §6's single-contraction form. The grammar's cost rules, read
+from `curve.py`, admit only these choices:
+
+- **A, h via DRAM.** Extra traffic 2b + f(a, b, C) + f(b, c, C). The
+  operators become two independent single contractions.
+- **Fused F loop with tile u ∈ R(b), trips t = b/u.** F is the only rank
+  common to E0 and E1. x and z lack F, so each is kept or re-fetched per
+  trip. The inner h tile of size u is kept across the split:
+
+  | x | z | Cells | Extra |
+  | --- | --- | --- | --- |
+  | re-fetched | spilled | u + 1 | (t − 1)(a + 2c) |
+  | re-fetched | kept | c + u + 1 | (t − 1) a |
+  | kept | spilled | a + u + 1 | 2 (t − 1) c |
+  | kept | kept | a + c + u | 0 |
+
+  u = b (t = 1) is h held whole: zero traffic at b + 1 cells.
+- **Nested F loops whose keep choices differ by level.** Each is dominated by
+  one level: an inner kept tensor costs the same cells, and the outer level
+  only adds re-fetch terms.
+
+`chain2_closed_form.predict` is the minimum over these options.
+
+**Held-out test.**
+
+- Predictions were frozen in `ed8c8b4f` (`chain2_predictions.json`) before
+  any chain curve was computed (`chain2_check.jsonl`).
+- Coverage: 10 shapes, C from 2 to b + 2, both tile domains.
+- **Result: 140 of 140 agree.** 94 of them have positive traffic.
+- Every option is the unique minimiser somewhere:
+  - fused with both re-fetched: 46;
+  - h via DRAM: 27;
+  - fused with z kept: 3;
+  - fused with x kept: 2;
+  - ties: 16.
+
+**Structural consequence for longer chains.** Dense contractions with
+distinct contracted ranks share a rank only pairwise:
+E0 ∩ E1 = {F}, but E0 ∩ E1 ∩ E2 = ∅. A grammar group of three or more such
+contractions therefore has no loop, and can only be partitioned.
+
+The grammar response of any unit-M chain of dense contractions, with no
+elementwise operators, should therefore reduce to a DP over boundaries:
+
+- each segment holds one or two contractions, with the closed forms above;
+- each boundary vector is either kept, adding its size to the cells of the
+  segments it spans, or sent via DRAM, adding 2 × its size;
+- the segment forms are also needed with a resident input or output.
+
+This is a conjecture. It has not been derived for segments with resident
+boundaries, or with elementwise operators, which share all their ranks.
