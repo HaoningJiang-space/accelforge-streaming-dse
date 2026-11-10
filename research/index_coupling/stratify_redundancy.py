@@ -1,34 +1,33 @@
 """Split cache keys into trivial and remaining strata before measuring redundancy.
 
 - empty: the response is infeasible (no frontier point);
-- lower_bound: the response is the single point (c, 0), i.e. zero extra
-  traffic, which is the shape the scalar-X bridge proves for its states;
+- zero_at_d: the single point (d, 0), with d the per-operator operand bound;
+- zero_above_d: a single point (c, 0) with c > d: zero extra traffic only
+  (archived *.strat.json files predate this split and merge both as
+  `lower_bound`);
 - rest: everything else, where local redundancy (decorations at a fixed
   stage/span/extents vs distinct frontiers) is reported separately.
 
 Usage: python -m research.index_coupling.stratify_redundancy STATES.jsonl.gz CASE
 """
 from collections import defaultdict
-import gzip
 import json
 import sys
 
+from research.index_coupling.census_tools import graph_of, load_states, points_of, stratum
+
 
 def main(path, case):
-    counts = dict(keys=0, empty=0, lower_bound=0, rest=0)
+    graph = graph_of(case)
+    counts = dict(keys=0, empty=0, zero_at_d=0, zero_above_d=0, rest=0)
     local = defaultdict(set)
-    with gzip.open(path, 'rt') as stream:
-        for line in stream:
-            s = json.loads(line)
-            counts['keys'] += 1
-            points = tuple(map(tuple, s['points']))
-            if not points:
-                counts['empty'] += 1
-            elif len(points) == 1 and points[0][1] == 0:
-                counts['lower_bound'] += 1
-            else:
-                counts['rest'] += 1
-                local[(s['stage'], tuple(s['ops']), tuple(s['ext']), s['constrained'])].add(points)
+    for s in load_states(path):
+        counts['keys'] += 1
+        points = points_of(s)
+        kind = stratum(graph, s, points)
+        counts[kind] += 1
+        if kind == 'rest':
+            local[(s['stage'], tuple(s['ops']), tuple(s['ext']), s['constrained'])].add(points)
     counts.update(rest_contexts=len(local), rest_local_distinct=sum(len(v) for v in local.values()),
                   rest_distinct=len({f for v in local.values() for f in v}))
     print(json.dumps(dict(case=case, **counts)))

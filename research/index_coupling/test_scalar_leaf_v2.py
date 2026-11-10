@@ -32,9 +32,7 @@ def violations(graph, leaf, limit=2):
                     continue
                 more = extra(graph, frozenset(resident) | {w}, scalar_leaf=leaf)
                 top = max(c for c, _ in base + more)
-                if any(traffic_at(c, base) is not None and
-                       (traffic_at(c, more) is None or traffic_at(c, more) > traffic_at(c, base))
-                       for c in range(top + 1)):
+                if any(traffic_at(c, more) > traffic_at(c, base) for c in range(top + 1)):
                     found.append((resident, w))
     return found
 
@@ -60,8 +58,7 @@ class ScalarLeafV2(unittest.TestCase):
             v1 = curve(g, partitions='dp')
             v2 = curve(g, witness=True, partitions='dp', scalar_leaf='v2')
             for c in range(max(p[0] for p in v1) + 1):
-                if traffic_at(c, v1) is not None:
-                    self.assertLessEqual(traffic_at(c, [p[:2] for p in v2]), traffic_at(c, v1))
+                self.assertLessEqual(traffic_at(c, v2), traffic_at(c, v1))
             for c, q, w in v2:
                 run = simulate(g, w, scalar_leaf='v2')
                 self.assertTrue(run['valid'])

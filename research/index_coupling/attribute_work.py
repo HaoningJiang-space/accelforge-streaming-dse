@@ -25,7 +25,6 @@ import argparse
 import ast
 from collections import defaultdict
 import json
-from math import prod
 from pathlib import Path
 import platform
 import resource
@@ -33,9 +32,7 @@ import signal
 import subprocess
 import time
 
-from research.index_coupling.analyze_redundancy import graph_of
-from research.index_coupling.audit_residency_states import CASES as FORKS
-from research.index_coupling.redundancy_census import CASES
+from research.index_coupling.census_tools import CASES, graph_of, stratum
 from research.index_coupling.sufficient_stat import statistic
 
 HERE = Path(__file__).resolve().parent
@@ -65,18 +62,6 @@ def instrumented(observe_miss, observe_group_call):
                      _observe_miss=observe_miss, _observe_group_call=observe_group_call)
     exec(compile(ast.fix_missing_locations(tree), str(path), 'exec'), namespace)
     return namespace['curve']
-
-
-def stratum(graph, state, points):
-    if not points:
-        return 'empty'
-    if len(points) > 1 or points[0][1] != 0:
-        return 'rest'
-    ext = dict(zip(sorted(graph.sizes), state['ext']))
-    resident = set(state['external'])
-    d = max(sum(prod(ext[v] for v in dims) for t, dims in graph.access[op].items() if t not in resident)
-            for op in state['ops'])
-    return 'zero_at_d' if points[0][0] == d else 'zero_above_d'
 
 
 def timeout(*_):
@@ -159,7 +144,7 @@ def run(case, seconds, mem_gib):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--case', choices=list(CASES) + list(FORKS), required=True)
+    p.add_argument('--case', choices=CASES, required=True)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--seconds', type=float, default=120)
     p.add_argument('--mem-gib', type=float, default=4)

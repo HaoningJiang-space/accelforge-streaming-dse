@@ -8,12 +8,11 @@ Compares with the recorded frontier. Solve states are predicted nonempty.
 
 Usage: python -m research.index_coupling.check_empty_groups STATES.jsonl.gz CASE
 """
-import gzip
 import json
 from math import prod
 import sys
 
-from research.index_coupling.analyze_redundancy import graph_of
+from research.index_coupling.census_tools import graph_of, load_states
 
 
 def predicted_empty(graph, state):
@@ -34,15 +33,13 @@ def predicted_empty(graph, state):
 def main(path, case):
     graph = graph_of(case)
     counts = dict(states=0, empty=0, predicted=0, false_empty=0, missed_empty=0)
-    with gzip.open(path, 'rt') as stream:
-        for line in stream:
-            s = json.loads(line)
-            actual, predicted = not s['points'], predicted_empty(graph, s)
-            counts['states'] += 1
-            counts['empty'] += actual
-            counts['predicted'] += predicted
-            counts['false_empty'] += predicted and not actual
-            counts['missed_empty'] += actual and not predicted
+    for s in load_states(path):
+        actual, predicted = not s['points'], predicted_empty(graph, s)
+        counts['states'] += 1
+        counts['empty'] += actual
+        counts['predicted'] += predicted
+        counts['false_empty'] += predicted and not actual
+        counts['missed_empty'] += actual and not predicted
     print(json.dumps(dict(case=case, **counts)))
 
 

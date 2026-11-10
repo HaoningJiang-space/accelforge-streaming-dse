@@ -18,12 +18,11 @@ different frontiers.
 Usage: python -m research.index_coupling.sufficient_stat STATES.jsonl.gz CASE
 """
 from collections import defaultdict
-import gzip
 import json
 from math import prod
 import sys
 
-from research.index_coupling.analyze_redundancy import graph_of
+from research.index_coupling.census_tools import graph_of, load_states, points_of
 
 TABLE = {}
 
@@ -77,22 +76,18 @@ def main(path, case):
     classes = {v: defaultdict(set) for v in variants}
     examples = {}
     keys = 0
-    with gzip.open(path, 'rt') as stream:
-        for line in stream:
-            s = json.loads(line)
-            keys += 1
-            frontier = (s['stage'], tuple(map(tuple, s['points'])))
-            for v in variants:
-                key = statistic(graph, s, v, facts)
-                group = classes[v][key]
-                if group and frontier not in {f for f, _ in group} and v not in examples:
-                    other = next(iter(group))
-                    examples[v] = [other[1], dict(ops=s['ops'], ext=s['ext'], external=s['external'],
-                                                  owned=s['owned'], stage=s['stage'], points=s['points'])]
-                if frontier not in {f for f, _ in group}:
-                    group.add((frontier, json.dumps(dict(ops=s['ops'], ext=s['ext'], external=s['external'],
-                                                         owned=s['owned'], stage=s['stage'],
-                                                         points=s['points']))))
+    for s in load_states(path):
+        keys += 1
+        frontier = (s['stage'], points_of(s))
+        record = dict(ops=s['ops'], ext=s['ext'], external=s['external'], owned=s['owned'],
+                      stage=s['stage'], points=s['points'])
+        for v in variants:
+            group = classes[v][statistic(graph, s, v, facts)]
+            if frontier in {f for f, _ in group}:
+                continue
+            if group and v not in examples:
+                examples[v] = [next(iter(group))[1], record]
+            group.add((frontier, json.dumps(record)))
     report = dict(case=case, keys=keys)
     for v in variants:
         report[v] = dict(classes=len(classes[v]), violations=sum(len(g) > 1 for g in classes[v].values()))

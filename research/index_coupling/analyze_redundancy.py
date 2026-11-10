@@ -15,24 +15,15 @@ Projections:
   arity, but drop which operator touches which tensor through which rank.
 
 Usage: python -m research.index_coupling.analyze_redundancy STATES.jsonl.gz CASE
-  CASE names redundancy_census.CASES or audit_residency_states.CASES.
+  CASE names census_tools.CASES.
 """
 from collections import defaultdict
-import gzip
 import json
 from math import prod
 import sys
 
-from research.index_coupling.audit_residency_states import CASES as FORKS
-from research.index_coupling.graph.model import fork
-from research.index_coupling.redundancy_census import CASES, signature
-
-
-def graph_of(case):
-    if case in CASES:
-        builder, args = CASES[case]
-        return builder(*args)
-    return fork(*FORKS[case])
+from research.index_coupling.census_tools import graph_of, load_states, points_of
+from research.index_coupling.redundancy_census import signature
 
 
 def tensor_facts(graph, state):
@@ -62,11 +53,10 @@ def projections(graph, state):
 
 def main(path, case):
     graph = graph_of(case)
-    with gzip.open(path, 'rt') as stream:
-        states = [json.loads(line) for line in stream]
+    states = list(load_states(path))
     classes = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     for s in states:
-        frontier = tuple(map(tuple, s['points']))
+        frontier = points_of(s)
         for name, key in projections(graph, s).items():
             classes[name][key][frontier].append(s)
     report = dict(case=case, keys=len(states))

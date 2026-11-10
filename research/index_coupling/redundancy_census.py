@@ -34,22 +34,7 @@ import subprocess
 import time
 
 from research.index_coupling.audit_residency_states import instrumented_curve
-from research.index_coupling.graph.model import fork, residual
-from research.index_coupling.graph.stacks import attention_stack, ffn_stack
-from research.index_coupling.run_ancestor_width import control
-
-CASES = {
-    **{f'residual_d{d}_x{x}': (residual, (2, 2, 2, d, bool(x))) for d in (4, 6, 8, 12, 16, 24) for x in (0, 1)},
-    **{f'ffn_forward_l{n}': (ffn_stack, (n,)) for n in (1, 2, 3, 4)},
-    **{f'attention_forward_l{n}': (attention_stack, (n,)) for n in (1, 2, 3, 4)},
-    'ffn_training_l1': (lambda: ffn_stack(1, training=True), ()),
-    **{f'ancestor_k{k}': (control, (k,)) for k in range(1, 9)},
-    **{f'fork_{r}': (fork, (2, 2, 2, 2, r)) for r in ('kk', 'kkk', 'kkkk', 'kki', 'kkii')},
-    # Larger extents: equal small frontiers at extent two may be numerical coincidences.
-    **{f'residual448_d{d}_x{x}': (residual, (4, 4, 8, d, bool(x))) for d in (4, 6, 8) for x in (0, 1)},
-    **{f'fork4_{r}': (fork, (4, 4, 4, 4, r)) for r in ('kk', 'ki', 'kkk')},
-    **{f'ffn_forward_l{n}_m8': (lambda n: ffn_stack(n, m=8, d=4, f=8), (n,)) for n in (1, 2)},
-}
+from research.index_coupling.census_tools import CASES, graph_of, load_states
 
 
 def signature(graph, state, rename_ranks):
@@ -102,9 +87,8 @@ def timeout(*_):
     raise TimeoutError('redundancy census wall-time limit')
 
 
-def run_case(name, seconds, mem_gib):
-    builder, args = CASES[name]
-    graph = builder(*args)
+def run_case(name, seconds, mem_gib, scalar_leaf='v1'):
+    graph = graph_of(name)
     if platform.system() == 'Linux':
         cap = int(mem_gib * 2**30)
         resource.setrlimit(resource.RLIMIT_AS, (cap, cap))
@@ -112,7 +96,7 @@ def run_case(name, seconds, mem_gib):
     record = dict(case=name, revision=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                   python=platform.python_version(), budgets=dict(seconds=seconds, mem_gib=mem_gib),
                   options=dict(partitions='dp', canonical_spans=False, independent_ops=False,
-                               tile_domain='halving'))
+                               tile_domain='halving', scalar_leaf=scalar_leaf))
     signal.signal(signal.SIGALRM, timeout)
     signal.setitimer(signal.ITIMER_REAL, seconds)
     start = time.monotonic()
@@ -143,18 +127,17 @@ def main():
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--seconds', type=float, default=60)
     p.add_argument('--mem-gib', type=float, default=4)
+    p.add_argument('--scalar-leaf', choices=('v1', 'v2'), default='v1')
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     if a.archived:
-        from research.index_coupling.audit_residency_states import CASES as FORKS
-        with gzip.open(a.archived, 'rt') as stream:
-            states = [json.loads(line) for line in stream]
+        states = list(load_states(a.archived))
         record = dict(case=a.name, source=str(a.archived), status='complete',
-                      **summarize(fork(*FORKS[a.name]), states))
+                      **summarize(graph_of(a.name), states))
         name = a.name
     else:
-        record, states = run_case(a.case, a.seconds, a.mem_gib)
-        name = a.case
+        record, states = run_case(a.case, a.seconds, a.mem_gib, a.scalar_leaf)
+        name = a.case + ('' if a.scalar_leaf == 'v1' else f'_{a.scalar_leaf}')
         with gzip.open(a.out / f'{name}.states.jsonl.gz', 'wt') as stream:
             for s in states:
                 stream.write(json.dumps(s, separators=(',', ':')) + '\n')
