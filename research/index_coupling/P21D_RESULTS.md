@@ -208,3 +208,25 @@ all-cut equivalence, constraints after whole-span loops, structural invariance,
 argument validation and witness replay. They are implementation checks, not
 additional held-out experimental evidence. Raw arms, full error intervals,
 witnesses and cut reasons are retained under `results/p21d/`.
+
+## Supplement: depth-12 cases with the exact cut DP (not a rescore)
+
+After the final-write ownership fix (`39ca741e`) and the exact cut DP
+(`c922be9e`, equal to enumeration on every completed comparison), the four
+depth-12 cases finish in under five seconds per arm
+(`supplement_p21d_dp.py`, `results/p21d_dp_supplement/`). Every frontier
+witness of both arms executes exactly (40/40 structural, 38/38 unrestricted).
+
+| Case | Shape | H reads X | Structural vs unrestricted | Wrong capacities |
+| --- | --- | --- | --- | ---: |
+| 04 | (8, 2, 4) | no | unequal | 11 |
+| 05 | (8, 2, 4) | yes | unequal | 12 |
+| 10 | (4, 8, 2) | no | equal | 0 |
+| 11 | (4, 8, 2) | yes | equal | 0 |
+
+Together with the repriced cases 07 and 09, all twelve cases now have exact
+curves under corrected pricing. The outcome splits by shape: every (8,2,4)
+case is unequal (depths 4, 6, 12; both read modes) and every (4,8,2) case is
+equal. The frozen verdict is unchanged: P21d failed, and its four incomplete
+cases remain incomplete in the frozen run. This split was observed after the
+fact; any explanation of it must be tested on new shapes before it is claimed.
