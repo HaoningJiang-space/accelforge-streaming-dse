@@ -330,3 +330,81 @@ Both mechanisms are therefore needed.
     and loop over more ranks.
   - Their M > 1 parents add an outer row loop.
   - Neither is covered yet.
+
+## 10. Chains with elementwise operators (FFN and attention at unit M)
+
+An elementwise op keeps its rank (H[F] → Z[F]). A run of ops is a loopable
+grammar group only if its ops share a rank. In an FFN or attention layer
+X[d] →c→ H[f] →e→ Z[f] →c→ X'[d], the loopable runs are:
+
+- the singletons c and e;
+- ce and ec, which share F;
+- cec, which shares F;
+- the cross-layer cc (EY_i, EH_{i+1}), which shares D.
+
+`elementwise_chain.predict` is the §9 boundary DP with these group forms.
+Each form is (cells, extra), with tile u ∈ R(f) and trips t = f/u. s is 1 for
+a streamed end and 0 for a resident one.
+
+- **e:** (s_in + s_out, 0).
+- **ce:**
+  - input resident: (u + s_out, 0);
+  - otherwise: (a + u + s_out, 0) with x kept, or (u + 1, a(t − 1)) with x
+    re-fetched.
+- **ec:** the mirror of ce, with spill weight 2.
+- **cec:** up to two loop levels.
+  - Level 1 has tile u and keeps or re-fetches each end.
+  - Level 2 either splits all three ops, which costs 2u cells at the
+    elementwise op because H and Z tiles are both held, or splits off one
+    contraction with its intermediate kept at u and loops the other {c, e}
+    pair at a smaller tile u'. That side's end may also be kept at level 2.
+  - This lets the H tile and the Z tile differ. For example, keeping the Z
+    tile u and looping {EH, EZ} at u' costs u + u' + 1 cells. x is then
+    re-fetched per u' trip and z spilled per u trip.
+
+**Held-out test on synthetic stacks.**
+
+- Predictions were frozen in `4f4df3e3` (`elementwise_predictions.json`)
+  before any curve was computed (`elementwise_check.jsonl`).
+- Coverage: 11 FFN stacks with 1-3 layers and (d, f) up to (4, 8), plus 2
+  attention stacks, over all C and both tile domains.
+- **Result: 388 of 388 agree.**
+  - 100 have positive traffic, with 75 distinct values.
+  - 262 are zero.
+  - 26 are infeasible.
+- In-sample ablation:
+
+  | Removed | Rows predicted worse |
+  | --- | ---: |
+  | the second cec level | 18 |
+  | cec groups | 63 |
+  | cross-layer cc groups | 8 |
+
+**Test on archived C2-audit nodes.**
+
+- The DP was extended to resident chain ends. These are held by the caller
+  at no cell cost; the frozen predictions are unchanged.
+- `python -m research.index_coupling.elementwise_chain archive <cases>`
+  compares whole curves, at every capacity up to the last breakpoint + 2.
+- A solve node qualifies when it has unit M, all its weights resident,
+  contiguous ops, and no interior vector external or owned.
+
+| Case | Nodes | Qualifying | Exact curve | With positive traffic |
+| --- | ---: | ---: | ---: | ---: |
+| FFN forward 1 / 2 / 3 / 4 layers | 271 / 1,052 / 3,221 / 10,834 | 47 / 147 / 283 / 455 | all | 7 / 40 / 108 / 212 |
+| attention forward 2 / 4 layers | 1,052 / 10,834 | 147 / 455 | all | 40 / 212 |
+| FFN M8 1 / 2 layers (d 4, f 8) | 2,108 / 6,176 | 148 / 382 | all | 31 / 94 |
+| **Total** | | **2,064** | **2,064** | **744** |
+
+**Scope.** Qualifying nodes are a small share of each archive. Most nodes:
+
+- have streamed weights, which is exactly the C2 retention question;
+- have M > 1;
+- are group-stage queries, which must loop at the top.
+
+**Next.**
+
+- Add streamed weights. Each streamed weight adds operand cells and its own
+  re-fetch terms.
+- Add group-stage entries.
+- Then the forms can bound or replace the C2 anchors directly.

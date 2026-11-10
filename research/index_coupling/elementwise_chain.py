@@ -9,6 +9,7 @@ Weights are resident; streamed weights are not covered.
 
 Usage: python -m research.index_coupling.elementwise_chain freeze OUT.json
        python -m research.index_coupling.elementwise_chain check PRED.json OUT.jsonl
+       python -m research.index_coupling.elementwise_chain archive CASE [CASE ...]
 """
 import json
 import sys
@@ -107,9 +108,10 @@ def group(pattern, sizes, cells, res_in, res_out, dom):
     raise ValueError(f'no form for group pattern {pattern}')
 
 
-def predict(kinds, sizes, capacity, dom):
+def predict(kinds, sizes, capacity, dom, resident_first=False, resident_last=False):
+    """Resident ends are held by the caller: groups see them as resident, at no cell cost."""
     m, rank = len(kinds), ranks(kinds)
-    best = {(0, False): 0}
+    best = {(0, resident_first): 0}
     for j in range(m):
         for kept_j in (False, True):
             if (j, kept_j) not in best:
@@ -117,13 +119,13 @@ def predict(kinds, sizes, capacity, dom):
             for k in range(j + 1, m + 1):
                 if not loopable(kinds, rank, j, k):
                     break
-                for kept_k in ((False,) if k == m else (False, True)):
-                    cells = capacity - sizes[j] * kept_j - sizes[k] * kept_k
+                for kept_k in (((resident_last,) if k == m else (False, True))):
+                    cells = capacity - sizes[j] * (kept_j and j > 0) - sizes[k] * (kept_k and k < m)
                     cost = group(''.join(kinds[j:k]), sizes[j:k + 1], cells, kept_j, kept_k, dom)
                     cost += 0 if kept_k or k == m else 2 * sizes[k]
                     if best[j, kept_j] + cost < best.get((k, kept_k), INF):
                         best[k, kept_k] = best[j, kept_j] + cost
-    return best.get((m, False), INF)
+    return best.get((m, resident_last), INF)
 
 
 def stack(family, layers, d, f):
@@ -140,7 +142,62 @@ STACKS = [('ffn', 1, 2, 2), ('ffn', 1, 2, 4), ('ffn', 1, 4, 2), ('ffn', 1, 3, 6)
           ('ffn', 3, 2, 2), ('ffn', 3, 2, 4), ('attention', 2, 2, 4), ('attention', 2, 4, 2)]
 
 
+KIND = dict(EH='c', EZ='e', EY='c', ES='c', ESoft='e', EO='c')
+
+
+def archived_chain(graph, state):
+    """(kinds, sizes, resident ends) of a qualifying archived solve node, else None."""
+    if state['stage'] != 'solve' or state['constrained']:
+        return None
+    names, ops = sorted(graph.sizes), state['ops']
+    ext = dict(zip(names, state['ext']))
+    external, owned = set(state['external']), set(state['owned'])
+    if ext['M'] != 1 or tuple(ops) != graph.ops[graph.ops.index(ops[0]):][:len(ops)]:
+        return None
+    vectors = [list(graph.access[ops[0]])[0]] + [graph.output(op) for op in ops]
+    weights = {t for op in ops for t in graph.access[op] if 'M' not in graph.access[op][t]}
+    if not weights <= external or (set(vectors[1:-1]) & (external | owned)):
+        return None
+    kinds = [KIND[op.rstrip('0123456789').rstrip('_')] for op in ops]
+    sizes = [1] * len(vectors)
+    for i, t in enumerate(vectors):
+        for v in graph.dims(t):
+            sizes[i] *= ext[v]
+    return kinds, sizes, vectors[0] in external, vectors[-1] in external
+
+
+def archive(cases):
+    import gzip
+    from pathlib import Path
+    from research.index_coupling.census_tools import graph_of
+    here = Path(__file__).resolve().parent
+    for case in cases:
+        graph = graph_of(case)
+        with gzip.open(here / 'results/c2_bound' / case / 'baseline.json.gz', 'rt') as stream:
+            data = json.load(stream)
+        dom = 'halving'  # run_c2_bound_audit.py
+        counts = dict(nodes=len(data['nodes']), qualifying=0, exact=0, positive=0)
+        example = None
+        for node in data['nodes']:
+            chain = archived_chain(graph, node['state'])
+            if chain is None:
+                continue
+            kinds, sizes, first, last = chain
+            counts['qualifying'] += 1
+            points = node['points']
+            caps = range(0, max(c for c, _ in points) + 3)
+            ok = all(predict(kinds, sizes, c, dom, first, last) == traffic_at(c, points) for c in caps)
+            counts['exact'] += ok
+            counts['positive'] += any(q > 0 for _, q in points)
+            if not ok and example is None:
+                example = dict(state=node['state'], points=points,
+                               predict=[(c, predict(kinds, sizes, c, dom, first, last)) for c in caps])
+        print(json.dumps(dict(case=case, **counts, mismatch_example=example)))
+
+
 def main(argv):
+    if argv[0] == 'archive':
+        return archive(argv[1:])
     if argv[0] == 'freeze':
         rows = []
         for family, layers, d, f in STACKS:
