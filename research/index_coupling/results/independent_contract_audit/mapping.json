@@ -1,0 +1,237 @@
+{
+  "upstream_revision": "509f42554202edb29cf8d31ddf619776f465e717",
+  "source_sha256": {
+    "PyTorchSimFrontend/mlir/mlir_gemm_template.py": "2ce12893c5fddc8c20fce71e5dce0fba9583761b5cd9e0d585be54e42c87ad1c",
+    "PyTorchSimFrontend/extension_config.py": "f7ff9ae2e3a2af5273122448b497296ea9104f76c7011d2efd6a493f830e9252",
+    "PyTorchSimFrontend/mlir/mlir_template.py": "d7437eb388cb24a645c14658eeea7569f1eed9a6aaefdf8744789b9fcfbbb08d",
+    "PyTorchSimFrontend/mlir/mlir_codegen_backend.py": "d73e030ac3415b4cf3fbfc36d625bdb4b931956569469a165d9fd7ae4f433485",
+    "PyTorchSimFrontend/mlir/mlir_common.py": "c4d3397b2ad05ebc1b24d53ea448d8a0400b37a18cb68db71c355424f8b6ffa4",
+    "AsmParser/tog_generator.py": "88e18ebe8a9346d804160c3400c1ddf98481ea7549efe9d7f1d30d793997ea07",
+    "TOGSim/src/TileGraphParser.cc": "c6f79ae218249aa2ec498779e3f1fba952df62fbfc0d29377e9499806aadfc32"
+  },
+  "audit_sha256": "97b336a9285fa95f80251d55d11fe858f0deace06237be0ca41cb7f0368d8594",
+  "evidence": "Original select_tile function executed in isolation; template source inspected. No PyTorch compiler, TOG execution, cycles, energy or hardware validity tested.",
+  "findings": {
+    "named_field_order_changes_selection": true,
+    "missing_shape_falls_back": true,
+    "three_fields_can_create_two_candidates": true,
+    "six_fields_skip_geometry_validation": true,
+    "plain_template_loop_order": [
+      "M",
+      "N",
+      "K"
+    ],
+    "plain_template_output_retained_across_K": true
+  },
+  "cases": [
+    {
+      "case": "canonical_six",
+      "file": {
+        "64_128_32": {
+          "TILE_M": 16,
+          "TILE_N": 32,
+          "TILE_K": 8,
+          "SUB_TILE_M": 8,
+          "SUB_TILE_N": 16,
+          "SUB_TILE_K": 8
+        }
+      },
+      "subtile_enabled": true,
+      "selected_candidates": [
+        [
+          16,
+          32,
+          8,
+          8,
+          16,
+          8
+        ]
+      ],
+      "heuristic_calls": 0
+    },
+    {
+      "case": "same_named_values_different_order",
+      "file": {
+        "64_128_32": {
+          "TILE_K": 8,
+          "TILE_N": 32,
+          "TILE_M": 16,
+          "SUB_TILE_M": 8,
+          "SUB_TILE_N": 16,
+          "SUB_TILE_K": 8
+        }
+      },
+      "subtile_enabled": true,
+      "selected_candidates": [
+        [
+          8,
+          32,
+          16,
+          8,
+          16,
+          8
+        ]
+      ],
+      "heuristic_calls": 0
+    },
+    {
+      "case": "json_sort_keys",
+      "file": {
+        "64_128_32": {
+          "SUB_TILE_K": 8,
+          "SUB_TILE_M": 8,
+          "SUB_TILE_N": 16,
+          "TILE_K": 8,
+          "TILE_M": 16,
+          "TILE_N": 32
+        }
+      },
+      "subtile_enabled": true,
+      "selected_candidates": [
+        [
+          8,
+          8,
+          16,
+          8,
+          16,
+          32
+        ]
+      ],
+      "heuristic_calls": 0
+    },
+    {
+      "case": "shape_key_miss",
+      "file": {},
+      "subtile_enabled": false,
+      "selected_candidates": [
+        [
+          32,
+          64,
+          16,
+          32,
+          64,
+          16
+        ]
+      ],
+      "heuristic_calls": 1
+    },
+    {
+      "case": "three_fields_subtile",
+      "file": {
+        "64_128_32": {
+          "TILE_M": 16,
+          "TILE_N": 32,
+          "TILE_K": 8
+        }
+      },
+      "subtile_enabled": true,
+      "selected_candidates": [
+        [
+          16,
+          32,
+          8,
+          16,
+          32,
+          8
+        ],
+        [
+          16,
+          32,
+          8,
+          8,
+          32,
+          8
+        ]
+      ],
+      "heuristic_calls": 0
+    },
+    {
+      "case": "zero_tile_accepted_by_selector",
+      "file": {
+        "64_128_32": {
+          "TILE_M": 0,
+          "TILE_N": 32,
+          "TILE_K": 8,
+          "SUB_TILE_M": 8,
+          "SUB_TILE_N": 16,
+          "SUB_TILE_K": 8
+        }
+      },
+      "subtile_enabled": true,
+      "selected_candidates": [
+        [
+          0,
+          32,
+          8,
+          8,
+          16,
+          8
+        ]
+      ],
+      "heuristic_calls": 0
+    },
+    {
+      "case": "oversize_subtile_accepted_by_selector",
+      "file": {
+        "64_128_32": {
+          "TILE_M": 16,
+          "TILE_N": 32,
+          "TILE_K": 8,
+          "SUB_TILE_M": 32,
+          "SUB_TILE_N": 16,
+          "SUB_TILE_K": 8
+        }
+      },
+      "subtile_enabled": true,
+      "selected_candidates": [
+        [
+          16,
+          32,
+          8,
+          32,
+          16,
+          8
+        ]
+      ],
+      "heuristic_calls": 0
+    },
+    {
+      "case": "four_fields",
+      "file": {
+        "64_128_32": {
+          "TILE_M": 16,
+          "TILE_N": 32,
+          "TILE_K": 8,
+          "SUB_TILE_M": 8
+        }
+      },
+      "subtile_enabled": false,
+      "exception": "UnboundLocalError",
+      "heuristic_calls": 0
+    }
+  ],
+  "template_only_ledger": {
+    "mac_count": 262144,
+    "useful_input_elements": {
+      "X": 8192,
+      "W": 16384
+    },
+    "useful_output_elements": 8192,
+    "useful_bytes": 131072,
+    "logical_buffer_bytes": 3584,
+    "source_dma_operations": 144,
+    "partial_sum_dram_reads": 0,
+    "partial_sum_dram_writes": 0,
+    "caveat": "Pre-pass logical quantities, not compiled DMA/DRAM transactions or physical SRAM allocation."
+  },
+  "kernel_standin": {
+    "vector_lane": 8,
+    "heuristic_result": [
+      [
+        32,
+        64,
+        16
+      ]
+    ]
+  }
+}

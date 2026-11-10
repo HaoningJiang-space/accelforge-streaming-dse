@@ -5,6 +5,16 @@ PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
 Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.md.
 
+Independent follow-up: [CHAIN_THRESHOLD_REVIEW.md](CHAIN_THRESHOLD_REVIEW.md)
+closes the predecessor proof in forward time and checks 20 exact cell-schedule
+optima with executable replays. The two-layer binary cases attain the 4/5
+bound; the all-resident one-layer case separates schedule capacity 3 from v2
+capacity 4. The checker needs a dense-incidence guard before general use.
+[MAPPING_INTERFACE_AUDIT.md](MAPPING_INTERFACE_AUDIT.md) records eight probes
+of pinned PyTorchSim's external selector, including order-sensitive JSON values
+and silent shape fallback. It audits the integration contract without changing
+the independent DNN branch or claiming backend execution.
+
 Remainder implementation: [REMAINDER_SEARCH_RESULTS.md](REMAINDER_SEARCH_RESULTS.md).
 Exact ordered-remainder reuse (including rank restoration) and infeasible-group
 pruning are now default-off core options. Exact matching rejects WL collisions;
