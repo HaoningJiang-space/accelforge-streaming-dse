@@ -183,7 +183,11 @@ archived responses and runs locally in seconds.
 | **Total** | **5,492** | **5,092 (92.7%)** | **400** | **0** |
 
 The bound is never violated, as the theorem requires. It is exact on 93% of
-qualifying nodes, including every root-M-loop child of the tiny stacks. In
+qualifying nodes. On full-span unit-M nodes it is exact:
+
+- in all of them for the 2-, 3- and 4-layer tiny stacks (16, 64 and 256 for
+  FFN; 16 and 256 for attention);
+- in only 7 of 12 for the one-layer FFN. In
 the tiny stacks the remaining gaps are 1-3 cells. In the M8 stacks they reach
 14 cells.
 
