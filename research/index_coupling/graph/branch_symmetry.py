@@ -31,6 +31,18 @@ def branch_graph(shape=(2, 2, 2, 2, 2), branches=2, *, join=False, tails=None):
     return Graph(dict(zip(('I', 'J', 'K', 'L', 'N'), shape)), ops)
 
 
+def unequal_prefix_graph(shape=(2, 2, 2, 2, 2)):
+    """An extra copy on branch 0 breaks global symmetry, not the final H suffix."""
+    graph=branch_graph(shape)
+    ops=[]
+    for op in graph.ops:
+        if op=='E0':
+            ops.append(('Prepare0',{'X':('I','K'),'Z0':('I','K')}))
+            ops.append((op,{('Z0' if t=='X' else t):ds for t,ds in graph.access[op].items()}))
+        else:ops.append((op,dict(graph.access[op])))
+    return Graph(dict(graph.sizes),ops)
+
+
 @dataclass
 class Renaming:
     ops: dict
@@ -40,6 +52,8 @@ class Renaming:
 def is_automorphism(graph, mapping):
     """Check the entire typed incidence, not just the consumer's first op."""
     tensors = graph.tensors(graph.ops)
+    if any(tuple(ds) != tuple(graph.dims(t)) for op in graph.ops for t,ds in graph.access[op].items()):
+        return False  # Graph declarations must give each physical tensor one projection.
     if (set(mapping.ops) != set(graph.ops) or set(mapping.ops.values()) != set(graph.ops)
             or set(mapping.tensors) != tensors or set(mapping.tensors.values()) != tensors):
         return False

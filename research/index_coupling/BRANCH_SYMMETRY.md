@@ -42,6 +42,19 @@ their whole orbit, restoring the selected order and witness names afterwards.
 These are different operations. The oracle implements both, while its inner
 `curve.py` searches remain ordinary fixed-order calls.
 
+Even an undecorated root still has multiple order orbits. For m two-op chains,
+the number of literal orders after EX is (2m)!/2^m. The global S_m branch action
+is free on these complete labeled orders, leaving
+
+    (2m)! / (2^m m!) = (2m-1)!!
+
+orbits: 3,15,105 at m=2,3,4. An optional final join does not change the count.
+These are equivalence classes under whole-branch renaming, not necessarily
+distinct cost responses or an algorithmic lower bound. A future progress-state
+DP may merge suffixes of different such interleavings after preserving the
+decorated boundary. Prefixes with absent/completed branches need their actual
+stabilizer; the free-action division cannot be applied to them blindly.
+
 ## 2. A continuation boundary with an explicit finite alphabet
 
 For the primary cut experiment, EX has completed. Each two-op branch has
@@ -125,3 +138,20 @@ For a future generalization, the state signature must include the full branch
 operator-membership mask, joint residency and final-write ownership. A shared
 multi-writer partial sum is outside the current single-writer executor and
 requires a separate model/proof; attaching a symmetric join does not test it.
+
+## 5. A separate local-symmetry recovery control
+
+After the seven-job census, add one extra copy Z0=copy(X) before E0, using Z0
+instead of X in E0. This distinguishes the original branches. Once EX,Prepare0,
+E0,E1 have completed, the remaining graph is just H0,H1 with ready U0,U1 inputs.
+That remaining typed graph is symmetric again. Before the follow-up run, predict:
+the original graph's branch group has size one, the remaining graph's has size
+two, and resident {D0}/{D1} suffix curves agree. The local oracle should reuse
+one response; the conservatively global-certified oracle needs two. Reconstruct
+and replay both identities. This adds no new whole-graph equivalence claim:
+different prefix costs are outside the conditional suffix and remain charged.
+
+`probe_recovered_symmetry.py` runs this bounded control separately, preserving
+the original seven-job records and their one incomplete order search. As with
+the census, the continuation input contract is explicit. This is a direct
+constructed test of the conditional renaming theorem, not a held-out prediction.

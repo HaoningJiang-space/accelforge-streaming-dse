@@ -6,7 +6,7 @@ from .fork_order_oracle import replay_private_boundary
 from .graph.analysis import traffic_at
 from .graph.branch_symmetry import (BranchOrderOracle, branch_graph, branch_permutation,
     branch_automorphisms, is_automorphism, continuation_ops, continuation_states,
-    induced, topological_orders)
+    induced, topological_orders, unequal_prefix_graph)
 
 
 class BranchSymmetryTests(unittest.TestCase):
@@ -20,6 +20,9 @@ class BranchSymmetryTests(unittest.TestCase):
         g=branch_graph(tails=(True,False))
         self.assertFalse(is_automorphism(g,branch_permutation(g,(1,0))))
         self.assertEqual(len(branch_automorphisms(g,2)),1)
+        malformed=branch_graph()
+        malformed.access['H0']['U0']=('I','K')  # Contradicts its producer's I,L projection.
+        self.assertFalse(is_automorphism(malformed,branch_permutation(malformed,(0,1))))
 
     def test_topological_orders_and_certified_orbits(self):
         for m,total,orbits in ((2,6,3),(3,90,15)):
@@ -67,6 +70,19 @@ class BranchSymmetryTests(unittest.TestCase):
         self.assertNotEqual(a,s.canonical(g.ops,{'C0'},{'U1'})[0])
         self.assertNotEqual(a,s.canonical(g.ops,{'C0'},())[0])
         self.assertNotEqual(a,s.canonical(g.ops,{'C0'},{'U0'},'group')[0])
+
+    def test_local_symmetry_returns_after_unequal_prefixes_complete(self):
+        graph=unequal_prefix_graph();sub=induced(graph,('H0','H1'))
+        global_oracle=BranchOrderOracle(graph,2);local_oracle=BranchOrderOracle(sub,2)
+        self.assertEqual(len(global_oracle.automorphisms),1)
+        self.assertEqual(len(local_oracle.automorphisms),2)
+        for external in (('D0',),('D1',)):
+            a=global_oracle.query(sub.ops,external=external);b=local_oracle.query(external=external)
+            self.assertEqual(tuple(p[:2] for p in a),tuple(p[:2] for p in b))
+            self.assertEqual(traffic_at(3,b),28)
+            for c,q,p in b:self.assertTrue(replay_private_boundary(sub,external,c,q,p)['exact'])
+        self.assertEqual(global_oracle.stats['misses'],2)
+        self.assertEqual(local_oracle.stats['misses'],1)
 
 
 if __name__=='__main__':unittest.main()
