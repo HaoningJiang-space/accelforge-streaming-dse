@@ -80,7 +80,7 @@ Releasing W can leave no legal loop axis, which makes the group infeasible
 
 **Solve entries: the mandatory scalar leaf.** When every live tensor is
 scalar, `_solve` returns (number of live tensors, 0) and does not allow a
-partition. The six solve violations in residual depth 4 were checked by hand:
+partition. All ten solve violations in residual depth 4 (independent input) were checked by hand:
 
 - *Direct (6 of 10).* With W resident, the remaining tensors are all scalar,
   so the leaf counts all of them (capacity 3), while sigma can partition
