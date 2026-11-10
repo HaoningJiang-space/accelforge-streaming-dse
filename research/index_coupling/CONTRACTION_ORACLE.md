@@ -483,3 +483,57 @@ with the final frontier as incumbent.
   outer dimension.
 - Group-stage queries.
 - Training graphs, where activations are reused across forward and backward.
+
+## 12. One matmul at M > 1: the keep-level model
+
+With M > 1, M is shared by every activation and lacked by every weight. A
+weight can now be kept or re-fetched per row. Loops over D or F also become
+useful with M > 1, because they slice the weight instead of re-fetching it.
+This is the weight-stationary versus output-stationary choice. It means the
+problem is the full three-rank loop-order question, and closed forms for
+chains need its atom first.
+
+**Model** (`matmul_keep.predict`). Y[M,F] += X[M,D] W[D,F]. The lacking
+ranks are F for X, M for W and D for Y.
+
+- Along the nest the current tiles c = (c_M, c_D, c_F) only shrink, through
+  reachable tiles.
+- A live tensor T with lacking rank r has two fates:
+  - **kept** at a loop over r, at tiles c with c_r > 1. It holds the product
+    of its own two tiles in cells. It was re-fetched E_r / c_r − 1 times.
+  - **never kept.** It is scalar at the leaf (1 cell) and re-fetched
+    E_r / c_r − 1 times, with c the leaf tiles.
+- Peak cells are the sum over tensors. Extra traffic weights Y by 2 and
+  inputs by 1.
+- Keeps occur in some order. The state after keeping T has a smaller r tile,
+  which is the loop that keeps it.
+- The prediction minimises over keep orders and states. This is a structural
+  model of the grammar's one-op nest, not the grammar's own recursion over
+  loops.
+- At M = 1 it equals §6 plus the streamed-weight cell (checked).
+
+**Held-out test.**
+
+- Predictions were frozen in `6027033c` (`matmul_predictions.json`) before
+  any curve was computed (`matmul_check.jsonl`).
+- Coverage:
+  - 7 shapes, from (M, D, F) = (2, 2, 2) to (8, 4, 8);
+  - 4 residency patterns: all streamed, X resident, Y resident, W resident;
+  - both tile domains;
+  - every C up to the sum of all tensor sizes.
+- **Result: 2,912 of 2,912 agree.**
+  - 240 have positive traffic, with 59 distinct values per shape and
+    pattern.
+  - 2,602 are zero, which tests the plateau location.
+  - 70 are infeasible.
+
+**Meaning.** For one operator, the grammar's response is a min over keep
+orders (at most 3! × 2^3) and monotone tile states. Each tensor's cost depends
+only on its tiles when kept: cells from its own ranks, re-fetches from its
+lacking rank. This is the standard reuse model of loop-nest mappers. It is
+now verified as an exact description of this grammar for one matmul.
+
+**Open: chains at M > 1.** In a fused group, interior intermediates are
+sliced by the group loops. Inner partitions then keep intermediate tiles.
+The natural conjecture composes the keep-level model per tensor with the
+§9-11 boundary DP. That composition is not yet derived.
