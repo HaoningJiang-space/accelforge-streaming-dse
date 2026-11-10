@@ -65,6 +65,26 @@ class SolverScalingTests(unittest.TestCase):
         self.assertEqual(cm.curve(g, partitions='dp', stats=stats), cm.curve(g))
         self.assertGreater(stats['dp_multiwriter_fallbacks'], 0)
 
+    def test_deterministic_dag_differential(self):
+        # Exercise gaps in tensor use and cut decisions beyond the named motifs.
+        rng = random.Random(21)
+        for case in range(120):
+            dims, ops = {}, []
+            for i in range(rng.randrange(2, 6)):
+                inputs = [f'W{i}'] + [f'X{j}' for j in range(i) if rng.random() < .5]
+                access = {}
+                for tensor in inputs + [f'X{i}']:
+                    if tensor not in dims:
+                        dims[tensor] = tuple(v for v in ('I', 'K') if rng.random() < .7)
+                    access[tensor] = dims[tensor]
+                ops.append((f'E{i}', access))
+            g = Graph(dict(I=2, K=2), ops)
+            for opts in ({}, dict(write_through=False), dict(split_shared=False),
+                         dict(whole_span_cuts=tuple(range(2, len(ops))))):
+                with self.subTest(case=case, opts=opts):
+                    expected = cm.curve(g, ownership_projection=False, **opts)
+                    self.assertEqual(cm.curve(g, partitions='dp', **opts), expected)
+
     def test_stream_multiset_matches_eager_unpruned_grammar(self):
         # The old audit strategy is safe ONLY on these deliberately small graphs.
         def keep_all(points, max_capacity=float('inf'), grid=None):

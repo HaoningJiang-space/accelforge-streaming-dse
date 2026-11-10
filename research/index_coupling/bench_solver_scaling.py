@@ -26,6 +26,7 @@ from research.index_coupling.simulate_nest import simulate
 CASES = {
     'fork_small': ('fork', (2, 2, 2, 2, 'kki')),
     'residual_small': ('residual', (2, 2, 2, 3, True)),
+    'residual_medium': ('residual', (8, 2, 4, 6, True)),
     'p19_same': ('fork', (8, 4, 8, 2, 'kkkkkk')),
     'p19_mixed': ('fork', (8, 4, 8, 2, 'kkkiii')),
     'residual_deep': ('residual', (8, 2, 4, 12, True)),
@@ -63,9 +64,9 @@ def worker(args):
     kind, shape = CASES[args.case]
     graph = (fork if kind == 'fork' else residual)(*shape)
     mode, projected = VARIANTS[args.variant]
-    stats = {}
+    stats = None if args.no_profile else {}
     out = dict(case=args.case, kind=kind, args=shape, n_ops=len(graph.ops),
-               variant=args.variant, witness=not args.no_witness, profiling=True,
+               variant=args.variant, witness=not args.no_witness, profiling=not args.no_profile,
                source_sha256=source_hash(), revision=args.revision, python=platform.python_version(),
                started_utc=datetime.now(timezone.utc).isoformat(),
                budgets=dict(seconds=args.seconds, mem_gib=args.mem_gib), stats=stats,
@@ -115,6 +116,7 @@ def main():
     parser.add_argument('--cases', nargs='+', choices=CASES, default=list(CASES))
     parser.add_argument('--variants', nargs='+', choices=VARIANTS, default=list(VARIANTS))
     parser.add_argument('--no-witness', action='store_true')
+    parser.add_argument('--no-profile', action='store_true')
     parser.add_argument('--worker', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--case', choices=CASES, help=argparse.SUPPRESS)
     parser.add_argument('--variant', choices=VARIANTS, help=argparse.SUPPRESS)
@@ -127,7 +129,7 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
     config = dict(source_sha256=source_hash(), revision=args.revision, seconds=args.seconds,
                   mem_gib=args.mem_gib, workers=args.workers, cases=args.cases, variants=args.variants,
-                  witness=not args.no_witness)
+                  witness=not args.no_witness, profiling=not args.no_profile)
     manifest = args.out / 'manifest.json'
     if manifest.exists() and json.loads(manifest.read_text()) != config:
         parser.error('existing output directory has a different source or configuration')
@@ -144,6 +146,8 @@ def main():
                    '--seconds', str(args.seconds), '--mem-gib', str(args.mem_gib)]
         if args.no_witness:
             command.append('--no-witness')
+        if args.no_profile:
+            command.append('--no-profile')
         try:
             p = subprocess.run(command, capture_output=True, text=True, timeout=args.seconds + 15)
             failure = dict(status='crashed', exitcode=p.returncode, stderr=p.stderr[-2000:])
