@@ -131,7 +131,9 @@ def tasks(p19_n16):
         yield 'p21d', (f"{r['case']}:{r['arm']}", r['shape'], r['depth'], r['reads_x']), pts(r['points']), options
 
 
-def init(mem_gib):
+def init(mem_gib, seconds=3600, lazy=False):
+    global SECONDS, LAZY
+    SECONDS, LAZY = seconds, lazy
     limit = int(mem_gib * 2**30)
     resource.setrlimit(resource.RLIMIT_AS, (limit, limit))
 
@@ -151,11 +153,12 @@ if __name__ == '__main__':
     if args.reverse:
         pending.reverse()
     counts = dict(total=0, match=0, changed=0, incomplete=0, replay_failures=0)
-    with Pool(args.workers, initializer=init, initargs=(args.mem_gib,)) as pool:
+    with Pool(args.workers, initializer=init, initargs=(args.mem_gib, args.seconds, args.witness_on_change)) as pool:
         for out in pool.imap_unordered(job, pending):
             counts['total'] += 1
             counts['match' if out['match'] else 'incomplete' if out['match'] is None else 'changed'] += 1
             counts['replay_failures'] += out.get('replayed', 0) - out.get('replay_exact', 0)
             print(json.dumps(out), flush=True)
     print(json.dumps(dict(summary=counts, expected=len(pending))), flush=True)
-    sys.exit(0 if counts['total'] == len(pending) and not counts['replay_failures'] else 1)
+    sys.exit(1 if counts['replay_failures'] else
+             2 if counts['incomplete'] or counts['total'] != len(pending) else 0)

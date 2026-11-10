@@ -28,6 +28,7 @@ The result is a Pareto set over this restricted model, not a lower bound.
 from functools import lru_cache
 from itertools import product
 from math import floor, log, prod
+from time import perf_counter
 
 
 _CAT = object()  # witness concatenation node; flattened once at the end
@@ -69,27 +70,95 @@ def bucket(capacity, grid):
     return floor(log(capacity, grid)) if capacity > 0 else -1
 
 
+def merge_staircases(a, b, max_capacity=float('inf')):
+    """Linear sweep of two exact frontiers; retain separate witness references."""
+    i = j = 0
+    left = right = None
+    while i < len(a) or j < len(b):
+        c = min(a[i][0] if i < len(a) else float('inf'),
+                b[j][0] if j < len(b) else float('inf'))
+        if c > max_capacity:
+            break
+        if i < len(a) and a[i][0] == c:
+            left = a[i]
+            i += 1
+        if j < len(b) and b[j][0] == c:
+            right = b[j]
+            j += 1
+        if left is not None and right is not None:
+            yield c, left[1] + right[1], left[2], right[2]
+
+
 def combine_max_sum(a, b, max_capacity=float('inf'), grid=None):
     # a, b are Pareto staircases (capacity ascending, traffic descending). The best
     # pair within capacity c is the staircase value of each at c, so one sweep over
     # the union of capacities replaces the |a|·|b| cross product.
-    out, i, j = [], -1, -1
-    for c in sorted({p[0] for p in a} | {p[0] for p in b}):
-        if c > max_capacity:
-            break
-        while i + 1 < len(a) and a[i + 1][0] <= c:
-            i += 1
-        while j + 1 < len(b) and b[j + 1][0] <= c:
-            j += 1
-        if i >= 0 and j >= 0:
-            out.append((max(a[i][0], b[j][0]), a[i][1] + b[j][1], cat(a[i][2], b[j][2])))
-    return pareto(out, grid=grid)
+    out = []
+    for c, q, wa, wb in merge_staircases(a, b, max_capacity):
+        if grid and out and bucket(out[-1][0], grid) == bucket(c, grid):
+            out.pop()
+        out.append((c, q, cat(wa, wb)))
+    return tuple(out)
 
 
 def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_through=True,
           written=frozenset(), split_shared=True, spill_cost=2, *,
           external=frozenset(), entry='solve', root_groups=None, root_kept=None,
-          whole_span_cuts=None, legacy_nested_writes=False, partitions='enumerate'):
+          whole_span_cuts=None, legacy_nested_writes=False, partitions='enumerate',
+          ownership_projection=True, stats=None):
+    """Exact frontiers when grid=None; optional per-call performance ledger.
+
+    stats is populated even if search raises (e.g. a caller's timeout). Timed
+    Pareto/merge sections exclude recursive search; counters describe work, not
+    unique executable schedules. ownership_projection=False retains the older
+    owned-key projection for controlled comparisons.
+    """
+    started = perf_counter()
+    prune, merge, join, sweep = pareto, combine_max_sum, cat, merge_staircases
+    if stats is not None:
+        stats.clear()
+        stats.update({k: 0 for k in ('pareto_calls', 'pareto_candidates', 'pareto_points',
+                                    'max_frontier', 'merge_calls', 'merge_inputs', 'merge_points',
+                                    'partition_masks', 'partition_choices', 'loop_choices',
+                                    'dp_states', 'dp_transitions', 'max_crossing',
+                                    'dp_multiwriter_fallbacks', 'witness_nodes')})
+        stats.update(pareto_seconds=0., merge_seconds=0.)
+
+        def prune(points, max_capacity=float('inf'), grid=None):
+            # Materialize before timing: generators can contain recursive work.
+            points = tuple(points)
+            begin = perf_counter()
+            out = pareto(points, max_capacity, grid)
+            stats['pareto_seconds'] += perf_counter() - begin
+            stats['pareto_calls'] += 1
+            stats['pareto_candidates'] += len(points)
+            stats['pareto_points'] += len(out)
+            stats['max_frontier'] = max(stats['max_frontier'], len(out))
+            return out
+
+        def merge(a, b, max_capacity=float('inf'), grid=None):
+            begin = perf_counter()
+            out = combine_max_sum(a, b, max_capacity, grid)
+            stats['merge_seconds'] += perf_counter() - begin
+            stats['merge_calls'] += 1
+            stats['merge_inputs'] += len(a) + len(b)
+            stats['merge_points'] += len(out)
+            stats['witness_nodes'] += sum(bool(wa and wb) for _, _, wa, wb in
+                                          merge_staircases(a, b, max_capacity)) if witness else 0
+            return out
+
+        def join(a, b):
+            stats['witness_nodes'] += bool(a and b)
+            return cat(a, b)
+
+        def sweep(a, b, max_capacity=float('inf')):
+            begin = perf_counter()
+            out = tuple(merge_staircases(a, b, max_capacity))
+            stats['merge_seconds'] += perf_counter() - begin
+            stats['merge_calls'] += 1
+            stats['merge_inputs'] += len(a) + len(b)
+            stats['merge_points'] += len(out)
+            return out
     # Conditional interface: external tensors are resident, and their allocation
     # and compulsory transfers belong to the caller. entry='group' queries the
     # exact child interface used by a sibling partition. Root constraints apply
@@ -111,6 +180,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         raise ValueError("entry must be 'solve' or 'group'")
     if partitions not in ('enumerate', 'dp'):
         raise ValueError("partitions must be 'enumerate' or 'dp'")
+    if partitions == 'dp' and grid is not None:
+        raise ValueError('cut DP currently requires exact frontiers (grid=None)')
     if root_groups is not None:
         root_groups = tuple(tuple(g) for g in root_groups)
         if (entry != 'solve' or any(not g for g in root_groups)
@@ -132,27 +203,37 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
     produced, consumed = graph.produced(), graph.consumed()
     output_of = graph.output
     names = sorted(graph.sizes)
+    axes = {t: tuple(names.index(v) for v in dims) for t, dims in dims_of.items()}
     n_consumers = {t: len(graph.consumers(t)) for t in dims_of}
 
     def size(t, ext):
-        return prod(ext[names.index(v)] for v in dims_of[t])
+        return prod(ext[i] for i in axes[t])
 
     @lru_cache(maxsize=None)
     def project(ops):
         tensors = frozenset(graph.tensors(ops))
         used = graph.rank_vars(ops)
-        return tensors, tuple(i for i, v in enumerate(names) if v not in used)
+        made = frozenset(output_of(op) for op in ops)
+        return tensors, tuple(i for i, v in enumerate(names) if v not in used), made
 
     def projected(ops, ext, external, owned):
         # A subproblem's curve depends only on the tensors its ops access and the
         # extents they use; ancestors' kept tensors are charged by the caller, as
         # are final writes an ancestor owns. Projecting the cache key is exact and
         # removes duplicate subproblems.
-        tensors, unused = project(ops)
+        tensors, unused, made = project(ops)
         ext = list(ext)
         for i in unused:
             ext[i] = 1
-        return ops, tuple(ext), external & tensors, owned & tensors
+        # owned is consulted only for a write performed inside this span. A
+        # consumer-only span cannot observe whether an ancestor owns that write.
+        return ops, tuple(ext), external & tensors, owned & (made if ownership_projection else tensors)
+
+    @lru_cache(maxsize=None)
+    def loop_metadata(ops):
+        common = set.intersection(*(graph.rank_vars((op,)) for op in ops))
+        inside_made = project(ops)[2] & {t for op in ops for t in list(graph.access[op])[:-1]}
+        return common, inside_made
 
     def solve(ops, ext, external, owned, constrained=False):
         return _solve(*projected(ops, ext, external, owned), constrained)
@@ -162,17 +243,24 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
 
     @lru_cache(maxsize=None)
     def _solve(ops, ext, external, owned, constrained=False):
-        live = graph.tensors(ops) - external
+        live = project(ops)[0] - external
         if not constrained and all(size(t, ext) == 1 for t in live):
             return ((len(live), 0, ()),)
         if partitions == 'dp' and not constrained:
-            return cut_dp(ops, ext, external, owned)
+            if len(project(ops)[2]) == len(ops):
+                return cut_dp(ops, ext, external, owned)
+            # The DP's single-writer transition does not price repeated output
+            # accumulations. Preserve the enumeration grammar for such spans.
+            if stats is not None:
+                stats['dp_multiwriter_fallbacks'] += 1
         results = []
         n = len(ops)
         masks = (0,) if constrained else range(1 << (n - 1))
         for mask in masks:
             if allowed_mask is not None and ops == graph.ops and mask & ~allowed_mask:
                 continue
+            if stats is not None:
+                stats['partition_masks'] += 1
             groups, start = [], 0
             for i in range(n - 1):
                 if mask >> i & 1:
@@ -183,10 +271,12 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                 groups = root_groups
             users = {}
             for g, group in enumerate(groups):
-                for t in graph.tensors(group) - external:
+                for t in project(group)[0] - external:
                     users.setdefault(t, []).append(g)
             shared = sorted(t for t, gs in users.items() if len(gs) > 1)
             for keep_bits in product((True, False), repeat=len(shared)):
+                if stats is not None:
+                    stats['partition_choices'] += 1
                 kept = {t for t, k in zip(shared, keep_bits) if k}
                 if constrained and root_kept is not None and kept != root_kept:
                     continue
@@ -225,11 +315,11 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                 for g, group in enumerate(groups):
                     across = sum(size(t, ext) for t in kept if min(users[t]) <= g <= max(users[t]))
                     inner = group_curve(group, ext, external | frozenset(kept), child_owned)
-                    level = combine_max_sum(level, pareto(((across + c, t, w) for c, t, w in inner), max_capacity), max_capacity, grid)
+                    level = merge(level, prune(((across + c, t, w) for c, t, w in inner), max_capacity), max_capacity, grid)
                     if not level:
                         break
                 results.extend(level)
-        return pareto(results, max_capacity, grid)
+        return prune(results, max_capacity, grid)
 
     def cut_dp(ops, ext, external, owned):
         # Same partitions, costs and witnesses as the enumeration in _solve, built
@@ -238,20 +328,24 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         # The state at p is the keep/DRAM choice of each crossing tensor: every
         # later cost depends on the prefix only through it, and capacity (max)
         # and traffic (sum) are monotone, so Pareto-pruning each state is exact.
-        live = graph.tensors(ops) - external
+        live = project(ops)[0] - external
         n = len(ops)
         use = [graph.tensors((op,)) & live for op in ops]
         first = {t: min(i for i in range(n) if t in use[i]) for t in live}
         last = {t: max(i for i in range(n) if t in use[i]) for t in live}
         writer = {t: next((i for i, op in enumerate(ops) if output_of(op) == t), None) for t in live}
         crossing = [tuple(sorted(t for t in live if first[t] < p <= last[t])) for p in range(n + 1)]
-        allowed = [p == n or allowed_mask is None or ops != graph.ops or allowed_mask >> (p - 1) & 1
+        allowed = [p == 0 or p == n or allowed_mask is None or ops != graph.ops or allowed_mask >> (p - 1) & 1
                    for p in range(n + 1)]
+        if stats is not None:
+            stats['max_crossing'] = max(stats['max_crossing'], max(map(len, crossing)))
         states = [dict() for _ in range(n + 1)]
         # Witness while building: (groups, decisions, concatenated group witnesses).
         states[0][()] = ((0, 0, ((), frozenset(), ()) if witness else ()),)
         for p in range(n):
             for bits_p, prefix in states[p].items():
+                if stats is not None:
+                    stats['dp_states'] += 1
                 decided = dict(zip(crossing[p], bits_p))
                 for q in range(p + 1, n + 1):
                     if not allowed[q]:
@@ -260,6 +354,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                     group = ops[p:q]
                     touched = set().union(*use[p:q])
                     for new_bits in product((True, False), repeat=len(new)):
+                        if stats is not None:
+                            stats['dp_transitions'] += 1
                         choice = dict(decided, **dict(zip(new, new_bits)))
                         if not split_shared and any(not choice[t] and t in produced and n_consumers[t] > 1
                                                     for t in new):
@@ -281,51 +377,31 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                         written_here = frozenset(t for t, k in choice.items()
                                                  if not k and writer[t] is not None and t in consumed)
                         child_owned = owned if legacy_nested_writes else owned | written_here
-                        inner = pareto(((across + c, t, w) for c, t, w in
+                        inner = prune(((across + c, t, w) for c, t, w in
                                         group_curve(group, ext, external | kept, child_owned)), max_capacity)
                         bits_q = tuple(choice[t] for t in crossing[q])
                         decisions = frozenset(choice.items())
                         merged = [(c, t + extra, w if not witness else
-                                   (w[0] + (group,), w[1] | decisions, cat(w[2], wg)))
-                                  for c, t, w, wg in merge_staircases(prefix, inner)]
+                                   (w[0] + (group,), w[1] | decisions, join(w[2], wg)))
+                                  for c, t, w, wg in sweep(prefix, inner, max_capacity)]
                         if merged:
-                            states[q][bits_q] = pareto(list(states[q].get(bits_q, ())) + merged, max_capacity)
+                            states[q][bits_q] = prune(list(states[q].get(bits_q, ())) + merged, max_capacity)
         results = []
         for c, t, w in states[n].get((), ()):
             if witness:
                 groups, decisions, inner = w
                 note = ('groups', groups, 'kept', tuple(sorted(x for x, k in decisions if k)),
                         'via DRAM', tuple(sorted(x for x, k in decisions if not k)))
-                w = cat((note,), inner)
+                w = join((note,), inner)
             results.append((c, t, w))
-        return pareto(results, max_capacity, grid)
-
-    def merge_staircases(a, b):
-        # combine_max_sum keeping both witnesses separate for the caller.
-        out, i, j = [], -1, -1
-        for c in sorted({p[0] for p in a} | {p[0] for p in b}):
-            if c > max_capacity:
-                break
-            while i + 1 < len(a) and a[i + 1][0] <= c:
-                i += 1
-            while j + 1 < len(b) and b[j + 1][0] <= c:
-                j += 1
-            if i >= 0 and j >= 0:
-                out.append((max(a[i][0], b[j][0]), a[i][1] + b[j][1], a[i][2], b[j][2]))
-        best, kept = float('inf'), []
-        for point in sorted(out, key=lambda p: (p[0], p[1])):
-            if point[1] < best:
-                kept.append(point)
-                best = point[1]
-        return kept
+        return prune(results, max_capacity, grid)
 
     @lru_cache(maxsize=None)
     def _group_curve(group, ext, external, owned):
-        live = graph.tensors(group) - external
+        live = project(group)[0] - external
         if all(size(t, ext) == 1 for t in live):
             return ((len(live), 0, ()),)
-        common = set.intersection(*(graph.rank_vars((op,)) for op in group))
-        inside_made = {output_of(op) for op in group} & {t for op in group for t in list(graph.access[op])[:-1]}
+        common, inside_made = loop_metadata(group)
         results = []
         for v in common:
             i = names.index(v)
@@ -339,6 +415,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                     trips = extent // b
                     inner_ext = ext[:i] + (b,) + ext[i + 1:]
                     for keep_bits in product((True, False), repeat=len(lacking)):
+                        if stats is not None:
+                            stats['loop_choices'] += 1
                         kept = frozenset(t for t, k in zip(lacking, keep_bits) if k)
                         cap = sum(size(t, ext) for t in kept)
                         extra = 0
@@ -349,15 +427,21 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                         inner = solve(group, inner_ext, external | kept, owned)
                         note = () if not witness else (('loop', group, v, f'tile {b} x{trips}', 'kept', tuple(sorted(kept)),
                                  'refetched', tuple(t for t, k in zip(lacking, keep_bits) if not k)),)
-                        results.extend((cap + c, extra + trips * t, cat(note, w)) for c, t, w in inner)
+                        results.extend((cap + c, extra + trips * t, join(note, w)) for c, t, w in inner)
                 b //= 2
-        return pareto(results, max_capacity, grid)
+        return prune(results, max_capacity, grid)
 
     ext0 = tuple(graph.sizes[v] for v in names)
     inputs = consumed - produced
     outputs = produced - consumed
     compulsory = sum(size(t, ext0) for t in (inputs | outputs) - external)
     written = frozenset(written)
-    points = (group_curve(graph.ops, ext0, external, written) if entry == 'group' else
-              solve(graph.ops, ext0, external, written, root_groups is not None))
-    return tuple((c, compulsory + t) + ((flatten(w),) if witness else ()) for c, t, w in points)
+    try:
+        points = (group_curve(graph.ops, ext0, external, written) if entry == 'group' else
+                  solve(graph.ops, ext0, external, written, root_groups is not None))
+        return tuple((c, compulsory + t) + ((flatten(w),) if witness else ()) for c, t, w in points)
+    finally:
+        if stats is not None:
+            stats['solve_cache'] = _solve.cache_info()._asdict()
+            stats['group_cache'] = _group_curve.cache_info()._asdict()
+            stats['seconds'] = perf_counter() - started
