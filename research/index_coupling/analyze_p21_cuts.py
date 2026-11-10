@@ -69,7 +69,7 @@ def lifted_with_witness(graph, bottom):
     return tuple((c, q+base, flatten(w)) for c, q, w in solve(graph.sizes['I'], frozenset()))
 
 
-def run(index):
+def run(index, streamed_tail_only=False):
     shape, depth, reads_x = CASES[index]
     graph = residual(*shape, depth, reads_x)
     archive = Path(__file__).parent / 'results'
@@ -78,7 +78,9 @@ def run(index):
     reference = original['curves']['unrestricted']
     assert reference == attribution['unrestricted']
     menus = {}
-    for name, cuts in MENUS.items():
+    chosen = ({'streamed_tail': (1, 3) + tuple(range(4, len(graph.ops)-1))}
+              if streamed_tail_only else MENUS)
+    for name, cuts in chosen.items():
         start = time.monotonic()
         groups = groups_at(graph, cuts)
 
@@ -118,6 +120,8 @@ def timeout(_signal, _frame):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case', type=int, choices=range(16), required=True)
+    parser.add_argument('--streamed-tail-only', action='store_true',
+                        help='second exploratory round, selected from residual errors')
     args = parser.parse_args()
     resource.setrlimit(resource.RLIMIT_AS, (8*2**30, 8*2**30))
     signal.signal(signal.SIGALRM, timeout)
@@ -129,7 +133,7 @@ if __name__ == '__main__':
                   analysis='exploratory, menus selected after seeing P21 witnesses',
                   protocol_sha256=hashlib.sha256(Path(__file__).with_name('PROTOCOL.md').read_bytes()).hexdigest())
     try:
-        result.update(status='complete', result=run(args.case))
+        result.update(status='complete', result=run(args.case, args.streamed_tail_only))
     except Exception as exc:
         result.update(status='incomplete', error=f'{type(exc).__name__}: {exc}')
     signal.alarm(0)
