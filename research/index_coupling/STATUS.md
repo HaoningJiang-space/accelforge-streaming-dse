@@ -8,9 +8,17 @@ Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.
 Solver scaling implementation/results: [SOLVER_SCALING_RESULTS.md](SOLVER_SCALING_RESULTS.md).
 Streaming audit exhausted 175,522 derivations on one tiny graph with no errors
 and 12.4 MiB peak RSS. Cut DP gave an 8.6x median speedup on the 8-operator residual
-control with equal curves, but both P19 samples remain incomplete at 180 s/arm.
+control with equal curves; its P19 samples were incomplete at 180 s/arm.
 These implementation checks do not change any frozen prediction verdict or
 establish general execution-exactness.
+
+Follow-up [SPAN_SCALING_RESULTS.md](SPAN_SCALING_RESULTS.md): conditional
+independence and static cut-incidence reuse complete the two P19 samples in
+240/243 seconds, equal to archived enumeration with all 32 witnesses exact.
+A four-operator counterexample shows that the positions of resident private
+inputs affect the frontier even at equal occupancy; resident counts alone are
+not a sufficient cache key. Name canonicalization remains optional and has not
+shown a consistent speed benefit. Recursive state growth remains unresolved.
 
 ## Question
 

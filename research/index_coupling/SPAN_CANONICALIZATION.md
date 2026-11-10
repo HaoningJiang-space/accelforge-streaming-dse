@@ -74,8 +74,9 @@ retention contexts. It does not eliminate the outer loop's retention choices.
 
 ## Validation and experiment plan
 
-Before remote measurements, 21 tests pass, including 480 comparisons between
-the renamed DP and enumeration over 120 deterministic small DAGs. Dedicated
+Before remote measurements at 0c7e2128, 22 tests pass, including 480 comparisons
+each for the renamed DP and independent splitting against enumeration over
+120 deterministic small DAGs. Dedicated
 checks cover same/mixed forks, residual chains, root and conditional interfaces,
 multiwriter fallback through the prior suite, global-role distinctions and
 independent execution of restored witnesses. These tests supplement the
@@ -91,3 +92,10 @@ curves remain incomplete, and no speed ratio is inferred from two timeouts.
 Separate short profiled runs diagnose state growth; their timings are not mixed
 with the unprofiled comparison. These are implementation/performance experiments,
 not new frozen P-protocol predictions.
+
+The positional-residency counterexample found during the experiment is now a
+23rd test. At 49a45850, static cut incidence, first/writer positions and candidate
+group tensor sets are cached per span rather than rebuilt per recursive state.
+Its post-hoc P19 runs allow 600 seconds per job to seek complete curves; their
+changed budget is reported separately. Additional timing controls alternate
+the two source revisions in fresh processes on the same allowed logical CPU.
