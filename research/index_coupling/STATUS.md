@@ -165,6 +165,15 @@ correctness. See P21D_RESULTS.md before using unrestricted exactness claims.
    labels. Separately, nested parent/child final-X-store charges invalidate
    two cases. A unique-owner ledger matches all 160 saved executions, but is
    only a post-hoc repricing, not a repaired solver or new equality score.
+14. **Final-write ownership and an exact cut DP.** Nested partitions charged
+   one final write twice; fixed in `39ca741e`. An all-plan audit finds 0 wrong
+   prices after the fix (about 150,000 before, all +4 B) over 1.03 M executed
+   plans; 495 archived curves plus 16 P19 n=16 curves regress with no frontier
+   or frozen verdict changed except the two invalid P21d arms, which now equal
+   their unrestricted curves. The cut DP (`partitions='dp'`) equals enumeration
+   on every completed comparison and solves the 14-operator P21d graphs in
+   seconds (enumeration: >1800 s); forks gain only 2x because their loop layer
+   dominates. See OWNERSHIP_AND_CUT_DP.md.
 
 ## Withdrawn or corrected claims
 
