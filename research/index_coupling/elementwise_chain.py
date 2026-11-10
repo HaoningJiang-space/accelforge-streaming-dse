@@ -13,6 +13,7 @@ Usage: python -m research.index_coupling.elementwise_chain freeze OUT.json
        python -m research.index_coupling.elementwise_chain wfreeze OUT.json
        python -m research.index_coupling.elementwise_chain wcheck PRED.json OUT.jsonl
 """
+from functools import lru_cache
 import json
 import sys
 
@@ -97,6 +98,11 @@ def cec(a, f, c, cells, res_in, res_out, dom, w1=0, w2=0):
     return best
 
 
+@lru_cache(maxsize=None)
+def _group(pattern, sizes, cells, res_in, res_out, dom, ws):
+    return group(pattern, sizes, cells, res_in, res_out, dom, ws)
+
+
 def group(pattern, sizes, cells, res_in, res_out, dom, ws=None):
     """ws: per-op streamed-weight flags (0 for elementwise ops)."""
     ws = [w for w, k in zip(ws or [0] * len(pattern), pattern) if k == 'c']
@@ -131,7 +137,8 @@ def predict(kinds, sizes, capacity, dom, resident_first=False, resident_last=Fal
                     break
                 for kept_k in (((resident_last,) if k == m else (False, True))):
                     cells = capacity - sizes[j] * (kept_j and j > 0) - sizes[k] * (kept_k and k < m)
-                    cost = group(''.join(kinds[j:k]), sizes[j:k + 1], cells, kept_j, kept_k, dom, streamed[j:k])
+                    cost = _group(''.join(kinds[j:k]), tuple(sizes[j:k + 1]), cells, kept_j, kept_k, dom,
+                                  tuple(streamed[j:k]))
                     cost += 0 if kept_k or k == m else 2 * sizes[k]
                     if best[j, kept_j] + cost < best.get((k, kept_k), INF):
                         best[k, kept_k] = best[j, kept_j] + cost

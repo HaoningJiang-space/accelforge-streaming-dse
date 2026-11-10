@@ -19,6 +19,7 @@ curve() optimum of the same contraction under both tile domains.
 Usage: python -m research.index_coupling.contraction_oracle MAX_A MAX_B
        python -m research.index_coupling.contraction_oracle --cases A,B[,A,B...]
 """
+from functools import lru_cache
 from heapq import heappop, heappush
 from itertools import product
 import json
@@ -72,12 +73,13 @@ def grammar(a, b, capacity, tile_domain):
     return traffic_at(capacity, points) - (a + b)  # remove compulsory x reads and y writes
 
 
+@lru_cache(maxsize=None)
 def reachable_tiles(extent, tile_domain):
     """Every tile a chain of recursive tilings can reach, the extent included."""
     out = {extent}
     for t in tile_sizes(extent, tile_domain):
         out |= reachable_tiles(t, tile_domain)
-    return out
+    return frozenset(out)
 
 
 def loop_nest(a, b, capacity, tile_domain):
