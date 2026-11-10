@@ -77,7 +77,7 @@ conjecture for C ≥ 3.
 | 2×8, C = 2 | 7 | 14 |
 | 4×4, C = 4 | 2 | 4 |
 
-In 21 of the 57 complete cases the grammar is above the schedule optimum,
+In 29 of the 57 complete cases the grammar is above the schedule optimum,
 by up to a factor of 3. There are two causes:
 
 - **Fixed loop direction.** Every iteration of a loop nest repeats the same
