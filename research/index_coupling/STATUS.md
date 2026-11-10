@@ -5,6 +5,13 @@ PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
 Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.md.
 
+Complete joint residency-state census: [RESIDENCY_STATE_AUDIT.md](RESIDENCY_STATE_AUDIT.md).
+Both tiny six-consumer forks have 106,604 states. The independent-solve
+equivalence applies to only 4,350/58,884 states in the four dominant buckets;
+X cannot become externally resident in either producer-containing whole-span
+bucket. Count-profile merging outside that condition fails in 90/171 classes
+(same/mixed). No optimizer or frozen P21f source is changed.
+
 Solver scaling implementation/results: [SOLVER_SCALING_RESULTS.md](SOLVER_SCALING_RESULTS.md).
 Streaming audit exhausted 175,522 derivations on one tiny graph with no errors
 and 12.4 MiB peak RSS. Cut DP gave an 8.6x median speedup on the 8-operator residual

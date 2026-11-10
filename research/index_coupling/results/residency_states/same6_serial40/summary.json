@@ -1,0 +1,901 @@
+{
+  "case": "same6",
+  "status": "complete",
+  "complete_census": true,
+  "source_sha256": {
+    "audit_residency_states.py": "5f8069713c441b409ea629cec8a3dcf3a66d4df14055533ef83d8483e64f1415",
+    "summarize_residency_states.py": "c18c482198aa22646bb2d043c8b8f9453fc13a658a778d5e6c013b9cd5ecfe07",
+    "test_residency_states.py": "73999f0b85f6816ff7eccd5bb632e0689dec28b7a15fffc8076f93ab56d3a865",
+    "graph/curve.py": "41110acdd8684e55ca440b3980eff8ac6669348f08a7688fb38386ade2f6446e",
+    "graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "simulate_nest.py": "778e9bbe6ae57790911e89e9362150657ab46f89c07c422ba7caf946b24ce79f"
+  },
+  "state_count": 106604,
+  "duplicate_states": 0,
+  "proof_applicable_states": 15185,
+  "proof_applicable_fraction": 0.14244306029792503,
+  "safe_duplicate_keys": 13677,
+  "safe_duplicate_fraction": 0.12829724963416006,
+  "safe_signature_failures": 0,
+  "buckets": {
+    "scalar_leaf": {
+      "states": 14738,
+      "candidate_classes": 1104,
+      "duplicate_candidate_keys": 13634,
+      "response_classes": 1104,
+      "unequal_classes": 0
+    },
+    "group_separated_unproved": {
+      "states": 15503,
+      "candidate_classes": 1762,
+      "duplicate_candidate_keys": 13741,
+      "response_classes": 1762,
+      "unequal_classes": 0
+    },
+    "single_operator": {
+      "states": 160,
+      "candidate_classes": 160,
+      "duplicate_candidate_keys": 0,
+      "response_classes": 160,
+      "unequal_classes": 0
+    },
+    "safe_independent": {
+      "states": 15185,
+      "candidate_classes": 1508,
+      "duplicate_candidate_keys": 13677,
+      "response_classes": 1508,
+      "unequal_classes": 0
+    },
+    "coupled_or_constrained": {
+      "states": 61018,
+      "candidate_classes": 3280,
+      "duplicate_candidate_keys": 57738,
+      "response_classes": 3388,
+      "unequal_classes": 90
+    }
+  },
+  "dominant_four": {
+    "states": 58884,
+    "scalar_leaf": 8198,
+    "shared_resident": 12800,
+    "safe_independent": 4350,
+    "coupled_or_constrained": 41985,
+    "safe_duplicate_keys": 4240,
+    "group_separated_unproved": 4351
+  },
+  "spans": [
+    {
+      "span": "solve:E0,E1,E2,E3,E4,E5",
+      "states": 16897,
+      "scalar_leaf": 8195,
+      "shared_resident": 8448,
+      "safe_independent": 4350,
+      "coupled_or_constrained": 4352,
+      "safe_duplicate_keys": 4240
+    },
+    {
+      "span": "solve:EX,E0,E1,E2,E3,E4,E5",
+      "states": 16641,
+      "scalar_leaf": 1,
+      "shared_resident": 0,
+      "coupled_or_constrained": 16640
+    },
+    {
+      "span": "group:EX,E0,E1,E2,E3,E4,E5",
+      "states": 16640,
+      "coupled_or_constrained": 16640,
+      "shared_resident": 0
+    },
+    {
+      "span": "group:E0,E1,E2,E3,E4,E5",
+      "states": 8706,
+      "group_separated_unproved": 4351,
+      "shared_resident": 4352,
+      "coupled_or_constrained": 4353,
+      "scalar_leaf": 2
+    },
+    {
+      "span": "group:EX,E0,E1,E2,E3,E4",
+      "states": 8450,
+      "group_separated_unproved": 4224,
+      "shared_resident": 4225,
+      "coupled_or_constrained": 4224,
+      "scalar_leaf": 2
+    },
+    {
+      "span": "solve:EX,E0,E1,E2,E3,E4",
+      "states": 8448,
+      "scalar_leaf": 2,
+      "shared_resident": 4224,
+      "safe_independent": 4223,
+      "coupled_or_constrained": 4223,
+      "safe_duplicate_keys": 3976
+    },
+    {
+      "span": "solve:E0,E1,E2,E3,E4",
+      "states": 4353,
+      "scalar_leaf": 2051,
+      "shared_resident": 2176,
+      "safe_independent": 1150,
+      "coupled_or_constrained": 1152,
+      "safe_duplicate_keys": 1072
+    },
+    {
+      "span": "solve:E1,E2,E3,E4,E5",
+      "states": 4353,
+      "scalar_leaf": 2051,
+      "shared_resident": 2176,
+      "safe_independent": 1150,
+      "coupled_or_constrained": 1152,
+      "safe_duplicate_keys": 1072
+    },
+    {
+      "span": "group:EX,E0,E1,E2,E3",
+      "states": 3266,
+      "group_separated_unproved": 2175,
+      "shared_resident": 2177,
+      "coupled_or_constrained": 1088,
+      "scalar_leaf": 3
+    },
+    {
+      "span": "solve:EX,E0,E1,E2,E3",
+      "states": 3200,
+      "scalar_leaf": 3,
+      "shared_resident": 2112,
+      "safe_independent": 2110,
+      "coupled_or_constrained": 1087,
+      "safe_duplicate_keys": 1812
+    },
+    {
+      "span": "group:E0,E1,E2,E3,E4",
+      "states": 2308,
+      "group_separated_unproved": 1151,
+      "shared_resident": 1154,
+      "scalar_leaf": 4,
+      "coupled_or_constrained": 1153
+    },
+    {
+      "span": "group:E1,E2,E3,E4,E5",
+      "states": 2308,
+      "group_separated_unproved": 1151,
+      "shared_resident": 1154,
+      "coupled_or_constrained": 1153,
+      "scalar_leaf": 4
+    },
+    {
+      "span": "solve:E0,E1,E2,E3",
+      "states": 1153,
+      "scalar_leaf": 515,
+      "shared_resident": 576,
+      "safe_independent": 318,
+      "coupled_or_constrained": 320,
+      "safe_duplicate_keys": 265
+    },
+    {
+      "span": "solve:E1,E2,E3,E4",
+      "states": 1153,
+      "scalar_leaf": 515,
+      "shared_resident": 576,
+      "safe_independent": 318,
+      "coupled_or_constrained": 320,
+      "safe_duplicate_keys": 265
+    },
+    {
+      "span": "solve:E2,E3,E4,E5",
+      "states": 1153,
+      "scalar_leaf": 515,
+      "shared_resident": 576,
+      "safe_independent": 318,
+      "coupled_or_constrained": 320,
+      "safe_duplicate_keys": 265
+    },
+    {
+      "span": "group:EX,E0,E1,E2",
+      "states": 866,
+      "group_separated_unproved": 575,
+      "shared_resident": 577,
+      "coupled_or_constrained": 288,
+      "scalar_leaf": 3
+    },
+    {
+      "span": "solve:EX,E0,E1,E2",
+      "states": 832,
+      "scalar_leaf": 3,
+      "shared_resident": 544,
+      "safe_independent": 542,
+      "coupled_or_constrained": 287,
+      "safe_duplicate_keys": 368
+    },
+    {
+      "span": "group:E0,E1,E2,E3",
+      "states": 644,
+      "group_separated_unproved": 319,
+      "shared_resident": 322,
+      "scalar_leaf": 4,
+      "coupled_or_constrained": 321
+    },
+    {
+      "span": "group:E1,E2,E3,E4",
+      "states": 644,
+      "group_separated_unproved": 319,
+      "shared_resident": 322,
+      "scalar_leaf": 4,
+      "coupled_or_constrained": 321
+    },
+    {
+      "span": "group:E2,E3,E4,E5",
+      "states": 644,
+      "group_separated_unproved": 319,
+      "shared_resident": 322,
+      "coupled_or_constrained": 321,
+      "scalar_leaf": 4
+    },
+    {
+      "span": "solve:E0,E1,E2",
+      "states": 321,
+      "scalar_leaf": 131,
+      "shared_resident": 160,
+      "safe_independent": 94,
+      "coupled_or_constrained": 96,
+      "safe_duplicate_keys": 60
+    },
+    {
+      "span": "solve:E1,E2,E3",
+      "states": 321,
+      "scalar_leaf": 131,
+      "shared_resident": 160,
+      "safe_independent": 94,
+      "coupled_or_constrained": 96,
+      "safe_duplicate_keys": 60
+    },
+    {
+      "span": "solve:E2,E3,E4",
+      "states": 321,
+      "scalar_leaf": 131,
+      "shared_resident": 160,
+      "safe_independent": 94,
+      "coupled_or_constrained": 96,
+      "safe_duplicate_keys": 60
+    },
+    {
+      "span": "solve:E3,E4,E5",
+      "states": 321,
+      "scalar_leaf": 131,
+      "shared_resident": 160,
+      "safe_independent": 94,
+      "coupled_or_constrained": 96,
+      "safe_duplicate_keys": 60
+    },
+    {
+      "span": "group:EX,E0,E1",
+      "states": 242,
+      "group_separated_unproved": 159,
+      "shared_resident": 161,
+      "coupled_or_constrained": 80,
+      "scalar_leaf": 3
+    },
+    {
+      "span": "solve:EX,E0,E1",
+      "states": 224,
+      "scalar_leaf": 3,
+      "shared_resident": 144,
+      "safe_independent": 142,
+      "coupled_or_constrained": 79,
+      "safe_duplicate_keys": 52
+    },
+    {
+      "span": "group:E0,E1,E2",
+      "states": 196,
+      "group_separated_unproved": 95,
+      "shared_resident": 98,
+      "scalar_leaf": 4,
+      "coupled_or_constrained": 97
+    },
+    {
+      "span": "group:E1,E2,E3",
+      "states": 196,
+      "group_separated_unproved": 95,
+      "shared_resident": 98,
+      "scalar_leaf": 4,
+      "coupled_or_constrained": 97
+    },
+    {
+      "span": "group:E2,E3,E4",
+      "states": 196,
+      "group_separated_unproved": 95,
+      "shared_resident": 98,
+      "scalar_leaf": 4,
+      "coupled_or_constrained": 97
+    },
+    {
+      "span": "group:E3,E4,E5",
+      "states": 196,
+      "group_separated_unproved": 95,
+      "shared_resident": 98,
+      "coupled_or_constrained": 97,
+      "scalar_leaf": 4
+    },
+    {
+      "span": "solve:E0,E1",
+      "states": 97,
+      "scalar_leaf": 35,
+      "shared_resident": 48,
+      "safe_independent": 30,
+      "coupled_or_constrained": 32,
+      "safe_duplicate_keys": 10
+    },
+    {
+      "span": "solve:E1,E2",
+      "states": 97,
+      "scalar_leaf": 35,
+      "shared_resident": 48,
+      "safe_independent": 30,
+      "coupled_or_constrained": 32,
+      "safe_duplicate_keys": 10
+    },
+    {
+      "span": "solve:E2,E3",
+      "states": 97,
+      "scalar_leaf": 35,
+      "shared_resident": 48,
+      "safe_independent": 30,
+      "coupled_or_constrained": 32,
+      "safe_duplicate_keys": 10
+    },
+    {
+      "span": "solve:E3,E4",
+      "states": 97,
+      "scalar_leaf": 35,
+      "shared_resident": 48,
+      "safe_independent": 30,
+      "coupled_or_constrained": 32,
+      "safe_duplicate_keys": 10
+    },
+    {
+      "span": "solve:E4,E5",
+      "states": 97,
+      "scalar_leaf": 35,
+      "shared_resident": 48,
+      "safe_independent": 30,
+      "coupled_or_constrained": 32,
+      "safe_duplicate_keys": 10
+    },
+    {
+      "span": "group:EX,E0",
+      "states": 74,
+      "group_separated_unproved": 47,
+      "shared_resident": 49,
+      "coupled_or_constrained": 24,
+      "scalar_leaf": 3
+    },
+    {
+      "span": "group:E0,E1",
+      "states": 68,
+      "group_separated_unproved": 31,
+      "shared_resident": 34,
+      "scalar_leaf": 4,
+      "coupled_or_constrained": 33
+    },
+    {
+      "span": "group:E1,E2",
+      "states": 68,
+      "group_separated_unproved": 31,
+      "shared_resident": 34,
+      "scalar_leaf": 4,
+      "coupled_or_constrained": 33
+    },
+    {
+      "span": "group:E2,E3",
+      "states": 68,
+      "group_separated_unproved": 31,
+      "shared_resident": 34,
+      "scalar_leaf": 4,
+      "coupled_or_constrained": 33
+    },
+    {
+      "span": "group:E3,E4",
+      "states": 68,
+      "group_separated_unproved": 31,
+      "shared_resident": 34,
+      "scalar_leaf": 4,
+      "coupled_or_constrained": 33
+    },
+    {
+      "span": "group:E4,E5",
+      "states": 68,
+      "group_separated_unproved": 31,
+      "shared_resident": 34,
+      "coupled_or_constrained": 33,
+      "scalar_leaf": 4
+    },
+    {
+      "span": "solve:EX,E0",
+      "states": 64,
+      "scalar_leaf": 3,
+      "shared_resident": 40,
+      "safe_independent": 38,
+      "coupled_or_constrained": 23,
+      "safe_duplicate_keys": 0
+    },
+    {
+      "span": "solve:EX",
+      "states": 45,
+      "scalar_leaf": 17,
+      "shared_resident": 45,
+      "single_operator": 28
+    },
+    {
+      "span": "group:EX",
+      "states": 37,
+      "group_separated_unproved": 34,
+      "shared_resident": 37,
+      "scalar_leaf": 3
+    },
+    {
+      "span": "solve:E0",
+      "states": 33,
+      "scalar_leaf": 11,
+      "shared_resident": 33,
+      "single_operator": 22
+    },
+    {
+      "span": "solve:E1",
+      "states": 33,
+      "scalar_leaf": 11,
+      "shared_resident": 33,
+      "single_operator": 22
+    },
+    {
+      "span": "solve:E2",
+      "states": 33,
+      "scalar_leaf": 11,
+      "shared_resident": 33,
+      "single_operator": 22
+    },
+    {
+      "span": "solve:E3",
+      "states": 33,
+      "scalar_leaf": 11,
+      "shared_resident": 33,
+      "single_operator": 22
+    },
+    {
+      "span": "solve:E4",
+      "states": 33,
+      "scalar_leaf": 11,
+      "shared_resident": 33,
+      "single_operator": 22
+    },
+    {
+      "span": "solve:E5",
+      "states": 33,
+      "scalar_leaf": 11,
+      "shared_resident": 33,
+      "single_operator": 22
+    },
+    {
+      "span": "group:E0",
+      "states": 28,
+      "group_separated_unproved": 24,
+      "shared_resident": 28,
+      "scalar_leaf": 4
+    },
+    {
+      "span": "group:E1",
+      "states": 28,
+      "group_separated_unproved": 24,
+      "shared_resident": 28,
+      "scalar_leaf": 4
+    },
+    {
+      "span": "group:E2",
+      "states": 28,
+      "group_separated_unproved": 24,
+      "shared_resident": 28,
+      "scalar_leaf": 4
+    },
+    {
+      "span": "group:E3",
+      "states": 28,
+      "group_separated_unproved": 24,
+      "shared_resident": 28,
+      "scalar_leaf": 4
+    },
+    {
+      "span": "group:E4",
+      "states": 28,
+      "group_separated_unproved": 24,
+      "shared_resident": 28,
+      "scalar_leaf": 4
+    },
+    {
+      "span": "group:E5",
+      "states": 28,
+      "group_separated_unproved": 24,
+      "shared_resident": 28,
+      "scalar_leaf": 4
+    }
+  ],
+  "exploratory_counterexamples": [
+    {
+      "bucket": "coupled_or_constrained",
+      "span": "solve:E0,E1,E2",
+      "ext": [
+        1,
+        1,
+        2,
+        1
+      ],
+      "owned": [],
+      "constrained": false,
+      "comparisons": [
+        {
+          "external": [
+            "C0",
+            "C1"
+          ],
+          "points": [
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        },
+        {
+          "external": [
+            "C0",
+            "C2"
+          ],
+          "points": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "bucket": "coupled_or_constrained",
+      "span": "group:E0,E1,E2",
+      "ext": [
+        1,
+        1,
+        2,
+        2
+      ],
+      "owned": [],
+      "constrained": false,
+      "comparisons": [
+        {
+          "external": [
+            "C0",
+            "C1"
+          ],
+          "points": [
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        },
+        {
+          "external": [
+            "C0",
+            "C2"
+          ],
+          "points": [
+            [
+              3,
+              10
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "bucket": "coupled_or_constrained",
+      "span": "solve:E0,E1,E2",
+      "ext": [
+        2,
+        1,
+        1,
+        1
+      ],
+      "owned": [],
+      "constrained": false,
+      "comparisons": [
+        {
+          "external": [
+            "U0",
+            "U1"
+          ],
+          "points": [
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        },
+        {
+          "external": [
+            "U0",
+            "U2"
+          ],
+          "points": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "bucket": "coupled_or_constrained",
+      "span": "solve:E1,E2,E3",
+      "ext": [
+        2,
+        1,
+        1,
+        1
+      ],
+      "owned": [],
+      "constrained": false,
+      "comparisons": [
+        {
+          "external": [
+            "U1",
+            "U2"
+          ],
+          "points": [
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        },
+        {
+          "external": [
+            "U1",
+            "U3"
+          ],
+          "points": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "bucket": "coupled_or_constrained",
+      "span": "solve:EX,E0,E1,E2,E3",
+      "ext": [
+        2,
+        2,
+        1,
+        2
+      ],
+      "owned": [
+        "X"
+      ],
+      "constrained": false,
+      "comparisons": [
+        {
+          "external": [
+            "A",
+            "U0",
+            "U1",
+            "U2"
+          ],
+          "points": [
+            [
+              3,
+              8
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        },
+        {
+          "external": [
+            "A",
+            "U0",
+            "U1",
+            "U3"
+          ],
+          "points": [
+            [
+              3,
+              10
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "bucket": "coupled_or_constrained",
+      "span": "solve:E0,E1,E2,E3",
+      "ext": [
+        2,
+        1,
+        1,
+        1
+      ],
+      "owned": [],
+      "constrained": false,
+      "comparisons": [
+        {
+          "external": [
+            "U0",
+            "U1"
+          ],
+          "points": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        },
+        {
+          "external": [
+            "U0",
+            "U2"
+          ],
+          "points": [
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "bucket": "coupled_or_constrained",
+      "span": "solve:EX,E0,E1,E2,E3",
+      "ext": [
+        2,
+        2,
+        1,
+        2
+      ],
+      "owned": [
+        "X"
+      ],
+      "constrained": false,
+      "comparisons": [
+        {
+          "external": [
+            "U0",
+            "U1",
+            "U2"
+          ],
+          "points": [
+            [
+              3,
+              10
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        },
+        {
+          "external": [
+            "U1",
+            "U2",
+            "U3"
+          ],
+          "points": [
+            [
+              3,
+              8
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "bucket": "coupled_or_constrained",
+      "span": "solve:E1,E2,E3",
+      "ext": [
+        1,
+        1,
+        2,
+        1
+      ],
+      "owned": [],
+      "constrained": false,
+      "comparisons": [
+        {
+          "external": [
+            "C1",
+            "C2"
+          ],
+          "points": [
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        },
+        {
+          "external": [
+            "C1",
+            "C3"
+          ],
+          "points": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "interpretation": "Duplicate-key counts are retrospective coverage, not measured solver savings. Only safe_independent has a proof contract; unequal unproved classes forbid that count-only merge."
+}

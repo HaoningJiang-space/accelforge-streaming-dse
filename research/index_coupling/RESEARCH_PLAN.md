@@ -153,6 +153,14 @@ banking or precision changes may require a different Gamma and cost model.
    with a separate 32/32 existence prediction. Sixteen new L<K cases and
    three seen failures compare halving and all-divisor tile domains without
    contributing to the primary score. No P21f held-out search has run.
+   **Conditional-state census:** the complete tiny six-consumer same/mixed
+   audits record 106,604 states each. The independent-solve theorem covers
+   7.4% of the four dominant buckets; in producer-containing whole spans,
+   X cannot become external because all whole-span loops are over I or K,
+   both carried by X. The next structural target is equivalence or dominance
+   in those coupled states, preserving producer-prefix partition behavior
+   and parent reservation/spill costs. Count histograms alone fail in 90/171
+   coupled classes. See RESIDENCY_STATE_AUDIT.md; no compression is enabled.
 4. **P22, after P21: overlap and buffer occupancy.** A single-channel extension
    must charge double buffering and in-flight tiles against the same capacity
    budget as retained tensors. Prefetch scheduling follows this model; it does
