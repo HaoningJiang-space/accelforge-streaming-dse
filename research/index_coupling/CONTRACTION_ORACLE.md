@@ -608,3 +608,84 @@ pointwise captures little.
 A sharper bound would add a lower bound on weight traffic: each streamed
 weight is re-fetched unless a slice of it is held across rows. That is the
 next theoretical target.
+
+## 14. An operator-projection lower bound (any M)
+
+**Lemma.** Fix a grammar plan of a chain span and one contraction j. Keep only
+the loops and keep decisions that touch j's tensors. The result is a grammar
+plan of j alone:
+
+- group loops are over ranks shared in the group, hence ranks of j;
+- every tensor of j present at j's leaf (kept tile or scalar) is on chip at
+  the same moment in the original plan, so the peak does not grow;
+- an interior vector kept across a partition corresponds, in j's own nest, to
+  a keep of that tensor before its lacking rank is split. That costs zero
+  traffic and its tile in cells.
+
+**Disjointness.** Every extra-traffic event is a (tensor, loop) pair and
+belongs to one operator.
+
+- A weight is used by one operator.
+- An activation is never lacking in a group that holds both its producer and
+  its consumer, because the grammar requires every looped rank to be carried
+  by tensors made inside the group. Its re-fetches therefore occur only in
+  consumer-only groups, and its spills only in producer-only groups.
+- DRAM round trips of interior vectors are dropped.
+
+Hence R_chain(C) >= sum_j R_j(C). R_j is §12's keep-level optimum of
+operator j alone. Its weight residency is as in the span. Its activations
+are live unless they are resident span ends. Elementwise operators contribute
+0. The bound includes weight-slice stationarity, which §13's row projection
+dropped.
+
+**Check** (`op_projection.py check`, `op_projection_check.jsonl`).
+
+- Every chain solve node of the 8 archives at any M, 17,857 nodes:
+  **0 violations**.
+- The bound equals the actual curve in 6,416 nodes. That is 79% for the M8
+  one-layer stack and 14% for FFN-4.
+
+**C2** (`op_projection.py c2`, `c2_op_bound.jsonl`). Combined pointwise (max)
+with the slot bound, lifted as in §13. Every bound is asserted to stay below
+the actual candidate curve.
+
+| Case | Proper choices | Ideal exclusions, slot bound | With operator bound |
+| --- | ---: | ---: | ---: |
+| FFN 1 / 2 / 3 / 4 layers | 118 / 446 / 1,414 / 5,050 | 105 / 372 / 1,055 / 2,865 | 115 / 407 / 1,121 / 2,962 |
+| attention 2 / 4 layers | 446 / 5,050 | 372 / 2,865 | 407 / 2,962 |
+| FFN M8 1 / 2 layers | 2,388 / 7,177 | 1,383 / 3,955 | **2,149 / 5,825** |
+
+In the M8 stacks this adds 55% and 47% to the slot bound's exclusions,
+against 9% for the row projection. These are still candidate counts with the
+final frontier as incumbent. Shared-DAG work is what matters (§15).
+
+## 15. Exclusive work removed by closed-form terminals
+
+`closed_form_work.py` makes every closed-form (unit-M) solve node terminal
+in the archived call DAG. It removes that node's work, and the work of every
+descendant no longer reachable from the root through non-terminal nodes.
+Shared children reachable by another path stay. The figures are fractions of
+each ledger counter's total (`closed_form_work.jsonl`).
+
+| Case | Terminal nodes | Nodes left | DP transitions | Loop choices | Pareto candidates | Merge inputs |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| FFN 1 layer | 101 | 88 of 271 | 76% | 39% | 59% | 69% |
+| FFN 2 layers | 423 | 247 of 1,052 | 93% | 33% | 86% | 92% |
+| FFN 3 layers | 1,421 | 442 of 3,221 | 99% | 22% | 96% | 99% |
+| FFN 4 layers | 5,123 | 673 of 10,834 | 99.8% | 11% | 98% | 99.7% |
+| attention 2 / 4 layers | same as FFN 2 / 4 | | | | | |
+| FFN M8 1 layer | 313 | 1,522 of 2,108 | 29% | 16% | 17% | 23% |
+| FFN M8 2 layers | 933 | 4,399 of 6,176 | 32% | 14% | 17% | 22% |
+
+**Reading.**
+
+- In the tiny stacks almost all partition-DP and merge work sits under unit-M
+  states, and the closed forms remove it.
+- Loop-choice work is not removed. It sits in group-stage and M > 1 states
+  above the terminals.
+- In the M8 stacks, most work is at M > 1. The closed forms remove a sixth to
+  a third.
+- These are ledger counts, not wall time. The cost of evaluating the closed
+  forms (a few divisor loops per capacity) is not charged.
+- An online opt-in substitution with witnesses and replay is required before
+  any speed-up is claimed.
