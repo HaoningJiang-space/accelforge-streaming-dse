@@ -199,3 +199,29 @@ Two explanations for the gaps are possible:
 
 These numbers do not distinguish the two. The equality rate is post hoc; only
 the zero-violation result tests the theorem.
+
+## 6. Clipping C2 with the threshold adds no exclusion
+
+The chain theorem bounds only L_K. Below L_K, the strongest valid statement
+is that extra traffic is at least one element. Clipping C2's anchor curve
+accordingly (`c2_chain_ceiling.py`) gives the bound
+
+  B_K(c) = max(q_*(c), 1) for slots_K <= c < L_K.
+
+Every clipped bound remains below its actual candidate curve. All
+assertions pass on the eight cases.
+
+| Case | Proper choices | Bound raised | Ideal exclusions, slots | Ideal exclusions, chain clip |
+| --- | ---: | ---: | ---: | ---: |
+| FFN 1 / 2 / 3 / 4 layers | 118 / 446 / 1,414 / 5,050 | 4 / 39 / 294 / 1,537 | 105 / 372 / 1,055 / 2,865 | same |
+| attention 2 / 4 layers | 446 / 5,050 | 39 / 1,537 | 372 / 2,865 | same |
+| FFN M8 1 / 2 layers | 2,388 / 7,177 | 108 / 246 | 1,383 / 3,955 | same |
+
+**The clip adds no exclusion, even with the final frontier as incumbent.**
+
+- The actual gap at the plateau is tens of elements. In FFN-4 at k = 0 the
+  bound gives 32 and the actual value is 56.
+- A one-element floor multiplied by r = 2 trips cannot close such a gap.
+- C2 therefore needs a positive-traffic lower bound: how much extra traffic a
+  capacity deficit L − C forces. That is the next theoretical target. No
+  further implementation is warranted by this result.
