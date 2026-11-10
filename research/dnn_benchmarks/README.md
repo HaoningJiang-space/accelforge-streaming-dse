@@ -107,3 +107,9 @@ remain outside Git. `pull_pytorchsim.py` verifies the public OCI image blobs;
 `--download-only` permits direct download on a different machine before copying
 the verified layout to the execution host. The image source and binary identity
 must still be checked before claiming a run uses the pinned source revision.
+Optional `--range-mib 1 --range-workers 8` uses resumable bounded HTTP ranges
+for slow large-blob transfers; final whole-blob SHA-256 verification is mandatory.
+`pytorchsim_gemm_pilot.py` prepares separate functional/timing GEMM runs with
+native heuristic, native autotune, or explicit manual tiles. It checks external
+selection/rendering and functional output. It has passed syntax checks only;
+runtime execution and the DMA address/byte ledger remain pending.

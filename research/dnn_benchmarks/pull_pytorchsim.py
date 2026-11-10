@@ -8,6 +8,7 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -25,7 +26,10 @@ def main():
     p.add_argument('--root',type=Path,required=True)
     p.add_argument('--umoci',type=Path)
     p.add_argument('--download-only',action='store_true',help='prepare verified OCI layout without extraction')
+    p.add_argument('--range-mib',type=int,default=0,help='optional resumable HTTP range size; zero streams blobs')
+    p.add_argument('--range-workers',type=int,default=4,choices=range(1,9))
     args=p.parse_args();root=args.root.resolve();root.mkdir(parents=True,exist_ok=True)
+    if not 0<=args.range_mib<=32:p.error('--range-mib must be between 0 and 32')
     if (root/'bundle').exists():raise FileExistsError('preserve existing runtime bundle')
     if not args.download_only:
         if args.umoci is None:p.error('--umoci is required for extraction')
@@ -35,11 +39,11 @@ def main():
     layout=root/'oci';blobs=layout/'blobs/sha256';blobs.mkdir(parents=True,exist_ok=True)
     opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
-    def request(path):
+    def request(path,extra_headers=None):
         with opener.open(REGISTRY+'/token?scope=repository:'+REPOSITORY+':pull',timeout=30) as r:
             token=json.load(r)['token']
         return opener.open(urllib.request.Request(REGISTRY+'/v2/'+REPOSITORY+'/'+path,
-            headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.oci.image.manifest.v1+json'}),timeout=60)
+            headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.oci.image.manifest.v1+json',**(extra_headers or {})}),timeout=60)
 
     with request('manifests/'+MANIFEST) as response:raw=response.read()
     assert hashlib.sha256(raw).hexdigest()==MANIFEST.split(':')[1]
@@ -55,17 +59,50 @@ def main():
             assert h.hexdigest()==digest
             return
         temp=path.with_suffix('.part');h=hashlib.sha256();size=0;start=time.monotonic()
-        with request('blobs/'+desc['digest']) as response,temp.open('wb') as out:
-            while True:
-                chunk=response.read(2**20)
-                if not chunk:break
-                out.write(chunk);h.update(chunk);size+=len(chunk)
+        if args.range_mib and desc['size']>args.range_mib*2**20:
+            step=args.range_mib*2**20;progress=path.with_suffix('.ranges.json')
+            done=set()
+            if progress.exists() and temp.exists():
+                saved=json.loads(progress.read_text())
+                if saved['step']==step and saved['size']==desc['size']:done=set(saved['done'])
+            fd=os.open(temp,os.O_RDWR|os.O_CREAT,0o600);os.ftruncate(fd,desc['size'])
+            def segment(offset):
+                end=min(offset+step,desc['size'])-1
+                for attempt in range(3):
+                    try:
+                        with request('blobs/'+desc['digest'],{'Range':f'bytes={offset}-{end}'}) as response:
+                            assert response.status==206 and response.headers.get('Content-Range')==f'bytes {offset}-{end}/{desc["size"]}'
+                            data=response.read();assert len(data)==end-offset+1
+                        n=0
+                        while n<len(data):n+=os.pwrite(fd,data[n:],offset+n)
+                        return offset
+                    except Exception:
+                        if attempt==2:raise
+                        time.sleep(2**attempt)
+            try:
+                with ThreadPoolExecutor(max_workers=args.range_workers) as pool:
+                    for offset in pool.map(segment,(x for x in range(0,desc['size'],step) if x not in done)):
+                        done.add(offset)
+                        pending=progress.with_suffix('.tmp')
+                        pending.write_text(json.dumps(dict(step=step,size=desc['size'],done=sorted(done))))
+                        pending.replace(progress)
+                os.fsync(fd)
+            finally:os.close(fd)
+            with temp.open('rb') as out:
+                for chunk in iter(lambda:out.read(2**20),b''):h.update(chunk);size+=len(chunk)
+        else:
+            with request('blobs/'+desc['digest']) as response,temp.open('wb') as out:
+                while True:
+                    chunk=response.read(2**20)
+                    if not chunk:break
+                    out.write(chunk);h.update(chunk);size+=len(chunk)
         assert h.hexdigest()==digest and size==desc['size']
         temp.replace(path)
+        path.with_suffix('.ranges.json').unlink(missing_ok=True)
         print(json.dumps(dict(blob=digest,bytes=size,seconds=time.monotonic()-start)),flush=True)
 
-    # Two downloads limit pressure on the shared host/network.
-    with ThreadPoolExecutor(max_workers=2) as pool:
+    # At most two streamed blobs, or one range pool with its declared limit.
+    with ThreadPoolExecutor(max_workers=1 if args.range_mib else 2) as pool:
         list(pool.map(fetch,[manifest['config']]+manifest['layers']))
     (layout/'oci-layout').write_text('{"imageLayoutVersion":"1.0.0"}\n')
     index=dict(schemaVersion=2,manifests=[dict(mediaType=manifest['mediaType'],digest=MANIFEST,size=len(raw),
