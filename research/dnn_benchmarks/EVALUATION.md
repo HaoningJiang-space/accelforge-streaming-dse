@@ -84,8 +84,16 @@ and dependencies must all be pinned for our pilot.
    backend for each barrier. Partial-island results are labelled as such.
    Add MobileNet-v2 and BERT/Llama coverage after the first three-model audit.
 
-No PyTorchSim/TOGSim execution has been performed by this branch yet. The source
-is a pinned Git submodule; an isolated CPU runtime is being prepared on the
-designated experiment host. See `backend_lock.json` for source/image identity
-and unresolved runtime checks. No cycles, energy, EDP or area values are
-fabricated to fill the proposed paper figures.
+The first eight PyTorchSim GEMM executions are archived in
+[PYTORCHSIM_RESULTS.md](PYTORCHSIM_RESULTS.md): five numerical passes, three
+failures, and a separate DMA byte-address mismatch that blocks timing acceptance.
+Raw cycles are diagnostics, not accepted performance results. Energy, EDP and
+area remain unmeasured.
+
+The independent chain audit at `7e03ab3b` further separates grammar optimum
+from dependency-legal scalar scheduling. Its 4/5 result applies to the declared
+dense, single-row, binary-feature FFN chain with at least two layers and the
+specified residency contract. A one-layer resident-weight copy has a 3-cell
+scalar schedule versus a 4-cell v2 plateau. The dense-chain checker needs an
+incidence guard before general pruning use; this benchmark installs no such
+certificate and makes no physical-optimality claim from v2 alone.

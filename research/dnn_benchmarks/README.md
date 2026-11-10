@@ -95,6 +95,8 @@ use new output directories. Frozen failures and unreplayed cases remain visible.
 Hardware evaluation requirements and backend choice: [EVALUATION.md](EVALUATION.md).
 The completed first study, including timeouts and unreplayed original shapes,
 is reported in [RESULTS.md](RESULTS.md).
+The separate grammar-v1 P19 timing rounds are reported in
+[P19_SERVER_RESULTS.md](P19_SERVER_RESULTS.md), including all memory failures.
 
 ## Pinned simulator source
 
@@ -109,7 +111,8 @@ the verified layout to the execution host. The image source and binary identity
 must still be checked before claiming a run uses the pinned source revision.
 Optional `--range-mib 1 --range-workers 8` uses resumable bounded HTTP ranges
 for slow large-blob transfers; final whole-blob SHA-256 verification is mandatory.
-`pytorchsim_gemm_pilot.py` prepares separate functional/timing GEMM runs with
-native heuristic, native autotune, or explicit manual tiles. It checks external
-selection/rendering and functional output. It has passed syntax checks only;
-runtime execution and the DMA address/byte ledger remain pending.
+`pytorchsim_gemm_pilot.py` performs separate functional/timing GEMM runs with
+native heuristic, native autotune, or explicit manual tiles. Eight actual runs
+are archived in [PYTORCHSIM_RESULTS.md](PYTORCHSIM_RESULTS.md), including three
+numerical failures. Independent checks of the generated DMA regions exposed a
+backend byte-address mismatch, so hardware timing acceptance remains blocked.

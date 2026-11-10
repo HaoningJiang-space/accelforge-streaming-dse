@@ -11,7 +11,7 @@ from pathlib import Path
 import re
 import subprocess
 import time
-from .mapping_contract import FIELDS,canonical_request,check_serialized_request,template_ledger
+from .mapping_contract import FIELDS,canonical_request,check_serialized_request,check_execution_scope,template_ledger
 
 
 def write(path,value):
@@ -24,9 +24,11 @@ def main():
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--mode',choices=('heuristic','autotune','external'),required=True)
     p.add_argument('--shape',type=int,nargs=3,default=(64,128,32),metavar=('M','N','K'))
-    p.add_argument('--tile',type=int,nargs=6,default=(16,32,8,8,16,8))
+    p.add_argument('--tile',type=int,nargs=6,default=(16,32,8,8,32,8))
+    p.add_argument('--diagnostic-allow-n-split',action='store_true')
     a=p.parse_args();src=a.source.resolve();out=a.out.resolve()
     named=dict(zip(FIELDS,a.tile));mapping=canonical_request(a.shape,named)
+    if a.mode=='external':check_execution_scope(named,a.diagnostic_allow_n_split)
     m,n,k=a.shape;requested=list(a.tile)
     out.mkdir(parents=True,exist_ok=False)
     import yaml
@@ -54,6 +56,7 @@ def main():
         source_template_ledger=template_ledger(a.shape,requested[:3]) if a.mode=='external' else None,
         independent_contract_audit='7e03ab3b',
         dma_byte_audit='pending; no traffic equality claim',
+        timing_accepted=False,timing_rejection='Pinned backend byte-address mismatch; see PYTORCHSIM_RESULTS.md',
         scope='standalone GEMM import smoke; external tiles are manual controls, not a solver-quality result')
     write(out/'result.json',record)
     try:

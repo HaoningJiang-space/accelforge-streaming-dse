@@ -6,10 +6,16 @@ from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 import unittest
 
-from .mapping_contract import FIELDS,canonical_request,check_serialized_request,template_ledger
+from .mapping_contract import FIELDS,canonical_request,check_serialized_request,check_execution_scope,template_ledger
 
 
 class MappingContractTests(unittest.TestCase):
+    def test_observed_failing_subtile_requires_explicit_diagnostic(self):
+        bad=dict(zip(FIELDS,(16,32,8,8,16,8)))
+        with self.assertRaises(ValueError):check_execution_scope(bad)
+        check_execution_scope(bad,diagnostic=True)
+        check_execution_scope(dict(bad,SUB_TILE_N=32))
+
     def test_all_input_orders_select_same_actual_upstream_tuple(self):
         source=Path(__file__).parent/'vendor/PyTorchSim/PyTorchSimFrontend/mlir/mlir_gemm_template.py'
         tree=ast.parse(source.read_text())

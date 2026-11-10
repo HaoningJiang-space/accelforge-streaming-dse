@@ -14,7 +14,8 @@ def main():
     p.add_argument('--mode',choices=('heuristic','autotune','external'),required=True)
     p.add_argument('--seconds',type=int,default=600)
     p.add_argument('--shape',type=int,nargs=3,default=(64,128,32))
-    p.add_argument('--tile',type=int,nargs=6,default=(16,32,8,8,16,8))
+    p.add_argument('--tile',type=int,nargs=6,default=(16,32,8,8,32,8))
+    p.add_argument('--diagnostic-allow-n-split',action='store_true')
     a=p.parse_args();bundle=a.bundle.resolve();out=a.out.resolve()
     if a.seconds<=0:p.error('positive timeout required')
     out.mkdir(parents=True,exist_ok=False)
@@ -26,6 +27,7 @@ def main():
         '/opt/conda/bin/python','-u','-m','research.dnn_benchmarks.pytorchsim_gemm_pilot',
         '--source','/workspace/PyTorchSim','--out','/experiment/result','--mode',a.mode,
         '--shape',*map(str,a.shape),'--tile',*map(str,a.tile)])
+    if a.diagnostic_allow_n_split:cfg['process']['args'].append('--diagnostic-allow-n-split')
     for name in ('OMP_NUM_THREADS','MKL_NUM_THREADS','MAX_JOBS','NUMEXPR_NUM_THREADS'):
         cfg['process']['env']=[x for x in cfg['process']['env'] if not x.startswith(name+'=')]+[name+'=1']
     cfg['mounts'] += [dict(destination='/study',type='bind',source=str(source),options=['rbind','ro','nosuid','nodev']),

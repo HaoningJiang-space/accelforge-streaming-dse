@@ -26,6 +26,11 @@ def check_serialized_request(data,shape,values):
     return [data[key][f] for f in FIELDS]
 
 
+def check_execution_scope(values,diagnostic=False):
+    if values['SUB_TILE_N']!=values['TILE_N'] and not diagnostic:
+        raise ValueError('N-split subtiles are outside the validated pilot subset; diagnostic flag required')
+
+
 def template_ledger(shape,tile,element_bytes=4):
     canonical_request(shape,dict(zip(FIELDS,(*tile,*tile))))
     if type(element_bytes) is not int or element_bytes<=0:raise ValueError('positive integer bytes required')
