@@ -41,9 +41,13 @@ python -m research.index_coupling.response.experiments exact-bench OUT.jsonl REP
   16-24% of DP work, or 35-42% with oracle knowledge (§18).
 - **Sandwich certificate.** It is exact wherever it holds, but it stopped by
   its frozen rule. Its upper bound fails because the optimum fuses operators.
+- **Factorized loop closure.** The bounded full-grammar pilot preserves all
+  tested curves and directly replays 49 native root witnesses, but slows
+  both M8 cases and stops under its frozen rule. See
+  [LOOP_CLOSURE_RESULTS.md](../LOOP_CLOSURE_RESULTS.md).
 - **Open problem.** An upper bound, or exact response, for fused M > 1 groups.
-  Alternatively, Codex's shared `(start, suffix, Pareto(A, D))` label
-  representation (PREFIX_DOMINANCE_RESULTS.md §6).
+  Sharing across different residency contexts remains open; the tested
+  `(start, suffix, Pareto(A, D))` closure does not yet provide an M8 speedup.
 
 ## Renamed modules
 
