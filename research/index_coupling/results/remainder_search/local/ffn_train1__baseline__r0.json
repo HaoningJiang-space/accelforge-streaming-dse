@@ -1,0 +1,3970 @@
+{
+  "case": "ffn_train1",
+  "arm": "baseline",
+  "shape": [
+    1,
+    2,
+    2,
+    2,
+    true
+  ],
+  "n_ops": 8,
+  "options": {
+    "partitions": "dp",
+    "witness": true,
+    "canonical_remainders": false,
+    "prune_infeasible_groups": false,
+    "independent_ops": false
+  },
+  "profile": false,
+  "stats": null,
+  "status": "complete",
+  "phase": "finished",
+  "python": "3.12.7",
+  "system": "Darwin",
+  "machine": "arm64",
+  "hash_seed": "0",
+  "source_sha256": {
+    "graph/curve.py": "dda38eea2c9deacea1b9c431a5f7df8f468eaeaf0e5d2755749811407e11a173",
+    "graph/remainder.py": "abb659434ccbf677161e556e56fc55186c69eef6638f20b8a9393d4330ffa181",
+    "graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "graph/stacks.py": "ec036a78514ccd85cd46ea20066f1d6d0a727de8c04c76f0d1cad02b90ce9d3b",
+    "graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "simulate_nest.py": "778e9bbe6ae57790911e89e9362150657ab46f89c07c422ba7caf946b24ce79f",
+    "run_ancestor_width.py": "bb50940a230d1320c2984f1ff9b40cc98ffb3db6bcaaaac55bc77c163992d0f4",
+    "bench_remainder_search.py": "6760f9815f4b294efe95dff5e3279c0fff064b6cd65a0f7e7351c54e0b350ca8"
+  },
+  "started_utc": "2026-11-10T10:25:16.921166+00:00",
+  "search_seconds": 3.0551645420491695,
+  "points": [
+    [
+      3,
+      120
+    ],
+    [
+      4,
+      96
+    ],
+    [
+      5,
+      88
+    ],
+    [
+      6,
+      80
+    ],
+    [
+      7,
+      68
+    ],
+    [
+      8,
+      64
+    ],
+    [
+      9,
+      56
+    ],
+    [
+      11,
+      52
+    ],
+    [
+      12,
+      48
+    ],
+    [
+      13,
+      44
+    ],
+    [
+      17,
+      40
+    ],
+    [
+      21,
+      36
+    ],
+    [
+      24,
+      32
+    ]
+  ],
+  "witnesses": [
+    [
+      3,
+      120,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0",
+              "EZ0",
+              "EY0",
+              "EdW2_0",
+              "EdZ0",
+              "EdH0",
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0",
+            "EZ0",
+            "EY0",
+            "EdW2_0",
+            "EdZ0",
+            "EdH0",
+            "EdW1_0",
+            "EdX0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "G0",
+            "G1",
+            "X0",
+            "X1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0",
+              "EZ0",
+              "EY0",
+              "EdW2_0"
+            ],
+            [
+              "EdZ0",
+              "EdH0",
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "G1",
+            "H0",
+            "W1_0",
+            "W2_0",
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0",
+            "EZ0",
+            "EY0",
+            "EdW2_0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "W1_0",
+            "W2_0",
+            "dW2_0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ],
+            [
+              "EZ0"
+            ],
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [
+            "H0",
+            "Z0"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0",
+            "EdH0",
+            "EdW1_0",
+            "EdX0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "W1_0",
+            "W2_0",
+            "dW1_0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ],
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "dH0",
+            "dZ0"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      4,
+      96,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0",
+              "EZ0",
+              "EY0",
+              "EdW2_0"
+            ],
+            [
+              "EdZ0",
+              "EdH0",
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "G1",
+            "H0",
+            "W1_0",
+            "W2_0",
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0",
+            "EZ0",
+            "EY0",
+            "EdW2_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "G1",
+            "X0",
+            "X1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ],
+            [
+              "EZ0"
+            ],
+            [
+              "EY0",
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [
+            "H0",
+            "Z0"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W1_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0",
+            "EdW2_0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W2_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "dW2_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0",
+            "EdH0",
+            "EdW1_0",
+            "EdX0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "G0",
+            "G1",
+            "X0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ],
+            [
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "dH0"
+          ],
+          "via DRAM",
+          [
+            "dZ0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W2_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [
+            "dZ0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdH0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0",
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "dW1_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W1_0"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      5,
+      88,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0",
+              "EZ0",
+              "EY0",
+              "EdW2_0",
+              "EdZ0",
+              "EdH0",
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0",
+            "EZ0",
+            "EY0",
+            "EdW2_0",
+            "EdZ0",
+            "EdH0",
+            "EdW1_0",
+            "EdX0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "W1_0",
+            "W2_0",
+            "dW1_0",
+            "dW2_0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ],
+            [
+              "EZ0"
+            ],
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ],
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ],
+            [
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "G1",
+            "Z0",
+            "dH0",
+            "dZ0"
+          ],
+          "via DRAM",
+          [
+            "H0",
+            "W1_0",
+            "W2_0",
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [
+            "H0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EZ0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EY0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdH0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0",
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G0"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      6,
+      80,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0",
+              "EZ0",
+              "EY0",
+              "EdW2_0",
+              "EdZ0",
+              "EdH0",
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0",
+            "EZ0",
+            "EY0",
+            "EdW2_0",
+            "EdZ0",
+            "EdH0",
+            "EdW1_0",
+            "EdX0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "G0",
+            "G1",
+            "X0",
+            "X1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ],
+            [
+              "EZ0"
+            ],
+            [
+              "EY0",
+              "EdW2_0"
+            ],
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ],
+            [
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "H0",
+            "Z0",
+            "dH0",
+            "dZ0"
+          ],
+          "via DRAM",
+          [
+            "G1",
+            "W1_0",
+            "W2_0",
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W1_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0",
+            "EdW2_0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W2_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "dW2_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W2_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0",
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "dW1_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W1_0"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      7,
+      68,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ],
+            [
+              "EZ0"
+            ],
+            [
+              "EY0",
+              "EdW2_0"
+            ],
+            [
+              "EdZ0",
+              "EdH0"
+            ],
+            [
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "Z0",
+            "dH0"
+          ],
+          "via DRAM",
+          [
+            "G1",
+            "H0",
+            "W1_0",
+            "W2_0",
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [
+            "H0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EZ0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EZ0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EZ0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0",
+            "EdW2_0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0",
+            "EdH0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "G1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0",
+              "EdH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0",
+            "EdH0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "W2_0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ]
+          ],
+          "kept",
+          [
+            "dZ0"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0",
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G0"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      8,
+      64,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ],
+            [
+              "EZ0"
+            ],
+            [
+              "EY0",
+              "EdW2_0"
+            ],
+            [
+              "EdZ0",
+              "EdH0"
+            ],
+            [
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "Z0",
+            "dH0"
+          ],
+          "via DRAM",
+          [
+            "G1",
+            "H0",
+            "W1_0",
+            "W2_0",
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [
+            "H0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EZ0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EZ0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EZ0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0",
+            "EdW2_0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0",
+            "EdH0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "G1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0",
+              "EdH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0",
+            "EdH0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W2_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ]
+          ],
+          "kept",
+          [
+            "dZ0"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0",
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G0"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      9,
+      56,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ],
+            [
+              "EZ0"
+            ],
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ],
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ],
+            [
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "G1",
+            "Z0",
+            "dH0",
+            "dZ0"
+          ],
+          "via DRAM",
+          [
+            "H0",
+            "W1_0",
+            "W2_0",
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [
+            "H0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EZ0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EZ0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EZ0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EY0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdH0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdH0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0",
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G0"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      11,
+      52,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0",
+              "EZ0"
+            ],
+            [
+              "EY0",
+              "EdW2_0"
+            ],
+            [
+              "EdZ0",
+              "EdH0"
+            ],
+            [
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "G1",
+            "Z0",
+            "dH0"
+          ],
+          "via DRAM",
+          [
+            "H0",
+            "W1_0",
+            "W2_0",
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0",
+            "EZ0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0",
+              "EZ0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0",
+            "EZ0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W1_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0",
+            "EdW2_0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0",
+            "EdH0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ]
+          ],
+          "kept",
+          [
+            "dZ0"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdH0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0",
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G0"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      12,
+      48,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ],
+            [
+              "EZ0"
+            ],
+            [
+              "EY0",
+              "EdW2_0"
+            ],
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ],
+            [
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "H0",
+            "Z0",
+            "dH0",
+            "dZ0"
+          ],
+          "via DRAM",
+          [
+            "G1",
+            "W1_0",
+            "W2_0",
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0",
+            "EdW2_0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0",
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G0"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      13,
+      44,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ],
+            [
+              "EZ0"
+            ],
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ],
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ],
+            [
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "G1",
+            "H0",
+            "Z0",
+            "dH0",
+            "dZ0"
+          ],
+          "via DRAM",
+          [
+            "W1_0",
+            "W2_0",
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EY0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0",
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G0"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      17,
+      40,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ],
+            [
+              "EZ0"
+            ],
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ],
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ],
+            [
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "G1",
+            "H0",
+            "W1_0",
+            "Z0",
+            "dH0",
+            "dZ0"
+          ],
+          "via DRAM",
+          [
+            "W2_0",
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EY0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW2_0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdZ0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0",
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "X0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      21,
+      36,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ],
+            [
+              "EZ0"
+            ],
+            [
+              "EY0",
+              "EdW2_0",
+              "EdZ0"
+            ],
+            [
+              "EdH0",
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "H0",
+            "W1_0",
+            "Z0",
+            "dZ0"
+          ],
+          "via DRAM",
+          [
+            "X0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0",
+            "EdW2_0",
+            "EdZ0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0",
+              "EdZ0"
+            ]
+          ],
+          "kept",
+          [
+            "W2_0"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW2_0",
+            "EdZ0"
+          ],
+          "F0",
+          "tile 1 x2",
+          "kept",
+          [
+            "G1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdH0",
+            "EdW1_0",
+            "EdX0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "dW1_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EdH0"
+            ],
+            [
+              "EdW1_0"
+            ],
+            [
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "dH0"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      24,
+      32,
+      [
+        [
+          "groups",
+          [
+            [
+              "EH0",
+              "EZ0",
+              "EY0",
+              "EdW2_0",
+              "EdZ0",
+              "EdH0",
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EH0",
+            "EZ0",
+            "EY0",
+            "EdW2_0",
+            "EdZ0",
+            "EdH0",
+            "EdW1_0",
+            "EdX0"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W1_0",
+            "W2_0",
+            "dW1_0",
+            "dW2_0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EH0",
+              "EZ0"
+            ],
+            [
+              "EY0"
+            ],
+            [
+              "EdW2_0"
+            ],
+            [
+              "EdZ0"
+            ],
+            [
+              "EdH0"
+            ],
+            [
+              "EdW1_0",
+              "EdX0"
+            ]
+          ],
+          "kept",
+          [
+            "G1",
+            "H0",
+            "X0",
+            "Z0",
+            "dH0",
+            "dZ0"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EY0"
+          ],
+          "D1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EdW1_0",
+            "EdX0"
+          ],
+          "D0",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ]
+  ],
+  "replays": [
+    {
+      "expected": [
+        3,
+        120
+      ],
+      "actual": {
+        "peak": 3,
+        "reads": {
+          "G0": 4,
+          "G1": 16,
+          "H0": 4,
+          "W1_0": 16,
+          "W2_0": 16,
+          "X0": 16,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "writes": {
+          "G0": 8,
+          "H0": 4,
+          "X1": 8,
+          "dW1_0": 8,
+          "dW2_0": 8
+        },
+        "traffic": 120,
+        "partial_reads": {
+          "G0": 4,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "partial_writes": {
+          "G0": 4,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "peak_by_tensor": {
+          "H0": 1,
+          "W1_0": 1,
+          "X0": 1
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        4,
+        96
+      ],
+      "actual": {
+        "peak": 4,
+        "reads": {
+          "G0": 4,
+          "G1": 16,
+          "H0": 4,
+          "W1_0": 8,
+          "W2_0": 8,
+          "X0": 16,
+          "X1": 4,
+          "dZ0": 4
+        },
+        "writes": {
+          "G0": 8,
+          "H0": 4,
+          "X1": 8,
+          "dW1_0": 4,
+          "dW2_0": 4,
+          "dZ0": 4
+        },
+        "traffic": 96,
+        "partial_reads": {
+          "G0": 4,
+          "X1": 4
+        },
+        "partial_writes": {
+          "G0": 4,
+          "X1": 4
+        },
+        "peak_by_tensor": {
+          "H0": 2,
+          "W1_0": 1,
+          "X0": 1
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        5,
+        88
+      ],
+      "actual": {
+        "peak": 5,
+        "reads": {
+          "G1": 4,
+          "H0": 8,
+          "W1_0": 16,
+          "W2_0": 16,
+          "X0": 8,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "writes": {
+          "G0": 4,
+          "H0": 4,
+          "X1": 4,
+          "dW1_0": 8,
+          "dW2_0": 8
+        },
+        "traffic": 88,
+        "partial_reads": {
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "partial_writes": {
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "peak_by_tensor": {
+          "G1": 2,
+          "Z0": 2,
+          "dW2_0": 1
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        6,
+        80
+      ],
+      "actual": {
+        "peak": 6,
+        "reads": {
+          "G0": 4,
+          "G1": 16,
+          "W1_0": 8,
+          "W2_0": 8,
+          "X0": 16,
+          "X1": 4
+        },
+        "writes": {
+          "G0": 8,
+          "X1": 8,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "traffic": 80,
+        "partial_reads": {
+          "G0": 4,
+          "X1": 4
+        },
+        "partial_writes": {
+          "G0": 4,
+          "X1": 4
+        },
+        "peak_by_tensor": {
+          "H0": 2,
+          "W2_0": 1,
+          "X1": 1,
+          "Z0": 2
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        7,
+        68
+      ],
+      "actual": {
+        "peak": 7,
+        "reads": {
+          "G1": 12,
+          "H0": 8,
+          "W1_0": 8,
+          "W2_0": 12,
+          "X0": 8
+        },
+        "writes": {
+          "G0": 4,
+          "H0": 4,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "traffic": 68,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "H0": 2,
+          "W1_0": 1,
+          "X0": 4
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        8,
+        64
+      ],
+      "actual": {
+        "peak": 8,
+        "reads": {
+          "G1": 12,
+          "H0": 8,
+          "W1_0": 8,
+          "W2_0": 8,
+          "X0": 8
+        },
+        "writes": {
+          "G0": 4,
+          "H0": 4,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "traffic": 64,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "G1": 1,
+          "W2_0": 2,
+          "dH0": 4,
+          "dZ0": 1
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        9,
+        56
+      ],
+      "actual": {
+        "peak": 9,
+        "reads": {
+          "G1": 4,
+          "H0": 8,
+          "W1_0": 8,
+          "W2_0": 8,
+          "X0": 8
+        },
+        "writes": {
+          "G0": 4,
+          "H0": 4,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "traffic": 56,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "G1": 4,
+          "Z0": 4,
+          "dW2_0": 1
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        11,
+        52
+      ],
+      "actual": {
+        "peak": 11,
+        "reads": {
+          "G1": 4,
+          "H0": 4,
+          "W1_0": 8,
+          "W2_0": 8,
+          "X0": 8
+        },
+        "writes": {
+          "G0": 4,
+          "H0": 4,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "traffic": 52,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "H0": 1,
+          "W1_0": 2,
+          "X0": 4,
+          "Z0": 4
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        12,
+        48
+      ],
+      "actual": {
+        "peak": 12,
+        "reads": {
+          "G1": 8,
+          "W1_0": 8,
+          "W2_0": 8,
+          "X0": 8
+        },
+        "writes": {
+          "G0": 4,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "traffic": 48,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "H0": 4,
+          "dH0": 4,
+          "dZ0": 4
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        13,
+        44
+      ],
+      "actual": {
+        "peak": 13,
+        "reads": {
+          "G1": 4,
+          "W1_0": 8,
+          "W2_0": 8,
+          "X0": 8
+        },
+        "writes": {
+          "G0": 4,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "traffic": 44,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "G1": 4,
+          "H0": 4,
+          "Z0": 4,
+          "dW2_0": 1
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        17,
+        40
+      ],
+      "actual": {
+        "peak": 17,
+        "reads": {
+          "G1": 4,
+          "W1_0": 4,
+          "W2_0": 8,
+          "X0": 8
+        },
+        "writes": {
+          "G0": 4,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "traffic": 40,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "G1": 4,
+          "H0": 4,
+          "W1_0": 4,
+          "Z0": 4,
+          "dW2_0": 1
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        21,
+        36
+      ],
+      "actual": {
+        "peak": 21,
+        "reads": {
+          "G1": 4,
+          "W1_0": 4,
+          "W2_0": 4,
+          "X0": 8
+        },
+        "writes": {
+          "G0": 4,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "traffic": 36,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "G1": 2,
+          "H0": 4,
+          "W1_0": 4,
+          "W2_0": 2,
+          "Z0": 4,
+          "dW2_0": 1,
+          "dZ0": 4
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        24,
+        32
+      ],
+      "actual": {
+        "peak": 24,
+        "reads": {
+          "G1": 4,
+          "W1_0": 4,
+          "W2_0": 4,
+          "X0": 4
+        },
+        "writes": {
+          "G0": 4,
+          "X1": 4,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "traffic": 32,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "G1": 2,
+          "H0": 2,
+          "W1_0": 4,
+          "W2_0": 4,
+          "X0": 2,
+          "Z0": 2,
+          "dW1_0": 4,
+          "dW2_0": 4
+        },
+        "steps": 56,
+        "consumer_checks": 108,
+        "outputs_checked": 16,
+        "valid": true
+      },
+      "exact": true
+    }
+  ],
+  "replay_seconds": 0.011263207998126745,
+  "seconds": 3.067735749995336,
+  "peak_rss_bytes": 52084736,
+  "sampled_peak_rss_bytes": 52150272
+}

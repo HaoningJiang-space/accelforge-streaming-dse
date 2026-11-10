@@ -9,6 +9,18 @@ physical execution checks. The new one-obligation audit itself used base
 Subsequent joint evidence: [UNIFIED_SEARCH_RESULTS.md](UNIFIED_SEARCH_RESULTS.md)
 uses source `b6e2ddbc` and one declared grammar for all three reductions.
 
+The later [remainder implementation](REMAINDER_SEARCH_RESULTS.md), source
+`da52c801`, adds exact reuse inside the fixed-order recurrence. Live-tensor
+incidence, full operator domains, entry and ownership suffice; resident
+identities can disappear and rank names can be changed. Infeasible groups can
+also be rejected structurally. All 64 local runs agree with 496 exact replays,
+but this separates mathematical compression from implementation benefit:
+precheck improves stack time, whereas full remainder matching reduces entries
+but slows those stacks and increases memory. Only the highly rank-symmetric
+ancestor control shows a large reuse speedup (12,866 entries to 81, 4.08x).
+P19 server measurement remains pending. This ordered equivalence is a useful
+component, not the dynamic order-complete closure theorem still sought below.
+
 The strongest current research story is **exact conditional resource response**:
 which parts of a mapping search can be composed, identified by symmetry, or
 replaced by a proved response? A single graph-width law or a scalar fusion

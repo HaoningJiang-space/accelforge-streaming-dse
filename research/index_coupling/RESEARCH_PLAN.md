@@ -75,6 +75,15 @@ banking or precision changes may require a different Gamma and cost model.
 
 ## Steps
 
+Implementation checkpoint: [REMAINDER_SEARCH_RESULTS.md](REMAINDER_SEARCH_RESULTS.md)
+turns the ordered-remainder sufficiency and infeasible-group lemmas into opt-in
+core rules. The 64 local comparisons agree, but exact representation costs
+outweigh state savings on the tested stacks; prechecking alone is faster.
+Complete the pending P19 server comparison, then reduce descriptor/lookup costs
+before treating remaining-graph reuse as a performance solution. This fixed-order
+equivalence does not establish closure of the dynamic order-complete quotient
+described below. Preserve both questions and their different contracts.
+
 1. **Close the open tests.** These decide whether the next steps build on the
    first-split account or on multi-level retention scopes.
    - P19 (done): the first-split knapsack predicts the maximum gap exactly

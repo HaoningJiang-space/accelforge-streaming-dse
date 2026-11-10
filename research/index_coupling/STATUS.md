@@ -5,6 +5,16 @@ PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
 Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.md.
 
+Remainder implementation: [REMAINDER_SEARCH_RESULTS.md](REMAINDER_SEARCH_RESULTS.md).
+Exact ordered-remainder reuse (including rank restoration) and infeasible-group
+pruning are now default-off core options. Exact matching rejects WL collisions;
+79 tests pass, and all 64 local four-arm runs agree with 496 exact replays.
+Precheck alone gives 1.31x/1.23x/1.11x median ratios on the tested forward FFN,
+attention and training cases. Reuse reduces the ancestor control from 12,866
+response entries to 81 and gives 4.08x, but slows the stack cases and increases
+their memory. The current core hash changed; frozen archives remain intact.
+Formal P19 server measurements and server synchronization remain pending.
+
 Unified conditional search: [UNIFIED_SEARCH_RESULTS.md](UNIFIED_SEARCH_RESULTS.md).
 All 24 arms of a three-switch factorial study use the same order-complete serial
 grammar on a six-op partially symmetric graph with a downstream product join.
