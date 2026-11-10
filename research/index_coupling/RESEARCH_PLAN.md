@@ -183,10 +183,17 @@ banking or precision changes may require a different Gamma and cost model.
    missing-axis obligations are already externally resident and the reduced
    solve attains that bound; it matches 565 conditional states but yields only
    0.27–0.55% additional cache reduction in four small cases. The original
-   scalar leaf supplies a concrete exclusion. Next target one unresolved
-   obligation with a matching lower bound, not just a constructive upper bound.
-   General larger-X states and outer mask enumeration remain open; see
-   STREAMED_BRIDGE_RESULTS.md and SCALAR_BRIDGE_RESULTS.md before generalizing.
+   scalar leaf supplies a concrete exclusion. The one-obligation follow-up
+   proves scalar free retention when one reserved cell exactly offsets a
+   child slot; old hits overlap existing bridges and fresh incremental cache
+   savings stay below 0.41%. A two-live-tensor normal form now covers complete
+   positive-traffic curves, including alternate-axis X materialization. An
+   equal-summary three-live counterexample identifies joint axis incidence
+   as the next target: derive a response for {X,t,z} with a matching lower
+   bound and measure coverage on the completed mixed-role quotient, without
+   transferring fixed-order census fractions across grammars. General larger-X
+   states and outer mask enumeration remain open. See ONE_OBLIGATION_RESULTS.md
+   and RESEARCH_OVERVIEW.md alongside the earlier bridge reports.
    **Order-complete symmetry quotient:** an independent Fork solver now searches
    group membership by role/joint-residency counts and restores a consistent
    global consumer order. Five complete reference envelopes and all 128 tiny

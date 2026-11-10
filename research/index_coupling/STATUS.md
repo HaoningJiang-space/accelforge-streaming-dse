@@ -5,6 +5,10 @@ PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
 Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.md.
 
+Current synthesis: [RESEARCH_OVERVIEW.md](RESEARCH_OVERVIEW.md), separating exact
+search reductions from capacity-dependent physical conflicts and identifying
+the next target as a three-live-tensor response across competing axes.
+
 Order-complete Fork symmetry: [FORK_QUOTIENT_RESULTS.md](FORK_QUOTIENT_RESULTS.md).
 A separate exact quotient retains joint input/output residency profiles within
 each role and reconstructs a consistent global order. Five complete reference
@@ -62,6 +66,16 @@ parent-frame and 69 root executions exact. Coverage is narrow: zero new hits
 in either old six-consumer census and only 0.27–0.55% additional cache reduction
 over Scalar-X Bridge in the new cases. This remains an opt-in fixed-order
 prototype, not a solution for unresolved loop obligations.
+
+One-obligation follow-up: [ONE_OBLIGATION_RESULTS.md](ONE_OBLIGATION_RESULTS.md).
+The scalar free-retention certificate is exact: 150 matches per old census
+are already covered, while ten small root cases add 276 matches and at most
+0.40% cache savings over existing bridges. A separate two-live-tensor normal
+form gives complete positive-traffic frontiers using retention, X blocking and
+materialization/reordered loops. All 384 conditional comparisons match both
+partition solvers; 720 framed executions are exact. Equal single-axis obligation
+summaries can still differ once a third local tensor is present. Default solver
+and frozen predictions remain unchanged.
 
 Solver scaling implementation/results: [SOLVER_SCALING_RESULTS.md](SOLVER_SCALING_RESULTS.md).
 Streaming audit exhausted 175,522 derivations on one tiny graph with no errors
