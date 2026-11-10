@@ -84,7 +84,8 @@ and dependencies must all be pinned for our pilot.
    backend for each barrier. Partial-island results are labelled as such.
    Add MobileNet-v2 and BERT/Llama coverage after the first three-model audit.
 
-No PyTorchSim/TOGSim execution has been performed by this branch yet. A runtime
-location was requested; the mapping studies continue independently on the
-research CPU host. No cycles, energy, EDP or area values are fabricated to fill
-the proposed paper figures.
+No PyTorchSim/TOGSim execution has been performed by this branch yet. The source
+is a pinned Git submodule; an isolated CPU runtime is being prepared on the
+designated experiment host. See `backend_lock.json` for source/image identity
+and unresolved runtime checks. No cycles, energy, EDP or area values are
+fabricated to fill the proposed paper figures.

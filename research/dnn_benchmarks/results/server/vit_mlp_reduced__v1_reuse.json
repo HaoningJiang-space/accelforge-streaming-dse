@@ -1,0 +1,1552 @@
+{
+  "case": "vit_mlp_reduced",
+  "arm": "v1_reuse",
+  "options": {
+    "partitions": "dp",
+    "scalar_leaf": "v1",
+    "canonical_remainders": true,
+    "prune_infeasible_groups": true
+  },
+  "c2": false,
+  "stats": {
+    "pareto_calls": 12357,
+    "pareto_candidates": 24987,
+    "pareto_points": 19109,
+    "max_frontier": 9,
+    "merge_calls": 5868,
+    "merge_inputs": 15796,
+    "merge_points": 8580,
+    "partition_masks": 0,
+    "partition_choices": 0,
+    "loop_choices": 716,
+    "dp_states": 2004,
+    "dp_transitions": 5868,
+    "max_crossing": 1,
+    "dp_multiwriter_fallbacks": 0,
+    "witness_nodes": 6538,
+    "pareto_seconds": 0.022260752972215414,
+    "merge_seconds": 0.015249830204993486,
+    "cache_misses_by_span": {
+      "solve:encoder_layers_encoder_layer_0_mlp_0_matmul,encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias,add_2": 17,
+      "group:encoder_layers_encoder_layer_0_mlp_0_matmul": 25,
+      "solve:encoder_layers_encoder_layer_0_mlp_0_matmul": 33,
+      "group:encoder_layers_encoder_layer_0_mlp_0_matmul,encoder_layers_encoder_layer_0_mlp_0_bias": 18,
+      "solve:encoder_layers_encoder_layer_0_mlp_0_matmul,encoder_layers_encoder_layer_0_mlp_0_bias": 28,
+      "group:encoder_layers_encoder_layer_0_mlp_0_bias": 24,
+      "solve:encoder_layers_encoder_layer_0_mlp_0_bias": 19,
+      "group:encoder_layers_encoder_layer_0_mlp_0_matmul,encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1": 18,
+      "solve:encoder_layers_encoder_layer_0_mlp_0_matmul,encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1": 28,
+      "group:encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1": 24,
+      "solve:encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1": 20,
+      "group:encoder_layers_encoder_layer_0_mlp_0_matmul,encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul": 22,
+      "solve:encoder_layers_encoder_layer_0_mlp_0_matmul,encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul": 52,
+      "group:encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul": 28,
+      "group:encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul": 18,
+      "group:encoder_layers_encoder_layer_0_mlp_3_matmul": 30,
+      "solve:encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul": 36,
+      "solve:encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul": 20,
+      "solve:encoder_layers_encoder_layer_0_mlp_3_matmul": 29,
+      "group:encoder_layers_encoder_layer_0_mlp_0_matmul,encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias": 2,
+      "solve:encoder_layers_encoder_layer_0_mlp_0_matmul,encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias": 32,
+      "group:encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias": 22,
+      "solve:encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias": 26,
+      "group:encoder_layers_encoder_layer_0_mlp_0_matmul,encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias,add_2": 1,
+      "group:encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias,add_2": 12,
+      "solve:encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias,add_2": 18,
+      "group:encoder_layers_encoder_layer_0_mlp_3_bias,add_2": 12,
+      "group:add_2": 6,
+      "solve:encoder_layers_encoder_layer_0_mlp_3_bias,add_2": 10,
+      "solve:add_2": 4,
+      "group:encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias": 4,
+      "solve:encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias": 32,
+      "group:encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias,add_2": 2,
+      "solve:encoder_layers_encoder_layer_0_mlp_0_bias,encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias,add_2": 16,
+      "group:encoder_layers_encoder_layer_0_mlp_1": 4,
+      "group:encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias": 4,
+      "solve:encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias": 16,
+      "group:encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias,add_2": 2,
+      "solve:encoder_layers_encoder_layer_0_mlp_1,encoder_layers_encoder_layer_0_mlp_3_matmul,encoder_layers_encoder_layer_0_mlp_3_bias,add_2": 8
+    },
+    "cache_misses_by_extents": {
+      "solve:(1, 2, 2, 2, 2)": 1,
+      "group:(1, 2, 1, 2, 2)": 6,
+      "solve:(1, 1, 1, 2, 2)": 20,
+      "group:(1, 1, 1, 2, 2)": 20,
+      "solve:(1, 1, 1, 1, 2)": 40,
+      "solve:(1, 1, 1, 2, 1)": 40,
+      "group:(1, 1, 1, 2, 1)": 15,
+      "solve:(1, 1, 1, 1, 1)": 32,
+      "group:(1, 1, 1, 1, 2)": 23,
+      "solve:(1, 2, 1, 1, 2)": 8,
+      "group:(1, 2, 1, 1, 2)": 20,
+      "solve:(1, 2, 1, 1, 1)": 16,
+      "group:(1, 2, 1, 1, 1)": 15,
+      "solve:(1, 2, 1, 2, 1)": 12,
+      "group:(1, 2, 1, 2, 1)": 12,
+      "group:(1, 1, 1, 1, 1)": 22,
+      "group:(1, 2, 2, 2, 2)": 5,
+      "solve:(1, 1, 2, 2, 2)": 64,
+      "group:(1, 1, 2, 2, 2)": 16,
+      "solve:(1, 1, 2, 2, 1)": 32,
+      "group:(1, 1, 2, 1, 1)": 19,
+      "group:(1, 1, 2, 1, 2)": 56,
+      "solve:(1, 1, 2, 1, 1)": 36,
+      "solve:(1, 2, 2, 2, 1)": 4,
+      "group:(1, 2, 2, 2, 1)": 4,
+      "group:(1, 2, 2, 1, 1)": 15,
+      "group:(1, 2, 2, 1, 2)": 30,
+      "solve:(1, 1, 2, 1, 2)": 128,
+      "solve:(1, 2, 2, 1, 1)": 11
+    },
+    "cache_misses_by_residency": {
+      "solve:n=6,external=0,local_outputs=0,owned=0": 2,
+      "group:n=1,external=1,local_outputs=1,owned=0": 19,
+      "solve:n=1,external=2,local_outputs=1,owned=0": 18,
+      "group:n=1,external=2,local_outputs=1,owned=0": 16,
+      "solve:n=1,external=3,local_outputs=1,owned=0": 3,
+      "solve:n=1,external=1,local_outputs=1,owned=0": 17,
+      "group:n=1,external=0,local_outputs=0,owned=1": 19,
+      "solve:n=1,external=1,local_outputs=0,owned=1": 20,
+      "group:n=1,external=1,local_outputs=0,owned=1": 20,
+      "solve:n=1,external=2,local_outputs=0,owned=1": 6,
+      "solve:n=1,external=0,local_outputs=0,owned=1": 17,
+      "group:n=2,external=1,local_outputs=1,owned=0": 13,
+      "solve:n=2,external=3,local_outputs=1,owned=0": 12,
+      "group:n=2,external=3,local_outputs=1,owned=0": 9,
+      "solve:n=2,external=4,local_outputs=1,owned=0": 2,
+      "group:n=1,external=3,local_outputs=1,owned=0": 4,
+      "solve:n=2,external=2,local_outputs=1,owned=0": 21,
+      "group:n=2,external=2,local_outputs=1,owned=0": 18,
+      "solve:n=2,external=1,local_outputs=1,owned=0": 12,
+      "group:n=2,external=0,local_outputs=0,owned=1": 13,
+      "solve:n=2,external=2,local_outputs=0,owned=1": 12,
+      "group:n=2,external=2,local_outputs=0,owned=1": 8,
+      "solve:n=2,external=3,local_outputs=0,owned=1": 2,
+      "group:n=1,external=2,local_outputs=0,owned=1": 5,
+      "solve:n=2,external=1,local_outputs=0,owned=1": 21,
+      "group:n=2,external=1,local_outputs=0,owned=1": 17,
+      "solve:n=2,external=0,local_outputs=0,owned=1": 12,
+      "group:n=3,external=1,local_outputs=1,owned=0": 7,
+      "solve:n=3,external=3,local_outputs=1,owned=0": 13,
+      "group:n=3,external=3,local_outputs=1,owned=0": 7,
+      "solve:n=3,external=4,local_outputs=1,owned=0": 4,
+      "solve:n=3,external=2,local_outputs=1,owned=0": 16,
+      "group:n=3,external=2,local_outputs=1,owned=0": 10,
+      "solve:n=3,external=1,local_outputs=1,owned=0": 7,
+      "group:n=3,external=0,local_outputs=0,owned=1": 7,
+      "solve:n=3,external=2,local_outputs=0,owned=1": 13,
+      "group:n=3,external=2,local_outputs=0,owned=1": 5,
+      "solve:n=3,external=3,local_outputs=0,owned=1": 4,
+      "solve:n=3,external=1,local_outputs=0,owned=1": 16,
+      "group:n=3,external=1,local_outputs=0,owned=1": 9,
+      "solve:n=3,external=0,local_outputs=0,owned=1": 7,
+      "group:n=4,external=1,local_outputs=1,owned=0": 4,
+      "solve:n=4,external=4,local_outputs=1,owned=0": 9,
+      "group:n=4,external=4,local_outputs=1,owned=0": 1,
+      "solve:n=4,external=5,local_outputs=1,owned=0": 2,
+      "group:n=3,external=4,local_outputs=1,owned=0": 3,
+      "solve:n=4,external=3,local_outputs=1,owned=0": 15,
+      "group:n=4,external=3,local_outputs=1,owned=0": 3,
+      "group:n=2,external=4,local_outputs=1,owned=0": 2,
+      "group:n=2,external=3,local_outputs=0,owned=1": 2,
+      "group:n=3,external=3,local_outputs=0,owned=1": 2,
+      "solve:n=4,external=2,local_outputs=1,owned=0": 12,
+      "group:n=4,external=2,local_outputs=1,owned=0": 5,
+      "solve:n=4,external=1,local_outputs=1,owned=0": 4,
+      "group:n=4,external=0,local_outputs=0,owned=1": 4,
+      "solve:n=4,external=3,local_outputs=0,owned=1": 9,
+      "group:n=4,external=3,local_outputs=0,owned=1": 1,
+      "solve:n=4,external=4,local_outputs=0,owned=1": 2,
+      "solve:n=4,external=2,local_outputs=0,owned=1": 15,
+      "group:n=4,external=2,local_outputs=0,owned=1": 3,
+      "solve:n=4,external=1,local_outputs=0,owned=1": 12,
+      "group:n=4,external=1,local_outputs=0,owned=1": 5,
+      "solve:n=4,external=0,local_outputs=0,owned=1": 4,
+      "group:n=5,external=1,local_outputs=1,owned=0": 1,
+      "solve:n=5,external=5,local_outputs=1,owned=0": 1,
+      "solve:n=5,external=4,local_outputs=1,owned=0": 4,
+      "solve:n=5,external=3,local_outputs=1,owned=0": 6,
+      "solve:n=5,external=2,local_outputs=1,owned=0": 4,
+      "solve:n=5,external=1,local_outputs=1,owned=0": 1,
+      "group:n=5,external=0,local_outputs=0,owned=1": 1,
+      "solve:n=5,external=4,local_outputs=0,owned=1": 1,
+      "solve:n=5,external=3,local_outputs=0,owned=1": 4,
+      "solve:n=5,external=2,local_outputs=0,owned=1": 6,
+      "solve:n=5,external=1,local_outputs=0,owned=1": 4,
+      "solve:n=5,external=0,local_outputs=0,owned=1": 1,
+      "group:n=6,external=0,local_outputs=0,owned=0": 1,
+      "solve:n=6,external=4,local_outputs=0,owned=0": 1,
+      "group:n=3,external=3,local_outputs=0,owned=0": 1,
+      "solve:n=3,external=3,local_outputs=0,owned=0": 2,
+      "group:n=3,external=2,local_outputs=0,owned=0": 3,
+      "solve:n=3,external=2,local_outputs=0,owned=0": 6,
+      "group:n=2,external=2,local_outputs=0,owned=0": 2,
+      "group:n=2,external=1,local_outputs=0,owned=0": 6,
+      "group:n=1,external=1,local_outputs=0,owned=0": 3,
+      "group:n=1,external=0,local_outputs=0,owned=0": 3,
+      "solve:n=2,external=2,local_outputs=0,owned=0": 2,
+      "solve:n=2,external=1,local_outputs=0,owned=0": 5,
+      "solve:n=1,external=1,local_outputs=0,owned=0": 2,
+      "solve:n=1,external=0,local_outputs=0,owned=0": 2,
+      "solve:n=6,external=3,local_outputs=0,owned=0": 4,
+      "group:n=3,external=1,local_outputs=0,owned=0": 5,
+      "solve:n=3,external=1,local_outputs=0,owned=0": 7,
+      "group:n=2,external=0,local_outputs=0,owned=0": 4,
+      "solve:n=2,external=0,local_outputs=0,owned=0": 3,
+      "solve:n=6,external=2,local_outputs=0,owned=0": 6,
+      "group:n=3,external=0,local_outputs=0,owned=0": 3,
+      "solve:n=3,external=0,local_outputs=0,owned=0": 3,
+      "solve:n=6,external=1,local_outputs=0,owned=0": 4,
+      "group:n=5,external=1,local_outputs=0,owned=0": 1,
+      "solve:n=5,external=4,local_outputs=0,owned=0": 1,
+      "solve:n=5,external=3,local_outputs=0,owned=0": 4,
+      "solve:n=5,external=2,local_outputs=0,owned=0": 6,
+      "solve:n=5,external=1,local_outputs=0,owned=0": 4,
+      "group:n=5,external=0,local_outputs=0,owned=0": 1,
+      "solve:n=5,external=0,local_outputs=0,owned=0": 1,
+      "group:n=4,external=1,local_outputs=0,owned=0": 1,
+      "solve:n=4,external=3,local_outputs=0,owned=0": 1,
+      "solve:n=4,external=2,local_outputs=0,owned=0": 3,
+      "solve:n=4,external=1,local_outputs=0,owned=0": 3,
+      "group:n=4,external=0,local_outputs=0,owned=0": 1,
+      "solve:n=4,external=0,local_outputs=0,owned=0": 1
+    },
+    "renamed_calls": 1462,
+    "rename_nodes": 980,
+    "independent_splits": 0,
+    "group_prechecks": 10313,
+    "empty_group_skips": 816,
+    "retention_batches_skipped": 816,
+    "solve_cache": {
+      "hits": 273,
+      "misses": 444,
+      "maxsize": null,
+      "currsize": 444
+    },
+    "group_cache": {
+      "hits": 5590,
+      "misses": 278,
+      "maxsize": null,
+      "currsize": 278
+    },
+    "cut_metadata_cache": {
+      "hits": 367,
+      "misses": 19,
+      "maxsize": null,
+      "currsize": 19
+    },
+    "span_classes": null,
+    "remainder": {
+      "calls": 6585,
+      "builds": 851,
+      "classes": 722,
+      "exact_checks": 129,
+      "reused": 129,
+      "match_steps": 142,
+      "seconds": 0.09311432717368007,
+      "aliases": {
+        "hits": 5734,
+        "misses": 851,
+        "maxsize": 4096,
+        "currsize": 851
+      }
+    },
+    "feasibility_metadata_cache": {
+      "hits": 10154,
+      "misses": 159,
+      "maxsize": null,
+      "currsize": 159
+    },
+    "seconds": 0.29736972297541797
+  },
+  "c2_stats": {},
+  "status": "complete",
+  "phase": "finished",
+  "n_ops": 6,
+  "scalar_steps": 32,
+  "extent_cap": 2,
+  "source_sha256": {
+    "dnn_benchmarks/frontends.py": "5fa33267f29e28fd2ff525886f1947648b8fa49f876c14f531282255b03cc561",
+    "dnn_benchmarks/replay.py": "455bb80bb3495b98f626bbfd2b2107ceaf99154206b7838b1b4043ffd904d357",
+    "dnn_benchmarks/c2.py": "b5f0cb5f504cc670431948e6f2904a67b09810f6b235419664821ae14a47e7b0",
+    "dnn_benchmarks/run_islands.py": "972aa8b0f986bd84942e51e96903a09ce3bbe6f09188d8d083da63b6b6a4d4a3",
+    "index_coupling/graph/curve.py": "a0af2842f6b5fbb5028c0affce710f194ad28a8df0002702bb4939b1f9045e49",
+    "index_coupling/graph/remainder.py": "abb659434ccbf677161e556e56fc55186c69eef6638f20b8a9393d4330ffa181",
+    "index_coupling/graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "index_coupling/graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "index_coupling/simulate_nest.py": "7e9983a34b2d4caa249a1c5f435cae7271f20ed5dc599d8fe748f4b1753eeff4"
+  },
+  "python": "3.10.12",
+  "kernel_setup_seconds": 3.5390257835388184e-07,
+  "search_seconds": 0.29737575096078217,
+  "points": [
+    [
+      3,
+      52
+    ],
+    [
+      4,
+      48
+    ],
+    [
+      5,
+      36
+    ],
+    [
+      7,
+      34
+    ],
+    [
+      8,
+      32
+    ],
+    [
+      9,
+      24
+    ]
+  ],
+  "byte_points": [
+    [
+      12,
+      208
+    ],
+    [
+      16,
+      192
+    ],
+    [
+      20,
+      144
+    ],
+    [
+      28,
+      136
+    ],
+    [
+      32,
+      128
+    ],
+    [
+      36,
+      96
+    ]
+  ],
+  "witnesses": [
+    [
+      3,
+      52,
+      [
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul",
+              "encoder_layers_encoder_layer_0_mlp_0_bias",
+              "encoder_layers_encoder_layer_0_mlp_1",
+              "encoder_layers_encoder_layer_0_mlp_3_matmul",
+              "encoder_layers_encoder_layer_0_mlp_3_bias",
+              "add_2"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul",
+            "encoder_layers_encoder_layer_0_mlp_0_bias",
+            "encoder_layers_encoder_layer_0_mlp_1",
+            "encoder_layers_encoder_layer_0_mlp_3_matmul",
+            "encoder_layers_encoder_layer_0_mlp_3_bias",
+            "add_2"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.0.bias",
+            "p_encoder.layers.encoder_layer_0.mlp.0.weight",
+            "p_encoder.layers.encoder_layer_0.mlp.3.bias",
+            "p_encoder.layers.encoder_layer_0.mlp.3.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul",
+              "encoder_layers_encoder_layer_0_mlp_0_bias",
+              "encoder_layers_encoder_layer_0_mlp_1"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul",
+              "encoder_layers_encoder_layer_0_mlp_3_bias",
+              "add_2"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_1"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul",
+            "encoder_layers_encoder_layer_0_mlp_0_bias",
+            "encoder_layers_encoder_layer_0_mlp_1"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_encoder_layers_encoder_layer_0_ln_2"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_bias"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_1"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_0",
+            "n_encoder_layers_encoder_layer_0_mlp_0_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul",
+            "encoder_layers_encoder_layer_0_mlp_3_bias",
+            "add_2"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_bias"
+            ],
+            [
+              "add_2"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_3",
+            "n_encoder_layers_encoder_layer_0_mlp_3_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      4,
+      48,
+      [
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul",
+              "encoder_layers_encoder_layer_0_mlp_0_bias",
+              "encoder_layers_encoder_layer_0_mlp_1"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul",
+              "encoder_layers_encoder_layer_0_mlp_3_bias",
+              "add_2"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_1"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul",
+            "encoder_layers_encoder_layer_0_mlp_0_bias",
+            "encoder_layers_encoder_layer_0_mlp_1"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_encoder_layers_encoder_layer_0_ln_2"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul",
+              "encoder_layers_encoder_layer_0_mlp_0_bias",
+              "encoder_layers_encoder_layer_0_mlp_1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul",
+            "encoder_layers_encoder_layer_0_mlp_0_bias",
+            "encoder_layers_encoder_layer_0_mlp_1"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.0.bias"
+          ],
+          "refetched",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.0.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_bias",
+              "encoder_layers_encoder_layer_0_mlp_1"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_0_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul",
+            "encoder_layers_encoder_layer_0_mlp_3_bias",
+            "add_2"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul",
+              "encoder_layers_encoder_layer_0_mlp_3_bias",
+              "add_2"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul",
+            "encoder_layers_encoder_layer_0_mlp_3_bias",
+            "add_2"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.3.bias"
+          ],
+          "refetched",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.3.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_bias"
+            ],
+            [
+              "add_2"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_3",
+            "n_encoder_layers_encoder_layer_0_mlp_3_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      5,
+      36,
+      [
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul",
+              "encoder_layers_encoder_layer_0_mlp_0_bias",
+              "encoder_layers_encoder_layer_0_mlp_1",
+              "encoder_layers_encoder_layer_0_mlp_3_matmul",
+              "encoder_layers_encoder_layer_0_mlp_3_bias",
+              "add_2"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul",
+            "encoder_layers_encoder_layer_0_mlp_0_bias",
+            "encoder_layers_encoder_layer_0_mlp_1",
+            "encoder_layers_encoder_layer_0_mlp_3_matmul",
+            "encoder_layers_encoder_layer_0_mlp_3_bias",
+            "add_2"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.0.bias",
+            "p_encoder.layers.encoder_layer_0.mlp.0.weight",
+            "p_encoder.layers.encoder_layer_0.mlp.3.bias",
+            "p_encoder.layers.encoder_layer_0.mlp.3.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_bias"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_1"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul",
+              "encoder_layers_encoder_layer_0_mlp_3_bias",
+              "add_2"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_0",
+            "n_encoder_layers_encoder_layer_0_mlp_0_prebias",
+            "n_encoder_layers_encoder_layer_0_mlp_1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_ln_2"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_bias"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul",
+            "encoder_layers_encoder_layer_0_mlp_3_bias",
+            "add_2"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_bias"
+            ],
+            [
+              "add_2"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_3",
+            "n_encoder_layers_encoder_layer_0_mlp_3_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      7,
+      34,
+      [
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul",
+              "encoder_layers_encoder_layer_0_mlp_0_bias",
+              "encoder_layers_encoder_layer_0_mlp_1",
+              "encoder_layers_encoder_layer_0_mlp_3_matmul",
+              "encoder_layers_encoder_layer_0_mlp_3_bias",
+              "add_2"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul",
+            "encoder_layers_encoder_layer_0_mlp_0_bias",
+            "encoder_layers_encoder_layer_0_mlp_1",
+            "encoder_layers_encoder_layer_0_mlp_3_matmul",
+            "encoder_layers_encoder_layer_0_mlp_3_bias",
+            "add_2"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.0.bias"
+          ],
+          "refetched",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.0.weight",
+            "p_encoder.layers.encoder_layer_0.mlp.3.bias",
+            "p_encoder.layers.encoder_layer_0.mlp.3.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_bias"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_1"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul",
+              "encoder_layers_encoder_layer_0_mlp_3_bias",
+              "add_2"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_0",
+            "n_encoder_layers_encoder_layer_0_mlp_0_prebias",
+            "n_encoder_layers_encoder_layer_0_mlp_1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_ln_2"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul",
+            "encoder_layers_encoder_layer_0_mlp_3_bias",
+            "add_2"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_bias"
+            ],
+            [
+              "add_2"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_3",
+            "n_encoder_layers_encoder_layer_0_mlp_3_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      8,
+      32,
+      [
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul",
+              "encoder_layers_encoder_layer_0_mlp_0_bias",
+              "encoder_layers_encoder_layer_0_mlp_1"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul",
+              "encoder_layers_encoder_layer_0_mlp_3_bias",
+              "add_2"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul",
+            "encoder_layers_encoder_layer_0_mlp_0_bias",
+            "encoder_layers_encoder_layer_0_mlp_1"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_encoder_layers_encoder_layer_0_ln_2"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_bias",
+              "encoder_layers_encoder_layer_0_mlp_1"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_0_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.0.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_bias",
+            "encoder_layers_encoder_layer_0_mlp_1"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.0.bias"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul",
+            "encoder_layers_encoder_layer_0_mlp_3_bias",
+            "add_2"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul",
+              "encoder_layers_encoder_layer_0_mlp_3_bias",
+              "add_2"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul",
+            "encoder_layers_encoder_layer_0_mlp_3_bias",
+            "add_2"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.3.bias"
+          ],
+          "refetched",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.3.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_bias"
+            ],
+            [
+              "add_2"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_3",
+            "n_encoder_layers_encoder_layer_0_mlp_3_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      9,
+      24,
+      [
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_bias"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_1"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul",
+              "encoder_layers_encoder_layer_0_mlp_3_bias",
+              "add_2"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_0",
+            "n_encoder_layers_encoder_layer_0_mlp_0_prebias",
+            "n_encoder_layers_encoder_layer_0_mlp_1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_0_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_matmul"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_encoder.layers.encoder_layer_0.mlp.0.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_0_bias"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul",
+            "encoder_layers_encoder_layer_0_mlp_3_bias",
+            "add_2"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_matmul"
+            ],
+            [
+              "encoder_layers_encoder_layer_0_mlp_3_bias"
+            ],
+            [
+              "add_2"
+            ]
+          ],
+          "kept",
+          [
+            "n_encoder_layers_encoder_layer_0_mlp_3",
+            "n_encoder_layers_encoder_layer_0_mlp_3_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "encoder_layers_encoder_layer_0_mlp_3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "add_2"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ]
+  ],
+  "replays": [
+    {
+      "expected": [
+        3,
+        52
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 3,
+        "traffic": 52,
+        "reads": {
+          "n_encoder_layers_encoder_layer_0_ln_2": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.0.weight": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.0.bias": 4,
+          "n_encoder_layers_encoder_layer_0_mlp_1": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.3.weight": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.3.bias": 4,
+          "n_add_1": 4
+        },
+        "writes": {
+          "n_encoder_layers_encoder_layer_0_mlp_1": 4,
+          "n_add_2": 4
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 4,
+        "peak_by_tensor": {
+          "n_encoder_layers_encoder_layer_0_ln_2": 1,
+          "n_encoder_layers_encoder_layer_0_mlp_0_prebias": 1,
+          "p_encoder.layers.encoder_layer_0.mlp.0.weight": 1
+        }
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        4,
+        48
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 4,
+        "traffic": 48,
+        "reads": {
+          "n_encoder_layers_encoder_layer_0_ln_2": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.0.weight": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.0.bias": 2,
+          "n_encoder_layers_encoder_layer_0_mlp_1": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.3.weight": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.3.bias": 2,
+          "n_add_1": 4
+        },
+        "writes": {
+          "n_encoder_layers_encoder_layer_0_mlp_1": 4,
+          "n_add_2": 4
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 4,
+        "peak_by_tensor": {
+          "n_encoder_layers_encoder_layer_0_ln_2": 1,
+          "n_encoder_layers_encoder_layer_0_mlp_0_prebias": 1,
+          "p_encoder.layers.encoder_layer_0.mlp.0.bias": 1,
+          "p_encoder.layers.encoder_layer_0.mlp.0.weight": 1
+        }
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        5,
+        36
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 5,
+        "traffic": 36,
+        "reads": {
+          "n_encoder_layers_encoder_layer_0_ln_2": 4,
+          "p_encoder.layers.encoder_layer_0.mlp.0.weight": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.0.bias": 4,
+          "p_encoder.layers.encoder_layer_0.mlp.3.weight": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.3.bias": 4,
+          "n_add_1": 4
+        },
+        "writes": {
+          "n_add_2": 4
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 4,
+        "peak_by_tensor": {
+          "n_encoder_layers_encoder_layer_0_mlp_0": 2,
+          "n_encoder_layers_encoder_layer_0_mlp_0_prebias": 2,
+          "p_encoder.layers.encoder_layer_0.mlp.0.bias": 1
+        }
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        7,
+        34
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 7,
+        "traffic": 34,
+        "reads": {
+          "n_encoder_layers_encoder_layer_0_ln_2": 4,
+          "p_encoder.layers.encoder_layer_0.mlp.0.weight": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.0.bias": 2,
+          "p_encoder.layers.encoder_layer_0.mlp.3.weight": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.3.bias": 4,
+          "n_add_1": 4
+        },
+        "writes": {
+          "n_add_2": 4
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 4,
+        "peak_by_tensor": {
+          "n_encoder_layers_encoder_layer_0_mlp_1": 2,
+          "n_encoder_layers_encoder_layer_0_mlp_3": 1,
+          "n_encoder_layers_encoder_layer_0_mlp_3_prebias": 1,
+          "p_encoder.layers.encoder_layer_0.mlp.0.bias": 2,
+          "p_encoder.layers.encoder_layer_0.mlp.3.bias": 1
+        }
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        8,
+        32
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 8,
+        "traffic": 32,
+        "reads": {
+          "n_encoder_layers_encoder_layer_0_ln_2": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.0.weight": 4,
+          "p_encoder.layers.encoder_layer_0.mlp.0.bias": 2,
+          "p_encoder.layers.encoder_layer_0.mlp.3.weight": 8,
+          "p_encoder.layers.encoder_layer_0.mlp.3.bias": 2,
+          "n_add_1": 4
+        },
+        "writes": {
+          "n_add_2": 4
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 4,
+        "peak_by_tensor": {
+          "n_encoder_layers_encoder_layer_0_ln_2": 1,
+          "n_encoder_layers_encoder_layer_0_mlp_0_prebias": 2,
+          "n_encoder_layers_encoder_layer_0_mlp_1": 4,
+          "p_encoder.layers.encoder_layer_0.mlp.0.weight": 1
+        }
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        9,
+        24
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 9,
+        "traffic": 24,
+        "reads": {
+          "n_encoder_layers_encoder_layer_0_ln_2": 4,
+          "p_encoder.layers.encoder_layer_0.mlp.0.weight": 4,
+          "p_encoder.layers.encoder_layer_0.mlp.0.bias": 2,
+          "p_encoder.layers.encoder_layer_0.mlp.3.weight": 4,
+          "p_encoder.layers.encoder_layer_0.mlp.3.bias": 2,
+          "n_add_1": 4
+        },
+        "writes": {
+          "n_add_2": 4
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 4,
+        "peak_by_tensor": {
+          "n_encoder_layers_encoder_layer_0_mlp_0": 4,
+          "n_encoder_layers_encoder_layer_0_mlp_0_prebias": 4,
+          "p_encoder.layers.encoder_layer_0.mlp.0.bias": 1
+        }
+      },
+      "exact": true
+    }
+  ],
+  "seconds": 0.30911717703565955,
+  "peak_rss_bytes": 24576000
+}

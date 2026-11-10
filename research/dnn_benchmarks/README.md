@@ -27,7 +27,7 @@ MultiheadAttention remain barriers. Softmax is not replaced with a copy.
 | Model | Parameters | FX nodes | Computational FX nodes | Barrier nodes | Longest admitted contiguous island |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | ResNet-50 | 25,557,032 | 177 | 175 | 23 | 11 |
-| U-Net 2015 | 31,030,658 | see inventory | 53 | 34 | 2 |
+| U-Net 2015 | 31,030,658 | 127 | 53 | 34 | 2 |
 | ViT-B/16 | 86,567,656 | 236 | 117 | 55 | 4 |
 
 FX computational counts depend on leaf-module granularity: an opaque attention
@@ -93,3 +93,17 @@ Preparation currently consumes the committed `results/fx_inventory` corpus.
 It records source/inventory hashes and refuses source mismatch. New attempts
 use new output directories. Frozen failures and unreplayed cases remain visible.
 Hardware evaluation requirements and backend choice: [EVALUATION.md](EVALUATION.md).
+The completed first study, including timeouts and unreplayed original shapes,
+is reported in [RESULTS.md](RESULTS.md).
+
+## Pinned simulator source
+
+PyTorchSim is a Git submodule at `vendor/PyTorchSim`; its exact upstream commit
+is recorded in the parent gitlink and `backend_lock.json`. Initialize it with
+`git submodule update --init research/dnn_benchmarks/vendor/PyTorchSim`.
+Adapters, configurations, source/image digests, and small result records belong
+in this repository. Container layers, compiler caches, and large runtime builds
+remain outside Git. `pull_pytorchsim.py` verifies the public OCI image blobs;
+`--download-only` permits direct download on a different machine before copying
+the verified layout to the execution host. The image source and binary identity
+must still be checked before claiming a run uses the pinned source revision.

@@ -10,6 +10,19 @@ from .replay import replay,evaluate
 
 
 class FrontendTests(unittest.TestCase):
+    def test_pointwise_formulas_against_native_torch(self):
+        import torch
+        for x in (-3.,-.5,0.,2.):
+            value=torch.tensor(x,dtype=torch.float64)
+            for approximate in ('none','tanh'):
+                expected=torch.nn.functional.gelu(value,approximate=approximate).item()
+                self.assertAlmostEqual(evaluate('gelu',[x],dict(approximate=approximate)),expected,places=12)
+            self.assertEqual(evaluate('relu',[x],{}),torch.relu(value).item())
+            expected=torch.nn.functional.batch_norm(value.reshape(1,1,1,1),
+                torch.tensor([1.],dtype=torch.float64),torch.tensor([3.],dtype=torch.float64),
+                torch.tensor([2.],dtype=torch.float64),torch.tensor([4.],dtype=torch.float64),eps=1e-5).item()
+            self.assertAlmostEqual(evaluate('batchnorm_eval',[x,1.,3.,2.,4.],dict(eps=1e-5)),expected,places=12)
+
     def test_linear_preserves_distinct_equal_size_indices_and_native_values(self):
         inventory=dict(model='fixture',nodes=[
             dict(name='x',output=dict(shape=[2,3])),

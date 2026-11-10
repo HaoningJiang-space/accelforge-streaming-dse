@@ -23,11 +23,15 @@ UMOCI_SHA='b51c267ec394499e42c6fde47f240b7b7dba57ea49df0b5acd304378b82a3b71'
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--root',type=Path,required=True)
-    p.add_argument('--umoci',type=Path,required=True)
+    p.add_argument('--umoci',type=Path)
+    p.add_argument('--download-only',action='store_true',help='prepare verified OCI layout without extraction')
     args=p.parse_args();root=args.root.resolve();root.mkdir(parents=True,exist_ok=True)
     if (root/'bundle').exists():raise FileExistsError('preserve existing runtime bundle')
-    assert hashlib.sha256(args.umoci.read_bytes()).hexdigest()==UMOCI_SHA
-    assert shutil.disk_usage(root).free>80*2**30,'need 80 GiB free for compressed image and runtime'
+    if not args.download_only:
+        if args.umoci is None:p.error('--umoci is required for extraction')
+        assert hashlib.sha256(args.umoci.read_bytes()).hexdigest()==UMOCI_SHA
+    needed=12 if args.download_only else 80
+    assert shutil.disk_usage(root).free>needed*2**30,f'need {needed} GiB free'
     layout=root/'oci';blobs=layout/'blobs/sha256';blobs.mkdir(parents=True,exist_ok=True)
     opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
@@ -69,6 +73,9 @@ def main():
     (layout/'index.json').write_text(json.dumps(index,indent=2)+'\n')
     config=json.loads((blobs/manifest['config']['digest'].split(':')[1]).read_text())
     (root/'image_config.json').write_text(json.dumps(config,indent=2)+'\n')
+    if args.download_only:
+        (root/'downloaded.json').write_text(json.dumps(dict(image_manifest=MANIFEST,status='verified OCI layout'),indent=2)+'\n')
+        return
     subprocess.run([str(args.umoci.resolve()),'unpack','--rootless','--image',str(layout)+':pilot',str(root/'bundle')],check=True)
     (root/'ready.json').write_text(json.dumps(dict(image_manifest=MANIFEST,umoci_sha256=UMOCI_SHA,status='unpacked'),indent=2)+'\n')
 
