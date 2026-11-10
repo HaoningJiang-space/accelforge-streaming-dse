@@ -1,0 +1,214 @@
+{
+  "scope": "Post-hoc constructive control, not a held-out prediction",
+  "grammar": "v2",
+  "tile_domain": "halving",
+  "shape": {
+    "M": 4,
+    "D": 1,
+    "F": 4
+  },
+  "common_start": {
+    "stage": "group",
+    "ops": [
+      "E"
+    ],
+    "ext": {
+      "M": 4,
+      "D": 1,
+      "F": 4
+    },
+    "external": [],
+    "owned": []
+  },
+  "common_end": {
+    "stage": "solve",
+    "ops": [
+      "E"
+    ],
+    "ext": {
+      "M": 1,
+      "D": 1,
+      "F": 1
+    },
+    "external": [
+      "W",
+      "X"
+    ],
+    "owned": []
+  },
+  "suffix_capacity": 1,
+  "suffix_extra_traffic": 0,
+  "compulsory_traffic": 24,
+  "root_frontier": [
+    [
+      3,
+      36
+    ],
+    [
+      4,
+      28
+    ],
+    [
+      6,
+      24
+    ]
+  ],
+  "plans": [
+    {
+      "name": "retain_W_early",
+      "prefix_label": [
+        5,
+        0,
+        16
+      ],
+      "witness": [
+        [
+          "groups",
+          [
+            [
+              "E"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E"
+          ],
+          "M",
+          "tile 1 x4",
+          "kept",
+          [
+            "W"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E"
+          ],
+          "F",
+          "tile 1 x4",
+          "kept",
+          [
+            "X"
+          ],
+          "refetched",
+          []
+        ]
+      ],
+      "peak": 6,
+      "total_traffic": 24,
+      "valid": true
+    },
+    {
+      "name": "retain_W_late",
+      "prefix_label": [
+        3,
+        4,
+        16
+      ],
+      "witness": [
+        [
+          "groups",
+          [
+            [
+              "E"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E"
+          ],
+          "M",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "W"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "E"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E"
+          ],
+          "F",
+          "tile 1 x4",
+          "kept",
+          [
+            "X"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E"
+          ],
+          "M",
+          "tile 1 x2",
+          "kept",
+          [
+            "W"
+          ],
+          "refetched",
+          []
+        ]
+      ],
+      "peak": 4,
+      "total_traffic": 28,
+      "valid": true
+    }
+  ]
+}

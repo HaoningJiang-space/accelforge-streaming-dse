@@ -1,0 +1,407 @@
+{
+  "case": "ffn_training_l1",
+  "protocol_commit": "3628f51d",
+  "source_sha256": {
+    "graph/curve.py": "a0af2842f6b5fbb5028c0affce710f194ad28a8df0002702bb4939b1f9045e49",
+    "c2_bound_audit.py": "e1dec770257092cb006c23a5ac14977c08fe6840b07693532e591df5e0d04b09",
+    "census_tools.py": "9b505194fc7116033c1f37013b3fc1e8814a8377b6eb301e29d936244bee0581",
+    "simulate_nest.py": "7e9983a34b2d4caa249a1c5f435cae7271f20ed5dc599d8fe748f4b1753eeff4",
+    "prefix_dominance_audit.py": "6cc8dc350c0af49b19bf2e416d0cf3a0cf5b1b2681d8620dd4bd14896af9a5fd",
+    "PREFIX_DOMINANCE_PROTOCOL.md": "dfbc2f11d9059d4d54e15cecb7206d2a1631ed61facbaaaa73ff25d894284a7a"
+  },
+  "archive_sha256": "e1dfc99632373c2660cb3c166237156228024d94890fe7baa2940fc8d26a28c3",
+  "census": {
+    "original_states": 17225,
+    "original_loop_choices": 20881,
+    "zero_cost_bridges": 7903,
+    "counts": {
+      "buckets": 33798,
+      "convergent_buckets": 12652,
+      "distinct_labels": 42306,
+      "pareto_labels": 33798,
+      "incomparable_buckets": 0,
+      "paths": 46450,
+      "kept": 33798,
+      "one_loop": 20881,
+      "expanded_point_instances": 76636,
+      "remaining_expanded_point_instances": 57484,
+      "two_loops": 25569,
+      "duplicate_survivor": 4144,
+      "envelopes_checked": 12652,
+      "strictly_dominated": 8508
+    },
+    "strata": {
+      "single_op": {
+        "paths": 1597,
+        "kept": 1209,
+        "duplicate_survivor": 230,
+        "strictly_dominated": 158
+      },
+      "direct": {
+        "paths": 20881,
+        "kept": 20881
+      },
+      "single_op:direct": {
+        "paths": 727,
+        "kept": 727
+      },
+      "distinct_axes": {
+        "paths": 25569,
+        "kept": 12917,
+        "duplicate_survivor": 4144,
+        "strictly_dominated": 8508
+      },
+      "single_op:distinct_axes": {
+        "paths": 870,
+        "kept": 482,
+        "duplicate_survivor": 230,
+        "strictly_dominated": 158
+      },
+      "multi_op": {
+        "paths": 44853,
+        "kept": 32589,
+        "duplicate_survivor": 3914,
+        "strictly_dominated": 8350
+      },
+      "multi_op:direct": {
+        "paths": 20154,
+        "kept": 20154
+      },
+      "multi_op:distinct_axes": {
+        "paths": 24699,
+        "kept": 12435,
+        "duplicate_survivor": 3914,
+        "strictly_dominated": 8350
+      }
+    },
+    "examples": {
+      "single_op:distinct_axes": {
+        "start": {
+          "stage": "group",
+          "ops": [
+            "EH0"
+          ],
+          "ext": [
+            2,
+            1,
+            2,
+            2
+          ],
+          "external": [
+            "H0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        "end": {
+          "stage": "solve",
+          "ops": [
+            "EH0"
+          ],
+          "ext": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "external": [
+            "H0",
+            "X0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        "dominated_label": [
+          4,
+          4,
+          4
+        ],
+        "surviving_label": [
+          2,
+          4,
+          4
+        ],
+        "dominated_steps": [
+          {
+            "id": 28,
+            "parent": 33,
+            "child": 19,
+            "axis": "F0",
+            "tile": 1,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 4,
+            "d": 0,
+            "r": 2
+          },
+          {
+            "id": 19,
+            "parent": 20,
+            "child": 21,
+            "axis": "M",
+            "tile": 1,
+            "kept": [],
+            "refetched": [
+              "W1_0"
+            ],
+            "a": 0,
+            "d": 2,
+            "r": 2
+          }
+        ],
+        "surviving_steps": [
+          {
+            "id": 31,
+            "parent": 33,
+            "child": 41,
+            "axis": "M",
+            "tile": 1,
+            "kept": [],
+            "refetched": [
+              "W1_0"
+            ],
+            "a": 0,
+            "d": 4,
+            "r": 2
+          },
+          {
+            "id": 39,
+            "parent": 42,
+            "child": 21,
+            "axis": "F0",
+            "tile": 1,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 2,
+            "d": 0,
+            "r": 2
+          }
+        ]
+      },
+      "multi_op:distinct_axes": {
+        "start": {
+          "stage": "group",
+          "ops": [
+            "EH0",
+            "EZ0"
+          ],
+          "ext": [
+            2,
+            1,
+            2,
+            2
+          ],
+          "external": [
+            "H0",
+            "W1_0"
+          ],
+          "owned": [
+            "Z0"
+          ],
+          "constrained": false
+        },
+        "end": {
+          "stage": "solve",
+          "ops": [
+            "EH0",
+            "EZ0"
+          ],
+          "ext": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "external": [
+            "H0",
+            "W1_0",
+            "X0"
+          ],
+          "owned": [
+            "Z0"
+          ],
+          "constrained": false
+        },
+        "dominated_label": [
+          4,
+          0,
+          4
+        ],
+        "surviving_label": [
+          2,
+          0,
+          4
+        ],
+        "dominated_steps": [
+          {
+            "id": 154,
+            "parent": 152,
+            "child": 128,
+            "axis": "F0",
+            "tile": 1,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 4,
+            "d": 0,
+            "r": 2
+          },
+          {
+            "id": 144,
+            "parent": 130,
+            "child": 131,
+            "axis": "M",
+            "tile": 1,
+            "kept": [],
+            "refetched": [],
+            "a": 0,
+            "d": 0,
+            "r": 2
+          }
+        ],
+        "surviving_steps": [
+          {
+            "id": 156,
+            "parent": 152,
+            "child": 157,
+            "axis": "M",
+            "tile": 1,
+            "kept": [],
+            "refetched": [],
+            "a": 0,
+            "d": 0,
+            "r": 2
+          },
+          {
+            "id": 158,
+            "parent": 158,
+            "child": 131,
+            "axis": "F0",
+            "tile": 1,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 2,
+            "d": 0,
+            "r": 2
+          }
+        ]
+      }
+    },
+    "post_hoc_parent_candidate_attribution": {
+      "strict_expanded_points": 13062,
+      "already_filtered_by_intermediate": 11163,
+      "surviving_intermediate_path_instances": 1899,
+      "unique_actual_parent_candidates": 1862,
+      "original_group_candidates": 38061,
+      "original_all_pareto_candidates": 1982551
+    },
+    "actual_online_edges_removed": 0,
+    "actual_saved_cache_misses": 0,
+    "work_note": "Expanded point instances are hypothetical two-step expansion work, not original solver counters."
+  },
+  "witness_control": {
+    "root_points": 13,
+    "replays": [
+      {
+        "capacity": 3,
+        "traffic": 120,
+        "selected_states": 21,
+        "exact": true
+      },
+      {
+        "capacity": 4,
+        "traffic": 96,
+        "selected_states": 28,
+        "exact": true
+      },
+      {
+        "capacity": 5,
+        "traffic": 88,
+        "selected_states": 29,
+        "exact": true
+      },
+      {
+        "capacity": 6,
+        "traffic": 80,
+        "selected_states": 25,
+        "exact": true
+      },
+      {
+        "capacity": 7,
+        "traffic": 68,
+        "selected_states": 28,
+        "exact": true
+      },
+      {
+        "capacity": 8,
+        "traffic": 64,
+        "selected_states": 28,
+        "exact": true
+      },
+      {
+        "capacity": 9,
+        "traffic": 56,
+        "selected_states": 31,
+        "exact": true
+      },
+      {
+        "capacity": 11,
+        "traffic": 52,
+        "selected_states": 23,
+        "exact": true
+      },
+      {
+        "capacity": 12,
+        "traffic": 48,
+        "selected_states": 23,
+        "exact": true
+      },
+      {
+        "capacity": 13,
+        "traffic": 44,
+        "selected_states": 25,
+        "exact": true
+      },
+      {
+        "capacity": 17,
+        "traffic": 40,
+        "selected_states": 25,
+        "exact": true
+      },
+      {
+        "capacity": 21,
+        "traffic": 36,
+        "selected_states": 20,
+        "exact": true
+      },
+      {
+        "capacity": 24,
+        "traffic": 32,
+        "selected_states": 12,
+        "exact": true
+      }
+    ],
+    "union_states": 174,
+    "total_states": 17225,
+    "original_work_on_union": {
+      "dp_transitions": 3792,
+      "loop_choices": 325,
+      "pareto_candidates": 46359,
+      "merge_inputs": 18715
+    },
+    "original_work_fraction": {
+      "dp_transitions": 0.00657210598560792,
+      "loop_choices": 0.015564388678703127,
+      "pareto_candidates": 0.023383509428004625,
+      "merge_inputs": 0.014557269222751499
+    },
+    "note": "Original exclusive work on chosen-witness states; not minimum mapping-generation work or an achievable pruning rate."
+  }
+}

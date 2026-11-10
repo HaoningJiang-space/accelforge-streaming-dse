@@ -1,0 +1,645 @@
+{
+  "case": "ffn_forward_l1_m8",
+  "protocol_commit": "3628f51d",
+  "pythonhashseed": "0",
+  "source_sha256": {
+    "graph/curve.py": "a0af2842f6b5fbb5028c0affce710f194ad28a8df0002702bb4939b1f9045e49",
+    "c2_bound_audit.py": "e1dec770257092cb006c23a5ac14977c08fe6840b07693532e591df5e0d04b09",
+    "census_tools.py": "9b505194fc7116033c1f37013b3fc1e8814a8377b6eb301e29d936244bee0581",
+    "simulate_nest.py": "7e9983a34b2d4caa249a1c5f435cae7271f20ed5dc599d8fe748f4b1753eeff4",
+    "prefix_dominance_audit.py": "03f5853d90f5db29a90dee6b319bbf89d17f85048714916a98fbabbd4fbbc31c",
+    "PREFIX_DOMINANCE_PROTOCOL.md": "dfbc2f11d9059d4d54e15cecb7206d2a1631ed61facbaaaa73ff25d894284a7a"
+  },
+  "archive_sha256": "6541e20f8af0fe269e116356c83c3b029fa0caae704593a9f9031f44d5e2b11f",
+  "census": {
+    "original_states": 2108,
+    "original_loop_choices": 5578,
+    "zero_cost_bridges": 969,
+    "counts": {
+      "buckets": 14842,
+      "convergent_buckets": 10800,
+      "distinct_labels": 21423,
+      "pareto_labels": 14842,
+      "incomparable_buckets": 0,
+      "paths": 27730,
+      "kept": 14842,
+      "one_loop": 5578,
+      "expanded_point_instances": 40652,
+      "remaining_expanded_point_instances": 21827,
+      "two_loops": 22152,
+      "strictly_dominated": 6646,
+      "duplicate_survivor": 6242,
+      "envelopes_checked": 10800
+    },
+    "strata": {
+      "single_op": {
+        "paths": 19188,
+        "kept": 10567,
+        "strictly_dominated": 4092,
+        "duplicate_survivor": 4529
+      },
+      "direct": {
+        "paths": 5578,
+        "kept": 3254,
+        "duplicate_survivor": 2324
+      },
+      "single_op:direct": {
+        "paths": 3724,
+        "kept": 2234,
+        "duplicate_survivor": 1490
+      },
+      "same_axis": {
+        "paths": 4554,
+        "kept": 2324,
+        "strictly_dominated": 1652,
+        "duplicate_survivor": 578
+      },
+      "single_op:same_axis": {
+        "paths": 2708,
+        "kept": 1490,
+        "strictly_dominated": 856,
+        "duplicate_survivor": 362
+      },
+      "distinct_axes": {
+        "paths": 17598,
+        "kept": 9264,
+        "duplicate_survivor": 3340,
+        "strictly_dominated": 4994
+      },
+      "single_op:distinct_axes": {
+        "paths": 12756,
+        "kept": 6843,
+        "duplicate_survivor": 2677,
+        "strictly_dominated": 3236
+      },
+      "multi_op": {
+        "paths": 8542,
+        "kept": 4275,
+        "strictly_dominated": 2554,
+        "duplicate_survivor": 1713
+      },
+      "multi_op:direct": {
+        "paths": 1854,
+        "kept": 1020,
+        "duplicate_survivor": 834
+      },
+      "multi_op:same_axis": {
+        "paths": 1846,
+        "kept": 834,
+        "strictly_dominated": 796,
+        "duplicate_survivor": 216
+      },
+      "multi_op:distinct_axes": {
+        "paths": 4842,
+        "kept": 2421,
+        "duplicate_survivor": 663,
+        "strictly_dominated": 1758
+      }
+    },
+    "examples": {
+      "single_op:same_axis": {
+        "start": {
+          "stage": "group",
+          "ops": [
+            "EH0"
+          ],
+          "ext": [
+            4,
+            1,
+            8,
+            8
+          ],
+          "external": [
+            "H0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        "end": {
+          "stage": "solve",
+          "ops": [
+            "EH0"
+          ],
+          "ext": [
+            4,
+            1,
+            2,
+            8
+          ],
+          "external": [
+            "H0",
+            "X0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        "dominated_label": [
+          32,
+          32,
+          4
+        ],
+        "surviving_label": [
+          32,
+          0,
+          4
+        ],
+        "dominated_steps": [
+          {
+            "id": 1,
+            "parent": 1,
+            "child": 94,
+            "axis": "F0",
+            "tile": 4,
+            "kept": [],
+            "refetched": [
+              "X0"
+            ],
+            "a": 0,
+            "d": 32,
+            "r": 2
+          },
+          {
+            "id": 182,
+            "parent": 95,
+            "child": 4,
+            "axis": "F0",
+            "tile": 2,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 32,
+            "d": 0,
+            "r": 2
+          }
+        ],
+        "surviving_steps": [
+          {
+            "id": 0,
+            "parent": 1,
+            "child": 2,
+            "axis": "F0",
+            "tile": 4,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 32,
+            "d": 0,
+            "r": 2
+          },
+          {
+            "id": 14,
+            "parent": 3,
+            "child": 4,
+            "axis": "F0",
+            "tile": 2,
+            "kept": [],
+            "refetched": [],
+            "a": 0,
+            "d": 0,
+            "r": 2
+          }
+        ]
+      },
+      "single_op:distinct_axes": {
+        "start": {
+          "stage": "group",
+          "ops": [
+            "EH0"
+          ],
+          "ext": [
+            4,
+            1,
+            8,
+            8
+          ],
+          "external": [
+            "H0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        "end": {
+          "stage": "solve",
+          "ops": [
+            "EH0"
+          ],
+          "ext": [
+            4,
+            1,
+            4,
+            4
+          ],
+          "external": [
+            "H0",
+            "X0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        "dominated_label": [
+          32,
+          32,
+          4
+        ],
+        "surviving_label": [
+          16,
+          32,
+          4
+        ],
+        "dominated_steps": [
+          {
+            "id": 0,
+            "parent": 1,
+            "child": 2,
+            "axis": "F0",
+            "tile": 4,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 32,
+            "d": 0,
+            "r": 2
+          },
+          {
+            "id": 17,
+            "parent": 3,
+            "child": 64,
+            "axis": "M",
+            "tile": 4,
+            "kept": [],
+            "refetched": [
+              "W1_0"
+            ],
+            "a": 0,
+            "d": 16,
+            "r": 2
+          }
+        ],
+        "surviving_steps": [
+          {
+            "id": 7,
+            "parent": 1,
+            "child": 235,
+            "axis": "M",
+            "tile": 4,
+            "kept": [],
+            "refetched": [
+              "W1_0"
+            ],
+            "a": 0,
+            "d": 32,
+            "r": 2
+          },
+          {
+            "id": 566,
+            "parent": 236,
+            "child": 64,
+            "axis": "F0",
+            "tile": 4,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 16,
+            "d": 0,
+            "r": 2
+          }
+        ]
+      },
+      "multi_op:same_axis": {
+        "start": {
+          "stage": "group",
+          "ops": [
+            "EH0",
+            "EZ0"
+          ],
+          "ext": [
+            4,
+            1,
+            8,
+            8
+          ],
+          "external": [
+            "Z0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        "end": {
+          "stage": "solve",
+          "ops": [
+            "EH0",
+            "EZ0"
+          ],
+          "ext": [
+            4,
+            1,
+            2,
+            8
+          ],
+          "external": [
+            "X0",
+            "Z0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        "dominated_label": [
+          32,
+          32,
+          4
+        ],
+        "surviving_label": [
+          32,
+          0,
+          4
+        ],
+        "dominated_steps": [
+          {
+            "id": 1991,
+            "parent": 712,
+            "child": 799,
+            "axis": "F0",
+            "tile": 4,
+            "kept": [],
+            "refetched": [
+              "X0"
+            ],
+            "a": 0,
+            "d": 32,
+            "r": 2
+          },
+          {
+            "id": 2098,
+            "parent": 800,
+            "child": 715,
+            "axis": "F0",
+            "tile": 2,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 32,
+            "d": 0,
+            "r": 2
+          }
+        ],
+        "surviving_steps": [
+          {
+            "id": 1990,
+            "parent": 712,
+            "child": 713,
+            "axis": "F0",
+            "tile": 4,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 32,
+            "d": 0,
+            "r": 2
+          },
+          {
+            "id": 2002,
+            "parent": 714,
+            "child": 715,
+            "axis": "F0",
+            "tile": 2,
+            "kept": [],
+            "refetched": [],
+            "a": 0,
+            "d": 0,
+            "r": 2
+          }
+        ]
+      },
+      "multi_op:distinct_axes": {
+        "start": {
+          "stage": "group",
+          "ops": [
+            "EH0",
+            "EZ0"
+          ],
+          "ext": [
+            4,
+            1,
+            8,
+            8
+          ],
+          "external": [
+            "Z0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        "end": {
+          "stage": "solve",
+          "ops": [
+            "EH0",
+            "EZ0"
+          ],
+          "ext": [
+            4,
+            1,
+            4,
+            4
+          ],
+          "external": [
+            "X0",
+            "Z0"
+          ],
+          "owned": [],
+          "constrained": false
+        },
+        "dominated_label": [
+          32,
+          32,
+          4
+        ],
+        "surviving_label": [
+          16,
+          32,
+          4
+        ],
+        "dominated_steps": [
+          {
+            "id": 1990,
+            "parent": 712,
+            "child": 713,
+            "axis": "F0",
+            "tile": 4,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 32,
+            "d": 0,
+            "r": 2
+          },
+          {
+            "id": 2005,
+            "parent": 714,
+            "child": 789,
+            "axis": "M",
+            "tile": 4,
+            "kept": [],
+            "refetched": [
+              "W1_0"
+            ],
+            "a": 0,
+            "d": 16,
+            "r": 2
+          }
+        ],
+        "surviving_steps": [
+          {
+            "id": 1997,
+            "parent": 712,
+            "child": 855,
+            "axis": "M",
+            "tile": 4,
+            "kept": [],
+            "refetched": [
+              "W1_0"
+            ],
+            "a": 0,
+            "d": 32,
+            "r": 2
+          },
+          {
+            "id": 2218,
+            "parent": 856,
+            "child": 789,
+            "axis": "F0",
+            "tile": 4,
+            "kept": [
+              "X0"
+            ],
+            "refetched": [],
+            "a": 16,
+            "d": 0,
+            "r": 2
+          }
+        ]
+      }
+    },
+    "post_hoc_parent_candidate_attribution": {
+      "strict_expanded_points": 9446,
+      "already_filtered_by_intermediate": 6032,
+      "surviving_intermediate_path_instances": 3414,
+      "unique_actual_parent_candidates": 2136,
+      "original_group_candidates": 9546,
+      "original_all_pareto_candidates": 30687
+    },
+    "actual_online_edges_removed": 0,
+    "actual_saved_cache_misses": 0,
+    "work_note": "Expanded point instances are hypothetical two-step expansion work, not original solver counters."
+  },
+  "witness_control": {
+    "root_points": 14,
+    "replays": [
+      {
+        "capacity": 3,
+        "traffic": 1120,
+        "selected_states": 28,
+        "exact": true
+      },
+      {
+        "capacity": 4,
+        "traffic": 864,
+        "selected_states": 24,
+        "exact": true
+      },
+      {
+        "capacity": 6,
+        "traffic": 704,
+        "selected_states": 28,
+        "exact": true
+      },
+      {
+        "capacity": 7,
+        "traffic": 608,
+        "selected_states": 29,
+        "exact": true
+      },
+      {
+        "capacity": 10,
+        "traffic": 576,
+        "selected_states": 22,
+        "exact": true
+      },
+      {
+        "capacity": 11,
+        "traffic": 448,
+        "selected_states": 27,
+        "exact": true
+      },
+      {
+        "capacity": 15,
+        "traffic": 416,
+        "selected_states": 22,
+        "exact": true
+      },
+      {
+        "capacity": 19,
+        "traffic": 352,
+        "selected_states": 24,
+        "exact": true
+      },
+      {
+        "capacity": 20,
+        "traffic": 320,
+        "selected_states": 20,
+        "exact": true
+      },
+      {
+        "capacity": 29,
+        "traffic": 288,
+        "selected_states": 21,
+        "exact": true
+      },
+      {
+        "capacity": 37,
+        "traffic": 224,
+        "selected_states": 21,
+        "exact": true
+      },
+      {
+        "capacity": 40,
+        "traffic": 192,
+        "selected_states": 18,
+        "exact": true
+      },
+      {
+        "capacity": 69,
+        "traffic": 160,
+        "selected_states": 17,
+        "exact": true
+      },
+      {
+        "capacity": 74,
+        "traffic": 128,
+        "selected_states": 13,
+        "exact": true
+      }
+    ],
+    "union_states": 214,
+    "total_states": 2108,
+    "original_work_on_union": {
+      "dp_transitions": 546,
+      "loop_choices": 625,
+      "pareto_candidates": 5438,
+      "merge_inputs": 2107
+    },
+    "original_work_fraction": {
+      "dp_transitions": 0.14482758620689656,
+      "loop_choices": 0.11204732879168161,
+      "pareto_candidates": 0.17720858995665917,
+      "merge_inputs": 0.1791514327013009
+    },
+    "note": "Original exclusive work on chosen-witness states; not minimum mapping-generation work or an achievable pruning rate."
+  }
+}
