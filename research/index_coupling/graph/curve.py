@@ -85,12 +85,25 @@ def combine_max_sum(a, b, max_capacity=float('inf'), grid=None):
 
 def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_through=True,
           written=frozenset(), split_shared=True, spill_cost=2, *,
-          external=frozenset(), entry='solve', root_groups=None, root_kept=None):
+          external=frozenset(), entry='solve', root_groups=None, root_kept=None,
+          whole_span_cuts=None):
     # Conditional interface: external tensors are resident, and their allocation
     # and compulsory transfers belong to the caller. entry='group' queries the
     # exact child interface used by a sibling partition. Root constraints apply
     # only once; recursive children retain the original grammar.
     external = frozenset(external)
+    # P21d: constrain the first nontrivial whole-span partition, including
+    # after outer loops. Proper child spans retain the original grammar.
+    # None leaves all existing calls unchanged; an empty set forbids splitting
+    # this span but still allows whole-span loops and scalar leaves.
+    allowed_mask = None
+    if whole_span_cuts is not None:
+        if entry != 'solve' or root_groups is not None:
+            raise ValueError('whole_span_cuts requires solve entry and no fixed root_groups')
+        whole_span_cuts = frozenset(whole_span_cuts)
+        if any(not isinstance(k, int) or not 1 <= k < len(graph.ops) for k in whole_span_cuts):
+            raise ValueError('cut positions must be internal integer boundaries')
+        allowed_mask = sum(1 << (k-1) for k in whole_span_cuts)
     if entry not in ('solve', 'group'):
         raise ValueError("entry must be 'solve' or 'group'")
     if root_groups is not None:
@@ -150,6 +163,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         n = len(ops)
         masks = (0,) if constrained else range(1 << (n - 1))
         for mask in masks:
+            if allowed_mask is not None and ops == graph.ops and mask & ~allowed_mask:
+                continue
             groups, start = [], 0
             for i in range(n - 1):
                 if mask >> i & 1:
