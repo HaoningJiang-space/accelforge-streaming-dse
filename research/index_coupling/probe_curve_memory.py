@@ -39,14 +39,14 @@ def audit_cache(maxsize=None):
             return functools.lru_cache(maxsize=maxsize)(fn)
         s = stats[name] = dict(rows=0, states_with_irrelevant_external=0,
             irrelevant_external_members=0, max_frontier=0, calls_started=0)
-        def compute(ops, ext, external):
+        def compute(ops, ext, external, *rest):
             global last
             s["calls_started"] += 1
             irrelevant = external - meta[ops][0]
             if irrelevant:
                 s["states_with_irrelevant_external"] += 1
                 s["irrelevant_external_members"] += len(irrelevant)
-            value = fn(ops, ext, external)
+            value = fn(ops, ext, external, *rest)
             s["rows"] += len(value)
             s["max_frontier"] = max(s["max_frontier"], len(value))
             now = time.monotonic()
@@ -56,12 +56,12 @@ def audit_cache(maxsize=None):
             return value
         cached = functools.lru_cache(maxsize=maxsize)(compute)
         caches[name] = cached
-        def call(ops, ext, external):
+        def call(ops, ext, external, *rest):
             if mode in ("project_external", "project_both"):
                 external = external & meta[ops][0]
             if mode == "project_both":
                 ext = tuple(x if v in meta[ops][1] else 1 for v,x in zip(names,ext))
-            return cached(ops, ext, external)
+            return cached(ops, ext, external, *rest)
         return call
     return decorate
 original_pareto = cm.pareto

@@ -12,7 +12,10 @@ be left out of the buffer and pay DRAM traffic:
   a graph input is read once per group.
 - Loops may be split by powers of two; inner levels see the tile extent.
 - written: intermediates whose single DRAM write the caller charges; passing
-  them via DRAM then costs only the reads.
+  them via DRAM then costs only the reads. A partition that sends an intermediate
+  through DRAM owns its one final write and passes it down as written, so nested
+  partitions dropping the same tensor charge only reads (legacy_nested_writes=True
+  restores the earlier double charge, for reproducing archived results).
 - spill_cost: DRAM transfers per element for a partial sum spilled between trips
   (2 = write and read back; 1 models accumulate-in-place at DRAM).
 - split_shared=False forbids a multi-consumer intermediate from going via DRAM.
@@ -86,7 +89,7 @@ def combine_max_sum(a, b, max_capacity=float('inf'), grid=None):
 def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_through=True,
           written=frozenset(), split_shared=True, spill_cost=2, *,
           external=frozenset(), entry='solve', root_groups=None, root_kept=None,
-          whole_span_cuts=None):
+          whole_span_cuts=None, legacy_nested_writes=False):
     # Conditional interface: external tensors are resident, and their allocation
     # and compulsory transfers belong to the caller. entry='group' queries the
     # exact child interface used by a sibling partition. Root constraints apply
@@ -138,24 +141,25 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         used = graph.rank_vars(ops)
         return tensors, tuple(i for i, v in enumerate(names) if v not in used)
 
-    def projected(ops, ext, external):
+    def projected(ops, ext, external, owned):
         # A subproblem's curve depends only on the tensors its ops access and the
-        # extents they use; ancestors' kept tensors are charged by the caller.
-        # Projecting the cache key is exact and removes duplicate subproblems.
+        # extents they use; ancestors' kept tensors are charged by the caller, as
+        # are final writes an ancestor owns. Projecting the cache key is exact and
+        # removes duplicate subproblems.
         tensors, unused = project(ops)
         ext = list(ext)
         for i in unused:
             ext[i] = 1
-        return ops, tuple(ext), external & tensors
+        return ops, tuple(ext), external & tensors, owned & tensors
 
-    def solve(ops, ext, external, constrained=False):
-        return _solve(*projected(ops, ext, external), constrained)
+    def solve(ops, ext, external, owned, constrained=False):
+        return _solve(*projected(ops, ext, external, owned), constrained)
 
-    def group_curve(group, ext, external):
-        return _group_curve(*projected(group, ext, external))
+    def group_curve(group, ext, external, owned):
+        return _group_curve(*projected(group, ext, external, owned))
 
     @lru_cache(maxsize=None)
-    def _solve(ops, ext, external, constrained=False):
+    def _solve(ops, ext, external, owned, constrained=False):
         live = graph.tensors(ops) - external
         if not constrained and all(size(t, ext) == 1 for t in live):
             return ((len(live), 0, ()),)
@@ -204,17 +208,19 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                     if writers and t in consumed:
                         # The write is skipped for tensors whose one DRAM write the
                         # caller charges separately (chain_view.py).
-                        extra += size(t, ext) * ((t not in written) + len(gs) - len(writers))
+                        extra += size(t, ext) * ((t not in owned) + len(gs) - len(writers))
                     elif writers:
                         extra += 2 * size(t, ext) * (len(writers) - 1)
                     else:
                         extra += size(t, ext) * (len(gs) - 1)
                 dropped = tuple(t for t, k in zip(shared, keep_bits) if not k)
+                child_owned = owned if legacy_nested_writes else owned | {
+                    t for t in dropped if t in consumed and any(output_of(op) == t for g in users[t] for op in groups[g])}
                 level = ((0, extra, (('groups', tuple(groups), 'kept', tuple(sorted(kept)), 'via DRAM', dropped),)
                           if witness else ()),)
                 for g, group in enumerate(groups):
                     across = sum(size(t, ext) for t in kept if min(users[t]) <= g <= max(users[t]))
-                    inner = group_curve(group, ext, external | frozenset(kept))
+                    inner = group_curve(group, ext, external | frozenset(kept), child_owned)
                     level = combine_max_sum(level, pareto(((across + c, t, w) for c, t, w in inner), max_capacity), max_capacity, grid)
                     if not level:
                         break
@@ -222,7 +228,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         return pareto(results, max_capacity, grid)
 
     @lru_cache(maxsize=None)
-    def _group_curve(group, ext, external):
+    def _group_curve(group, ext, external, owned):
         live = graph.tensors(group) - external
         if all(size(t, ext) == 1 for t in live):
             return ((len(live), 0, ()),)
@@ -248,7 +254,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                             if not k:
                                 accumulated = any(output_of(op) == t for op in group)
                                 extra += (spill_cost if accumulated else 1) * (trips - 1) * size(t, ext)
-                        inner = solve(group, inner_ext, external | kept)
+                        inner = solve(group, inner_ext, external | kept, owned)
                         note = () if not witness else (('loop', group, v, f'tile {b} x{trips}', 'kept', tuple(sorted(kept)),
                                  'refetched', tuple(t for t, k in zip(lacking, keep_bits) if not k)),)
                         results.extend((cap + c, extra + trips * t, cat(note, w)) for c, t, w in inner)
@@ -259,6 +265,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
     inputs = consumed - produced
     outputs = produced - consumed
     compulsory = sum(size(t, ext0) for t in (inputs | outputs) - external)
-    points = (group_curve(graph.ops, ext0, external) if entry == 'group' else
-              solve(graph.ops, ext0, external, root_groups is not None))
+    written = frozenset(written)
+    points = (group_curve(graph.ops, ext0, external, written) if entry == 'group' else
+              solve(graph.ops, ext0, external, written, root_groups is not None))
     return tuple((c, compulsory + t) + ((flatten(w),) if witness else ()) for c, t, w in points)
