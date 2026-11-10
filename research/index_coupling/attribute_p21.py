@@ -1,7 +1,8 @@
 """Exploratory P21 attribution: how much of the fixed-boundary gap is the I chain?
 
 For each P21 graph, compares on integer capacities:
-- fixed:     root partition EX | H | EAdd at full extents (P21's fixed boundary);
+- fixed:     root partition EX | H | EAdd at full extents, allowing H_last
+             retention (unlike frozen P21, which materializes H_last);
 - lifted:    any chain of loops over I (the only span-legal rank) above that
              fixed partition, composed by graph/context.py;
 - regraded:  the same chain composition above the unrestricted curve, which

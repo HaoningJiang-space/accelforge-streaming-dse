@@ -125,7 +125,7 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
    loops in an unconditioned span are legal only over ranks R(S) that every op and internal tensor carry;
    the tensors lacking each rank, weighted by role, reproduce the fork
    obligations of §7 and the 448 B FFN witness (F row at two trips). Chaining I
-   loops above P21's fixed boundary removes 54% of its wrong capacities at depth
+   loops above P21's fixed boundary with flexible H_last residency removes 54% of its wrong capacities at depth
    2 and 20% at depth 8; the rest is cut placement. See FIRST_PRINCIPLES.md §8.
 11. **Whole-curve ranking is budget-dependent.** Reanalysis of all 32 P19
    curves finds b=2/b=3 crossings in 8/8 shapes. At (16,4,16,4), total traffic
@@ -135,6 +135,13 @@ are executed cell by cell by `simulate_nest.py` and reproduced exactly at all
    P19c remains failed. The first-layer FFN M/F tables also tie, while native
    inner weight refetch adds 128 B. See FIRST_PRINCIPLES.md §9 and
    `results/p19_profile.{json,png,pdf}`.
+12. **P21 conditional value and release time (exploratory).** When H reads X,
+   the 2s threshold gains V_X(c)=Q_H(c|DRAM)-Q_H(c|resident). All 212 finite
+   eligible capacity checks match. Four chosen cut families recover 12/16 full
+   curves; adding a streamed-tail family selected from the misses recovers
+   16/16, with 560 exact new witness replays. This is seen-data attribution,
+   not a general five-family theorem. A tail counterexample distinguishes
+   entry mode and last-use release from full-span pinning. See P21_CUT_ANALYSIS.md.
 
 ## Withdrawn or corrected claims
 
@@ -219,6 +226,7 @@ Other files at the top level:
 | `projected_effect_replay/` | 227 independent executions, common-buffer effects and figures |
 | `p21/` | 16 residual graphs, 64 conditional interfaces (56 feasible), 596 witness replays, full error/choice intervals, static comparison figure |
 | `p21_attribution/` | Exploratory: fixed vs I-chain-lifted vs unrestricted curves for the 16 P21 graphs (`attribute_p21.py`) |
+| `p21_cuts/` | Exploratory cut families, 560 executable witnesses, conditional residency value, and tail entry/release counterexample |
 | `p19_profile.{json,png,pdf}` | Post-hoc interval integration, budget-dependent b=2/b=3 crossings, and a full-curve comparison; no new search |
 
 Heavy runs go to the experiment server with memory and time caps, one process

@@ -339,3 +339,37 @@ scope-sensitive, conditional demand description, not a scalar graph score.
 They do not yet prove that a sufficient description is compact or cheap to
 construct. Keep the existing grammar and measured effects while testing that
 remaining question; do not infer a new optimizer or speedup from this synthesis.
+
+## 10. Conditional residency value and release contracts (P21 follow-up)
+
+For fixed P21 endpoints, let Q0(c) be H's curve with X in DRAM and Q1(c)
+its curve with X resident and its reservation charged outside H. Define
+V_X(c)=Q0(c)-Q1(c). On the finite, endpoint-compatible domain,
+
+    3s + Q1(C-s) < 5s + Q0(C)
+    iff Q0(C-s)-Q0(C) < 2s + V_X(C-s).
+
+Equality is a tie; infeasible branches must be compared directly. If H does
+not access X, V_X=0 by projection. If it does, V_X includes both eliminated
+reads and the effect of removing X's local allocation. It need not be constant
+or monotone. In the 10-operator (2,2,4) example, V_X(3..6)=16,4,16,4 with s=4.
+All 212 finite eligible comparisons agree with the saved monolithic branches.
+
+The exploratory fixed-partition curve in §8 allows H_last retention; frozen
+P21 forces H_last through DRAM. The latter has a 2s plateau penalty in every
+case. Separate that policy change from outer-loop lifting and moving cuts.
+
+P21_CUT_ANALYSIS.md gives a constructive follow-up: four chosen first-cut
+families recover 12/16 seen curves, and one more family selected from the
+remaining errors closes all 16; 560 new witnesses execute exactly. The missing
+family splits the elementwise tail so that an incoming H1 reservation ends at
+its last use. A conditional tail at I=1,K=2 has local minimum-traffic capacity
+13 under group entry and 5 under solve entry. Pinning its two two-element
+external inputs throughout the macro still requires 9 total capacity, while
+the whole-graph streamed-tail witness fits in 8 by releasing H1 earlier.
+
+This requires distinguishing "resident on entry, releasable after last use"
+from "pinned until exit". It does not prove that these labels alone form a
+sufficient or minimal quotient. The five-family envelope was selected on seen
+data and its children still use the full recursive solver. A held-out contract
+check, not a broader hardware model, is the next discriminating experiment.

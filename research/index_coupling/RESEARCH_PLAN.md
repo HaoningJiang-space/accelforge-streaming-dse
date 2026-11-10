@@ -130,6 +130,12 @@ banking or precision changes may require a different Gamma and cost model.
    repeated tile queries (40 distinct feasible interfaces). Unrestricted
    curves differ in all 16 full cases: preserve partition/entry, extents and
    residency before claiming a whole-graph summary. See P21_RESULTS.md.
+   **Exploratory follow-up:** five chosen bottom-cut families recover the 16
+   seen curves, with 560 exact witness replays. The final family was selected
+   from misses. A conditional tail distinguishes `group` from `solve` entry,
+   and an input needed only at entry from one pinned through the whole span.
+   Test last-use release contracts on unseen depths/shapes before extending
+   to overlap; this next test is not yet frozen. See P21_CUT_ANALYSIS.md.
 4. **P22, after P21: overlap and buffer occupancy.** A single-channel extension
    must charge double buffering and in-flight tiles against the same capacity
    budget as retained tensors. Prefetch scheduling follows this model; it does

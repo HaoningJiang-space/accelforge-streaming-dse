@@ -189,6 +189,12 @@ case, `graph/context.py` composes every power-of-two chain of I loops (with
 keep/refetch choices for W0 and W1) above a bottom curve, independently of the
 solver's recursion.
 
+Clarification: this exploratory `fixed` curve uses `root_kept=None`, so H_last
+may stay resident. Frozen P21 instead forces H_last through DRAM. The percentages
+below compare the flexible-output fixed partition against its loop-lifted form;
+they do not attribute the entire frozen-to-free gap. P21_CUT_ANALYSIS.md separates
+output residency, outer loops and cut placement on one common capacity domain.
+
 - Accounting check: the chain over the unrestricted curve reproduces the
   unrestricted curve exactly in 16/16 cases.
 - Chain over the fixed EX|H|EAdd partition ("lifted"), counted as integer
@@ -204,3 +210,9 @@ Lifting closes the gap completely in no case. At depth 8 with I=2 it removes
 nothing: there the unrestricted witnesses also move the bottom cut (for example
 EX,EH0 | EH1..EAdd, or fusing EH7 with EAdd), so H_last never crosses a group
 boundary. The remaining gap is cut placement, not loop context.
+
+Further exploratory controls in P21_CUT_ANALYSIS.md recover all 16 curves with
+an envelope of five chosen bottom-cut families and validate 560 new witnesses.
+The final family was selected from residual errors. This is not a held-out
+normal-form theorem; it identifies entry mode and last-use release as the next
+interface properties to test.
