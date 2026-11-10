@@ -45,6 +45,10 @@ CASES = {
     'ffn_training_l1': (lambda: ffn_stack(1, training=True), ()),
     **{f'ancestor_k{k}': (control, (k,)) for k in range(1, 9)},
     **{f'fork_{r}': (fork, (2, 2, 2, 2, r)) for r in ('kk', 'kkk', 'kkkk', 'kki', 'kkii')},
+    # Larger extents: equal small frontiers at extent two may be numerical coincidences.
+    **{f'residual448_d{d}_x{x}': (residual, (4, 4, 8, d, bool(x))) for d in (4, 6, 8) for x in (0, 1)},
+    **{f'fork4_{r}': (fork, (4, 4, 4, 4, r)) for r in ('kk', 'ki', 'kkk')},
+    **{f'ffn_forward_l{n}_m8': (lambda n: ffn_stack(n, m=8, d=4, f=8), (n,)) for n in (1, 2)},
 }
 
 
