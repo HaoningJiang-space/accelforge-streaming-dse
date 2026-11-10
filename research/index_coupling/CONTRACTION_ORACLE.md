@@ -550,9 +550,9 @@ grammar in 513 of the 2,842 feasible rows of `matmul_check.jsonl`.
 The smallest case is (M, D, F) = (2, 2, 2) with X resident, at C = 3. The
 grammar reaches zero extra traffic by looping F outside M and keeping only the
 weight slice W[:, f]: 2 cells instead of 4. Weight-slice stationarity is
-therefore essential at M > 1. An exact M > 1 chain form would be the full
-loop-order problem, and it would cost about as much as the grammar's own
-search.
+therefore essential at M > 1. An exact M > 1 chain form must accommodate this
+interaction with loop order. The counterexample rules out the outer-M form;
+it does not establish a computational lower bound for other exact methods.
 
 ## 13. A row-projection lower bound for M > 1 children
 
@@ -640,9 +640,9 @@ dropped.
 
 **Check** (`op_projection.py check`, `op_projection_check.jsonl`).
 
-- Every chain solve node of the 8 archives at any M, 17,857 nodes:
+- Every qualifying chain solve node of the 8 archives at any M, 17,647 nodes:
   **0 violations**.
-- The bound equals the actual curve in 6,416 nodes. That is 79% for the M8
+- The bound equals the actual curve in 5,796 nodes. That is 79% for the M8
   one-layer stack and 14% for FFN-4.
 
 **C2** (`op_projection.py c2`, `c2_op_bound.jsonl`). Combined pointwise (max)
@@ -689,3 +689,7 @@ each ledger counter's total (`closed_form_work.jsonl`).
   forms (a few divisor loops per capacity) is not charged.
 - An online opt-in substitution with witnesses and replay is required before
   any speed-up is claimed.
+
+Independent accounting and response recheck: [CLOSURE_REVIEW.md](CLOSURE_REVIEW.md).
+The "nodes left" column excludes analytic terminals whose responses still
+have to be returned; it is not the total number of remaining response queries.
