@@ -13,9 +13,11 @@ serial schedule with C cells for x and y elements may:
 `oracle(a, b, C)` is the least extra traffic over ALL such schedules
 (Dijkstra on (done pairs, on-chip set)). `grammar(a, b, C)` is the
 curve() optimum of the same contraction under both tile domains.
-`serpentine(a, b, C)` is the conjectured closed form below.
+`serpentine(a, b, C)` is the first conjecture (refuted at a = b = C = 4);
+`blocked(a, b, C)` is its post-hoc repair.
 
 Usage: python -m research.index_coupling.contraction_oracle MAX_A MAX_B
+       python -m research.index_coupling.contraction_oracle --cases A,B[,A,B...]
 """
 from heapq import heappop, heappush
 from itertools import product
@@ -86,20 +88,59 @@ def serpentine(a, b, capacity):
     return min(keep_y, keep_x)
 
 
+def blocked(a, b, capacity):
+    """Blocked serpentine with carry-over, fitted after the 4x4 counterexample.
+
+    Hold one side in consecutive blocks u_1, u_2, ... (each at most C-1) and
+    sweep the other side back and forth. At the turn between blocks u_k and
+    u_{k+1}, at most C - max(u_k, u_{k+1}) streamed elements stay on chip, so
+    the turn costs w * max(0, n - C + max(u_k, u_{k+1})), where n is the
+    streamed side's size and w = 1 for streamed inputs, 2 for spilled
+    partial sums. Minimise over block sequences (DP) and over which side is held.
+    """
+    if capacity < 2:
+        return float('inf')
+    if capacity > min(a, b):
+        return 0
+
+    def side(n, m, w):
+        best = {0: {None: 0}}
+        for rem in range(1, m + 1):
+            best[rem] = {}
+            for u in range(1, min(rem, capacity - 1) + 1):
+                options = [cost + (0 if prev is None else w * max(0, n - capacity + max(prev, u)))
+                           for prev, cost in best[rem - u].items()]
+                best[rem][u] = min(options)
+        return min(best[m].values())
+    return min(side(a, b, 1), side(b, a, 2))
+
+
 def main(max_a, max_b):
     rows = []
     for a in range(1, max_a + 1):
         for b in range(1, max_b + 1):
             for c in range(2, min(a, b) + 2):
-                row = dict(a=a, b=b, C=c, oracle=oracle(a, b, c), serpentine=serpentine(a, b, c),
+                row = dict(a=a, b=b, C=c, oracle=oracle(a, b, c), serpentine=serpentine(a, b, c), blocked=blocked(a, b, c),
                            grammar_halving=grammar(a, b, c, 'halving'),
                            grammar_divisors=grammar(a, b, c, 'divisors'))
                 rows.append(row)
                 print(json.dumps(row))
-    agree = sum(r['oracle'] == r['serpentine'] for r in rows)
-    gap = sum(r['grammar_divisors'] > r['oracle'] for r in rows)
-    print(json.dumps(dict(cases=len(rows), serpentine_equals_oracle=agree, grammar_divisors_above_oracle=gap)))
+    print(json.dumps(dict(cases=len(rows), serpentine_equals_oracle=sum(r['oracle'] == r['serpentine'] for r in rows),
+                          blocked_equals_oracle=sum(r['oracle'] == r['blocked'] for r in rows),
+                          grammar_divisors_above_oracle=sum(r['grammar_divisors'] > r['oracle'] for r in rows))))
+
+
+def cases(pairs):
+    for a, b in pairs:
+        for c in range(2, min(a, b) + 2):
+            row = dict(a=a, b=b, C=c, oracle=oracle(a, b, c), blocked=blocked(a, b, c),
+                       grammar_divisors=grammar(a, b, c, 'divisors'))
+            print(json.dumps(row), flush=True)
 
 
 if __name__ == '__main__':
-    main(int(sys.argv[1]), int(sys.argv[2]))
+    if sys.argv[1] == '--cases':
+        values = [int(v) for v in sys.argv[2].split(',')]
+        cases(zip(values[::2], values[1::2]))
+    else:
+        main(int(sys.argv[1]), int(sys.argv[2]))
