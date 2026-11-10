@@ -25,7 +25,7 @@ import json
 import sys
 
 from research.index_coupling.graph.analysis import traffic_at
-from research.index_coupling.graph.curve import curve
+from research.index_coupling.graph.curve import curve, tile_sizes
 from research.index_coupling.graph.model import Graph
 
 
@@ -70,6 +70,28 @@ def grammar(a, b, capacity, tile_domain):
     g = Graph(dict(D=a, F=b), [('E', {'x': ('D',), 'W': ('D', 'F'), 'y': ('F',)})])
     points = curve(g, partitions='dp', external=frozenset({'W'}), scalar_leaf='v2', tile_domain=tile_domain)
     return traffic_at(capacity, points) - (a + b)  # remove compulsory x reads and y writes
+
+
+def reachable_tiles(extent, tile_domain):
+    """Every tile a chain of recursive tilings can reach, the extent included."""
+    out = {extent}
+    for t in tile_sizes(extent, tile_domain):
+        out |= reachable_tiles(t, tile_domain)
+    return out
+
+
+def loop_nest(a, b, capacity, tile_domain):
+    """Predicted grammar optimum (CONTRACTION_ORACLE.md §6): one held tile, one-level.
+
+    Hold a y tile u (u | b by a tiling chain, u <= C-1) and re-read all of x
+    per F tile: a (b/u - 1). Or hold an x tile t and spill y per D tile:
+    2 b (a/t - 1). Deeper nests and mixed orders are claimed never to help.
+    """
+    if capacity < 2:
+        return float('inf')
+    options = [a * (b // u - 1) for u in reachable_tiles(b, tile_domain) if u <= capacity - 1]
+    options += [2 * b * (a // t - 1) for t in reachable_tiles(a, tile_domain) if t <= capacity - 1]
+    return min(options)
 
 
 def ceil_div(p, q):
