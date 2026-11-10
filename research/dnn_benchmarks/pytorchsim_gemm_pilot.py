@@ -95,8 +95,11 @@ def main():
         def mm(x,w):return x@w
         start=time.monotonic()
         actual=torch.compile(dynamic=False)(mm)(x.to('npu:0'),w.to('npu:0')).cpu()
+        import numpy as np
+        np.savez_compressed(out/'numerical.npz',x=x.numpy(),w=w.numpy(),actual=actual.numpy(),reference=reference.numpy())
         record.update(compile_and_execute_seconds=time.monotonic()-start,torch_version=torch.__version__,
             max_abs_error=float((actual-reference).abs().max()),
+            wrong_elements=int((~torch.isclose(actual,reference,rtol=1e-4,atol=1e-4)).sum()),
             numerical_equal=bool(torch.allclose(actual,reference,rtol=1e-4,atol=1e-4)))
         if not record['numerical_equal']:raise ValueError('functional output mismatch')
         if a.mode=='external' and (not record['candidate_tiles_observed'] or not record['rendered_tiles_observed']):
