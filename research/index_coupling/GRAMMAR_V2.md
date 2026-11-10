@@ -223,6 +223,19 @@ and the frozen P predictions, must name their grammar version.
    - v2 ≤ v1 pointwise.
 4. Only after that, measure C2 on the stacks.
 
+## 7. Status
+
+Implemented as an option and checked; see
+[GRAMMAR_V2_RESULTS.md](GRAMMAR_V2_RESULTS.md):
+
+- 291/291 executor replays are exact;
+- v2 is never worse than v1;
+- there are 0 monotonicity violations over about 81,000 census pairs, against
+  578 in v1.
+
+The executor accepts v2's nested scalar partitions through explicit
+`('hold', ops)` records. This answers the replay concern in §6.
+
 ## Reference
 
 M. Farach-Colton and V. Liberatore, *On local register allocation*, Journal of

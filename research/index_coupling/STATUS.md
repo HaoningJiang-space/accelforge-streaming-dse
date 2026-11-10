@@ -32,6 +32,16 @@ Current synthesis: [RESEARCH_OVERVIEW.md](RESEARCH_OVERVIEW.md), separating exac
 search reductions from capacity-dependent physical conflicts and identifying
 the next target as a unified conditional contract and dynamic quotient closure.
 
+Grammar v2 (opt-in `scalar_leaf='v2'`): [GRAMMAR_V2.md](GRAMMAR_V2.md),
+[GRAMMAR_V2_RESULTS.md](GRAMMAR_V2_RESULTS.md). v1's mandatory multi-operator
+scalar leaf breaks residency monotonicity (578 violations over about 81,000
+census pairs). v2 lets all-scalar spans be partitioned, proves monotonicity
+and finds 0 violations. All 291 v2 root points replay exactly, and v2 is never
+worse than v1. v2 changes 19/48 root curves: every residual chain and
+fork4_kkk. With X reads, residual plateaus move from 13 to 11 B. v1 stays the
+default; frozen verdicts are v1 statements. Supporting analyses:
+REMAINDER_LEMMAS.md, WORK_ATTRIBUTION.md and LIFT_RESULTS.md.
+
 Order-complete Fork symmetry: [FORK_QUOTIENT_RESULTS.md](FORK_QUOTIENT_RESULTS.md).
 A separate exact quotient retains joint input/output residency profiles within
 each role and reconstructs a consistent global order. Five complete reference
