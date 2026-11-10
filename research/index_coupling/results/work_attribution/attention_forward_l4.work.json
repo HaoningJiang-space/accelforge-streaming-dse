@@ -1,0 +1,106 @@
+{
+ "case": "attention_forward_l4",
+ "revision": "6700107aa38d455492f6355b77cf56f787d8846d",
+ "python": "3.12.16",
+ "budgets": {
+  "seconds": 600.0,
+  "mem_gib": 6.0
+ },
+ "options": {
+  "partitions": "dp",
+  "canonical_spans": false,
+  "independent_ops": false,
+  "tile_domain": "halving"
+ },
+ "status": "complete",
+ "points": [
+  [
+   3,
+   144
+  ],
+  [
+   4,
+   96
+  ],
+  [
+   5,
+   72
+  ],
+  [
+   8,
+   64
+  ],
+  [
+   9,
+   40
+  ]
+ ],
+ "seconds": 11.897636666893959,
+ "group_calls": {
+  "calls": 592789,
+  "empty": 316245
+ },
+ "strata": {
+  "zero_at_d": {
+   "misses": 284.0,
+   "dp_transitions": 0.0,
+   "loop_choices": 0.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 0.0,
+   "merge_inputs": 0.0,
+   "seconds": 0.001987673342227936
+  },
+  "all": {
+   "misses": 10834.0,
+   "dp_transitions": 592789.0,
+   "loop_choices": 6065.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 1425256.0,
+   "merge_inputs": 1543280.0,
+   "seconds": 11.875594474375248
+  },
+  "zero_above_d": {
+   "misses": 759.0,
+   "dp_transitions": 2163.0,
+   "loop_choices": 534.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 5000.0,
+   "merge_inputs": 3877.0,
+   "seconds": 0.10676116868853569
+  },
+  "repeat": {
+   "misses": 2317.0,
+   "dp_transitions": 23981.0,
+   "loop_choices": 1579.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 78657.0,
+   "merge_inputs": 59512.0,
+   "seconds": 0.5679154582321644
+  },
+  "rest": {
+   "misses": 5158.0,
+   "dp_transitions": 590626.0,
+   "loop_choices": 5531.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 1420256.0,
+   "merge_inputs": 1539403.0,
+   "seconds": 11.698262065649033
+  },
+  "empty": {
+   "misses": 4633.0,
+   "dp_transitions": 0.0,
+   "loop_choices": 0.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 0.0,
+   "merge_inputs": 0.0,
+   "seconds": 0.06858356669545174
+  }
+ },
+ "run_totals": {
+  "dp_transitions": 592789,
+  "loop_choices": 6065,
+  "partition_choices": 0,
+  "pareto_candidates": 1425256,
+  "merge_inputs": 1543280
+ }
+}

@@ -1,0 +1,106 @@
+{
+ "case": "attention_forward_l2",
+ "revision": "6700107aa38d455492f6355b77cf56f787d8846d",
+ "python": "3.12.16",
+ "budgets": {
+  "seconds": 600.0,
+  "mem_gib": 6.0
+ },
+ "options": {
+  "partitions": "dp",
+  "canonical_spans": false,
+  "independent_ops": false,
+  "tile_domain": "halving"
+ },
+ "status": "complete",
+ "points": [
+  [
+   3,
+   72
+  ],
+  [
+   4,
+   48
+  ],
+  [
+   5,
+   40
+  ],
+  [
+   8,
+   32
+  ],
+  [
+   9,
+   24
+  ]
+ ],
+ "seconds": 0.2587224002927542,
+ "group_calls": {
+  "calls": 5473,
+  "empty": 1097
+ },
+ "strata": {
+  "zero_at_d": {
+   "misses": 128.0,
+   "dp_transitions": 0.0,
+   "loop_choices": 0.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 0.0,
+   "merge_inputs": 0.0,
+   "seconds": 0.0008815266191959381
+  },
+  "all": {
+   "misses": 1052.0,
+   "dp_transitions": 5473.0,
+   "loop_choices": 829.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 20723.0,
+   "merge_inputs": 14031.0,
+   "seconds": 0.2360065672546625
+  },
+  "zero_above_d": {
+   "misses": 321.0,
+   "dp_transitions": 883.0,
+   "loop_choices": 230.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 2008.0,
+   "merge_inputs": 1565.0,
+   "seconds": 0.04461854323744774
+  },
+  "repeat": {
+   "misses": 321.0,
+   "dp_transitions": 390.0,
+   "loop_choices": 232.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 1361.0,
+   "merge_inputs": 812.0,
+   "seconds": 0.026311777532100677
+  },
+  "rest": {
+   "misses": 390.0,
+   "dp_transitions": 4590.0,
+   "loop_choices": 599.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 18715.0,
+   "merge_inputs": 12466.0,
+   "seconds": 0.1881241463124752
+  },
+  "empty": {
+   "misses": 213.0,
+   "dp_transitions": 0.0,
+   "loop_choices": 0.0,
+   "partition_choices": 0.0,
+   "pareto_candidates": 0.0,
+   "merge_inputs": 0.0,
+   "seconds": 0.0023823510855436325
+  }
+ },
+ "run_totals": {
+  "dp_transitions": 5473,
+  "loop_choices": 829,
+  "partition_choices": 0,
+  "pareto_candidates": 20723,
+  "merge_inputs": 14031
+ }
+}
