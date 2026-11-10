@@ -65,6 +65,31 @@ class ForkQuotientTests(unittest.TestCase):
         self.assertEqual(len(list(orders(g))), 20)
         self.assertEqual(len(list(orders(g, quotient=False))), 720)
 
+    def test_labeled_all_order_ablation(self):
+        for roles in ('kkk', 'kki'):
+            for external in ((), ('C0', 'U1')):
+                a = ForkQuotient((2, 2, 2, 2), roles).curve(external=external)
+                solver = ForkQuotient((2, 2, 2, 2), roles, quotient=False)
+                b = solver.curve(external=external)
+                self.assertEqual(tuple(p[:2] for p in a), tuple(p[:2] for p in b))
+                for c, q, plan in b:
+                    self.assertTrue(replay_private_boundary(solver.graph, external, c, q, plan)['exact'])
+
+    def test_six_consumer_boundary_orbit_cardinalities(self):
+        for roles, expected_input, expected_joint in (('kkkkkk',7,84),('kkkiii',16,400)):
+            solver=ForkQuotient((2,2,2,2),roles);g=solver.graph
+            ext=tuple(g.sizes[v] for v in solver.ranks)
+            for choices, expected in ((range(2),expected_input),(range(4),expected_joint)):
+                keys=set()
+                for profiles in product(choices,repeat=6):
+                    external=set()
+                    for op,profile in zip(g.ops[1:],profiles):
+                        _,inp,out=solver.info[op]
+                        if profile & 1:external.add(inp)
+                        if profile & 2:external.add(out)
+                    keys.add(solver.canonical(g.ops,ext,external,False)[0])
+                self.assertEqual(len(keys),expected)
+
 
 if __name__ == '__main__':
     unittest.main()

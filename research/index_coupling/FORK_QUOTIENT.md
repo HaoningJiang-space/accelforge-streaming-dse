@@ -134,3 +134,24 @@ reference in this run; its physical frontier witnesses must still execute.
 Small oracle agreement plus the recurrence argument does not replace a future
 independent formal proof audit. General graphs and externally constrained
 consumer orders remain outside this implementation.
+
+## 5. Separate attribution control, specified after the first study
+
+The first study combines a different partition recurrence with a symmetry
+quotient. To isolate the quotient, `quotient=False` now preserves all consumer
+identities, enumerates every labeled group subset and every retention mask,
+while retaining the SAME all-order sequence recurrence and witness construction.
+It is not the fixed-order grammar. Predicted result: enabling the quotient
+changes work but not any numeric frontier.
+
+`bench_fork_quotient.py` declares eight ablation jobs: m=4,6 homogeneous/mixed,
+with/without quotient. Two fresh Linux workers maximum, 60 s and 6 GiB per job.
+All complete pairs must have identical curves and exact witnesses. Incomplete
+pairs provide no speed ratio or completed-state comparison.
+
+After those jobs, six fresh processes run sequentially: three alternating
+fixed-order DP / quotient pairs for homogeneous m=6. Fixed-order profiling is
+disabled; prototype counters remain enabled. Homogeneous unconditional root
+curves are order-invariant, so this comparison has the same optimal frontier.
+Report median search time, not a factorial multiplier inferred from orbit counts.
+The first study and its 60-second mixed-eight timeout are retained unchanged.

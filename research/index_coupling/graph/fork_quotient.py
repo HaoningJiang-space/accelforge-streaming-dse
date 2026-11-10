@@ -48,13 +48,14 @@ unrestricted sharing/write-through, and no fixed-root/cut constraints. Input
 identity remains visible in returned plans. Not a general DAG optimizer.
     """
 
-    def __init__(self, shape, roles, *, tile_domain='halving'):
+    def __init__(self, shape, roles, *, tile_domain='halving', quotient=True):
         if not roles or set(roles) - {'k', 'i'} or len(shape) != 4 or any(n < 1 for n in shape):
             raise ValueError('positive fork dimensions and nonempty k/i roles required')
         if tile_domain not in ('halving', 'divisors'):
             raise ValueError('unknown tile domain')
         self.graph = fork(*shape, roles)
         self.tile_domain = tile_domain
+        self.quotient = quotient  # False is the labeled ALL-order recurrence, not fixed-order curve.py.
         self.ranks = tuple(sorted(self.graph.sizes))
         self.info = {}
         self.slots = {r: [] for r in ('k', 'i')}
@@ -89,6 +90,12 @@ identity remains visible in returned plans. Not a general DAG optimizer.
 
     def canonical(self, ops, ext, external, owned):
         self.stats['canonical_calls'] += 1
+        if not self.quotient:
+            ops = tuple(o for o in self.graph.ops if o in ops)
+            tensors, _, _, _, used = self.metadata(ops)
+            ext = tuple(n if v in used else 1 for v, n in zip(self.ranks, ext))
+            return ((ops, ext, frozenset(external) & tensors, bool(owned and 'EX' in ops)),
+                    {o: o for o in ops}, {t: t for t in tensors})
         ordered, forward_op, forward_tensor = [], {}, {'A': 'A', 'B': 'B', 'X': 'X'}
         if 'EX' in ops:
             ordered.append('EX'); forward_op['EX'] = 'EX'
@@ -125,6 +132,11 @@ identity remains visible in returned plans. Not a general DAG optimizer.
 
     def selections(self, ops, external):
         """One consumer subset per orbit under the current state's stabilizer."""
+        if not self.quotient:
+            consumers = tuple(o for o in ops if o != 'EX')
+            for bits in product((False, True), repeat=len(consumers)):
+                yield tuple(o for o, take in zip(consumers, bits) if take)
+            return
         buckets = defaultdict(list)
         for op in ops:
             if op != 'EX':
@@ -198,7 +210,9 @@ identity remains visible in returned plans. Not a general DAG optimizer.
             lacking = {t for t in live if rank not in self.graph.dims(t)}
             classes = defaultdict(list)
             for t in sorted(lacking):
-                if t in ('A', 'B', 'X'):
+                if not self.quotient:
+                    key = ('tensor', t)
+                elif t in ('A', 'B', 'X'):
                     key = ('shared', t)
                 else:
                     op = next(o for o in ops if o != 'EX' and t in self.info[o][1:])
