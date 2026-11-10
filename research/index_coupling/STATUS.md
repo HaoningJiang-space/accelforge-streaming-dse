@@ -43,6 +43,15 @@ reduces DP transitions 81.3% and cache entries 27.3%, with equal curves, 510
 framed conditional executions and 56 benchmark frontier replays exact. Default
 solver/P21f sources are unchanged; the outer mask enumeration remains.
 
+Non-scalar extension: [STREAMED_BRIDGE_RESULTS.md](STREAMED_BRIDGE_RESULTS.md).
+When every tensor missing an active X axis is already caller-resident, unit
+streaming can lift the scalar response, subject to the original scalar-leaf
+condition. All 565 eligible states in four new small censuses match, with 98
+parent-frame and 69 root executions exact. Coverage is narrow: zero new hits
+in either old six-consumer census and only 0.27–0.55% additional cache reduction
+over Scalar-X Bridge in the new cases. This remains an opt-in fixed-order
+prototype, not a solution for unresolved loop obligations.
+
 Solver scaling implementation/results: [SOLVER_SCALING_RESULTS.md](SOLVER_SCALING_RESULTS.md).
 Streaming audit exhausted 175,522 derivations on one tiny graph with no errors
 and 12.4 MiB peak RSS. Cut DP gave an 8.6x median speedup on the 8-operator residual

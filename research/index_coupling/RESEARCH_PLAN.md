@@ -179,8 +179,14 @@ banking or precision changes may require a different Gamma and cost model.
    matches 29,067 recorded states per tiny six-consumer case and removes 81.3%
    of DP transitions there. Parent alternatives reduce to cost pairs
    `(reservation + child_capacity, parent_extra_traffic)`, giving an exact
-   local dominance condition. Larger-X states and outer mask enumeration
-   remain open; see SCALAR_BRIDGE_RESULTS.md before generalizing the timings.
+   local dominance condition. A non-scalar extension now applies when all
+   missing-axis obligations are already externally resident and the reduced
+   solve attains that bound; it matches 565 conditional states but yields only
+   0.27–0.55% additional cache reduction in four small cases. The original
+   scalar leaf supplies a concrete exclusion. Next target one unresolved
+   obligation with a matching lower bound, not just a constructive upper bound.
+   General larger-X states and outer mask enumeration remain open; see
+   STREAMED_BRIDGE_RESULTS.md and SCALAR_BRIDGE_RESULTS.md before generalizing.
    **Order-complete symmetry quotient:** an independent Fork solver now searches
    group membership by role/joint-residency counts and restores a consistent
    global consumer order. Five complete reference envelopes and all 128 tiny
