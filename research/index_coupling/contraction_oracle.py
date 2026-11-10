@@ -1,0 +1,105 @@
+"""Exact schedule-level optimum for one dense contraction, vs the loop grammar.
+
+One contraction y_j += x_i * W[i, j] for all i < a, j < b, with W resident. A
+serial schedule with C cells for x and y elements may:
+- load x_i: free the first time, 1 extra transfer afterwards;
+- evict x_i: free;
+- bring y_j on chip: free when fresh, part of a spill otherwise;
+- evict y_j: free once all a contributions are done (its compulsory write);
+  otherwise a spill of 2 extra transfers (write plus read back);
+- multiply-add (i, j): requires x_i and y_j on chip, at most once per pair,
+  no recomputation.
+
+`oracle(a, b, C)` is the least extra traffic over ALL such schedules
+(Dijkstra on (done pairs, on-chip set)). `grammar(a, b, C)` is the
+curve() optimum of the same contraction under both tile domains.
+`serpentine(a, b, C)` is the conjectured closed form below.
+
+Usage: python -m research.index_coupling.contraction_oracle MAX_A MAX_B
+"""
+from heapq import heappop, heappush
+from itertools import product
+import json
+import sys
+
+from research.index_coupling.graph.analysis import traffic_at
+from research.index_coupling.graph.curve import curve
+from research.index_coupling.graph.model import Graph
+
+
+def oracle(a, b, capacity):
+    full = (1 << (a * b)) - 1
+    x_bits = [sum(1 << (i * b + j) for j in range(b)) for i in range(a)]
+    y_bits = [sum(1 << (i * b + j) for i in range(a)) for j in range(b)]
+    start = (0, frozenset())
+    best = {start: 0}
+    heap = [(0, 0, frozenset())]
+    while heap:
+        cost, done, chip = heappop(heap)
+        if best.get((done, chip), cost) < cost:
+            continue
+        if done == full:
+            return cost
+        moves = []
+        for e in chip:  # evictions
+            kind, k = e
+            extra = 2 if kind == 'y' and done & y_bits[k] and (done & y_bits[k]) != y_bits[k] else 0
+            moves.append((extra, done, chip - {e}))
+        if len(chip) < capacity:  # loads
+            for i in range(a):
+                if ('x', i) not in chip and (done & x_bits[i]) != x_bits[i]:
+                    moves.append((1 if done & x_bits[i] else 0, done, chip | {('x', i)}))
+            for j in range(b):
+                if ('y', j) not in chip and (done & y_bits[j]) != y_bits[j]:
+                    moves.append((0, done, chip | {('y', j)}))  # a spill was charged at eviction
+        for i, j in product(range(a), range(b)):  # multiply-adds
+            bit = 1 << (i * b + j)
+            if not done & bit and ('x', i) in chip and ('y', j) in chip:
+                moves.append((0, done | bit, chip))
+        for extra, d, c in moves:
+            key, total = (d, c), cost + extra
+            if total < best.get(key, float('inf')):
+                best[key] = total
+                heappush(heap, (total, d, c))
+    return float('inf')
+
+
+def grammar(a, b, capacity, tile_domain):
+    g = Graph(dict(D=a, F=b), [('E', {'x': ('D',), 'W': ('D', 'F'), 'y': ('F',)})])
+    points = curve(g, partitions='dp', external=frozenset({'W'}), scalar_leaf='v2', tile_domain=tile_domain)
+    return traffic_at(capacity, points) - (a + b)  # remove compulsory x reads and y writes
+
+
+def ceil_div(p, q):
+    return -(-p // q)
+
+
+def serpentine(a, b, capacity):
+    """Hold u = C-1 elements of one side, sweep the other side back and forth."""
+    if capacity < 2:
+        return float('inf')
+    if capacity > min(a, b):
+        return 0
+    u = capacity - 1
+    keep_y = (a - 1) * (ceil_div(b, u) - 1)          # reuse the last x at each turn
+    keep_x = 2 * (b - 1) * (ceil_div(a, u) - 1)      # reuse the last y partial at each turn
+    return min(keep_y, keep_x)
+
+
+def main(max_a, max_b):
+    rows = []
+    for a in range(1, max_a + 1):
+        for b in range(1, max_b + 1):
+            for c in range(2, min(a, b) + 2):
+                row = dict(a=a, b=b, C=c, oracle=oracle(a, b, c), serpentine=serpentine(a, b, c),
+                           grammar_halving=grammar(a, b, c, 'halving'),
+                           grammar_divisors=grammar(a, b, c, 'divisors'))
+                rows.append(row)
+                print(json.dumps(row))
+    agree = sum(r['oracle'] == r['serpentine'] for r in rows)
+    gap = sum(r['grammar_divisors'] > r['oracle'] for r in rows)
+    print(json.dumps(dict(cases=len(rows), serpentine_equals_oracle=agree, grammar_divisors_above_oracle=gap)))
+
+
+if __name__ == '__main__':
+    main(int(sys.argv[1]), int(sys.argv[2]))
