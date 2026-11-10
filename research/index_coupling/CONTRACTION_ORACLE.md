@@ -452,30 +452,35 @@ re-checked identical.
 The excluded solve nodes have M > 1, an interior vector that is external or
 owned, or a constrained root.
 
-**What this gives C2** (`c2_exact_children.jsonl`). Covered choices are the
-proper retention choices whose child node has a closed form. For those, the
-exact child curve replaces C2's bound. For the others, the slot bound is kept.
-The counts below are ideal exclusions, measured as in CHAIN_THRESHOLD.md §6
-with the final frontier as incumbent.
+**What this gives C2** (`c2_exact_children.jsonl`). A choice is *covered*
+when its child node has a closed form. The table first appeared with an
+"ideal exclusions" column. **That column is withdrawn:** see the correction
+below.
 
-| Case | Proper choices | Covered | Ideal exclusions, slot bound | Ideal exclusions, exact where covered |
-| --- | ---: | ---: | ---: | ---: |
-| FFN 1 / 2 / 3 / 4 layers | 118 / 446 / 1,414 / 5,050 | 96 / 392 / 1,328 / 4,932 | 105 / 372 / 1,055 / 2,865 | 112 / 430 / 1,388 / **5,014** |
-| attention 2 / 4 layers | 446 / 5,050 | 392 / 4,932 | 372 / 2,865 | 430 / **5,014** |
-| FFN M8 1 / 2 layers | 2,388 / 7,177 | 910 / 3,043 | 1,383 / 3,955 | 1,595 / 4,797 |
+| Case | Proper choices | Covered |
+| --- | ---: | ---: |
+| FFN 1 / 2 / 3 / 4 layers | 118 / 446 / 1,414 / 5,050 | 96 / 392 / 1,328 / 4,932 |
+| attention 2 / 4 layers | 446 / 5,050 | 392 / 4,932 |
+| FFN M8 1 / 2 layers | 2,388 / 7,177 | 910 / 3,043 |
 
-**Interpretation.**
+**Correction.** The ideal-exclusion test compares a bound with the final
+parent frontier. That frontier is the minimum over all choices, so every
+choice's *exact* curve is weakly dominated by it. With all children exact,
+the count is 100% in every case: 2,388 of 2,388, 7,177 of 7,177 and 5,050 of
+5,050 were checked. Counting exact curves as exclusions is therefore a
+tautology, not a pruning gain. The test is meaningful only for strict lower
+bounds (§13).
 
-- **Most of these children need no search at all.** In the tiny stacks,
-  88-98% of retention choices have a child with a closed form that costs a
-  few divisor loops.
-- **Pruning becomes nearly ideal.** In FFN-4, 5,014 of 5,050 choices are
-  excluded, against 2,865 with the slot bound. These are ceilings, because
-  the incumbent is the final frontier. The real saving depends on search
-  order.
-- **The form is grammar-specific.** It is exact for this loop grammar (v2,
-  halving or divisor tiles, partitions by cut DP), not for physical
-  schedules (§3).
+**What the closed form does give.**
+
+- A covered child needs no search: its exact response costs a few divisor
+  loops.
+- In the tiny stacks, 88-98% of retention choices are covered; in the M8
+  stacks, about 40%.
+- The saving is the search work under those children. It has not been
+  measured.
+- The form is exact for this loop grammar (v2, halving or divisor tiles,
+  partitions by cut DP), not for physical schedules (§3).
 
 **Uncovered.**
 
@@ -537,3 +542,69 @@ now verified as an exact description of this grammar for one matmul.
 sliced by the group loops. Inner partitions then keep intermediate tiles.
 The natural conjecture composes the keep-level model per tensor with the
 §9-11 boundary DP. That composition is not yet derived.
+
+**Is an outer M loop enough?** No. Composing an outer M loop (keep or
+re-fetch each weight) with the unit-M forms is strictly worse than the
+grammar in 513 of the 2,842 feasible rows of `matmul_check.jsonl`.
+
+The smallest case is (M, D, F) = (2, 2, 2) with X resident, at C = 3. The
+grammar reaches zero extra traffic by looping F outside M and keeping only the
+weight slice W[:, f]: 2 cells instead of 4. Weight-slice stationarity is
+therefore essential at M > 1. An exact M > 1 chain form would be the full
+loop-order problem, and it would cost about as much as the grammar's own
+search.
+
+## 13. A row-projection lower bound for M > 1 children
+
+**Lemma.** Restrict any grammar plan of a span with M extent m to a single
+row:
+
+- M loops have one iteration;
+- every other loop and keep decision is unchanged;
+- kept activation tiles lose their M factor;
+- a weight kept at an M loop becomes resident, and a re-fetched one becomes
+  streamed.
+
+The result is a unit-M grammar plan with no larger peak. Its activation
+traffic is exactly the original plan's traffic for that row. Weight traffic
+is nonnegative and is dropped. Hence
+
+    R_m(C) >= m * R_1(C),
+
+where R_1 is the §11 response with every weight resident. That is the most
+permissive case, since a streamed weight only adds cells. A tighter variant
+counts each weight not resident at the child entry as streamed (one cell).
+It is a conjecture: a weight kept at an M loop holds at least one cell over a
+wider scope, but replacing it by a streamed weight has not been shown to be a
+valid unit-M plan.
+
+**Check on archived M > 1 solve nodes** (`row_projection.py check`,
+`row_projection_check.jsonl`). The qualifying conditions are those of §10
+with M > 1. **0 violations in 3,787 nodes, for both variants.** The bound
+equals the actual curve in 1,155 nodes (proved variant) and 1,889
+(conjectured variant).
+
+**C2 on M > 1 children** (`row_projection.py c2`, `c2_row_bound.jsonl`).
+
+- For a choice whose child has M > 1, the bound is lifted to the parent, as
+  in `c2_chain_ceiling.py`.
+- It is combined pointwise (max) with the slot bound.
+- It is compared with the final parent frontier. Every combined bound is
+  asserted to stay below the actual candidate curve.
+
+| Case | Choices with M > 1 child | Ideal exclusions, slot bound | With row bound (proved) | With row bound (conjectured) |
+| --- | ---: | ---: | ---: | ---: |
+| FFN 1 / 2 / 3 / 4 layers | 22 / 54 / 86 / 118 | 16 / 38 / 60 / 82 | same | same |
+| attention 2 / 4 layers | 54 / 118 | 38 / 82 | same | same |
+| FFN M8 1 layer | 1,478 | 685 | 747 | 752 |
+| FFN M8 2 layers | 4,134 | 1,754 | 1,894 | 1,904 |
+
+The gain is real but small: +9% and +8% of the slot bound's exclusions in
+the M8 stacks. The bound ignores the main M > 1 cost, which is weight
+re-fetch versus retention across rows. That cost is exactly what C2's anchor
+models, so the two bounds measure different things, and combining them
+pointwise captures little.
+
+A sharper bound would add a lower bound on weight traffic: each streamed
+weight is re-fetched unless a slice of it is held across rows. That is the
+next theoretical target.
