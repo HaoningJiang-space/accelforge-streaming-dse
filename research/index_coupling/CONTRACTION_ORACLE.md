@@ -408,3 +408,78 @@ a streamed end and 0 for a resident one.
   re-fetch terms.
 - Add group-stage entries.
 - Then the forms can bound or replace the C2 anchors directly.
+
+## 11. Streamed weights, and what exact child responses give C2
+
+**Rule.** At unit M, a contraction's weight carries both of the
+contraction's ranks. Every loopable group loops only on a rank its ops share,
+so a weight is never a "lacking" tensor. It is never kept or re-fetched, only
+sliced.
+
+The leaf requires every live tensor to be scalar, so a streamed weight must be
+sliced on both ranks. Choosing the loop order (first the rank whose loop
+re-fetches nothing) does this with no traffic. The weight then adds exactly
+one operand cell to its own op's peak.
+
+Every form of §8-10 therefore takes w = 1 inside the term of the op that
+streams it. For example:
+
+- single, ends streamed: f(p, q, K − w);
+- single, one end resident: 1 + w;
+- cec, all split at level 2: max(u + s_x + w_1, 2u, u + s_z + w_2).
+
+At w = 0 the forms are unchanged. All earlier frozen predictions were
+re-checked identical.
+
+**Held-out test on synthetic stacks.**
+
+- Predictions were frozen in `3913122d` (`weights_predictions.json`) before
+  any curve was computed (`weights_check.jsonl`).
+- Coverage: every streamed-weight subset of 7 FFN and attention stacks, with
+  1-2 layers and up to 16 subsets, over all C and both tile domains.
+- **Result: 2,064 of 2,064 agree.**
+
+**Archived C2-audit nodes, now admitting streamed weights**
+(`elementwise_archive.jsonl`):
+
+| Case | Qualifying solve nodes | Exact curve | Of which with streamed weights |
+| --- | ---: | ---: | ---: |
+| FFN forward 1 / 2 / 3 / 4 layers | 101 / 423 / 1,421 / 5,123 | all | 54 / 276 / 1,138 / 4,668 |
+| attention forward 2 / 4 layers | 423 / 5,123 | all | 276 / 4,668 |
+| FFN M8 1 / 2 layers | 313 / 933 | all | 165 / 551 |
+| **Total** | **13,860** | **13,860** | **11,796** |
+
+The excluded solve nodes have M > 1, an interior vector that is external or
+owned, or a constrained root.
+
+**What this gives C2** (`c2_exact_children.jsonl`). Covered choices are the
+proper retention choices whose child node has a closed form. For those, the
+exact child curve replaces C2's bound. For the others, the slot bound is kept.
+The counts below are ideal exclusions, measured as in CHAIN_THRESHOLD.md §6
+with the final frontier as incumbent.
+
+| Case | Proper choices | Covered | Ideal exclusions, slot bound | Ideal exclusions, exact where covered |
+| --- | ---: | ---: | ---: | ---: |
+| FFN 1 / 2 / 3 / 4 layers | 118 / 446 / 1,414 / 5,050 | 96 / 392 / 1,328 / 4,932 | 105 / 372 / 1,055 / 2,865 | 112 / 430 / 1,388 / **5,014** |
+| attention 2 / 4 layers | 446 / 5,050 | 392 / 4,932 | 372 / 2,865 | 430 / **5,014** |
+| FFN M8 1 / 2 layers | 2,388 / 7,177 | 910 / 3,043 | 1,383 / 3,955 | 1,595 / 4,797 |
+
+**Interpretation.**
+
+- **Most of these children need no search at all.** In the tiny stacks,
+  88-98% of retention choices have a child with a closed form that costs a
+  few divisor loops.
+- **Pruning becomes nearly ideal.** In FFN-4, 5,014 of 5,050 choices are
+  excluded, against 2,865 with the slot bound. These are ceilings, because
+  the incumbent is the final frontier. The real saving depends on search
+  order.
+- **The form is grammar-specific.** It is exact for this loop grammar (v2,
+  halving or divisor tiles, partitions by cut DP), not for physical
+  schedules (§3).
+
+**Uncovered.**
+
+- Children with M > 1. These are most M8 choices; the parent row loop adds an
+  outer dimension.
+- Group-stage queries.
+- Training graphs, where activations are reused across forward and backward.

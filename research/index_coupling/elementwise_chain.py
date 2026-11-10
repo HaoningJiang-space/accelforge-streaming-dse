@@ -200,7 +200,7 @@ KIND = dict(EH='c', EZ='e', EY='c', ES='c', ESoft='e', EO='c')
 
 
 def archived_chain(graph, state):
-    """(kinds, sizes, resident ends) of a qualifying archived solve node, else None."""
+    """(kinds, sizes, resident ends, streamed flags) of a qualifying archived solve node, else None."""
     if state['stage'] != 'solve' or state['constrained']:
         return None
     names, ops = sorted(graph.sizes), state['ops']
@@ -210,14 +210,15 @@ def archived_chain(graph, state):
         return None
     vectors = [list(graph.access[ops[0]])[0]] + [graph.output(op) for op in ops]
     weights = {t for op in ops for t in graph.access[op] if 'M' not in graph.access[op][t]}
-    if not weights <= external or (set(vectors[1:-1]) & (external | owned)):
+    if set(vectors[1:-1]) & (external | owned):
         return None
+    streamed = [int(any(t in weights - external for t in graph.access[op])) for op in ops]
     kinds = [KIND[op.rstrip('0123456789').rstrip('_')] for op in ops]
     sizes = [1] * len(vectors)
     for i, t in enumerate(vectors):
         for v in graph.dims(t):
             sizes[i] *= ext[v]
-    return kinds, sizes, vectors[0] in external, vectors[-1] in external
+    return kinds, sizes, vectors[0] in external, vectors[-1] in external, streamed
 
 
 def archive(cases):
@@ -230,22 +231,24 @@ def archive(cases):
         with gzip.open(here / 'results/c2_bound' / case / 'baseline.json.gz', 'rt') as stream:
             data = json.load(stream)
         dom = 'halving'  # run_c2_bound_audit.py
-        counts = dict(nodes=len(data['nodes']), qualifying=0, exact=0, positive=0)
+        counts = dict(nodes=len(data['nodes']), qualifying=0, exact=0, positive=0, streamed=0, streamed_exact=0)
         example = None
         for node in data['nodes']:
             chain = archived_chain(graph, node['state'])
             if chain is None:
                 continue
-            kinds, sizes, first, last = chain
+            kinds, sizes, first, last, streamed = chain
             counts['qualifying'] += 1
             points = node['points']
             caps = range(0, max(c for c, _ in points) + 3)
-            ok = all(predict(kinds, sizes, c, dom, first, last) == traffic_at(c, points) for c in caps)
+            ok = all(predict(kinds, sizes, c, dom, first, last, streamed) == traffic_at(c, points) for c in caps)
             counts['exact'] += ok
+            counts['streamed'] += any(streamed)
+            counts['streamed_exact'] += ok and any(streamed)
             counts['positive'] += any(q > 0 for _, q in points)
             if not ok and example is None:
                 example = dict(state=node['state'], points=points,
-                               predict=[(c, predict(kinds, sizes, c, dom, first, last)) for c in caps])
+                               predict=[(c, predict(kinds, sizes, c, dom, first, last, streamed)) for c in caps])
         print(json.dumps(dict(case=case, **counts, mismatch_example=example)))
 
 
