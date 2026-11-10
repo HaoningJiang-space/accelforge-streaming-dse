@@ -85,6 +85,7 @@ class SolverScalingTests(unittest.TestCase):
                     expected = cm.curve(g, ownership_projection=False, **opts)
                     self.assertEqual(cm.curve(g, partitions='dp', **opts), expected)
                     self.assertEqual(cm.curve(g, partitions='dp', canonical_spans=True, **opts), expected)
+                    self.assertEqual(cm.curve(g, partitions='dp', independent_ops=True, **opts), expected)
 
     def test_stream_multiset_matches_eager_unpruned_grammar(self):
         # The old audit strategy is safe ONLY on these deliberately small graphs.

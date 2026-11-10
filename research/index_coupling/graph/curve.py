@@ -124,7 +124,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
           written=frozenset(), split_shared=True, spill_cost=2, *,
           external=frozenset(), entry='solve', root_groups=None, root_kept=None,
           whole_span_cuts=None, legacy_nested_writes=False, partitions='enumerate',
-          ownership_projection=True, stats=None, canonical_spans=False):
+          ownership_projection=True, stats=None, canonical_spans=False, independent_ops=False):
     """Exact frontiers when grid=None; optional per-call performance ledger.
 
     stats is populated even if search raises (e.g. a caller's timeout). Timed
@@ -144,7 +144,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                                     'dp_multiwriter_fallbacks', 'witness_nodes')})
         stats.update(pareto_seconds=0., merge_seconds=0.)
         stats.update(cache_misses_by_span={}, cache_misses_by_extents={},
-                     cache_misses_by_residency={}, renamed_calls=0, rename_nodes=0)
+                     cache_misses_by_residency={}, renamed_calls=0, rename_nodes=0,
+                     independent_splits=0)
 
         def prune(points, max_capacity=float('inf'), grid=None):
             # Materialize before timing: generators can contain recursive work.
@@ -206,6 +207,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         raise ValueError('cut DP currently requires exact frontiers (grid=None)')
     if canonical_spans and grid is not None:
         raise ValueError('span canonicalization currently requires exact frontiers (grid=None)')
+    if independent_ops and grid is not None:
+        raise ValueError('independent operator splitting requires exact frontiers (grid=None)')
     if root_groups is not None:
         root_groups = tuple(tuple(g) for g in root_groups)
         if (entry != 'solve' or any(not g for g in root_groups)
@@ -259,6 +262,15 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         inside_made = project(ops)[2] & {t for op in ops for t in list(graph.access[op])[:-1]}
         return common, inside_made
 
+    @lru_cache(maxsize=None)
+    def shared_tensors(ops):
+        seen, shared = set(), set()
+        for op in ops:
+            tensors = project((op,))[0]
+            shared.update(seen & tensors)
+            seen.update(tensors)
+        return frozenset(shared)
+
     def solve(ops, ext, external, owned, constrained=False):
         state = projected(ops, ext, external, owned)
         if span_names is None or constrained:
@@ -298,6 +310,22 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         live = project(ops)[0] - external
         if not constrained and all(size(t, ext) == 1 for t in live):
             return ((len(live), 0, ()),)
+        if (independent_ops and len(ops) > 1 and not constrained
+                and not (allowed_mask is not None and ops == graph.ops)
+                and shared_tensors(ops) <= external):
+            # Only tensors already reserved by the caller connect these ops.
+            # Projecting any fused plan onto each op preserves its traffic and
+            # cannot increase peak storage. Singleton groups realize that bound.
+            if stats is not None:
+                stats['independent_splits'] += 1
+            groups = tuple((op,) for op in ops)
+            note = (('groups', groups, 'kept', (), 'via DRAM', ()),) if witness else ()
+            level = ((0, 0, note),)
+            for group in groups:
+                level = merge(level, group_curve(group, ext, external, owned), max_capacity)
+                if not level:
+                    break
+            return level
         if partitions == 'dp' and not constrained:
             if len(project(ops)[2]) == len(ops):
                 return cut_dp(ops, ext, external, owned)

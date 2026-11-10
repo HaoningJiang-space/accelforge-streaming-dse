@@ -16,7 +16,8 @@ class SpanNameTests(unittest.TestCase):
             with self.subTest(ops=g.ops, mode=mode):
                 old_stats, new_stats = {}, {}
                 expected = curve(g, partitions=mode, stats=old_stats)
-                points = curve(g, witness=True, partitions=mode, canonical_spans=True, stats=new_stats)
+                points = curve(g, witness=True, partitions=mode, canonical_spans=True,
+                               independent_ops=True, stats=new_stats)
                 self.assertEqual(tuple(p[:2] for p in points), expected)
                 for c, q, w in points:
                     actual = simulate(g, w)
@@ -36,7 +37,7 @@ class SpanNameTests(unittest.TestCase):
         for options, mode in product(options, ('enumerate', 'dp')):
             with self.subTest(options=options, mode=mode):
                 self.assertEqual(curve(g, partitions=mode, **options),
-                                 curve(g, partitions=mode, canonical_spans=True, **options))
+                                 curve(g, partitions=mode, canonical_spans=True, independent_ops=True, **options))
         with self.assertRaises(ValueError):
             curve(g, canonical_spans=True, grid=1.1)
 
@@ -50,6 +51,17 @@ class SpanNameTests(unittest.TestCase):
         self.assertNotEqual(memo.lookup(('E0',))[0], memo.lookup(('E1',))[0])
         for mode in ('enumerate', 'dp'):
             self.assertEqual(curve(g, partitions=mode), curve(g, partitions=mode, canonical_spans=True))
+
+    def test_independent_split_keeps_scalar_and_entry_rules(self):
+        for size in (1, 2):
+            g = Graph(dict(I=size, K=1), [('E0', {'A': ('I',), 'U': ('I',)}),
+                                        ('E1', {'B': ('K',), 'V': ('K',)})])
+            for opts in ({}, dict(entry='group'), dict(whole_span_cuts=())):
+                self.assertEqual(curve(g, **opts), curve(g, independent_ops=True, **opts))
+            for c, q, w in curve(g, independent_ops=True, witness=True):
+                a = simulate(g, w)
+                self.assertTrue(a['valid'])
+                self.assertEqual((a['peak'], a['traffic']), (c, q))
 
     def test_restored_witness_is_valid_after_renaming_entire_graph(self):
         g = fork(2, 2, 2, 2, 'kkk')

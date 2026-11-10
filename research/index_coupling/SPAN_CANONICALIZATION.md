@@ -44,6 +44,34 @@ call appears as a miss but not as a completed cache entry. Marginals do not
 duplicate the full exponential set of keys. Alpha-enabled span histograms name
 representatives; compare totals and residency distributions, not literal names.
 
+## Independent operators under fixed external reservations
+
+`independent_ops=True` adds a separate exact shortcut at the solve entry. If
+every tensor touched by two different operators is already external, the
+operators' nonexternal tensor sets are pairwise disjoint. The optimum is the
+max-capacity/sum-traffic combination of their singleton **group-entry** curves.
+
+For a lower-bound argument, project any joint derivation onto each operator:
+all its loop ranks remain legal because joint loops already require every op
+to use that rank; only private retention decisions remain; traffic for its
+private tensors is unchanged (or a scalar shortcut removes unnecessary work),
+and its private peak cannot increase. External allocations and transfers stay
+with the caller. Independent group optima therefore bound the joint optimum.
+Conversely the singleton partition, with no nonexternal shared tensors to
+charge, realizes their max/sum combination in the original grammar. Operator
+order is preserved, including dependencies through external tensors.
+
+The shortcut runs **after** the original whole-span scalar-leaf rule. It does
+not change group entry, a constrained root partition, or a whole span with
+restricted cut positions. It is disabled with approximate grid pruning. This
+implementation deliberately requires pairwise disjoint private tensor sets;
+it does not recursively factor larger connected components, whose scalar leaf
+and partition-entry conventions would require a different argument.
+
+In a fork, a resident X often makes the consumers independent in this precise
+sense. The shortcut can then eliminate many downstream partitions and nested
+retention contexts. It does not eliminate the outer loop's retention choices.
+
 ## Validation and experiment plan
 
 Before remote measurements, 21 tests pass, including 480 comparisons between
@@ -53,8 +81,9 @@ multiwriter fallback through the prior suite, global-role distinctions and
 independent execution of restored witnesses. These tests supplement the
 equivalence argument; they do not substitute for it.
 
-The second batch compares DP with and without canonicalization, both with the
-new ownership projection and witnesses. Main timings disable profiling. Fixed
+The second batch compares baseline DP, independent-operator splitting, and
+splitting plus name canonicalization, all with the new ownership projection
+and witnesses. Main timings disable profiling. Fixed
 cases are six-consumer forks `(4,2,4,2)` and `(8,4,8,2)`, each with roles `kkkkkk`
 and `kkkiii`. Each job gets 300 seconds including replay and 6 GiB address space;
 at most four jobs run concurrently. Each arm starts a fresh process. Incomplete

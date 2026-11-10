@@ -70,6 +70,7 @@ def worker(args):
     out = dict(case=args.case, kind=kind, args=shape, n_ops=len(graph.ops),
                variant=args.variant, witness=not args.no_witness, profiling=not args.no_profile,
                canonical_spans=args.canonical_spans,
+               independent_ops=args.independent_ops,
                source_sha256=source_hash(), revision=args.revision, python=platform.python_version(),
                started_utc=datetime.now(timezone.utc).isoformat(),
                budgets=dict(seconds=args.seconds, mem_gib=args.mem_gib), stats=stats,
@@ -82,7 +83,8 @@ def worker(args):
     signal.setitimer(signal.ITIMER_REAL, args.seconds)
     try:
         points = curve(graph, witness=not args.no_witness, partitions=mode,
-                       ownership_projection=projected, stats=stats, canonical_spans=args.canonical_spans)
+                       ownership_projection=projected, stats=stats, canonical_spans=args.canonical_spans,
+                       independent_ops=args.independent_ops)
         out.update(search_seconds=time.perf_counter() - begin, points=[list(p[:2]) for p in points],
                    phase='replay', replay_checked=0, replay_failures=[])
         atomic_json(args.out, out)
@@ -121,6 +123,7 @@ def main():
     parser.add_argument('--no-witness', action='store_true')
     parser.add_argument('--no-profile', action='store_true')
     parser.add_argument('--canonical-spans', action='store_true')
+    parser.add_argument('--independent-ops', action='store_true')
     parser.add_argument('--worker', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--case', choices=CASES, help=argparse.SUPPRESS)
     parser.add_argument('--variant', choices=VARIANTS, help=argparse.SUPPRESS)
@@ -134,7 +137,7 @@ def main():
     config = dict(source_sha256=source_hash(), revision=args.revision, seconds=args.seconds,
                   mem_gib=args.mem_gib, workers=args.workers, cases=args.cases, variants=args.variants,
                   witness=not args.no_witness, profiling=not args.no_profile,
-                  canonical_spans=args.canonical_spans)
+                  canonical_spans=args.canonical_spans, independent_ops=args.independent_ops)
     manifest = args.out / 'manifest.json'
     if manifest.exists() and json.loads(manifest.read_text()) != config:
         parser.error('existing output directory has a different source or configuration')
@@ -155,6 +158,8 @@ def main():
             command.append('--no-profile')
         if args.canonical_spans:
             command.append('--canonical-spans')
+        if args.independent_ops:
+            command.append('--independent-ops')
         try:
             p = subprocess.run(command, capture_output=True, text=True, timeout=args.seconds + 15)
             failure = dict(status='crashed', exitcode=p.returncode, stderr=p.stderr[-2000:])
