@@ -172,6 +172,15 @@ banking or precision changes may require a different Gamma and cost model.
    in those coupled states, preserving producer-prefix partition behavior
    and parent reservation/spill costs. Count histograms alone fail in 90/171
    coupled classes. See RESIDENCY_STATE_AUDIT.md; no compression is enabled.
+   **Scalar-X progress:** when I=K=1, X is not external, and the original
+   whole-span scalar leaf does not apply, an unrestricted solve has internal
+   frontier `(max_o |access(o) minus R|, 0)`. Retaining one X cell and streaming
+   each singleton operator attains both lower bounds. The opt-in prototype
+   matches 29,067 recorded states per tiny six-consumer case and removes 81.3%
+   of DP transitions there. Parent alternatives reduce to cost pairs
+   `(reservation + child_capacity, parent_extra_traffic)`, giving an exact
+   local dominance condition. Larger-X states and outer mask enumeration
+   remain open; see SCALAR_BRIDGE_RESULTS.md before generalizing the timings.
 4. **P22, after P21: overlap and buffer occupancy.** A single-channel extension
    must charge double buffering and in-flight tiles against the same capacity
    budget as retained tensors. Prefetch scheduling follows this model; it does

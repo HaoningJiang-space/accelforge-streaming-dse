@@ -25,6 +25,13 @@ X cannot become externally resident in either producer-containing whole-span
 bucket. Count-profile merging outside that condition fails in 90/171 classes
 (same/mixed). No optimizer or frozen P21f source is changed.
 
+Follow-up: [SCALAR_BRIDGE_RESULTS.md](SCALAR_BRIDGE_RESULTS.md) proves an exact
+one-point response for eligible coupled solve states when X is scalar but not
+external. It matches 29,067 states per tiny six-consumer case; an opt-in prototype
+reduces DP transitions 81.3% and cache entries 27.3%, with equal curves, 510
+framed conditional executions and 56 benchmark frontier replays exact. Default
+solver/P21f sources are unchanged; the outer mask enumeration remains.
+
 Solver scaling implementation/results: [SOLVER_SCALING_RESULTS.md](SOLVER_SCALING_RESULTS.md).
 Streaming audit exhausted 175,522 derivations on one tiny graph with no errors
 and 12.4 MiB peak RSS. Cut DP gave an 8.6x median speedup on the 8-operator residual
