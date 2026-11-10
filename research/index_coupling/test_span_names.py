@@ -72,6 +72,15 @@ class SpanNameTests(unittest.TestCase):
             self.assertTrue(actual['valid'])
             self.assertEqual((actual['peak'], actual['traffic']), (c, q))
 
+    def test_private_residency_counts_cannot_erase_positions(self):
+        # Same two resident private inputs, different positions along the order.
+        # A count-only or sorted-profile key would merge unequal subproblems.
+        g = fork(2, 2, 2, 2, 'kkk')
+        for mode, optimized in product(('enumerate', 'dp'), (False, True)):
+            opts = dict(partitions=mode, canonical_spans=optimized, independent_ops=optimized)
+            self.assertEqual(curve(g, external={'C1', 'C2'}, **opts), ((3, 52), (4, 32), (7, 24)))
+            self.assertEqual(curve(g, external={'C0', 'C2'}, **opts), ((3, 56), (4, 32), (7, 24)))
+
 
 if __name__ == '__main__':
     unittest.main()

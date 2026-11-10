@@ -27,7 +27,7 @@ The result is a Pareto set over this restricted model, not a lower bound.
 """
 from functools import lru_cache
 from itertools import product
-from math import floor, log, prod
+from math import floor, isqrt, log, prod
 from time import perf_counter
 from .span_names import SpanNames
 
@@ -120,18 +120,44 @@ def combine_max_sum(a, b, max_capacity=float('inf'), grid=None):
     return tuple(out)
 
 
+@lru_cache(maxsize=None)
+def tile_sizes(extent, domain='halving'):
+    """Proper divisible tiles; the default preserves the historical order."""
+    if domain == 'divisors':
+        values = set()
+        for d in range(1, isqrt(extent) + 1):
+            if extent % d == 0:
+                values.update((d, extent // d))
+        return tuple(sorted(values - {extent}, reverse=True))
+    if domain != 'halving':
+        raise ValueError("tile_domain must be 'halving' or 'divisors'")
+    values = []
+    b = extent // 2
+    while b >= 1:
+        if extent % b == 0:
+            values.append(b)
+        b //= 2
+    return tuple(values)
+
+
 def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_through=True,
           written=frozenset(), split_shared=True, spill_cost=2, *,
           external=frozenset(), entry='solve', root_groups=None, root_kept=None,
           whole_span_cuts=None, legacy_nested_writes=False, partitions='enumerate',
-          ownership_projection=True, stats=None, canonical_spans=False, independent_ops=False):
+          ownership_projection=True, stats=None, canonical_spans=False, independent_ops=False,
+          tile_domain='halving'):
     """Exact frontiers when grid=None; optional per-call performance ledger.
 
     stats is populated even if search raises (e.g. a caller's timeout). Timed
     Pareto/merge sections exclude recursive search; counters describe work, not
     unique executable schedules. ownership_projection=False retains the older
     owned-key projection for controlled comparisons.
+    tile_domain='divisors' admits every proper divisor at every recursive
+    extent. The default 'halving' retains the original integer-halving sequence
+    filtered by divisibility, including its omissions on non-power-of-two sizes.
     """
+    if tile_domain not in ('halving', 'divisors'):
+        raise ValueError("tile_domain must be 'halving' or 'divisors'")
     started = perf_counter()
     span_names = SpanNames(graph) if canonical_spans else None
     prune, merge, join, sweep = pareto, combine_max_sum, cat, merge_staircases
@@ -271,6 +297,25 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
             seen.update(tensors)
         return frozenset(shared)
 
+    @lru_cache(maxsize=None)
+    def cut_metadata(ops):
+        # Incidence is independent of extents, external reservations and owned
+        # writes. Rebuilding it at every recursive state costs millions of scans.
+        use = tuple(project((op,))[0] for op in ops)
+        tensors = project(ops)[0]
+        first = {t: min(i for i, ts in enumerate(use) if t in ts) for t in tensors}
+        last = {t: max(i for i, ts in enumerate(use) if t in ts) for t in tensors}
+        writer = {t: next((i for i, op in enumerate(ops) if output_of(op) == t), None) for t in tensors}
+        crossing = tuple(tuple(sorted(t for t in tensors if first[t] < p <= last[t]))
+                         for p in range(len(ops) + 1))
+        touched, readers = {}, {}
+        for p in range(len(ops)):
+            for q in range(p + 1, len(ops) + 1):
+                touched[p, q] = project(ops[p:q])[0]
+                readers[p, q] = frozenset(t for op in ops[p:q] for t in graph.access[op]
+                                          if t != output_of(op))
+        return first, writer, crossing, touched, readers
+
     def solve(ops, ext, external, owned, constrained=False):
         state = projected(ops, ext, external, owned)
         if span_names is None or constrained:
@@ -408,13 +453,9 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         # The state at p is the keep/DRAM choice of each crossing tensor: every
         # later cost depends on the prefix only through it, and capacity (max)
         # and traffic (sum) are monotone, so Pareto-pruning each state is exact.
-        live = project(ops)[0] - external
         n = len(ops)
-        use = [graph.tensors((op,)) & live for op in ops]
-        first = {t: min(i for i in range(n) if t in use[i]) for t in live}
-        last = {t: max(i for i in range(n) if t in use[i]) for t in live}
-        writer = {t: next((i for i, op in enumerate(ops) if output_of(op) == t), None) for t in live}
-        crossing = [tuple(sorted(t for t in live if first[t] < p <= last[t])) for p in range(n + 1)]
+        first, writer, all_crossing, touched, readers = cut_metadata(ops)
+        crossing = [tuple(t for t in ts if t not in external) for ts in all_crossing]
         allowed = [p == 0 or p == n or allowed_mask is None or ops != graph.ops or allowed_mask >> (p - 1) & 1
                    for p in range(n + 1)]
         if stats is not None:
@@ -432,7 +473,6 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                         continue
                     new = [t for t in crossing[q] if t not in decided]
                     group = ops[p:q]
-                    touched = set().union(*use[p:q])
                     for new_bits in product((True, False), repeat=len(new)):
                         if stats is not None:
                             stats['dp_transitions'] += 1
@@ -440,14 +480,14 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                         if not split_shared and any(not choice[t] and t in produced and n_consumers[t] > 1
                                                     for t in new):
                             continue
-                        dropped = {t for t in touched if t in choice and not choice[t]}
+                        dropped = {t for t, k in choice.items() if not k and t in touched[p, q]}
                         if not write_through and any(
                                 writer[t] is not None and p <= writer[t] < q and
-                                any(t in graph.access[op] and output_of(op) != t for op in group)
+                                t in readers[p, q]
                                 for t in dropped):
                             continue
                         kept = frozenset(t for t, k in choice.items() if k)
-                        across = sum(size(t, ext) for t in set(crossing[p]) | set(crossing[q]) if choice[t])
+                        across = sum(size(t, ext) for t in kept)
                         extra = 0
                         for t in dropped:
                             if writer[t] is not None and t in consumed:
@@ -491,9 +531,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
             if extent == 1 or any(v not in dims_of[t] for t in inside_made - external):
                 continue
             lacking = sorted(t for t in live if v not in dims_of[t])
-            b = extent // 2
-            while b >= 1:
-                if extent % b == 0:
+            for b in tile_sizes(extent, tile_domain):
                     trips = extent // b
                     inner_ext = ext[:i] + (b,) + ext[i + 1:]
                     for keep_bits in product((True, False), repeat=len(lacking)):
@@ -510,7 +548,6 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                         note = () if not witness else (('loop', group, v, f'tile {b} x{trips}', 'kept', tuple(sorted(kept)),
                                  'refetched', tuple(t for t, k in zip(lacking, keep_bits) if not k)),)
                         results.extend((cap + c, extra + trips * t, join(note, w)) for c, t, w in inner)
-                b //= 2
         return prune(results, max_capacity, grid)
 
     ext0 = tuple(graph.sizes[v] for v in names)
@@ -526,5 +563,6 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         if stats is not None:
             stats['solve_cache'] = _solve.cache_info()._asdict()
             stats['group_cache'] = _group_curve.cache_info()._asdict()
+            stats['cut_metadata_cache'] = cut_metadata.cache_info()._asdict()
             stats['span_classes'] = len(span_names.representatives) if span_names is not None else None
             stats['seconds'] = perf_counter() - started
