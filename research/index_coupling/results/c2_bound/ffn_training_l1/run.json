@@ -1,0 +1,239 @@
+{
+  "case": "ffn_training_l1",
+  "revision": "c6544a77",
+  "source_sha256": {
+    "c2_bound_audit.py": "e1dec770257092cb006c23a5ac14977c08fe6840b07693532e591df5e0d04b09",
+    "run_c2_bound_audit.py": "2b7cc0a2a6e5ba4dfd884ce8e95cf5b1955dd4486ab0907e17bab31c62cd38f1",
+    "census_tools.py": "9b505194fc7116033c1f37013b3fc1e8814a8377b6eb301e29d936244bee0581",
+    "C2_BOUND_PROTOCOL.md": "4b1de6230c45381b79b2eec84e51ffacdd5bc36b361ffdcf5e46736970f465f5",
+    "graph/curve.py": "a0af2842f6b5fbb5028c0affce710f194ad28a8df0002702bb4939b1f9045e49",
+    "graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "graph/stacks.py": "ec036a78514ccd85cd46ea20066f1d6d0a727de8c04c76f0d1cad02b90ce9d3b",
+    "graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "graph/remainder.py": "abb659434ccbf677161e556e56fc55186c69eef6638f20b8a9393d4330ffa181",
+    "run_ancestor_width.py": "bb50940a230d1320c2984f1ff9b40cc98ffb3db6bcaaaac55bc77c163992d0f4",
+    "graph/analysis.py": "374ea48664c268ebe90858a48b3890a504afa07497ffe4b6fd1b1d68653b5783"
+  },
+  "status": "complete",
+  "python": "3.10.12",
+  "hash_seed": "0",
+  "budgets": {
+    "seconds": 300,
+    "mem_gib": 6
+  },
+  "options": {
+    "partitions": "dp",
+    "scalar_leaf": "v2",
+    "tile_domain": "halving",
+    "witness": false,
+    "canonical_spans": false,
+    "canonical_remainders": false,
+    "independent_ops": false,
+    "prune_infeasible_groups": false
+  },
+  "graph": {
+    "sizes": {
+      "M": 2,
+      "D0": 2,
+      "D1": 2,
+      "F0": 2
+    },
+    "operators": [
+      [
+        "EH0",
+        {
+          "X0": [
+            "M",
+            "D0"
+          ],
+          "W1_0": [
+            "D0",
+            "F0"
+          ],
+          "H0": [
+            "M",
+            "F0"
+          ]
+        }
+      ],
+      [
+        "EZ0",
+        {
+          "H0": [
+            "M",
+            "F0"
+          ],
+          "Z0": [
+            "M",
+            "F0"
+          ]
+        }
+      ],
+      [
+        "EY0",
+        {
+          "Z0": [
+            "M",
+            "F0"
+          ],
+          "W2_0": [
+            "F0",
+            "D1"
+          ],
+          "X1": [
+            "M",
+            "D1"
+          ]
+        }
+      ],
+      [
+        "EdW2_0",
+        {
+          "Z0": [
+            "M",
+            "F0"
+          ],
+          "G1": [
+            "M",
+            "D1"
+          ],
+          "dW2_0": [
+            "F0",
+            "D1"
+          ]
+        }
+      ],
+      [
+        "EdZ0",
+        {
+          "G1": [
+            "M",
+            "D1"
+          ],
+          "W2_0": [
+            "F0",
+            "D1"
+          ],
+          "dZ0": [
+            "M",
+            "F0"
+          ]
+        }
+      ],
+      [
+        "EdH0",
+        {
+          "dZ0": [
+            "M",
+            "F0"
+          ],
+          "H0": [
+            "M",
+            "F0"
+          ],
+          "dH0": [
+            "M",
+            "F0"
+          ]
+        }
+      ],
+      [
+        "EdW1_0",
+        {
+          "X0": [
+            "M",
+            "D0"
+          ],
+          "dH0": [
+            "M",
+            "F0"
+          ],
+          "dW1_0": [
+            "D0",
+            "F0"
+          ]
+        }
+      ],
+      [
+        "EdX0",
+        {
+          "dH0": [
+            "M",
+            "F0"
+          ],
+          "W1_0": [
+            "D0",
+            "F0"
+          ],
+          "G0": [
+            "M",
+            "D0"
+          ]
+        }
+      ]
+    ]
+  },
+  "baseline_seconds": 11.64799923193641,
+  "root_archive_sha256": "af1d8f33c41aad6d610e5083acf60e76b42073bdc35d3fac45dcdbd939def243",
+  "root_equal": true,
+  "old_census_sha256": "8753d5c2aee46c38c79295e68946ee1fafd5cc40997ca3b3d0290c87481dd899",
+  "census_count_equal": true,
+  "analysis_seconds": 1.0690220680553466,
+  "states": 17225,
+  "decisions": 16533,
+  "summary": {
+    "proper": 16533,
+    "raw_tight": 5037,
+    "slots_tight": 8416,
+    "raw_phantom": 7686,
+    "slots_phantom": 0,
+    "ideal_raw": 8582,
+    "ordered_raw": 3024,
+    "ideal_slots": 11360,
+    "ordered_slots": 4027,
+    "raw_gap_sum_of_edge_maxima": 59918
+  },
+  "ordered_work_projection": {
+    "raw": {
+      "removed_edges": 3024,
+      "skipped_calls_from_reachable_parents": 3022,
+      "unreachable_states": 640,
+      "unreachable_by_entry": {
+        "solve": 627,
+        "group": 13
+      },
+      "retained_states": 16585,
+      "saved_exclusive_work": {
+        "dp_transitions": 31222,
+        "loop_choices": 40,
+        "pareto_candidates": 179386,
+        "merge_inputs": 96784
+      },
+      "retained_anchor_calls": 4343
+    },
+    "slots": {
+      "removed_edges": 4027,
+      "skipped_calls_from_reachable_parents": 4018,
+      "unreachable_states": 837,
+      "unreachable_by_entry": {
+        "solve": 812,
+        "group": 25
+      },
+      "retained_states": 16388,
+      "saved_exclusive_work": {
+        "dp_transitions": 34860,
+        "loop_choices": 64,
+        "pareto_candidates": 186974,
+        "merge_inputs": 103314
+      },
+      "retained_anchor_calls": 4327
+    }
+  },
+  "seconds": 16.584158027078956,
+  "peak_rss_kib": 343356,
+  "artifacts_sha256": {
+    "baseline.json.gz": "e1dfc99632373c2660cb3c166237156228024d94890fe7baa2940fc8d26a28c3",
+    "analysis.json": "c6535d34fd04eee1e20661cfdd34aec4e3127af2e34bb8d9a0f82b7176ef940f",
+    "choices.jsonl.gz": "5e0c1fce3afbfb6d598bb2bdab39208813a8db0ef1391412e7c6db526aa60afe"
+  }
+}

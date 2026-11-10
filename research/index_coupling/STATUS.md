@@ -42,6 +42,16 @@ fork4_kkk. With X reads, residual plateaus move from 13 to 11 B. v1 stays the
 default; frozen verdicts are v1 statements. Supporting analyses:
 REMAINDER_LEMMAS.md, WORK_ATTRIBUTION.md and LIFT_RESULTS.md.
 
+C2 lower-bound audit (v2, offline): [C2_BOUND_RESULTS.md](C2_BOUND_RESULTS.md).
+All nine roots and six available old census counts match; 38,622 non-anchor
+loop choices reconstruct exactly. The all-resident bound loses child capacity
+conflicts: at the whole-root M loop of FFN-4, even the ideal incumbent can
+exclude only 36/255 proper choices. Across that case the recorded-order shadow
+projects 20.29% less DP work, or 20.31% with operand-slot clipping. On the
+larger-extent two-layer FFN, slots skip 42.62% of choices but only 0.48% of DP
+work because shared responses remain reachable. No online pruning or speedup
+is claimed. Next derive a tighter conditional child bound before implementation.
+
 Order-complete Fork symmetry: [FORK_QUOTIENT_RESULTS.md](FORK_QUOTIENT_RESULTS.md).
 A separate exact quotient retains joint input/output residency profiles within
 each role and reconstructs a consistent global order. Five complete reference

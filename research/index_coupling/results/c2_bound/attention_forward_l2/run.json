@@ -1,0 +1,203 @@
+{
+  "case": "attention_forward_l2",
+  "revision": "c6544a77",
+  "source_sha256": {
+    "c2_bound_audit.py": "e1dec770257092cb006c23a5ac14977c08fe6840b07693532e591df5e0d04b09",
+    "run_c2_bound_audit.py": "2b7cc0a2a6e5ba4dfd884ce8e95cf5b1955dd4486ab0907e17bab31c62cd38f1",
+    "census_tools.py": "9b505194fc7116033c1f37013b3fc1e8814a8377b6eb301e29d936244bee0581",
+    "C2_BOUND_PROTOCOL.md": "4b1de6230c45381b79b2eec84e51ffacdd5bc36b361ffdcf5e46736970f465f5",
+    "graph/curve.py": "a0af2842f6b5fbb5028c0affce710f194ad28a8df0002702bb4939b1f9045e49",
+    "graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "graph/stacks.py": "ec036a78514ccd85cd46ea20066f1d6d0a727de8c04c76f0d1cad02b90ce9d3b",
+    "graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "graph/remainder.py": "abb659434ccbf677161e556e56fc55186c69eef6638f20b8a9393d4330ffa181",
+    "run_ancestor_width.py": "bb50940a230d1320c2984f1ff9b40cc98ffb3db6bcaaaac55bc77c163992d0f4",
+    "graph/analysis.py": "374ea48664c268ebe90858a48b3890a504afa07497ffe4b6fd1b1d68653b5783"
+  },
+  "status": "complete",
+  "python": "3.10.12",
+  "hash_seed": "0",
+  "budgets": {
+    "seconds": 300,
+    "mem_gib": 6
+  },
+  "options": {
+    "partitions": "dp",
+    "scalar_leaf": "v2",
+    "tile_domain": "halving",
+    "witness": false,
+    "canonical_spans": false,
+    "canonical_remainders": false,
+    "independent_ops": false,
+    "prune_infeasible_groups": false
+  },
+  "graph": {
+    "sizes": {
+      "M": 2,
+      "D0": 2,
+      "D1": 2,
+      "D2": 2,
+      "P0": 2,
+      "P1": 2
+    },
+    "operators": [
+      [
+        "ES0",
+        {
+          "X0": [
+            "M",
+            "D0"
+          ],
+          "K0": [
+            "P0",
+            "D0"
+          ],
+          "S0": [
+            "M",
+            "P0"
+          ]
+        }
+      ],
+      [
+        "ESoft0",
+        {
+          "S0": [
+            "M",
+            "P0"
+          ],
+          "A0": [
+            "M",
+            "P0"
+          ]
+        }
+      ],
+      [
+        "EO0",
+        {
+          "A0": [
+            "M",
+            "P0"
+          ],
+          "V0": [
+            "P0",
+            "D1"
+          ],
+          "X1": [
+            "M",
+            "D1"
+          ]
+        }
+      ],
+      [
+        "ES1",
+        {
+          "X1": [
+            "M",
+            "D1"
+          ],
+          "K1": [
+            "P1",
+            "D1"
+          ],
+          "S1": [
+            "M",
+            "P1"
+          ]
+        }
+      ],
+      [
+        "ESoft1",
+        {
+          "S1": [
+            "M",
+            "P1"
+          ],
+          "A1": [
+            "M",
+            "P1"
+          ]
+        }
+      ],
+      [
+        "EO1",
+        {
+          "A1": [
+            "M",
+            "P1"
+          ],
+          "V1": [
+            "P1",
+            "D2"
+          ],
+          "X2": [
+            "M",
+            "D2"
+          ]
+        }
+      ]
+    ]
+  },
+  "baseline_seconds": 0.21192541788332164,
+  "root_archive_sha256": "a59c1add4e01cd3516a3c938b8f99761749f7f5e54e52f84a03288ffe7a1e0b3",
+  "root_equal": true,
+  "old_census_sha256": "885af4d5dd867f5df9b58117d4de2c5cbb92075e5df90d1962ae2f67d59a4bff",
+  "census_count_equal": true,
+  "analysis_seconds": 0.05238748714327812,
+  "states": 1052,
+  "decisions": 446,
+  "summary": {
+    "proper": 446,
+    "raw_tight": 52,
+    "slots_tight": 291,
+    "raw_phantom": 390,
+    "slots_phantom": 0,
+    "ideal_raw": 146,
+    "ordered_raw": 30,
+    "ideal_slots": 372,
+    "ordered_slots": 118,
+    "raw_gap_sum_of_edge_maxima": 1404
+  },
+  "ordered_work_projection": {
+    "raw": {
+      "removed_edges": 30,
+      "skipped_calls_from_reachable_parents": 30,
+      "unreachable_states": 30,
+      "unreachable_by_entry": {
+        "solve": 22,
+        "group": 8
+      },
+      "retained_states": 1022,
+      "saved_exclusive_work": {
+        "dp_transitions": 614,
+        "loop_choices": 0,
+        "pareto_candidates": 2286,
+        "merge_inputs": 1679
+      },
+      "retained_anchor_calls": 383
+    },
+    "slots": {
+      "removed_edges": 118,
+      "skipped_calls_from_reachable_parents": 113,
+      "unreachable_states": 62,
+      "unreachable_by_entry": {
+        "solve": 49,
+        "group": 13
+      },
+      "retained_states": 990,
+      "saved_exclusive_work": {
+        "dp_transitions": 646,
+        "loop_choices": 12,
+        "pareto_candidates": 2394,
+        "merge_inputs": 1745
+      },
+      "retained_anchor_calls": 377
+    }
+  },
+  "seconds": 0.3742458240594715,
+  "peak_rss_kib": 26028,
+  "artifacts_sha256": {
+    "baseline.json.gz": "a2f7a2478c5695d5a53a25f4a1b545541cd0c825fc0e65cc1d8a3fc7155b7c85",
+    "analysis.json": "d8ed32b368a44d16ac3d3a1880701248e0fa4fd566899f751cb10376340578c7",
+    "choices.jsonl.gz": "fbc93c4ed3089a0eff2da202766b0902969c1a33e6040e08c724f3715179d38a"
+  }
+}

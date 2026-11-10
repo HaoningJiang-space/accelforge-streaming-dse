@@ -1,0 +1,4793 @@
+{
+  "case": "ffn_forward_l3",
+  "states": 3221,
+  "unique_call_edges": 67340,
+  "all_queries": 67341,
+  "baseline_work": {
+    "dp_transitions": 65254,
+    "loop_choices": 2095,
+    "pareto_candidates": 198160,
+    "merge_inputs": 169911
+  },
+  "counts": {
+    "families": 681,
+    "bound_classes": 1446,
+    "actions": 2095,
+    "anchors": 681,
+    "proper": 1414
+  },
+  "strata": {
+    "all": {
+      "proper": 1414,
+      "raw_tight": 103,
+      "slots_tight": 494,
+      "raw_phantom": 1288,
+      "slots_phantom": 0,
+      "ideal_raw": 687,
+      "ordered_raw": 235,
+      "ideal_slots": 1055,
+      "ordered_slots": 392,
+      "raw_gap_sum_of_edge_maxima": 11368
+    },
+    "other_axes": {
+      "proper": 287,
+      "raw_tight": 37,
+      "slots_tight": 253,
+      "raw_phantom": 250,
+      "slots_phantom": 0,
+      "ideal_raw": 50,
+      "ordered_raw": 4,
+      "ideal_slots": 261,
+      "ordered_slots": 88,
+      "raw_gap_sum_of_edge_maxima": 176
+    },
+    "lacking_1": {
+      "proper": 356,
+      "raw_tight": 30,
+      "slots_tight": 310,
+      "raw_phantom": 326,
+      "slots_phantom": 0,
+      "ideal_raw": 30,
+      "ordered_raw": 4,
+      "ideal_slots": 316,
+      "ordered_slots": 146,
+      "raw_gap_sum_of_edge_maxima": 224
+    },
+    "single_op": {
+      "proper": 232,
+      "raw_tight": 0,
+      "slots_tight": 214,
+      "raw_phantom": 232,
+      "slots_phantom": 0,
+      "ideal_raw": 0,
+      "ordered_raw": 0,
+      "ideal_slots": 220,
+      "ordered_slots": 138,
+      "raw_gap_sum_of_edge_maxima": 72
+    },
+    "M": {
+      "proper": 1127,
+      "raw_tight": 66,
+      "slots_tight": 241,
+      "raw_phantom": 1038,
+      "slots_phantom": 0,
+      "ideal_raw": 637,
+      "ordered_raw": 231,
+      "ideal_slots": 794,
+      "ordered_slots": 304,
+      "raw_gap_sum_of_edge_maxima": 11192
+    },
+    "multi_op": {
+      "proper": 1182,
+      "raw_tight": 103,
+      "slots_tight": 280,
+      "raw_phantom": 1056,
+      "slots_phantom": 0,
+      "ideal_raw": 687,
+      "ordered_raw": 235,
+      "ideal_slots": 835,
+      "ordered_slots": 254,
+      "raw_gap_sum_of_edge_maxima": 11296
+    },
+    "lacking_2": {
+      "proper": 279,
+      "raw_tight": 59,
+      "slots_tight": 170,
+      "raw_phantom": 212,
+      "slots_phantom": 0,
+      "ideal_raw": 128,
+      "ordered_raw": 33,
+      "ideal_slots": 210,
+      "ordered_slots": 48,
+      "raw_gap_sum_of_edge_maxima": 996
+    },
+    "lacking_3": {
+      "proper": 168,
+      "raw_tight": 8,
+      "slots_tight": 8,
+      "raw_phantom": 152,
+      "slots_phantom": 0,
+      "ideal_raw": 132,
+      "ordered_raw": 24,
+      "ideal_slots": 132,
+      "ordered_slots": 24,
+      "raw_gap_sum_of_edge_maxima": 1584
+    },
+    "lacking_4": {
+      "proper": 300,
+      "raw_tight": 6,
+      "slots_tight": 6,
+      "raw_phantom": 289,
+      "slots_phantom": 0,
+      "ideal_raw": 236,
+      "ordered_raw": 99,
+      "ideal_slots": 236,
+      "ordered_slots": 99,
+      "raw_gap_sum_of_edge_maxima": 3912
+    },
+    "lacking_5": {
+      "proper": 248,
+      "raw_tight": 0,
+      "slots_tight": 0,
+      "raw_phantom": 246,
+      "slots_phantom": 0,
+      "ideal_raw": 140,
+      "ordered_raw": 67,
+      "ideal_slots": 140,
+      "ordered_slots": 67,
+      "raw_gap_sum_of_edge_maxima": 3732
+    },
+    "lacking_6": {
+      "proper": 63,
+      "raw_tight": 0,
+      "slots_tight": 0,
+      "raw_phantom": 63,
+      "slots_phantom": 0,
+      "ideal_raw": 21,
+      "ordered_raw": 8,
+      "ideal_slots": 21,
+      "ordered_slots": 8,
+      "raw_gap_sum_of_edge_maxima": 920
+    }
+  },
+  "ordered_work_projection": {
+    "raw": {
+      "removed_edges": 235,
+      "skipped_calls_from_reachable_parents": 235,
+      "unreachable_states": 239,
+      "unreachable_by_entry": {
+        "solve": 219,
+        "group": 20
+      },
+      "retained_states": 2982,
+      "saved_exclusive_work": {
+        "dp_transitions": 14735,
+        "loop_choices": 0,
+        "pareto_candidates": 43558,
+        "merge_inputs": 38199
+      },
+      "retained_anchor_calls": 681
+    },
+    "slots": {
+      "removed_edges": 392,
+      "skipped_calls_from_reachable_parents": 387,
+      "unreachable_states": 292,
+      "unreachable_by_entry": {
+        "solve": 267,
+        "group": 25
+      },
+      "retained_states": 2929,
+      "saved_exclusive_work": {
+        "dp_transitions": 14798,
+        "loop_choices": 12,
+        "pareto_candidates": 43759,
+        "merge_inputs": 38329
+      },
+      "retained_anchor_calls": 675
+    }
+  },
+  "top_families": [
+    {
+      "axis": "M",
+      "tile": 1,
+      "lacking": [
+        "W1_0",
+        "W1_1",
+        "W1_2",
+        "W2_0",
+        "W2_1",
+        "W2_2"
+      ],
+      "anchor": [
+        [
+          2,
+          26
+        ],
+        [
+          3,
+          16
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "parent": [
+        [
+          3,
+          76
+        ],
+        [
+          4,
+          40
+        ],
+        [
+          5,
+          24
+        ],
+        [
+          9,
+          20
+        ],
+        [
+          13,
+          16
+        ],
+        [
+          17,
+          12
+        ],
+        [
+          20,
+          8
+        ],
+        [
+          24,
+          4
+        ],
+        [
+          28,
+          0
+        ]
+      ],
+      "classes": 7,
+      "actions": [
+        {
+          "parent": 1639,
+          "child": 1640,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 24,
+          "extra": 0,
+          "trips": 2,
+          "slots": 2,
+          "actual": [
+            [
+              26,
+              52
+            ],
+            [
+              27,
+              32
+            ],
+            [
+              28,
+              0
+            ]
+          ],
+          "cold": 1,
+          "full": true,
+          "raw": [
+            [
+              26,
+              52
+            ],
+            [
+              27,
+              32
+            ],
+            [
+              28,
+              0
+            ]
+          ],
+          "slots_bound": [
+            [
+              26,
+              52
+            ],
+            [
+              27,
+              32
+            ],
+            [
+              28,
+              0
+            ]
+          ]
+        },
+        {
+          "parent": 1639,
+          "child": 1689,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 20,
+          "extra": 4,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              23,
+              40
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              22,
+              56
+            ],
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "slots_bound": [
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1739,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 20,
+          "extra": 4,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              23,
+              44
+            ],
+            [
+              24,
+              12
+            ],
+            [
+              25,
+              4
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              22,
+              56
+            ],
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "slots_bound": [
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1751,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              52
+            ],
+            [
+              20,
+              16
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1763,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 20,
+          "extra": 4,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              23,
+              40
+            ],
+            [
+              24,
+              8
+            ],
+            [
+              25,
+              4
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              22,
+              56
+            ],
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "slots_bound": [
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": true,
+          "ideal_slots": true,
+          "ordered_slots": true
+        },
+        {
+          "parent": 1639,
+          "child": 1769,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              52
+            ],
+            [
+              20,
+              12
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1775,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              56
+            ],
+            [
+              20,
+              20
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1781,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W1_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              64
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1787,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 20,
+          "extra": 4,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              23,
+              40
+            ],
+            [
+              24,
+              12
+            ],
+            [
+              25,
+              4
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              22,
+              56
+            ],
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "slots_bound": [
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": true,
+          "ideal_slots": true,
+          "ordered_slots": true
+        },
+        {
+          "parent": 1639,
+          "child": 1809,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W2_0",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              44
+            ],
+            [
+              20,
+              16
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1831,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W2_0",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              52
+            ],
+            [
+              20,
+              16
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1843,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W2_0"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              56
+            ],
+            [
+              16,
+              20
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1855,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              56
+            ],
+            [
+              20,
+              20
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1861,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1867,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1873,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              68
+            ],
+            [
+              12,
+              28
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1879,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 20,
+          "extra": 4,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              23,
+              40
+            ],
+            [
+              24,
+              12
+            ],
+            [
+              25,
+              4
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              22,
+              56
+            ],
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "slots_bound": [
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": true,
+          "ideal_slots": true,
+          "ordered_slots": true
+        },
+        {
+          "parent": 1639,
+          "child": 1887,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_2",
+            "W2_0",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              52
+            ],
+            [
+              20,
+              16
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1895,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_2",
+            "W2_0",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              52
+            ],
+            [
+              20,
+              16
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1903,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_2",
+            "W2_0"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              20
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1911,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_2",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              48
+            ],
+            [
+              20,
+              16
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1917,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_2",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              20
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1923,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_2",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1929,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W1_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              68
+            ],
+            [
+              12,
+              28
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1935,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              56
+            ],
+            [
+              20,
+              20
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1943,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W2_0",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1951,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W2_0",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              28
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1959,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W2_0"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              64
+            ],
+            [
+              12,
+              32
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1967,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              28
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1973,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              64
+            ],
+            [
+              12,
+              32
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1979,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              68
+            ],
+            [
+              12,
+              32
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1985,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_0"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 4,
+          "extra": 20,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              7,
+              72
+            ],
+            [
+              8,
+              36
+            ],
+            [
+              9,
+              20
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              6,
+              72
+            ],
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "slots_bound": [
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1991,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 20,
+          "extra": 4,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              23,
+              40
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              22,
+              56
+            ],
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "slots_bound": [
+            [
+              23,
+              36
+            ],
+            [
+              24,
+              4
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": true,
+          "ideal_slots": true,
+          "ordered_slots": true
+        },
+        {
+          "parent": 1639,
+          "child": 1993,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              48
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": false,
+          "ideal_slots": true,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1995,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              52
+            ],
+            [
+              20,
+              16
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": true,
+          "ideal_slots": true,
+          "ordered_slots": true
+        },
+        {
+          "parent": 1639,
+          "child": 1997,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W1_2",
+            "W2_0"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              20
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 1999,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W1_2",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              44
+            ],
+            [
+              20,
+              16
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": true,
+          "ideal_slots": true,
+          "ordered_slots": true
+        },
+        {
+          "parent": 1639,
+          "child": 2001,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W1_2",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              56
+            ],
+            [
+              16,
+              20
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2003,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W1_2",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2005,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W1_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              68
+            ],
+            [
+              12,
+              28
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2007,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              48
+            ],
+            [
+              20,
+              16
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": true,
+          "ideal_slots": true,
+          "ordered_slots": true
+        },
+        {
+          "parent": 1639,
+          "child": 2009,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W2_0",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              52
+            ],
+            [
+              16,
+              20
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2011,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W2_0",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              20
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2013,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W2_0"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              64
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2015,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              28
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2017,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              64
+            ],
+            [
+              12,
+              32
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2019,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              64
+            ],
+            [
+              12,
+              32
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2021,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 4,
+          "extra": 20,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              7,
+              72
+            ],
+            [
+              8,
+              36
+            ],
+            [
+              9,
+              20
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              6,
+              72
+            ],
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "slots_bound": [
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2023,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 16,
+          "extra": 8,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              19,
+              48
+            ],
+            [
+              20,
+              16
+            ],
+            [
+              21,
+              8
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              18,
+              60
+            ],
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "slots_bound": [
+            [
+              19,
+              40
+            ],
+            [
+              20,
+              8
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": true,
+          "ordered_raw": true,
+          "ideal_slots": true,
+          "ordered_slots": true
+        },
+        {
+          "parent": 1639,
+          "child": 2025,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_2",
+            "W2_0",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              20
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2027,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_2",
+            "W2_0",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              60
+            ],
+            [
+              16,
+              20
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2029,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_2",
+            "W2_0"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              68
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2031,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_2",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              52
+            ],
+            [
+              16,
+              20
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2033,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_2",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              64
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2035,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_2",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              64
+            ],
+            [
+              12,
+              32
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2037,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W1_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 4,
+          "extra": 20,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              7,
+              72
+            ],
+            [
+              8,
+              36
+            ],
+            [
+              9,
+              20
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              6,
+              72
+            ],
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "slots_bound": [
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2039,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 12,
+          "extra": 12,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              15,
+              64
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              12
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              14,
+              64
+            ],
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "slots_bound": [
+            [
+              15,
+              44
+            ],
+            [
+              16,
+              12
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2041,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W2_0",
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              68
+            ],
+            [
+              12,
+              28
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2043,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W2_0",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              68
+            ],
+            [
+              12,
+              32
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2045,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W2_0"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 4,
+          "extra": 20,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              7,
+              72
+            ],
+            [
+              8,
+              36
+            ],
+            [
+              9,
+              20
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              6,
+              72
+            ],
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "slots_bound": [
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2047,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W2_1",
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 8,
+          "extra": 16,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              11,
+              68
+            ],
+            [
+              12,
+              32
+            ],
+            [
+              13,
+              16
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              10,
+              68
+            ],
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "slots_bound": [
+            [
+              11,
+              48
+            ],
+            [
+              12,
+              16
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2049,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W2_1"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 4,
+          "extra": 20,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              7,
+              72
+            ],
+            [
+              8,
+              36
+            ],
+            [
+              9,
+              20
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              6,
+              72
+            ],
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "slots_bound": [
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2051,
+          "axis": "M",
+          "tile": 1,
+          "keep": [
+            "W2_2"
+          ],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 4,
+          "extra": 20,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              7,
+              72
+            ],
+            [
+              8,
+              36
+            ],
+            [
+              9,
+              20
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              6,
+              72
+            ],
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "slots_bound": [
+            [
+              7,
+              52
+            ],
+            [
+              8,
+              20
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        },
+        {
+          "parent": 1639,
+          "child": 2053,
+          "axis": "M",
+          "tile": 1,
+          "keep": [],
+          "lacking": [
+            "W1_0",
+            "W1_1",
+            "W1_2",
+            "W2_0",
+            "W2_1",
+            "W2_2"
+          ],
+          "allocation": 0,
+          "extra": 24,
+          "trips": 2,
+          "slots": 3,
+          "actual": [
+            [
+              3,
+              76
+            ],
+            [
+              4,
+              40
+            ],
+            [
+              5,
+              24
+            ]
+          ],
+          "cold": 1,
+          "full": false,
+          "raw": [
+            [
+              2,
+              76
+            ],
+            [
+              3,
+              56
+            ],
+            [
+              4,
+              24
+            ]
+          ],
+          "slots_bound": [
+            [
+              3,
+              56
+            ],
+            [
+              4,
+              24
+            ]
+          ],
+          "raw_tight": false,
+          "slots_tight": false,
+          "raw_phantom": true,
+          "slots_phantom": false,
+          "ideal_raw": false,
+          "ordered_raw": false,
+          "ideal_slots": false,
+          "ordered_slots": false
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "all_loop_choices_reconstructed": true,
+    "all_child_contexts_found": true,
+    "all_lower_bounds_valid": true,
+    "all_group_envelopes_equal": true,
+    "all_ordered_shadow_envelopes_equal": true,
+    "exclusive_counters_sum": true
+  }
+}

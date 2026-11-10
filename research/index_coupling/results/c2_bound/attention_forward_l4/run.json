@@ -1,0 +1,299 @@
+{
+  "case": "attention_forward_l4",
+  "revision": "c6544a77",
+  "source_sha256": {
+    "c2_bound_audit.py": "e1dec770257092cb006c23a5ac14977c08fe6840b07693532e591df5e0d04b09",
+    "run_c2_bound_audit.py": "2b7cc0a2a6e5ba4dfd884ce8e95cf5b1955dd4486ab0907e17bab31c62cd38f1",
+    "census_tools.py": "9b505194fc7116033c1f37013b3fc1e8814a8377b6eb301e29d936244bee0581",
+    "C2_BOUND_PROTOCOL.md": "4b1de6230c45381b79b2eec84e51ffacdd5bc36b361ffdcf5e46736970f465f5",
+    "graph/curve.py": "a0af2842f6b5fbb5028c0affce710f194ad28a8df0002702bb4939b1f9045e49",
+    "graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "graph/stacks.py": "ec036a78514ccd85cd46ea20066f1d6d0a727de8c04c76f0d1cad02b90ce9d3b",
+    "graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "graph/remainder.py": "abb659434ccbf677161e556e56fc55186c69eef6638f20b8a9393d4330ffa181",
+    "run_ancestor_width.py": "bb50940a230d1320c2984f1ff9b40cc98ffb3db6bcaaaac55bc77c163992d0f4",
+    "graph/analysis.py": "374ea48664c268ebe90858a48b3890a504afa07497ffe4b6fd1b1d68653b5783"
+  },
+  "status": "complete",
+  "python": "3.10.12",
+  "hash_seed": "0",
+  "budgets": {
+    "seconds": 300,
+    "mem_gib": 6
+  },
+  "options": {
+    "partitions": "dp",
+    "scalar_leaf": "v2",
+    "tile_domain": "halving",
+    "witness": false,
+    "canonical_spans": false,
+    "canonical_remainders": false,
+    "independent_ops": false,
+    "prune_infeasible_groups": false
+  },
+  "graph": {
+    "sizes": {
+      "M": 2,
+      "D0": 2,
+      "D1": 2,
+      "D2": 2,
+      "D3": 2,
+      "D4": 2,
+      "P0": 2,
+      "P1": 2,
+      "P2": 2,
+      "P3": 2
+    },
+    "operators": [
+      [
+        "ES0",
+        {
+          "X0": [
+            "M",
+            "D0"
+          ],
+          "K0": [
+            "P0",
+            "D0"
+          ],
+          "S0": [
+            "M",
+            "P0"
+          ]
+        }
+      ],
+      [
+        "ESoft0",
+        {
+          "S0": [
+            "M",
+            "P0"
+          ],
+          "A0": [
+            "M",
+            "P0"
+          ]
+        }
+      ],
+      [
+        "EO0",
+        {
+          "A0": [
+            "M",
+            "P0"
+          ],
+          "V0": [
+            "P0",
+            "D1"
+          ],
+          "X1": [
+            "M",
+            "D1"
+          ]
+        }
+      ],
+      [
+        "ES1",
+        {
+          "X1": [
+            "M",
+            "D1"
+          ],
+          "K1": [
+            "P1",
+            "D1"
+          ],
+          "S1": [
+            "M",
+            "P1"
+          ]
+        }
+      ],
+      [
+        "ESoft1",
+        {
+          "S1": [
+            "M",
+            "P1"
+          ],
+          "A1": [
+            "M",
+            "P1"
+          ]
+        }
+      ],
+      [
+        "EO1",
+        {
+          "A1": [
+            "M",
+            "P1"
+          ],
+          "V1": [
+            "P1",
+            "D2"
+          ],
+          "X2": [
+            "M",
+            "D2"
+          ]
+        }
+      ],
+      [
+        "ES2",
+        {
+          "X2": [
+            "M",
+            "D2"
+          ],
+          "K2": [
+            "P2",
+            "D2"
+          ],
+          "S2": [
+            "M",
+            "P2"
+          ]
+        }
+      ],
+      [
+        "ESoft2",
+        {
+          "S2": [
+            "M",
+            "P2"
+          ],
+          "A2": [
+            "M",
+            "P2"
+          ]
+        }
+      ],
+      [
+        "EO2",
+        {
+          "A2": [
+            "M",
+            "P2"
+          ],
+          "V2": [
+            "P2",
+            "D3"
+          ],
+          "X3": [
+            "M",
+            "D3"
+          ]
+        }
+      ],
+      [
+        "ES3",
+        {
+          "X3": [
+            "M",
+            "D3"
+          ],
+          "K3": [
+            "P3",
+            "D3"
+          ],
+          "S3": [
+            "M",
+            "P3"
+          ]
+        }
+      ],
+      [
+        "ESoft3",
+        {
+          "S3": [
+            "M",
+            "P3"
+          ],
+          "A3": [
+            "M",
+            "P3"
+          ]
+        }
+      ],
+      [
+        "EO3",
+        {
+          "A3": [
+            "M",
+            "P3"
+          ],
+          "V3": [
+            "P3",
+            "D4"
+          ],
+          "X4": [
+            "M",
+            "D4"
+          ]
+        }
+      ]
+    ]
+  },
+  "baseline_seconds": 15.470202100928873,
+  "root_archive_sha256": "51f501c2f54c7f63fc51037f1376a980142a6784e8f86e4cbeafc5330c4d08a8",
+  "root_equal": true,
+  "analysis_seconds": 1.122789896093309,
+  "states": 10834,
+  "decisions": 5050,
+  "summary": {
+    "proper": 5050,
+    "raw_tight": 166,
+    "slots_tight": 709,
+    "raw_phantom": 4826,
+    "slots_phantom": 0,
+    "ideal_raw": 2355,
+    "ordered_raw": 1061,
+    "ideal_slots": 2865,
+    "ordered_slots": 1265,
+    "raw_gap_sum_of_edge_maxima": 72672
+  },
+  "ordered_work_projection": {
+    "raw": {
+      "removed_edges": 1061,
+      "skipped_calls_from_reachable_parents": 1061,
+      "unreachable_states": 1074,
+      "unreachable_by_entry": {
+        "solve": 1042,
+        "group": 32
+      },
+      "retained_states": 9760,
+      "saved_exclusive_work": {
+        "dp_transitions": 120350,
+        "loop_choices": 0,
+        "pareto_candidates": 296701,
+        "merge_inputs": 307219
+      },
+      "retained_anchor_calls": 1015
+    },
+    "slots": {
+      "removed_edges": 1265,
+      "skipped_calls_from_reachable_parents": 1260,
+      "unreachable_states": 1138,
+      "unreachable_by_entry": {
+        "solve": 1101,
+        "group": 37
+      },
+      "retained_states": 9696,
+      "saved_exclusive_work": {
+        "dp_transitions": 120434,
+        "loop_choices": 12,
+        "pareto_candidates": 296956,
+        "merge_inputs": 307390
+      },
+      "retained_anchor_calls": 1009
+    }
+  },
+  "seconds": 23.240662332857028,
+  "peak_rss_kib": 399652,
+  "artifacts_sha256": {
+    "baseline.json.gz": "a34c77d93b654181a5323daa333dfdd3a919cf4ed4b1c9929b48cc89045af32e",
+    "analysis.json": "9213aa456e856f8a0ae40cd3c922c1f741cef069734c28896cf2326a37971c74",
+    "choices.jsonl.gz": "9adcbd29f2e3d965e097a57f629e754bbc2014a06c6f8ea4d5cf7076da24d4c9"
+  }
+}

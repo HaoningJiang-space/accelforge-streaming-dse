@@ -75,6 +75,17 @@ banking or precision changes may require a different Gamma and cost model.
 
 ## Steps
 
+v2 bound checkpoint: [C2_BOUND_RESULTS.md](C2_BOUND_RESULTS.md) completes the
+requested offline C2 analysis. Validity survives every reconstructed choice,
+but the full-resident relaxation loses child capacity/traffic conflicts. The
+ordered shadow projects 20.29% DP savings on tiny FFN-4 and only 0.34% on the
+larger-extent two-layer FFN; slot clipping changes these to 20.31% and 0.48%.
+No online rule has been added. First derive a structural child bound that can
+distinguish the observed zero-extra thresholds (4 versus 5 free bytes, including
+first/last weight exceptions), then measure useful work through the shared call
+DAG. This is a candidate theorem task, not a new frozen prediction or a claim
+that a plateau bound alone suffices for the entire frontier.
+
 Implementation checkpoint: [REMAINDER_SEARCH_RESULTS.md](REMAINDER_SEARCH_RESULTS.md)
 turns the ordered-remainder sufficiency and infeasible-group lemmas into opt-in
 core rules. The 64 local comparisons agree, but exact representation costs
