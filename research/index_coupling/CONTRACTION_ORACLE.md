@@ -689,3 +689,82 @@ each ledger counter's total (`closed_form_work.jsonl`).
   forms (a few divisor loops per capacity) is not charged.
 - An online opt-in substitution with witnesses and replay is required before
   any speed-up is claimed.
+
+## 16. Online exact-response substitution
+
+`exact_search.py` is an opt-in variant of `curve()`.
+
+**How it works.**
+
+- **Adaptation in memory.** The solver is adapted in memory, as in
+  `unified_search.make_kernel`, and `graph/curve.py` is unchanged.
+- **The hook.** It runs right after the scalar-leaf rule. A state recognised
+  structurally as a unit-M chain returns its closed-form frontier
+  (`elementwise_chain.predict`) instead of recursing.
+  - Activations carry the graph's row ranks, which are the ranks shared by
+    every produced tensor. Weights carry none.
+  - Every ambiguous state falls back to search.
+- **Frontier.** It is scanned upward to the first zero-traffic point, and
+  states differing only in names share it.
+- **Witnesses.** A closed-form point carries `('exact', key, c, q)`. After
+  the root solve, `expand` replaces each such note by the native witness of
+  that state:
+  - the plain solver is run on the state's sub-graph;
+  - its result is matched by (capacity, traffic);
+  - a failed match raises an error, which would refute the closed form.
+- **Correctness of the speed-ups.** Caching `group` and `reachable_tiles` and
+  precomputing loopable segments change no value. All six frozen prediction
+  sets were re-checked identical.
+
+**Correctness** (`exact_search.py check`).
+
+- For all 8 cases, the root curve is identical to the baseline.
+- Every root frontier point replays exactly in the cell-level executor after
+  expansion:
+  - 3, 5, 5, 5 for FFN 1-4 layers;
+  - 5 for attention-4;
+  - 14 for FFN M8-1 and 15 for FFN M8-2, run on the server
+    (`server_m8/check.jsonl`).
+- Each case expanded at least one closed-form state, so the replay does
+  exercise substituted points.
+
+**Speed** (`exact_search.py bench`). Each measurement is a fresh process,
+with three repeats; the table gives the median. Closed-form time is the time
+spent in the hook.
+
+| Case | Baseline | Exact | Speed-up | Hook time | Peak RSS (base/exact) | Hits/checks |
+| --- | ---: | ---: | ---: | ---: | --- | ---: |
+| FFN 1 layer | 0.006 s | 0.005 s | 1.18× | 0.002 s | 21/25 MiB | 71/110 |
+| FFN 2 layers | 0.045 s | 0.021 s | 2.17× | 0.012 s | 21/25 MiB | 353/448 |
+| FFN 3 layers | 0.450 s | 0.102 s | 4.39× | 0.079 s | 23/26 MiB | 1,311/1,462 |
+| FFN 4 layers | 3.849 s | 0.566 s | **6.81×** | 0.480 s | 32/34 MiB | 4,973/… |
+| attention 2 / 4 layers | 0.045 / 3.878 s | 0.021 / 0.580 s | 2.18× / 6.69× | | | |
+| FFN M8 1 layer | 0.053 s | 0.056 s | 0.94× | 0.011 s | | 250/974 |
+| FFN M8 2 layers | 0.264 s | 0.251 s | 1.05× | 0.039 s | | 786/2,864 |
+
+Local machine, `exact_bench_local.jsonl` and `exact_bench_m8_local.jsonl`.
+The earlier server timings of the unoptimised hook agree in direction:
+M8-1 0.14 → 0.17 s, M8-2 0.62 → 0.68 s.
+
+**Reading.**
+
+- **Tiny stacks.** The speed-up grows with depth. In FFN-4, partition-DP
+  transitions fall from 593,020 to 959. Most of the remaining time is the
+  Python closed form itself, at 85% of the exact run.
+- **M8 stacks: no speed-up.** Work falls by 13-31%: cache misses
+  2,108 → 1,841 and DP transitions 3,770 → 2,672 in M8-1. That is consistent
+  with the offline audit (§15). The remaining work is at M > 1 states: loop
+  choices over M tiles, weight slices under F and D loops, and their merges.
+- **The mechanism is the work distribution, not sharing.** Unit-M states are
+  the bottom of every M > 1 subtree. When M is tiny, they hold almost all of
+  the work. When M grows, the work moves to M > 1 states, which the closed
+  forms do not cover. Real models have large M.
+
+**Consequence.** Unit-M substitution is a correct, measured speed-up only
+where unit-M work dominates. To matter at realistic M, the expensive M > 1
+states need either:
+
+- an exact response (§12 shows that this is the full loop-order problem for
+  one op); or
+- a pruning bound that removes whole M > 1 subtrees. §14's operator bound is
+  the candidate, and its shared-DAG work accounting is the next measurement.
