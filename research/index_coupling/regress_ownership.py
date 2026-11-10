@@ -8,7 +8,8 @@ witnesses are executed by simulate_nest.py; a valid fix must only lower or keep
 traffic, and every new point must replay exactly.
 
 Usage (designated server, capped): python -m research.index_coupling.regress_ownership
-    [workers] [--p19-n16] [--mem-gib G] [--seconds S]
+    [workers] [--p19-n16] [--mem-gib G] [--seconds S] [--kinds K,...] [--reverse]
+    [--witness-on-change]
 Prints one JSON line per task and a final summary line.
 """
 import argparse
@@ -30,6 +31,7 @@ from research.index_coupling.simulate_nest import simulate
 
 R = Path(__file__).parent / 'results'
 SECONDS = 3600
+LAZY = False
 
 
 def pts(points):
@@ -79,6 +81,10 @@ def job(task):
             out = dict(kind=kind, key=key, match=new == old, seconds=time.time() - start)
             return out if new == old else dict(out, old=old, new=new, diff=compare(old, new))
         graph = graph_of(kind, key)
+        # Witness trees cost memory and time; build them only for changed curves.
+        new = pts(curve(graph, **options)) if LAZY else None
+        if new == old:
+            return dict(kind=kind, key=key, match=True, seconds=time.time() - start)
         points = curve(graph, witness=True, **options)
         new = pts(points)
         out = dict(kind=kind, key=key, match=new == old, seconds=time.time() - start)
@@ -136,9 +142,14 @@ if __name__ == '__main__':
     parser.add_argument('--p19-n16', action='store_true')
     parser.add_argument('--mem-gib', type=float, default=6)
     parser.add_argument('--seconds', type=int, default=3600)
+    parser.add_argument('--kinds')
+    parser.add_argument('--reverse', action='store_true')
+    parser.add_argument('--witness-on-change', action='store_true')
     args = parser.parse_args()
-    SECONDS = args.seconds
-    pending = list(tasks(args.p19_n16))
+    SECONDS, LAZY = args.seconds, args.witness_on_change
+    pending = [t for t in tasks(args.p19_n16) if not args.kinds or t[0] in args.kinds.split(',')]
+    if args.reverse:
+        pending.reverse()
     counts = dict(total=0, match=0, changed=0, incomplete=0, replay_failures=0)
     with Pool(args.workers, initializer=init, initargs=(args.mem_gib,)) as pool:
         for out in pool.imap_unordered(job, pending):
