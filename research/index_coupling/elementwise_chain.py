@@ -10,6 +10,8 @@ Weights are resident; streamed weights are not covered.
 Usage: python -m research.index_coupling.elementwise_chain freeze OUT.json
        python -m research.index_coupling.elementwise_chain check PRED.json OUT.jsonl
        python -m research.index_coupling.elementwise_chain archive CASE [CASE ...]
+       python -m research.index_coupling.elementwise_chain wfreeze OUT.json
+       python -m research.index_coupling.elementwise_chain wcheck PRED.json OUT.jsonl
 """
 import json
 import sys
@@ -38,33 +40,36 @@ def loopable(kinds, rank, j, k):
     return bool(common)
 
 
-def ce(a, f, cells, res_in, res_out, dom):
-    """X[a] -c-> H[f] -e-> Z[f], fused under F."""
+def ce(a, f, cells, res_in, res_out, dom, w=0):
+    """X[a] -c-> H[f] -e-> Z[f], fused under F; w is the contraction's streamed weight."""
     s_out = int(not res_out)
     best = INF
     for u in reachable_tiles(f, dom):
-        options = [(u + s_out, 0)] if res_in else [(a + u + s_out, 0), (u + 1, a * (f // u - 1))]
+        options = ([(u + max(w, s_out), 0)] if res_in else
+                   [(a + u + max(w, s_out), 0), (u + max(1 + w, s_out), a * (f // u - 1))])
         best = min([best] + [x for need, x in options if cells >= need])
     return best
 
 
-def ec(f, c, cells, res_in, res_out, dom):
-    """H[f] -e-> Z[f] -c-> X'[c], fused under F."""
+def ec(f, c, cells, res_in, res_out, dom, w=0):
+    """H[f] -e-> Z[f] -c-> X'[c], fused under F; w is the contraction's streamed weight."""
     s_in = int(not res_in)
     best = INF
     for u in reachable_tiles(f, dom):
-        options = [(u + s_in, 0)] if res_out else [(c + u + s_in, 0), (u + 1, 2 * c * (f // u - 1))]
+        options = ([(u + max(s_in, w), 0)] if res_out else
+                   [(c + u + max(s_in, w), 0), (u + max(s_in, 1 + w), 2 * c * (f // u - 1))])
         best = min([best] + [x for need, x in options if cells >= need])
     return best
 
 
-def cec(a, f, c, cells, res_in, res_out, dom):
+def cec(a, f, c, cells, res_in, res_out, dom, w1=0, w2=0):
     """X[a] -c-> H[f] -e-> Z[f] -c-> X'[c], fused under F, at most two loop levels.
 
     Level 1 tile u keeps or re-fetches x and z (resident ends are neither).
     Level 2 either splits all three ops (H, Z tiles u) or splits off one
     contraction with its intermediate kept at u and loops the other pair
     {c, e} with tile u' < u, where that side's end may be kept at level 2.
+    Each contraction's peak adds its streamed weight cell (w1, w2).
     """
     best = INF
     x_live, z_live = not res_in, not res_out
@@ -77,39 +82,44 @@ def cec(a, f, c, cells, res_in, res_out, dom):
                 sz = int(z_live and not kz1)
                 fx = a * (t - 1) * sx         # x re-fetched per level-1 trip
                 fz = 2 * c * (t - 1) * sz
-                options = [(base + max(2 * u, u + sx, u + sz), fx + fz)]  # split all
+                options = [(base + max(2 * u, u + sx + w1, u + sz + w2), fx + fz)]  # split all
                 for v in reachable_tiles(u, dom) - {u}:
                     tt = f // v
                     # Left: {c, e} loops v, Z kept at u; x may be kept at level 2.
-                    options.append((base + max(u + v + sx, u + sz), a * (tt - 1) * sx + fz))
+                    options.append((base + max(u + v + sx + w1, u + v, u + sz + w2), a * (tt - 1) * sx + fz))
                     if sx:
-                        options.append((base + max(u + v + a, u + sz), fx + fz))
+                        options.append((base + max(u + v + a + w1, u + v, u + sz + w2), fx + fz))
                     # Right: {e, c} loops v, H kept at u; z may be kept at level 2.
-                    options.append((base + max(u + sx, u + v + sz), fx + 2 * c * (tt - 1) * sz))
+                    options.append((base + max(u + sx + w1, u + v, u + v + sz + w2), fx + 2 * c * (tt - 1) * sz))
                     if sz:
-                        options.append((base + max(u + sx, u + v + c), fx + fz))
+                        options.append((base + max(u + sx + w1, u + v, u + v + c + w2), fx + fz))
                 best = min([best] + [x for need, x in options if cells >= need])
     return best
 
 
-def group(pattern, sizes, cells, res_in, res_out, dom):
+def group(pattern, sizes, cells, res_in, res_out, dom, ws=None):
+    """ws: per-op streamed-weight flags (0 for elementwise ops)."""
+    ws = [w for w, k in zip(ws or [0] * len(pattern), pattern) if k == 'c']
     if pattern == 'c':
-        return single(sizes[0], sizes[1], cells, res_in, res_out, dom)
+        return single(sizes[0], sizes[1], cells, res_in, res_out, dom, *ws)
     if pattern == 'e':
         return 0 if cells >= (not res_in) + (not res_out) else INF
     if pattern == 'cc':
-        return pair(*sizes, cells, res_in, res_out, dom)
+        return pair(*sizes, cells, res_in, res_out, dom, *ws)
     if pattern == 'ce':
-        return ce(sizes[0], sizes[1], cells, res_in, res_out, dom)
+        return ce(sizes[0], sizes[1], cells, res_in, res_out, dom, *ws)
     if pattern == 'ec':
-        return ec(sizes[0], sizes[2], cells, res_in, res_out, dom)
+        return ec(sizes[0], sizes[2], cells, res_in, res_out, dom, *ws)
     if pattern == 'cec':
-        return cec(sizes[0], sizes[1], sizes[3], cells, res_in, res_out, dom)
+        return cec(sizes[0], sizes[1], sizes[3], cells, res_in, res_out, dom, *ws)
     raise ValueError(f'no form for group pattern {pattern}')
 
 
-def predict(kinds, sizes, capacity, dom, resident_first=False, resident_last=False):
-    """Resident ends are held by the caller: groups see them as resident, at no cell cost."""
+def predict(kinds, sizes, capacity, dom, resident_first=False, resident_last=False, streamed=None):
+    """Resident ends are held by the caller: groups see them as resident, at no cell cost.
+
+    streamed[i] = 1 if op i's weight is not resident (§11)."""
+    streamed = streamed or [0] * len(kinds)
     m, rank = len(kinds), ranks(kinds)
     best = {(0, resident_first): 0}
     for j in range(m):
@@ -121,7 +131,7 @@ def predict(kinds, sizes, capacity, dom, resident_first=False, resident_last=Fal
                     break
                 for kept_k in (((resident_last,) if k == m else (False, True))):
                     cells = capacity - sizes[j] * (kept_j and j > 0) - sizes[k] * (kept_k and k < m)
-                    cost = group(''.join(kinds[j:k]), sizes[j:k + 1], cells, kept_j, kept_k, dom)
+                    cost = group(''.join(kinds[j:k]), sizes[j:k + 1], cells, kept_j, kept_k, dom, streamed[j:k])
                     cost += 0 if kept_k or k == m else 2 * sizes[k]
                     if best[j, kept_j] + cost < best.get((k, kept_k), INF):
                         best[k, kept_k] = best[j, kept_j] + cost
@@ -140,6 +150,50 @@ def stack(family, layers, d, f):
 STACKS = [('ffn', 1, 2, 2), ('ffn', 1, 2, 4), ('ffn', 1, 4, 2), ('ffn', 1, 3, 6), ('ffn', 1, 4, 8),
           ('ffn', 2, 2, 2), ('ffn', 2, 2, 4), ('ffn', 2, 4, 2), ('ffn', 2, 3, 6),
           ('ffn', 3, 2, 2), ('ffn', 3, 2, 4), ('attention', 2, 2, 4), ('attention', 2, 4, 2)]
+
+
+W_STACKS = [('ffn', 1, 2, 2), ('ffn', 1, 2, 4), ('ffn', 1, 4, 2), ('ffn', 1, 3, 6),
+            ('ffn', 2, 2, 4), ('ffn', 2, 4, 2), ('attention', 2, 2, 4)]
+
+
+def weights_of(graph):
+    return [t for op in graph.ops for t in graph.access[op] if 'M' not in graph.access[op][t]]
+
+
+def wmain(argv):
+    """Streamed-weight subsets: every subset of each W_STACKS entry (§11)."""
+    if argv[0] == 'wfreeze':
+        rows = []
+        for family, layers, d, f in W_STACKS:
+            g, _, kinds, sizes = stack(family, layers, d, f)
+            weights = weights_of(g)
+            for mask in range(1 << len(weights)):
+                streamed_w = {w for i, w in enumerate(weights) if mask >> i & 1}
+                flags = [int(any(t in streamed_w for t in g.access[op])) for op in g.ops]
+                for cap in range(1, 2 * (d + f) + 5):
+                    for dom in ('halving', 'divisors'):
+                        rows.append(dict(family=family, layers=layers, d=d, f=f, streamed=sorted(streamed_w),
+                                         C=cap, tile_domain=dom,
+                                         predict=predict(kinds, sizes, cap, dom, streamed=flags)))
+        json.dump(rows, open(argv[1], 'w'), indent=0)
+        print(len(rows))
+        return
+    rows, curves = json.load(open(argv[1])), {}
+    with open(argv[2], 'w') as out:
+        for r in rows:
+            key = (r['family'], r['layers'], r['d'], r['f'], tuple(r['streamed']), r['tile_domain'])
+            if key not in curves:
+                g, external, _, _ = stack(*key[:4])
+                external = external - set(key[4])
+                compulsory = 2 * r['d'] + sum(r['d'] * r['f'] for _ in key[4])
+                points = curve(g, partitions='dp', external=external, scalar_leaf='v2', tile_domain=key[5])
+                curves[key] = (points, compulsory)
+            points, compulsory = curves[key]
+            r['grammar'] = traffic_at(r['C'], points) - compulsory
+            out.write(json.dumps(r) + '\n')
+            if r['grammar'] != r['predict']:
+                print('MISMATCH', json.dumps(r), flush=True)
+    print(json.dumps(dict(cases=len(rows), mismatches=sum(r['grammar'] != r['predict'] for r in rows))))
 
 
 KIND = dict(EH='c', EZ='e', EY='c', ES='c', ESoft='e', EO='c')
@@ -196,6 +250,8 @@ def archive(cases):
 
 
 def main(argv):
+    if argv[0] in ('wfreeze', 'wcheck'):
+        return wmain(argv)
     if argv[0] == 'archive':
         return archive(argv[1:])
     if argv[0] == 'freeze':

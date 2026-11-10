@@ -44,33 +44,42 @@ def grammar_curve(a, b, c, tile_domain):
                  tile_domain=tile_domain)
 
 
-def single(p, q, cells, resident_in, resident_out, tile_domain):
-    """One contraction p -> q; a resident boundary is held by the caller."""
+def single(p, q, cells, resident_in, resident_out, tile_domain, w=0):
+    """One contraction p -> q; a resident boundary is held by the caller.
+
+    w = 1 for a streamed weight: it is never lacking a looped rank, so it is
+    only sliced, and adds one operand cell to the op's peak (§11).
+    """
     if resident_in or resident_out:
-        return 0 if cells >= 1 - (resident_in and resident_out) else float('inf')
-    return loop_nest(p, q, cells, tile_domain)
+        return 0 if cells >= w + 1 - (resident_in and resident_out) else float('inf')
+    return loop_nest(p, q, cells - w, tile_domain)
 
 
-def pair(a, b, c, cells, resident_in, resident_out, tile_domain):
-    """Two contractions a -> b -> c fused under their only common rank F."""
+def pair(a, b, c, cells, resident_in, resident_out, tile_domain, w0=0, w1=0):
+    """Two contractions a -> b -> c fused under their only common rank F.
+
+    Each op's peak is the kept h tile u, plus one cell per live end, plus its
+    streamed weight cell w0 or w1.
+    """
     best = float('inf')
+    sx, sz, w = int(not resident_in), int(not resident_out), max(w0, w1)
     for u in reachable_tiles(b, tile_domain):
         trips = b // u
-        if resident_in and resident_out:
-            options = ((u, 0),)
-        elif resident_in:
-            options = ((u + 1, 2 * (trips - 1) * c), (c + u, 0))
-        elif resident_out:
-            options = ((u + 1, (trips - 1) * a), (a + u, 0))
-        else:
-            options = ((u + 1, (trips - 1) * (a + 2 * c)), (c + u + 1, (trips - 1) * a),
-                       (a + u + 1, 2 * (trips - 1) * c), (a + c + u, 0))
+        options = [(u + max(sx + w0, sz + w1), (trips - 1) * (sx * a + sz * 2 * c))]
+        if sz:
+            options.append((c + u + max(sx + w0, w1), (trips - 1) * sx * a))  # keep z
+        if sx:
+            options.append((a + u + max(w0, sz + w1), 2 * (trips - 1) * sz * c))  # keep x
+        if sx and sz:
+            options.append((a + c + u + w, 0))
         best = min([best] + [extra for need, extra in options if cells >= need])
     return best
 
 
 def chain_predict(sizes, capacity, tile_domain):
-    """DP over boundaries V_1..V_{m-1}: each kept (cells in both neighbours) or via DRAM (2 n)."""
+    """DP over boundaries V_1..V_{m-1}: each kept (cells in both neighbours) or via DRAM (2 n).
+
+    All weights resident; elementwise_chain.predict generalises this."""
     m = len(sizes) - 1
     best = {(0, False): 0}  # (boundary index, kept) -> least traffic of the prefix
     for j in range(m):
