@@ -823,3 +823,49 @@ fall only through state-level reasoning, of two kinds:
 
 The closed forms and bounds remain correct and useful where work sits under
 unit-M states (§16: 6.8× on FFN-4). They do not address the M > 1 lattice.
+
+## 18. Ceilings for any edge-level pruning
+
+`op_projection.py work` now also reports three ceilings, all measured on the
+shared call DAG as in §17.
+
+| Mode | Bound used | Order |
+| --- | --- | --- |
+| `perfect` | exact child curve, proper choices only | the captured order, with the ordered incumbent |
+| `perfect_any` | the same, with anchors also cuttable | captured |
+| `oracle` | none: every loop edge is cut except the first action attaining each point of the final parent frontier | any order |
+
+Every sound edge-level bound is below `perfect` and `perfect_any` under the
+captured order, and below `oracle` under any order. This covers C2, §14, the
+Level-h residency hierarchy, and retention-subcube bounds such as a knapsack
+relaxation over undecided masks.
+
+Figures are saved DP transitions, saved Pareto candidates, and states made
+unreachable by `oracle`. The first five data columns are DP, the next two are
+Pareto (`op_bound_work.jsonl`).
+
+| Case | slots | op | perfect | perfect_any | oracle | Pareto, perfect | Pareto, oracle | Unreachable (oracle) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| FFN 1 layer | 13.2% | 15.8% | 15.8% | 24.0% | 37.9% | 15.9% | 37.2% | 92 of 271 |
+| FFN 2 layers | 11.6% | 12.7% | 26.4% | 28.9% | 43.8% | 25.9% | 42.9% | 268 of 1,052 |
+| FFN 3 layers | 22.7% | 22.9% | 55.0% | 55.4% | 71.9% | 52.3% | 69.1% | 1,349 of 3,221 |
+| FFN 4 layers | 20.3% | 20.3% | 77.1% | 77.2% | 87.8% | 74.4% | 85.5% | 7,169 of 10,834 |
+| FFN M8 1 layer | 0.0% | 2.9% | 16.3% | 24.4% | 42.3% | 17.8% | 38.6% | 821 of 2,108 |
+| FFN M8 2 layers | 0.5% | 2.1% | 17.8% | 19.4% | 35.1% | 21.7% | 37.5% | 1,745 of 6,176 |
+
+Attention matches FFN at equal depth.
+
+**Reading.**
+
+- **M8.** Even an exact child response used as a bound saves at most 16-24%
+  of DP work under the recorded order. With the answer known in advance, the
+  saving is at most 35-42%, which is a speed-up of at most about 1.5-1.7× from
+  pruning alone.
+- **Tiny stacks.** The ceiling is high, 77-88% for FFN-4. There, unit-M
+  substitution (§16) already obtains most of it.
+- **The remaining 58-65% at M8 is unprunable at the edge level.** It is the
+  work of states that every optimal choice still needs: a state on the
+  frontier path of some parent is solved however good the bound is.
+- Reducing it requires cheaper evaluation of those states, by exact state-level
+  responses or by sharing responses across residency contexts, rather than
+  better bounds.

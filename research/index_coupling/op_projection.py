@@ -129,8 +129,9 @@ def work(cases):
 
     Same captured iteration order, same incumbent (preceding actual curves),
     anchors never cut. A proper choice is cut when its bound is dominated by
-    the incumbent. Bounds: C2 slot bound, and its pointwise max with the
-    lifted operator bound. Saved work sums exclusive counters of states that
+    the incumbent. Bounds: C2 slot bound, its pointwise max with the lifted
+    operator bound, and two ceilings that use the exact child curve as the
+    bound (proper choices only; every choice, anchors included). Saved work sums exclusive counters of states that
     become unreachable from the root, so shared children are not counted.
     """
     for case in cases:
@@ -141,8 +142,9 @@ def work(cases):
         by_parent = defaultdict(list)
         for e in data['edges']:
             by_parent[e['parent']].append(e)
-        cuts = {'slots': set(), 'op': set()}
-        cut_axes = {'slots': Counter(), 'op': Counter()}
+        modes = ('slots', 'op', 'perfect', 'perfect_any', 'oracle')
+        cuts = {m: set() for m in modes}
+        cut_axes = {m: Counter() for m in modes}
         for pid, parent in nodes.items():
             s = parent['state']
             if s['stage'] != 'group':
@@ -171,8 +173,23 @@ def work(cases):
                 actions.append(a)
                 if a['full']:
                     anchors[v, b] = nodes[edge['child']]['points']
+            # Order-free ceiling: keep only the first action attaining each point
+            # of the final parent frontier; every other loop edge is cut.
+            final, needed = frontier(parent['points']), set()
+            for point in final:
+                needed.add(next(a['child'] for a in actions if point in a['actual']))
+            for a in actions:
+                if a['child'] not in needed:
+                    cuts['oracle'].add((pid, a['child']))
+                    cut_axes['oracle'][a['axis'] if a['axis'] == 'M' else 'other'] += 1
             incumbent = ()
             for a in actions:
+                # Ceilings for any sound edge-level bound: the exact child curve,
+                # for proper choices only (anchors kept) or for every choice.
+                for mode in ('perfect', 'perfect_any') if not a['full'] else ('perfect_any',):
+                    if dominates(incumbent, a['actual']):
+                        cuts[mode].add((pid, a['child']))
+                        cut_axes[mode][a['axis'] if a['axis'] == 'M' else 'other'] += 1
                 if not a['full']:
                     anchor = anchors[a['axis'], a['tile']]
                     slots_bound = transformed(anchor, a['allocation'], a['extra'], a['trips'], a['slots'])
