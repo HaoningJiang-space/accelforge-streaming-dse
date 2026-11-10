@@ -31,13 +31,28 @@ from research.index_coupling.graph.model import Graph
 OPTIONS = dict(partitions='dp', scalar_leaf='v2')
 
 
+@lru_cache(maxsize=None)
+def _dims(graph, tensor):
+    return frozenset(graph.dims(tensor))
+
+
+@lru_cache(maxsize=None)
+def _produced(graph):
+    return frozenset(graph.produced())
+
+
+@lru_cache(maxsize=None)
+def _consumers(graph, tensor):
+    return tuple(graph.consumers(tensor))
+
+
 def chain_of(graph, ops, ext, external, owned, names):
     """(kinds, sizes, resident ends, streamed flags) of a unit-M chain state, else None."""
     ext = dict(zip(names, ext))
-    dims = lambda t: set(graph.dims(t))
+    dims = lambda t: _dims(graph, t)
     # Row ranks: shared by every produced tensor of the graph (M for FFN and
     # attention). An activation carries them, a weight carries none.
-    rows = set.intersection(*(dims(t) for t in graph.produced()))
+    rows = frozenset.intersection(*(dims(t) for t in _produced(graph)))
     if not rows:
         return None
     vectors, kinds, weights = [], [], []
@@ -68,7 +83,7 @@ def chain_of(graph, ops, ext, external, owned, names):
         rest = dims(v) - rows
         if len(rest) != 1:
             return None
-        own.append(rest.pop())
+        own.append(next(iter(rest)))
     # Elementwise keeps the rank, a contraction changes it, and no rank recurs.
     segments = [own[0]]
     for k, r_in, r_out in zip(kinds, own, own[1:]):
@@ -79,11 +94,11 @@ def chain_of(graph, ops, ext, external, owned, names):
     if len(set(segments)) != len(segments):
         return None
     for op, w, r_in, r_out in zip(ops, weights, own, own[1:]):
-        if w is not None and (dims(w) != {r_in, r_out} or graph.consumers(w) != [op]
-                              or w in graph.produced()):
+        if w is not None and (dims(w) != {r_in, r_out} or _consumers(graph, w) != (op,)
+                              or w in _produced(graph)):
             return None
     for j, v in enumerate(vectors[1:-1], 1):
-        if v in external or v in owned or graph.consumers(v) != [ops[j]]:
+        if v in external or v in owned or _consumers(graph, v) != (ops[j],):
             return None
     sizes = [ext[r] for r in own]
     streamed = [int(w is not None and w not in external) for w in weights]

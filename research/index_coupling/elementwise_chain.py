@@ -121,27 +121,36 @@ def group(pattern, sizes, cells, res_in, res_out, dom, ws=None):
     raise ValueError(f'no form for group pattern {pattern}')
 
 
+@lru_cache(maxsize=None)
+def segments(kinds):
+    """Loopable runs (j, k, pattern) in DP order: by start j, then end k."""
+    rank, out = ranks(kinds), []
+    for j in range(len(kinds)):
+        for k in range(j + 1, len(kinds) + 1):
+            if not loopable(kinds, rank, j, k):
+                break
+            out.append((j, k, ''.join(kinds[j:k])))
+    return tuple(out)
+
+
 def predict(kinds, sizes, capacity, dom, resident_first=False, resident_last=False, streamed=None):
     """Resident ends are held by the caller: groups see them as resident, at no cell cost.
 
     streamed[i] = 1 if op i's weight is not resident (§11)."""
-    streamed = streamed or [0] * len(kinds)
-    m, rank = len(kinds), ranks(kinds)
+    kinds = tuple(kinds)
+    sizes, m = tuple(sizes), len(kinds)
+    streamed = tuple(streamed) if streamed else (0,) * m
     best = {(0, resident_first): 0}
-    for j in range(m):
+    for j, k, pattern in segments(kinds):
         for kept_j in (False, True):
             if (j, kept_j) not in best:
                 continue
-            for k in range(j + 1, m + 1):
-                if not loopable(kinds, rank, j, k):
-                    break
-                for kept_k in (((resident_last,) if k == m else (False, True))):
-                    cells = capacity - sizes[j] * (kept_j and j > 0) - sizes[k] * (kept_k and k < m)
-                    cost = _group(''.join(kinds[j:k]), tuple(sizes[j:k + 1]), cells, kept_j, kept_k, dom,
-                                  tuple(streamed[j:k]))
-                    cost += 0 if kept_k or k == m else 2 * sizes[k]
-                    if best[j, kept_j] + cost < best.get((k, kept_k), INF):
-                        best[k, kept_k] = best[j, kept_j] + cost
+            for kept_k in (((resident_last,) if k == m else (False, True))):
+                cells = capacity - sizes[j] * (kept_j and j > 0) - sizes[k] * (kept_k and k < m)
+                cost = _group(pattern, sizes[j:k + 1], cells, kept_j, kept_k, dom, streamed[j:k])
+                cost += 0 if kept_k or k == m else 2 * sizes[k]
+                if best[j, kept_j] + cost < best.get((k, kept_k), INF):
+                    best[k, kept_k] = best[j, kept_j] + cost
     return best.get((m, resident_last), INF)
 
 
