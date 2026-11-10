@@ -5,6 +5,11 @@ not change the frozen P21d candidate cuts or turn a failed prediction into a pas
 `partitions='enumerate'` remains the default. The DP added in c922be9e remains
 opt-in pending wider validation.
 
+Measurements are now complete; see [SOLVER_SCALING_RESULTS.md](SOLVER_SCALING_RESULTS.md).
+The initial comparison used c38b2fa1. Revision 347f0029 subsequently added the
+medium residual control and `--no-profile` for repeated uninstrumented timings.
+The solver itself is unchanged between those revisions.
+
 ## Implemented reductions
 
 1. **Project write ownership to local producers.** For a span S, retain only

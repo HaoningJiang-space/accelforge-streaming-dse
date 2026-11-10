@@ -5,6 +5,13 @@ PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
 Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.md.
 
+Solver scaling implementation/results: [SOLVER_SCALING_RESULTS.md](SOLVER_SCALING_RESULTS.md).
+Streaming audit exhausted 175,522 derivations on one tiny graph with no errors
+and 12.4 MiB peak RSS. Cut DP gave an 8.6x median speedup on the 8-operator residual
+control with equal curves, but both P19 samples remain incomplete at 180 s/arm.
+These implementation checks do not change any frozen prediction verdict or
+establish general execution-exactness.
+
 ## Question
 
 Fix an operator graph, its tensor shapes and its MAC count. How much on-chip
