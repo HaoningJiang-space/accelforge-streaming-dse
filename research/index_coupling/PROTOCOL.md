@@ -524,3 +524,150 @@ incomplete; incomplete cases count against every prediction below.
 If P21e-a fails mainly for K < L < 2K, the row model's capacity terms are
 wrong and the threshold is not L > K. If P21e-b fails, materializing h0 is not
 generally available to the tied arm at the needed capacities.
+
+# Input residency and the plateau threshold (P21f), frozen before running
+
+Prior evidence: P21E_RESULTS.md and the 64 P21e arms at `70c576b3`. P21e-a
+passed 16/16; P21e-b/c each failed 13/16. The independent d row was omitted
+from the frozen row account. Its post-hoc correction fits the 16 seen L > K
+plateau results but is not validation; P21e's verdicts remain unchanged.
+
+## Hypothesis, scope and fixed arms
+
+The free EH0/EH1 fusion route keeps an input row and an accumulating h1 row.
+If EH0 reads X, the X row is already retained for EAdd, so this route adds K
+elements versus tied's L-element h0 row. If EH0 reads independent D, the d
+row adds another K, giving 2K versus L. This predicts different **plateau**
+thresholds, L > K with X and L > 2K without X. These are candidate conditions
+for the whole-graph envelope; competing schedules and producer/join peaks
+could invalidate the row argument. Neither row count is an exact plateau
+capacity formula. The low-capacity existence claim is tested separately.
+
+Use the same residual graph, depth 6, unit bytes, serial execution, no
+recomputation, exact Pareto pruning, spill_cost=2, write_through=True,
+split_shared=True, corrected final-write ownership, fixed operator order,
+and `partitions='dp'`. Free has every whole-span cut. Tied excludes only cut
+1 from the first nontrivial whole-span partition, including below whole-span
+loops; proper child spans retain all cuts. This is **not** a recursive rule
+that permanently binds EX and EH0 at every level.
+
+The primary tile domain is the unchanged historical `halving` domain:
+starting at b=floor(extent/2), repeatedly floor-divide b by 2, accepting b
+only when it divides the current extent. It is not all integer tiles, nor
+all divisors. Apply the same domain recursively in both arms. No extension
+of tile domains may rescue a primary failure.
+
+## New shapes and fixed denominators
+
+Each (I,K,L) below has both reads_x=False and True, always at depth 6.
+Shapes are excluded if present at **any depth or read mode** in the declared
+P21/P21d/P21e residual evidence or P21e exploratory sweep. The manifest saves
+the input-only overlap audit and hashes its sources. This is a scoped audit
+of those archived inputs, not a claim about all conceivable prior experiments.
+
+| Cohort | Shapes (I,K,L) | Cases | Tile domains |
+| --- | --- | ---: | --- |
+| K < L < 2K | (2,4,6), (6,4,6), (2,6,8), (4,6,10), (2,8,12), (6,8,12), (2,10,16), (2,12,16) | 16 | halving |
+| L > 2K | (2,4,12), (6,4,10), (2,6,16), (4,6,16), (2,8,20), (4,8,24), (2,10,24), (2,12,32) | 16 | halving |
+| L < K diagnostic | (2,6,4), (6,6,4), (2,10,4), (6,10,4), (2,12,4), (6,12,4), (2,16,4), (6,16,4) | 16 | halving and divisors |
+
+There are 48 new cases, 128 new-case arm jobs. Do not select or replace cases
+using runtimes, curves, witnesses or results. L=K and L=2K are excluded; this
+test makes no claim about these boundary equalities or L<K plateau behavior.
+
+Define Q_min as the last traffic value on a complete canonical frontier and
+C_min as its smallest capacity at that value. Every scored plateau comparison
+also requires **equal Q_min in the two arms**. It is never enough to compare
+capacities at different traffic floors.
+
+- **P21f-a (read-X plateau).** In each of the two L>K cohorts, tied has
+  strictly larger C_min than free: **8/8 in each cohort**, 16/16 overall.
+- **P21f-b (independent-input plateau).** For K<L<2K, C_min is equal in
+  **8/8**; for L>2K, tied has strictly larger C_min in **8/8**. No averaging
+  across these two strata. The combined primary threshold claim passes only
+  if all four strata pass, 32/32. This is deliberately an exact finite-set
+  prediction, stricter than P21e's 15/16 gate.
+- **P21f-c (separate existence prediction).** For all **32/32** L>K cases,
+  tied is strictly above free at some integer capacity, including the
+  independent-input K<L<2K cases predicted to have identical plateaus.
+  This is scored separately and cannot rescue a failed plateau prediction.
+
+Compare the union of breakpoints, which covers every nonnegative integer
+capacity interval and the constant infinite tail. Preserve all maximal
+higher/lower intervals, including one-sided infeasibility. Never subtract
+infinity from infinity. Tied below free at any capacity is an invalid subset
+comparison. Missing, timed-out, memory-failed or inexactly replayed cases
+remain in their denominators and cannot pass. Report clean counterexamples
+as failures even with unfinished coverage; otherwise distinguish unfinished
+coverage from a confirmed prediction failure.
+
+## Tile diagnostic, predefined and unscored
+
+The 16 new L<K cases include K=6,10,12 and K=16 controls. In addition, rerun
+the three **seen** P21e-b failures: (4,12,8,False), (6,12,8,False), and
+(6,12,8,True), depth 6. These add 12 arm jobs, bringing the frozen total to
+**140 jobs / 51 cases**. The known failures are reproduction/diagnostic
+controls, never held-out evidence. Preserve their halving comparison with
+the original P21e records; any discrepancy is an implementation regression
+to resolve before interpreting the tile intervention.
+
+At extent 12, halving permits 6,3,1 and omits divisors 4,2; at extent 6 it
+permits 3,1 and omits 2. Extent 10 already permits all proper divisors 5,2,1:
+being non-power-of-two does not itself imply omissions. Thus (2,10,4) is an
+identical-domain control, while I=6 also introduces an I-axis omission.
+The intervention expands all axes and does not attribute a change to K alone.
+
+For each diagnostic case, run both arms with both `halving` and `divisors`.
+Divisors admits every positive proper divisor of the **current recursive
+extent**, in descending order, with no ragged/unequal tiles. Only this tile
+choice changes. Each divisor-domain arm must be nowhere worse than its
+halving counterpart; every saved witness must replay exactly. The default
+domain must preserve archived curves, and power-of-two extents have the same
+tile choices in both domains.
+
+Report free/tied equality and all gap intervals in each domain, plus the
+number of unequal integer capacities (null if the tail differs). Classify
+the comparison as both_equal, removed, persists, or introduced. There is no
+frozen pass-fraction or claim that K not being a power of two is sufficient
+for a gap. If a gap disappears, it is evidence of tile-domain dependence
+within this controlled grammar, not a universal explanation of P21e-b. If
+it persists, the omitted-divisor account alone does not explain that case.
+Validity and completeness of diagnostics are reported independently of
+P21f-a/b/c; no post-hoc metric is promoted into the primary score.
+
+## Freeze, verification and execution
+
+`run_p21f.py --prepare` creates input metadata and a SHA-256 manifest without
+calling the solver. Commit PROTOCOL.md, the manifest, runner, scorer, tests
+and tile-domain implementation before any P21f job. The manifest hashes the
+protocol, relevant implementation and prior input sources. Runs reject a
+changed manifest/source or uncommitted relevant source. Checks before freezing
+use only tiny previously seen graphs, single-operator synthetic graphs and
+fabricated score records, never any new P21f graph's curve.
+The evidence revision `70c576b3` is distinct from the implementation revision:
+the freeze also includes the intervening cut-incidence cache change in
+`49a45850`. Use the committed freeze checkout for execution; source hashes
+and each arm's actual Git revision identify the implementation being tested.
+
+Run only on the designated Linux experiment server, at most four processes,
+one process per (case, domain, arm), 8 GiB address space and 1800 seconds
+including independent cell replay. The runner enforces both per-process
+limits, checkpoints complete search witnesses before replay, records revision,
+manifest/source hashes, Python version, hash seed, runtime and Linux peak RSS,
+and refuses to overwrite an existing record. Use PYTHONHASHSEED=0. Preserve
+failed attempts; retries must use unchanged limits/source in a separate
+directory, with attempt provenance reported and no selective curve splicing.
+
+Reproduction (the two prepare commands only create/verify metadata):
+
+```sh
+python -m research.index_coupling.run_p21f --prepare > research/index_coupling/p21f_manifest.json
+python -m research.index_coupling.run_p21f --list
+# After committing the freeze, on the experiment server, one listed job:
+PYTHONHASHSEED=0 python -m research.index_coupling.run_p21f --case 0 --domain halving --arm free --output-dir research/index_coupling/results/p21f
+python -m research.index_coupling.score_p21f research/index_coupling/results/p21f
+```
+
+At freeze time no new held-out search has run. Result interpretation must
+remain within the declared grammar and finite shapes; neither a pass nor
+successful frontier replay proves an unrestricted physical optimum.

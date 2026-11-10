@@ -145,6 +145,14 @@ banking or precision changes may require a different Gamma and cost model.
    in recursive accounting and its cache state; then freeze a separate
    contract test. Repricing saved witnesses is not a solver repair. Do not
    add cut families to rescue this score. See P21D_RESULTS.md.
+   **P21e outcome / P21f next:** P21e's existence prediction passed 16/16,
+   but full-curve equality and the original plateau prediction each failed
+   13/16. Keeping the independent d row corrects the post-hoc plateau
+   condition to L>2K without X reads, versus L>K with X reads. P21f is frozen
+   in PROTOCOL.md on 32 new primary cases (four strata, each requires 8/8),
+   with a separate 32/32 existence prediction. Sixteen new L<K cases and
+   three seen failures compare halving and all-divisor tile domains without
+   contributing to the primary score. No P21f held-out search has run.
 4. **P22, after P21: overlap and buffer occupancy.** A single-channel extension
    must charge double buffering and in-flight tiles against the same capacity
    budget as retained tensors. Prefetch scheduling follows this model; it does

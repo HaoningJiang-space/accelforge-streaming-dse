@@ -55,6 +55,7 @@ whether both can be kept at the same time.
 | P21b | Capacity-only fails when H reads X; conditional residency/extents repair it | **pass**: coarse fails in 8/8 full graphs; 28/28 feasible interfaces repaired; 596/596 whole witnesses replay exactly across P21 | same |
 | P21d | Frozen rank-change/last-use cuts recover unrestricted curves on 12 unseen residual cases | **fails on four valid cases**; 2 equal, 2 invalid from inherited duplicate final-write charges, 4 depth-12 cases incomplete at 600 s/arm. 158/160 saved witnesses replay exactly | P21D_RESULTS.md, `results/p21d/` |
 | P21e | EH0 must leave EX's group iff L > K (row model) | **a pass 16/16; b fail 13/16; c fail 13/16**. Post-hoc: plateau threshold is L > K when EH0 reads X, L > 2K otherwise (d-row residency, V_X); untested | P21E_RESULTS.md, `results/p21e/` |
+| P21f | Input-residency correction: read-X plateau gap for L>K; independent-input gap for L>2K, equality for K<L<2K | **frozen, not run**: four primary strata of 8, each requires 8/8; existence scored separately on 32 cases. Tile diagnostic has 16 new L<K cases and 3 seen P21e controls; 140 total arm jobs | PROTOCOL.md (P21f), `p21f_manifest.json`, `run_p21f.py`, `score_p21f.py` |
 
 P21 does not assert unrestricted whole-graph equality: all 16 free curves
 differ from the fixed partition with H_last materialized. Granularity alone
@@ -194,6 +195,10 @@ correctness. See P21D_RESULTS.md before using unrestricted exactness claims.
 
 ## Open
 
+- Run frozen P21f on the designated experiment server. Keep primary halving
+  scores separate from the all-divisors diagnostic. The manifest audits new
+  shapes against declared residual inputs and locks sources before search;
+  no P21f held-out curves have been computed at freeze time.
 - Repair and prove final-write charge ownership across nested partitions;
   revalidate the cost recurrence before a new lifecycle-sufficiency test.
   Keep P21d's failed, invalid and timed-out cases distinct; do not add cuts

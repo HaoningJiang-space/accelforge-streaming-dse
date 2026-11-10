@@ -532,22 +532,22 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                 continue
             lacking = sorted(t for t in live if v not in dims_of[t])
             for b in tile_sizes(extent, tile_domain):
-                    trips = extent // b
-                    inner_ext = ext[:i] + (b,) + ext[i + 1:]
-                    for keep_bits in product((True, False), repeat=len(lacking)):
-                        if stats is not None:
-                            stats['loop_choices'] += 1
-                        kept = frozenset(t for t, k in zip(lacking, keep_bits) if k)
-                        cap = sum(size(t, ext) for t in kept)
-                        extra = 0
-                        for t, k in zip(lacking, keep_bits):
-                            if not k:
-                                accumulated = any(output_of(op) == t for op in group)
-                                extra += (spill_cost if accumulated else 1) * (trips - 1) * size(t, ext)
-                        inner = solve(group, inner_ext, external | kept, owned)
-                        note = () if not witness else (('loop', group, v, f'tile {b} x{trips}', 'kept', tuple(sorted(kept)),
-                                 'refetched', tuple(t for t, k in zip(lacking, keep_bits) if not k)),)
-                        results.extend((cap + c, extra + trips * t, join(note, w)) for c, t, w in inner)
+                trips = extent // b
+                inner_ext = ext[:i] + (b,) + ext[i + 1:]
+                for keep_bits in product((True, False), repeat=len(lacking)):
+                    if stats is not None:
+                        stats['loop_choices'] += 1
+                    kept = frozenset(t for t, k in zip(lacking, keep_bits) if k)
+                    cap = sum(size(t, ext) for t in kept)
+                    extra = 0
+                    for t, k in zip(lacking, keep_bits):
+                        if not k:
+                            accumulated = any(output_of(op) == t for op in group)
+                            extra += (spill_cost if accumulated else 1) * (trips - 1) * size(t, ext)
+                    inner = solve(group, inner_ext, external | kept, owned)
+                    note = () if not witness else (('loop', group, v, f'tile {b} x{trips}', 'kept', tuple(sorted(kept)),
+                             'refetched', tuple(t for t, k in zip(lacking, keep_bits) if not k)),)
+                    results.extend((cap + c, extra + trips * t, join(note, w)) for c, t, w in inner)
         return prune(results, max_capacity, grid)
 
     ext0 = tuple(graph.sizes[v] for v in names)
