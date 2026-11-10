@@ -1,5 +1,10 @@
 # Most conditional states are redundant, but not by renaming or by counts
 
+> **Correction (section 5 below).** Most of the headline margin comes from two
+> trivial strata: infeasible group queries and single-point lower-bound
+> responses. In the six-consumer forks they are 97% of the keys. Among the
+> remaining nontrivial states the local margin is 4.2×, not 67×.
+
 Question: of the exact solver's completed cache entries (solve + group keys),
 how many give **different** responses? If almost all differ, no exact quotient
 can help and only dominance or approximation remains. If few differ, the key
@@ -106,3 +111,94 @@ irrelevant bits. Instead, keying each context by the per-operator sorted
 - "Local" fixes extents; merging across extents is not measured.
 - Serial grammar, no recomputation, halving tiles, single-writer DP; extents
   at most 8 here.
+
+## 5. Stratified census and a sufficient residency statistic
+
+Sources: `stratify_redundancy.py` (`66ed94ca`) and `sufficient_stat.py`
+(`ea276510`), run on all 47 state files under 4-8 GiB caps. Records are
+`results/redundancy/*.strat.json` and `*.suff.json`.
+
+### 5.1 Where the keys are
+
+Each key falls into exactly one stratum:
+
+- **empty**: an infeasible response;
+- **lower bound**: the single point (c, 0);
+- **rest**: everything else.
+
+| Case | keys | empty | lower bound | rest | rest: local distinct |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| fork 6, same role | 106,604 | 28,641 (27%) | 74,987 (70%) | 2,976 | 709 (4.2×) |
+| fork 6, kkkiii | 106,604 | 28,641 | 74,987 | 2,976 | 723 |
+| FFN forward 4 layers | 10,834 | 4,633 (43%) | 1,043 | 5,158 | 1,287 (4.0×) |
+| FFN training 1 layer | 17,095 | 4,940 (29%) | 4,331 | 7,824 | 2,035 (3.8×) |
+| residual depth 24 | 10,256 | 724 | 5,209 (51%) | 4,323 | 1,298 (3.3×) |
+| residual (4,4,8) depth 8 | 5,097 | 244 | 1,956 | 2,897 | 1,303 (2.2×) |
+| ancestor k=8 | 12,866 | 0 | 2,304 | 10,562 | 2,414 (4.4×) |
+
+**Empty keys are decidable before solving.** `_group_curve` returns nothing
+exactly when no common rank has extent above one and is carried by every
+non-external tensor made inside the group (`graph/curve.py`, group loop
+filter). That test depends only on the span, the extents and which
+inside-made tensors are external. The residency of all other tensors is
+irrelevant to it. In the largest fork context, all 16,383 decorations of one
+whole-span group query are infeasible because I = K = 1.
+
+**Lower-bound responses are not a single formula.** On five small censuses,
+the point's capacity equals the maximum per-operator non-external occupancy
+in only 523 of 2,675 lower-bound states. It equals all live tensors in 74.
+The scalar-X bridge covers the subset whose capacity equals that maximum.
+
+### 5.2 Residency acts by deleting tensors, not by counts
+
+Three isomorphism-invariant candidates were tested. Each uses
+Weisfeiler-Leman labels of the ordered operator/tensor/rank incidence:
+
+| Candidate | Violations over the 47 censuses |
+| --- | --- |
+| symmetric: every tensor kept, resident tensors marked | 0 |
+| residual: resident tensors deleted together with their rank edges | fork, fork4 and FFN-training cases fail (for example 1,384 in fork same6) |
+| residual_domain: resident tensors deleted, but each operator keeps its full iteration domain | **0 in all 47** |
+
+So the response depends on the residency set R only through the incidence
+graph with R deleted, plus each operator's iteration domain. The rank sets
+of resident tensors still matter, because they decide which loops are legal.
+
+In the code this follows from three facts:
+
+- capacity, traffic and loop obligations all use `live = tensors - external`;
+- loop legality uses `inside_made - external`;
+- the common-rank set is computed from the full accesses.
+
+The census confirms that nothing else leaks through. A written proof is
+still owed.
+
+Its compression is modest, because deletion only merges decorations whose
+remainders are isomorphic:
+
+| Case | keys | residual_domain classes |
+| --- | ---: | ---: |
+| fork same6 | 106,604 | 90,919 |
+| FFN 4 layers | 10,834 | 8,517 |
+| residual depth 24 | 10,256 | 3,316 |
+| ancestor k=8 | 12,866 | 81 |
+
+In the ancestor family the classes are exactly (k+1)² for k = 1..8. The
+exponential key count there is entirely unrecognized symmetry.
+
+### 5.3 Revised reading
+
+1. The key over-specifies the state in three separable ways:
+   - infeasible queries, decidable in advance;
+   - lower-bound responses, of which a known part is the scalar bridge;
+   - isomorphic remainders after deleting resident tensors. These can be
+     shared by a graph-isomorphism key with exact witness renaming. That is
+     the general form of the Fork quotient and alpha spans.
+2. After all three, the nontrivial local margin is 2× to 4.4×. That is the
+   room left for any further exact equivalence, such as numerically equal
+   responses of non-isomorphic remainders. Beyond it, only dominance or
+   bounds can reduce work.
+3. A graph-structural statement survives: **a conditional state is
+   determined by the remainder graph (operators, non-resident tensors and
+   iteration domains)**. Counts do not determine it (section 2c).
+   Isomorphism of the remainder does, on every census here.
