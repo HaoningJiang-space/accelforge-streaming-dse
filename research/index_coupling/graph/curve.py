@@ -29,9 +29,11 @@ from functools import lru_cache
 from itertools import product
 from math import floor, log, prod
 from time import perf_counter
+from .span_names import SpanNames
 
 
 _CAT = object()  # witness concatenation node; flattened once at the end
+_RENAME = object()  # lazy representative-to-caller witness renaming
 
 
 def cat(a, b):
@@ -39,11 +41,28 @@ def cat(a, b):
 
 
 def flatten(witness):
-    out, stack = [], [witness]
+    out, stack = [], [(witness, None)]
     while stack:
-        w = stack.pop()
+        w, names = stack.pop()
         if w and w[0] is _CAT:
-            stack.extend((w[2], w[1]))
+            stack.extend(((w[2], names), (w[1], names)))
+        elif w and w[0] is _RENAME:
+            maps = w[2] if names is None else tuple(
+                {k: outer.get(v, v) for k, v in inner.items()}
+                for inner, outer in zip(w[2], names))
+            stack.append((w[1], maps))
+        elif names is not None:
+            op, tensor = names
+            for note in w:
+                if note[0] == 'groups':
+                    out.append(('groups', tuple(tuple(op[x] for x in g) for g in note[1]),
+                                'kept', tuple(sorted(tensor[t] for t in note[3])),
+                                'via DRAM', tuple(sorted(tensor[t] for t in note[5]))))
+                else:
+                    assert note[0] == 'loop'
+                    out.append(('loop', tuple(op[x] for x in note[1]), note[2], note[3],
+                                'kept', tuple(sorted(tensor[t] for t in note[5])),
+                                'refetched', tuple(sorted(tensor[t] for t in note[7]))))
         else:
             out.extend(w)
     return tuple(out)
@@ -105,7 +124,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
           written=frozenset(), split_shared=True, spill_cost=2, *,
           external=frozenset(), entry='solve', root_groups=None, root_kept=None,
           whole_span_cuts=None, legacy_nested_writes=False, partitions='enumerate',
-          ownership_projection=True, stats=None):
+          ownership_projection=True, stats=None, canonical_spans=False):
     """Exact frontiers when grid=None; optional per-call performance ledger.
 
     stats is populated even if search raises (e.g. a caller's timeout). Timed
@@ -114,6 +133,7 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
     owned-key projection for controlled comparisons.
     """
     started = perf_counter()
+    span_names = SpanNames(graph) if canonical_spans else None
     prune, merge, join, sweep = pareto, combine_max_sum, cat, merge_staircases
     if stats is not None:
         stats.clear()
@@ -123,6 +143,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
                                     'dp_states', 'dp_transitions', 'max_crossing',
                                     'dp_multiwriter_fallbacks', 'witness_nodes')})
         stats.update(pareto_seconds=0., merge_seconds=0.)
+        stats.update(cache_misses_by_span={}, cache_misses_by_extents={},
+                     cache_misses_by_residency={}, renamed_calls=0, rename_nodes=0)
 
         def prune(points, max_capacity=float('inf'), grid=None):
             # Materialize before timing: generators can contain recursive work.
@@ -182,6 +204,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         raise ValueError("partitions must be 'enumerate' or 'dp'")
     if partitions == 'dp' and grid is not None:
         raise ValueError('cut DP currently requires exact frontiers (grid=None)')
+    if canonical_spans and grid is not None:
+        raise ValueError('span canonicalization currently requires exact frontiers (grid=None)')
     if root_groups is not None:
         root_groups = tuple(tuple(g) for g in root_groups)
         if (entry != 'solve' or any(not g for g in root_groups)
@@ -236,13 +260,41 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         return common, inside_made
 
     def solve(ops, ext, external, owned, constrained=False):
-        return _solve(*projected(ops, ext, external, owned), constrained)
+        state = projected(ops, ext, external, owned)
+        if span_names is None or constrained:
+            return _solve(*state, constrained)
+        state, restore = span_names.state(*state)
+        return restore_names(_solve(*state, constrained), restore)
 
     def group_curve(group, ext, external, owned):
-        return _group_curve(*projected(group, ext, external, owned))
+        state = projected(group, ext, external, owned)
+        if span_names is None:
+            return _group_curve(*state)
+        state, restore = span_names.state(*state)
+        return restore_names(_group_curve(*state), restore)
+
+    def restore_names(points, restore):
+        if restore is None:
+            return points
+        if stats is not None:
+            stats['renamed_calls'] += 1
+            stats['rename_nodes'] += sum(bool(w) for _, _, w in points) if witness else 0
+        return tuple((c, q, (_RENAME, w, restore) if w else ()) for c, q, w in points) if witness else points
+
+    def record_miss(stage, ops, ext, external, owned):
+        # Marginals avoid storing another full set of exponential cache keys.
+        for field, key in (
+                ('cache_misses_by_span', f'{stage}:{",".join(ops)}'),
+                ('cache_misses_by_extents', f'{stage}:{ext}'),
+                ('cache_misses_by_residency',
+                 f'{stage}:n={len(ops)},external={len(external)},local_outputs={len(external & project(ops)[2])},owned={len(owned)}')):
+            hist = stats[field]
+            hist[key] = hist.get(key, 0) + 1
 
     @lru_cache(maxsize=None)
     def _solve(ops, ext, external, owned, constrained=False):
+        if stats is not None:
+            record_miss('solve', ops, ext, external, owned)
         live = project(ops)[0] - external
         if not constrained and all(size(t, ext) == 1 for t in live):
             return ((len(live), 0, ()),)
@@ -398,6 +450,8 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
 
     @lru_cache(maxsize=None)
     def _group_curve(group, ext, external, owned):
+        if stats is not None:
+            record_miss('group', group, ext, external, owned)
         live = project(group)[0] - external
         if all(size(t, ext) == 1 for t in live):
             return ((len(live), 0, ()),)
@@ -444,4 +498,5 @@ def curve(graph, witness=False, max_capacity=float('inf'), grid=None, write_thro
         if stats is not None:
             stats['solve_cache'] = _solve.cache_info()._asdict()
             stats['group_cache'] = _group_curve.cache_info()._asdict()
+            stats['span_classes'] = len(span_names.representatives) if span_names is not None else None
             stats['seconds'] = perf_counter() - started

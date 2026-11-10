@@ -27,6 +27,8 @@ CASES = {
     'fork_small': ('fork', (2, 2, 2, 2, 'kki')),
     'residual_small': ('residual', (2, 2, 2, 3, True)),
     'residual_medium': ('residual', (8, 2, 4, 6, True)),
+    'fork_medium_same': ('fork', (4, 2, 4, 2, 'kkkkkk')),
+    'fork_medium_mixed': ('fork', (4, 2, 4, 2, 'kkkiii')),
     'p19_same': ('fork', (8, 4, 8, 2, 'kkkkkk')),
     'p19_mixed': ('fork', (8, 4, 8, 2, 'kkkiii')),
     'residual_deep': ('residual', (8, 2, 4, 12, True)),
@@ -44,7 +46,7 @@ def atomic_json(path, obj):
 
 def source_hash():
     root = Path(__file__).parent
-    names = ('graph/curve.py', 'graph/model.py', 'simulate_nest.py', 'bench_solver_scaling.py')
+    names = ('graph/curve.py', 'graph/model.py', 'graph/span_names.py', 'simulate_nest.py', 'bench_solver_scaling.py')
     h = hashlib.sha256()
     for name in names:
         h.update(name.encode())
@@ -67,6 +69,7 @@ def worker(args):
     stats = None if args.no_profile else {}
     out = dict(case=args.case, kind=kind, args=shape, n_ops=len(graph.ops),
                variant=args.variant, witness=not args.no_witness, profiling=not args.no_profile,
+               canonical_spans=args.canonical_spans,
                source_sha256=source_hash(), revision=args.revision, python=platform.python_version(),
                started_utc=datetime.now(timezone.utc).isoformat(),
                budgets=dict(seconds=args.seconds, mem_gib=args.mem_gib), stats=stats,
@@ -79,7 +82,7 @@ def worker(args):
     signal.setitimer(signal.ITIMER_REAL, args.seconds)
     try:
         points = curve(graph, witness=not args.no_witness, partitions=mode,
-                       ownership_projection=projected, stats=stats)
+                       ownership_projection=projected, stats=stats, canonical_spans=args.canonical_spans)
         out.update(search_seconds=time.perf_counter() - begin, points=[list(p[:2]) for p in points],
                    phase='replay', replay_checked=0, replay_failures=[])
         atomic_json(args.out, out)
@@ -117,6 +120,7 @@ def main():
     parser.add_argument('--variants', nargs='+', choices=VARIANTS, default=list(VARIANTS))
     parser.add_argument('--no-witness', action='store_true')
     parser.add_argument('--no-profile', action='store_true')
+    parser.add_argument('--canonical-spans', action='store_true')
     parser.add_argument('--worker', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--case', choices=CASES, help=argparse.SUPPRESS)
     parser.add_argument('--variant', choices=VARIANTS, help=argparse.SUPPRESS)
@@ -129,7 +133,8 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
     config = dict(source_sha256=source_hash(), revision=args.revision, seconds=args.seconds,
                   mem_gib=args.mem_gib, workers=args.workers, cases=args.cases, variants=args.variants,
-                  witness=not args.no_witness, profiling=not args.no_profile)
+                  witness=not args.no_witness, profiling=not args.no_profile,
+                  canonical_spans=args.canonical_spans)
     manifest = args.out / 'manifest.json'
     if manifest.exists() and json.loads(manifest.read_text()) != config:
         parser.error('existing output directory has a different source or configuration')
@@ -148,6 +153,8 @@ def main():
             command.append('--no-witness')
         if args.no_profile:
             command.append('--no-profile')
+        if args.canonical_spans:
+            command.append('--canonical-spans')
         try:
             p = subprocess.run(command, capture_output=True, text=True, timeout=args.seconds + 15)
             failure = dict(status='crashed', exitcode=p.returncode, stderr=p.stderr[-2000:])
