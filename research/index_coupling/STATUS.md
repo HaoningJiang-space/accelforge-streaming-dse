@@ -5,6 +5,17 @@ PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
 Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.md.
 
+Order-complete Fork symmetry: [FORK_QUOTIENT_RESULTS.md](FORK_QUOTIENT_RESULTS.md).
+A separate exact quotient retains joint input/output residency profiles within
+each role and reconstructs a consistent global order. Five complete reference
+envelopes and 128 conditional queries agree; 685 first-study/ablation witnesses
+execute exactly. The homogeneous six-consumer root drops from 106,604 reference
+response entries to 6,092 quotient entries; sequential no-profile controls give
+a 9.80x median time ratio. Mixed-eight and both labeled-six ablations time out
+at 60 s and remain incomplete. A bound on the quotient's joint contexts is
+polynomial in consumer multiplicities at fixed four-rank shape domains;
+fixed-order defaults, frozen scores and general-graph claims remain unchanged.
+
 Width/stack study: [WIDTH_RESULTS.md](WIDTH_RESULTS.md). Of 34 bounded jobs,
 29 complete with 146 exact replays and five time out. Fixed-width residuals
 still grow superlinearly; forward stack obligation width is 2L, and valid FFN
@@ -235,9 +246,11 @@ claim. P21d's original frozen failures and incomplete arms remain recorded.
 - P21f is closed with a failed plateau prediction. Any replacement theorem
   must compare complete conditional peak reservations, not silently change
   the frozen threshold or count the tile diagnostic as primary evidence.
-- Bound or quotient the joint `(span, extents, external, owned, entry)`
-  contexts; local cut/obligation widths alone do not justify linear stacks.
-  See WIDTH_RESULTS.md and the conditional-state census.
+- Extend the proved order-complete Fork quotient to decorated boundaries with
+  partial symmetries/downstream dependencies only after establishing a
+  cost-preserving action. Its joint-context bound covers this fixed-rank Fork
+  family, not arbitrary graphs or linear Transformer stacks. See
+  FORK_QUOTIENT.md, WIDTH_RESULTS.md and the conditional-state census.
 - Complete a general proof of the repaired final-write charge ownership
   across nested partitions before a new lifecycle-sufficiency theorem.
   Keep P21d's failed, invalid and timed-out cases distinct; do not add cuts

@@ -30,6 +30,13 @@ counts lose their pairing. Shared A/B/X residency, extents, producer presence,
 entry, and ownership of X's final write remain explicit. This is a sufficient
 signature within this grammar, not a minimal signature for general DAGs.
 
+At an initially unretained whole-fork K split, the homogeneous obligations
+are A and the m private outputs. Including A's separate bit, the local choices
+shrink from 2^(m+1) to 2(m+1): 128 to 14 at m=6. With a k-role and b i-role
+consumers, K lacks the k outputs and i inputs, giving 2(a+1)(b+1): 32 for
+a=b=3. Later ancestors can separate consumers into more joint profiles, so
+these initial-mask counts are not a bound on the entire recursive search.
+
 Root queries with no resident private tensors already have only one decorated
 order in the all-homogeneous fork. Every global order has the same curve there.
 Thus improving that root's optimal value and avoiding duplicate intermediate
@@ -82,9 +89,39 @@ nontrivial partition.
 
 All transformations preserve parent reservation and spill charges. Comparing
 bare conditional traffic without those charges is not a dominance rule.
-No greedy or submodularity assumption is used. The two abstract min-of-mappings
-examples in the discussion rule out inferring either curvature direction
-from that minimum form alone; they are not measurements of this graph grammar.
+No greedy or submodularity assumption is used. For two residency bits x,y,
+the abstract costs min(4-4x,4-4y) and min(4,9-3x-3y) give retention benefits
+whose marginal gains respectively decrease (4 then 0) and increase (0 then 1).
+Thus the minimum-over-mappings form alone supplies neither curvature guarantee.
+These are mathematical examples, not measurements or realizability claims for
+this graph grammar.
+
+### A bound on all memo contexts, including ancestor residency
+
+For this fork implementation, let a/b be the original role multiplicities and
+D the number of possible four-rank extent tuples. Every canonical state is
+specified by two four-profile count vectors, whose sums are at most a and b,
+plus producer presence, shared A/B/X residency, X write ownership, extent
+tuple and entry (solve/group/sequence). Consequently the total number of entries
+in these three response caches is bounded by
+
+    96 D binomial(a+4,4) binomial(b+4,4).
+
+The loose factor 96 is 3 entries × 2 producer flags × 8 shared-residency masks
+× 2 ownership flags. Many combinations are unreachable. The stars-and-bars
+terms allow consumers to be absent from the subproblem as well as to have any
+of the four joint profiles. Fixing the root consumer counts instead gives the
+smaller binomial(a+3,3) binomial(b+3,3) boundary count.
+
+This is an upper bound on actual keys of the quotient implementation, not on
+semantically necessary states. It includes accumulated ancestor residency;
+there is no missing factor of 2^m hidden in that interface. For fixed shape
+domains it is O(m^4) for one role, O(a^4 b^4) for two. Transition enumeration,
+Pareto-frontier size, witness construction and numeric tensor extents remain
+additional work; this is not a linear-runtime theorem. The growing-rank
+single-operator 3^k example and Transformer stacks fall outside the constant
+four-rank, two-role family. A high-degree polynomial can still be impractical
+at small m, as the mixed-eight timeout illustrates.
 
 ## 3. Independent references and physical replay
 

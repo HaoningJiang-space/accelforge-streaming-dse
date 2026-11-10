@@ -181,6 +181,18 @@ banking or precision changes may require a different Gamma and cost model.
    `(reservation + child_capacity, parent_extra_traffic)`, giving an exact
    local dominance condition. Larger-X states and outer mask enumeration
    remain open; see SCALAR_BRIDGE_RESULTS.md before generalizing the timings.
+   **Order-complete symmetry quotient:** an independent Fork solver now searches
+   group membership by role/joint-residency counts and restores a consistent
+   global consumer order. Five complete reference envelopes and all 128 tiny
+   conditional queries match; 685 saved executions across two studies are
+   exact. Its three response caches admit the bound
+   `96 D binomial(a+4,4) binomial(b+4,4)`, including ancestor residency, for
+   fixed four-rank Fork shape domains. The positional counterexample remains
+   valid in the old grammar and collapses in the order-complete one. Next seek
+   the stabilizer of boundaries with additional dependencies/shared partial
+   sums; preserve joint profiles, ownership and execution entry. Do not apply
+   count merging to fixed-order `curve.py`, infer greedy guarantees, or claim
+   that this settles minimal physical state. See FORK_QUOTIENT_RESULTS.md.
 4. **P22, after P21: overlap and buffer occupancy.** A single-channel extension
    must charge double buffering and in-flight tiles against the same capacity
    budget as retained tensors. Prefetch scheduling follows this model; it does
