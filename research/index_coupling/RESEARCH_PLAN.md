@@ -79,9 +79,17 @@ banking or precision changes may require a different Gamma and cost model.
    first-split account or on multi-level retention scopes.
    - P19 (done): the first-split knapsack predicts the maximum gap exactly
      (P19a, b pass) but not the width of the positive range (P19c fails, 0/8).
+     All eight b=2/b=3 curve pairs cross. Peak, positive-range width and
+     interval-weighted averages must remain separate (FIRST_PRINCIPLES.md §9);
+     none is a replacement success criterion for P19c.
    - P14-FFN′ equality failed (26 lower points, plus the known 1 B offset).
      Classify remaining differences using executed witnesses and native source
      reconstruction; do not infer a unique mechanism from numerical agreement.
+     Two source rows now reconstruct under legal independent-copy reordering
+     and reproduce native costs. The 80 B comparison isolates 128 B less input
+     refetch with equal aggregate partial-sum overhead. Both outer-axis
+     obligation tables tie; the additional cost is in the child execution.
+     This does not yet distinguish mapspace exclusion from pruning.
    - An integer-tile retest of dS, since the power-of-two grid is a known
      artifact source.
 2. **P20, the minimal invariant (to be frozen after P19).** Use graph pairs with
@@ -96,6 +104,13 @@ banking or precision changes may require a different Gamma and cost model.
      stated homogeneous, order-completed grammar.
    - *A non-fork family.* Diamonds or GLU, where a join meets the shared tensor,
      to see whether the fork invariant survives a reconvergent path.
+   **Selection discipline after P19:** compare complete conditional curves,
+   not only maxima. Fix the cut, tile extents and legal order domain before
+   testing an interface reduction; then separately measure the envelope over
+   cut alternatives. Preserve physical-copy residency episodes or show why
+   their effects can be discarded. Equal first-layer obligation costs do not
+   establish equal child costs. This is a requirement for a future frozen
+   test, not a new P20 prediction or an implemented search algorithm.
 3. **P21: retain/spill and interface-state measurement.** Start with the frozen
    residual-block tests in PROTOCOL.md, independently of P19: P21a excludes X
    from H and tests the capacity-shift identity; P21b lets H read X and tests

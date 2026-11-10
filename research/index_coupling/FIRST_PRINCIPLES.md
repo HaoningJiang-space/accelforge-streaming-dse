@@ -93,7 +93,7 @@ Demmel), and fused-loop retention models (LoopTree). Our angle is comparative:
 how input/output roles on a DAG's index structure change S(q), and what that
 implies for buffer sizing and mapper mapspaces (FFM's sharing gaps).
 
-## 6. Obligations per axis, and a proved bound on the coupling cost
+## 6. Obligations per axis, and a candidate bound on the coupling cost
 
 **Obligations.** Splitting a fused group along v into T trips makes every tensor
 lacking v an obligation: keep its tile (capacity) or revisit it, at
@@ -113,14 +113,16 @@ obligated tensors is the same for both graphs; coupling decides how it is
 distributed over the axes. The weighted totals are not conserved when I != K
 (summing the two axes, cross minus same is (K-I)L). Same concentrates both partial sums on k and leaves i input-only; cross
 puts one on each axis. The outer loop picks the cheaper axis, so concentration
-helps. Unretained single-split cost per extra trip: same min(JK+2KL, IJ+4IL),
+helps in this single-split comparison, not necessarily in the optimized full
+curve. Unretained single-split cost per extra trip: same min(JK+2KL, IJ+4IL),
 cross min(JK+3KL, IJ+3IL).
 
-**Derived, not fitted.** To match same's traffic, cross either keeps the
-exposed partial sum whole (|V| = KL, which is IL when I = K) or keeps half an X
-strip instead (IK/2 with a two-way power-of-two split). With I = K this is
-I·min(L, I/2), the formula P15 had fitted; its small misses come from inner
-levels.
+**Motivating constructions, not a general proof.** Keeping the exposed partial
+sum whole (|V| = KL, which is IL when I = K), or retaining half an X strip
+(IK/2 with a two-way power-of-two split), suggests I·min(L,I/2) at I=K,
+the formula P15 had fitted. Their general legality and optimality are not
+established; the first-split account alone does not explain every inner-level
+deviation.
 
 **Proposition (recursive model, any shape, write-through on or off).**
 
@@ -139,8 +141,9 @@ is bounded by the size of the accumulator it exposes.
 
 **Checked on all 287 swept shapes** (exploratory; the bound was written after
 the sweeps): max dS <= min(KL, IK/2) and min dS >= -min(IL, IK/2) hold in all
-287. The proved part is the KL / IL bound; the IK/2 alternative is a
-construction, not proved in general. The upper bound is attained exactly in
+287. Neither the KL / IL bound nor the IK/2 alternative is currently a complete
+general theorem: the former still needs the closure argument above, and the
+latter is a construction. The upper bound is attained exactly in
 174 shapes (11 more within 5%); the lower one in 88 of the 194 shapes where
 cross is better somewhere. Where the first-split costs above favour cross,
 cross is better somewhere in 95 of 96 shapes; when they favour same, cross
@@ -150,9 +153,10 @@ sufficient condition.
 **General form, for any fused group.** For each shared axis v, the obligation
 set is the tensors lacking v, with weight 2 for outputs contracted over v and
 1 for inputs not indexed by v. The index relations across operators fix how
-this multiset spreads over axes; buffer capacity buys partial sums first, then
-inputs; and the price of an unfavourable spread is at most the size of the
-partial sums it exposes on the best axis.
+this multiset spreads over axes. At a fixed split, whole-tile retention is a
+0/1 knapsack, not a partial-sums-first rule. Extending the proposed capacity
+bound to arbitrary groups requires a legal replacement construction; a table
+of obligation weights alone does not establish that bound.
 
 ## 7. What sets the maximum capacity gap (witnesses, then a prediction)
 
@@ -194,15 +198,20 @@ kkkiii (8/8) and n·min(L, n/2) for kkkkki and kkkkii (16/16), so the
 first-split knapsack predicts the cap beyond b <= 2. Its second consequence,
 that the positive-gap range (about 2b-1 budget steps) widens with b, fails in
 8/8 shapes: kkkkii's range is the widest everywhere, and at L=4 kkkiii's is
-also below kkkkki's. The knapsack fixes the peak, set at the first split; the
-range depends on budgets where deeper levels or the other branch decide, which
-it does not model.
+also below kkkkki's. The first-split knapsack predicts the measured peak; the
+range also involves budgets where deeper levels or the other branch decide,
+which it does not model. Exact agreement on these eight held-out shapes validates
+the frozen maximum-gap prediction; it does not prove the first split fixes
+the optimum in every shape. The interval analysis in §9 leaves P19c failed.
 
 ## 8. Span-legal ranks: one obligation table for forks, FFN and residual blocks
 
 A group may loop over rank v only if every op in it uses v and every tensor
 produced and consumed inside it carries v. For a contiguous span S call these
 ranks R(S); they follow from the einsum incidence alone (`graph/context.py`).
+This statement is for the unconditioned span. The implementation's arbitrary
+external-residency queries have a separate contract and are not covered by
+this unconditioned statement.
 Every plan for S in the grammar is a chain of loops over R(S) ending at a
 nontrivial partition or a leaf. A loop over v with T trips exposes the tensors
 of S lacking v: each is kept whole (capacity) or refetched with weight 1 per
@@ -223,8 +232,10 @@ The rows unify results obtained separately:
 - The executed FFN witness at 80 B (FFN_EXECUTION_AUDIT.md) splits F in two:
   64 B is the F row's inputs X and dY read once more, 128 B its outputs Y and dX
   spilled once. 256+64+128 = 448 is the F row priced at T=2.
-- In attention the P row is the online-softmax tradeoff: splitting keys exposes
-  O as a partial accumulator.
+- In the modeled attention core, splitting P exposes O as a partial
+  accumulator. The current elementwise-softmax abstraction omits row maximum,
+  normalization sums and rescaling; this is not a complete online-softmax
+  resource or execution theorem.
 - All 117 frontier witnesses of the unrestricted P21 curves loop over I only at
   whole-graph level, as R = {I} requires (K is illegal because H0 lacks K).
 
@@ -232,6 +243,99 @@ What R(S) does not decide is where the bottom partition cuts. The exploratory
 attribution in P21_RESULTS.md (`attribute_p21.py`) separates the two: chaining
 I loops above the fixed EX|H|EAdd boundary removes 54% of its wrong integer
 capacities at depth 2 but only 20% at depth 8, where the cut placement
-dominates. A composable summary therefore needs (a) the R(S) chain context and
-(b) freedom in which tensors cross the bottom cut; a fixed cut cannot be
-summarized by one curve however rich its residency state.
+dominates. To cover the unrestricted grammar, composition therefore needs
+(a) the R(S) chain context and (b) alternatives for which tensors cross the
+bottom cut. A conditional curve can be exact for one fixed cut, as P21 shows;
+it does not thereby represent plans using other cuts.
+
+## 9. What the completed P19 and native FFN checks actually distinguish
+
+This section is exploratory synthesis after P19, not an amended prediction.
+`analyze_p19_profile.py` reads the 32 saved curves and reuses P18's exact
+step-interval integration. No mapping search is run. The signed area also
+matches the independent capacity-axis integral, and inserting extra samples
+inside constant intervals changes none of the reported metrics.
+
+### Peak, support width and average are different questions
+
+Let Delta_b(q)=S_b(q)-S_0(q), where b is the minority consumer count and q
+is extra traffic above the common compulsory floor. Use the same finite
+[0,q_hi] domain for every role mix of a shape.
+
+| Comparison, b=3 versus b=2 | Shapes satisfying it |
+| --- | ---: |
+| Wider positive-gap domain (frozen P19c component) | 0/8 |
+| Larger signed area integral of Delta_b | 8/8 |
+| Larger uniform-q mean of Delta_b / S_0 | 2/8 |
+| The two inverse curves cross | 8/8 |
+
+In fact signed areas increase b=1 < b=2 < b=3 in all eight shapes. That is a
+post-hoc observation, not a replacement success criterion for P19c. Area
+has units B²; its normalized mean assumes a uniform distribution of traffic
+budgets and is not an expected deployment saving. None of these summaries
+alone gives a pointwise ordering.
+
+The shape (I,J,K,L)=(16,4,16,4), with 896 B compulsory traffic, gives a direct
+counterexample to monotone ranking by minority count:
+
+| Allowed **total** traffic | Pure capacity | b=1 capacity | b=2 capacity | b=3 capacity |
+| ---: | ---: | ---: | ---: | ---: |
+| 1,344 B | 137 B | 201 B | 201 B | 265 B |
+| 2,624 B | 55 B | 69 B | 69 B | 55 B |
+
+At the first budget b=3 incurs the predicted 128 B maximum gap. At the second
+it matches the pure fork and needs 14 B less than b=2. The plots and exact
+intervals are in `results/p19_profile.{png,pdf,json}`. All statements retain
+P19's fixed consumer order and power-of-two grammar; they are not an
+order-completed or arbitrary-integer-tile theorem.
+
+### The FFN first-layer obligation tables tie
+
+At M=F=8, D=E=4, each tensor in the M and F obligation rows has size 32 B.
+For two outer trips, keeping none of those obligations costs in either row:
+
+    2 input tiles × 32 B + 2 accumulator tiles × 2 × 32 B = 192 B extra.
+
+Adding compulsory traffic gives 448 B **if the inner execution adds no extra
+traffic**. Thus the first-layer table cannot by itself choose M over F or
+explain why the selected native M-first plan costs 576 B. Neither does it
+prove a 448 B M-first plan fits the 80 B budget.
+
+Detailed native replay supplies the missing term. In each of two M blocks,
+EH and EdX independently read the 32 B W1, while EY and EdZ independently
+read W2. Relative to one shared fetch per block, this adds 32+32=64 B per
+block, or 128 B overall. The independently executed F-first graph witness
+has no analogous child-level extra traffic:
+
+    Native M-first: 256 + 192 + 2×64 = 576 B.
+    Graph F-first:  256 + 192 + 2×0  = 448 B.
+
+This is counted traffic for the two schedules, not an optimality proof for
+either axis. Native actual peak is 76 B and graph peak is 80 B, both within
+the common 80 B budget. See FFN_NATIVE_ATTRIBUTION.md for the copy-order
+reconstruction control and native versus independent-executor distinction.
+
+For these schedules no intermediate reaches DRAM. A more precise accounting
+unit is a physical residency episode of a cell: an input loaded e times costs
+e reads; a terminal accumulator processed in r resident segments costs
+2r−1 transfers, including its final write. Several consumers may share one
+input episode. A single (tile size, input/output weight) does not determine
+the number of episodes: consumer grouping, scope and the inner plan do.
+
+### Consequence for a sufficient summary
+
+Three separate roles are now evidenced:
+
+1. Rank incidence rules out illegal whole-span loops before tile search.
+2. Role/size obligations price a **fixed** split and retention choice.
+3. Conditional child curves and cut alternatives account for shared copies,
+   lifetime overlap and the additional cost of completing that choice.
+
+P19 supports one quantitative maximum-gap prediction; it also refutes the
+proposed monotone support-width rule. FFN shows that equal first-layer tables
+can have different child costs. P21 shows that adding loop contexts to one
+fixed cut is insufficient to recover the free-cut curve. These support a
+scope-sensitive, conditional demand description, not a scalar graph score.
+They do not yet prove that a sufficient description is compact or cheap to
+construct. Keep the existing grammar and measured effects while testing that
+remaining question; do not infer a new optimizer or speedup from this synthesis.
