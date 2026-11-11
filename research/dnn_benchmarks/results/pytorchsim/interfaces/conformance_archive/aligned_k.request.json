@@ -1,0 +1,38 @@
+{
+  "schema": "gemm-evaluation-request.v1",
+  "operator_id": "test.aligned_k",
+  "mapping_id": "aligned_k",
+  "workload": {
+    "kind": "plain_gemm",
+    "shape": [
+      16,
+      32,
+      256
+    ],
+    "dtype": "float32",
+    "layout": "row_major_contiguous"
+  },
+  "mapping": {
+    "mode": "external",
+    "loop_order": [
+      "M",
+      "N",
+      "K"
+    ],
+    "strict": true,
+    "tile": [
+      16,
+      32,
+      256
+    ],
+    "subtile": [
+      16,
+      32,
+      128
+    ]
+  },
+  "hardware": {
+    "sram_bytes_per_lane": 8192,
+    "serial_tiles": true
+  }
+}

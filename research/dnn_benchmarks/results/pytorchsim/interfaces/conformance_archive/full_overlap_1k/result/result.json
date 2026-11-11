@@ -1,0 +1,129 @@
+{
+  "status": "functional_import_pass; DMA ledger still pending",
+  "mode": "external",
+  "shape": [
+    64,
+    128,
+    32
+  ],
+  "dtype": "float32",
+  "macs": 262144,
+  "source_commit": "f595cef7a367c57f4da9f1ba36d994c1f42242bf",
+  "file_sha256": {
+    "PyTorchSimFrontend/mlir/mlir_gemm_template.py": "8e738d318269a38d28587014153928a7ec03ea751fecc93604041e334d9dde1f",
+    "PyTorchSimFrontend/extension_config.py": "09966a1108428208515f9cdef09e379479a8b2ea9a595e86ddac245030ee5168",
+    "AsmParser/tog_generator.py": "88e18ebe8a9346d804160c3400c1ddf98481ea7549efe9d7f1d30d793997ea07",
+    "TOGSim/src/TileGraphParser.cc": "8dd2d5df3a3c118a638ba94b0876d58c7662cdcdd9f2571f5dbb396941f2b9eb",
+    "TOGSim/build/bin/Simulator": "5a1db32be6b3f444f5415ab591f0089286b1b8f5912100c30758eac171e33a0b"
+  },
+  "requested_tile": [
+    64,
+    128,
+    32,
+    64,
+    128,
+    32
+  ],
+  "candidate_tiles_observed": [
+    [
+      [
+        64,
+        128,
+        32,
+        64,
+        128,
+        32
+      ]
+    ],
+    [
+      [
+        64,
+        128,
+        32,
+        64,
+        128,
+        32
+      ]
+    ]
+  ],
+  "rendered_tiles_observed": [
+    {
+      "TILE_M": 64,
+      "TILE_N": 128,
+      "TILE_K": 32,
+      "SUB_TILE_M": 64,
+      "SUB_TILE_N": 128,
+      "SUB_TILE_K": 32
+    },
+    {
+      "TILE_M": 64,
+      "TILE_N": 128,
+      "TILE_K": 32,
+      "SUB_TILE_M": 64,
+      "SUB_TILE_N": 128,
+      "SUB_TILE_K": 32
+    }
+  ],
+  "source_template_ledger": {
+    "mac_count": 262144,
+    "useful_input_elements": {
+      "X": 2048,
+      "W": 4096
+    },
+    "useful_output_elements": 8192,
+    "useful_bytes": 57344,
+    "logical_buffer_bytes": 57344,
+    "source_dma_operations": 3,
+    "partial_sum_dram_reads": 0,
+    "partial_sum_dram_writes": 0,
+    "caveat": "Pre-pass logical counts; not compiled DMA bytes, DRAM transactions or physical SRAM."
+  },
+  "independent_contract_audit": "7e03ab3b",
+  "dma_byte_audit": "pending; no traffic equality claim",
+  "timing_accepted": false,
+  "timing_rejection": "Pending independent compiled-DMA ledger and functional verification",
+  "scope": "standalone GEMM import smoke; external tiles are manual controls, not a solver-quality result",
+  "request_sha256": "39c8b37805a4299cf86b0e29de49aa75b70edadab60e21aae3ffd56981342c60",
+  "resolved_hardware": {
+    "lanes": 128,
+    "cores": 1,
+    "systolic_arrays_per_core": 2,
+    "sram_bytes_per_lane": 1024,
+    "core_freq_mhz": 940,
+    "dram_profile": "HBM2_TPUv3",
+    "dram_channels": 16,
+    "serial_tiles": false
+  },
+  "phase_seconds": {
+    "mapping_selection": 0.005895738955587149,
+    "compute_cycle_model": 0.9118487718515098,
+    "functional_simulation": 0.03401866788044572,
+    "timing_simulation": 0.032899445155635476
+  },
+  "failed_stage": null,
+  "backend_lock_sha256": "9b19609f8b6b950b8708aeaa0ebe6828afeea7aca9eb2898e7d7d05ab6951eb3",
+  "audited_source_commit": "509f42554202edb29cf8d31ddf619776f465e717",
+  "source_difference": [
+    "README.md",
+    "tracked patch series"
+  ],
+  "timing_address_layouts": [
+    {
+      "addresses": {
+        "arg0": 268435456,
+        "arg1": 536870912,
+        "arg2": 805306368
+      },
+      "bytes": [
+        8192,
+        16384,
+        32768
+      ]
+    }
+  ],
+  "compile_and_execute_seconds": 1.6673089480027556,
+  "torch_version": "2.8.0+cu126",
+  "max_abs_error": 3.814697265625e-06,
+  "wrong_elements": 0,
+  "numerical_equal": true
+}

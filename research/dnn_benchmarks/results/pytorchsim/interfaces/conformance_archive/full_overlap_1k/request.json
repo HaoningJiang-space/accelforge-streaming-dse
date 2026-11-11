@@ -1,0 +1,44 @@
+{
+  "schema": "gemm-evaluation-request.v1",
+  "operator_id": "test.full_overlap_1k",
+  "mapping_id": "full_overlap_1k",
+  "workload": {
+    "kind": "plain_gemm",
+    "shape": [
+      64,
+      128,
+      32
+    ],
+    "dtype": "float32",
+    "layout": "row_major_contiguous"
+  },
+  "mapping": {
+    "mode": "external",
+    "loop_order": [
+      "M",
+      "N",
+      "K"
+    ],
+    "strict": true,
+    "tile": [
+      64,
+      128,
+      32
+    ],
+    "subtile": [
+      64,
+      128,
+      32
+    ]
+  },
+  "hardware": {
+    "lanes": 128,
+    "cores": 1,
+    "systolic_arrays_per_core": 2,
+    "sram_bytes_per_lane": 1024,
+    "core_freq_mhz": 940,
+    "dram_profile": "HBM2_TPUv3",
+    "dram_channels": 16,
+    "serial_tiles": false
+  }
+}

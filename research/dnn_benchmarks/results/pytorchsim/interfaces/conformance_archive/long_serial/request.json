@@ -1,0 +1,34 @@
+{
+  "schema": "gemm-evaluation-request.v1",
+  "operator_id": "test.long_serial",
+  "mapping_id": "long_serial",
+  "workload": {
+    "kind": "plain_gemm",
+    "shape": [
+      128,
+      256,
+      3072
+    ],
+    "dtype": "float32",
+    "layout": "row_major_contiguous"
+  },
+  "mapping": {
+    "mode": "heuristic",
+    "loop_order": [
+      "M",
+      "N",
+      "K"
+    ],
+    "strict": true
+  },
+  "hardware": {
+    "lanes": 128,
+    "cores": 1,
+    "systolic_arrays_per_core": 2,
+    "sram_bytes_per_lane": 131072,
+    "core_freq_mhz": 940,
+    "dram_profile": "HBM2_TPUv3",
+    "dram_channels": 16,
+    "serial_tiles": true
+  }
+}

@@ -26,3 +26,11 @@ lane-group offsets in N/K. It does not change requested mappings or claim to
 make the previously failing misaligned tuples executable. Missing-shape fallback
 and three-field candidate generation retain upstream semantics; the pilot uses
 an exact six-field shape guard and verifies selection and rendered code.
+
+For the opt-in evaluation interfaces, additionally apply
+`0003-evaluation-interfaces.patch` after patch 2 and rebuild Simulator. This adds
+native final-statistics JSON, compiled allocation receipts, exact byte-capacity
+configuration and the explicit serialized tile policy. Use
+`interfaces_backend_lock.json` for this backend. Do not substitute it silently
+into the frozen fidelity experiment: scheduling policies must match in timing
+comparisons. See [interface results](../PYTORCHSIM_INTERFACE_RESULTS.md).

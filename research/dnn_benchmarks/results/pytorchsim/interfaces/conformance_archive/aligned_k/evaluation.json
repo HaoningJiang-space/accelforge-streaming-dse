@@ -1,0 +1,187 @@
+{
+  "schema": "gemm-evaluation.v1",
+  "request_sha256": "b2e45bea9b59b838bf6b7c4437716b486367163f4a4077730166a0d8245e7fa9",
+  "operator_id": "test.aligned_k",
+  "mapping_id": "aligned_k",
+  "requested_hardware": {
+    "lanes": 128,
+    "cores": 1,
+    "systolic_arrays_per_core": 2,
+    "sram_bytes_per_lane": 8192,
+    "core_freq_mhz": 940,
+    "dram_profile": "HBM2_TPUv3",
+    "dram_channels": 16,
+    "serial_tiles": true
+  },
+  "process_exitcode": 0,
+  "driver_exitcode": 0,
+  "verdict": "accepted",
+  "failure_stage": null,
+  "checks": {
+    "execution": true,
+    "numerical": true,
+    "dma": true,
+    "mapping": true,
+    "capacity": {
+      "passed": true,
+      "status": "pass",
+      "required_bytes_per_lane": 1392,
+      "capacity_bytes_per_lane": 8192,
+      "basis": "ELF extent plus kernel stack; serial tiles; pinned plain-GEMM backend"
+    },
+    "native_statistics": true,
+    "hardware": true
+  },
+  "metrics": {
+    "cycles": 637,
+    "dram_read_bytes": 49152,
+    "dram_write_bytes": 2048,
+    "useful_bytes": 51200,
+    "sram_required_bytes_per_lane": 1392
+  },
+  "costs": {
+    "evaluation_wall_seconds": 4.752820695051923,
+    "audit_seconds": 0.018915319116786122,
+    "phases": {
+      "mapping_selection": 0.006056132260710001,
+      "compute_cycle_model": 0.9497732189483941,
+      "functional_simulation": 0.033437283942475915,
+      "timing_simulation": 0.03029790287837386
+    }
+  },
+  "provenance": {
+    "backend_lock_sha256": "9b19609f8b6b950b8708aeaa0ebe6828afeea7aca9eb2898e7d7d05ab6951eb3",
+    "file_sha256": {
+      "PyTorchSimFrontend/mlir/mlir_gemm_template.py": "8e738d318269a38d28587014153928a7ec03ea751fecc93604041e334d9dde1f",
+      "PyTorchSimFrontend/extension_config.py": "09966a1108428208515f9cdef09e379479a8b2ea9a595e86ddac245030ee5168",
+      "AsmParser/tog_generator.py": "88e18ebe8a9346d804160c3400c1ddf98481ea7549efe9d7f1d30d793997ea07",
+      "TOGSim/src/TileGraphParser.cc": "8dd2d5df3a3c118a638ba94b0876d58c7662cdcdd9f2571f5dbb396941f2b9eb",
+      "TOGSim/build/bin/Simulator": "5a1db32be6b3f444f5415ab591f0089286b1b8f5912100c30758eac171e33a0b"
+    }
+  },
+  "mapping_receipt": {
+    "schema": "gemm-mapping-receipt.v1",
+    "operator_id": "test.aligned_k",
+    "mapping_id": "aligned_k",
+    "selected_tile": [
+      16,
+      32,
+      256,
+      16,
+      32,
+      128
+    ],
+    "loop_order": [
+      "M",
+      "N",
+      "K"
+    ],
+    "compiler_source_sha256": "c243d658c772c12d92ce8140e429dfbed6748a7c09827a6f4715d60bec77d08c",
+    "tog_sha256": "87d0e59703a73cfd159f3aa86efc0f3fecc2559213d0318b8e602d6d89cd244c",
+    "allocation": {
+      "schema": "pytorchsim-allocation.v1",
+      "basis": "ELF static extent plus pinned compiler kernel stack",
+      "region": "lane_scratchpad",
+      "lanes": 128,
+      "capacity_bytes_per_lane": 8192,
+      "static_extent_bytes_per_lane": 1216,
+      "static_object_bytes_per_lane": 1216,
+      "alignment_padding_bytes_per_lane": 0,
+      "kernel_stack_bytes_per_lane": 176,
+      "required_bytes_per_lane": 1392,
+      "buffers": [
+        {
+          "name": "X_spad",
+          "offset_bytes": 0,
+          "bytes_per_lane": 128,
+          "region": "lane_scratchpad",
+          "lifetime": "entire_kernel",
+          "copies": 1
+        },
+        {
+          "name": "W_spad",
+          "offset_bytes": 128,
+          "bytes_per_lane": 1024,
+          "region": "lane_scratchpad",
+          "lifetime": "entire_kernel",
+          "copies": 1
+        },
+        {
+          "name": "Y_spad",
+          "offset_bytes": 1152,
+          "bytes_per_lane": 64,
+          "region": "lane_scratchpad",
+          "lifetime": "entire_kernel",
+          "copies": 1
+        }
+      ],
+      "compiler_capacity_pass": true,
+      "plain_gemm_scope": true,
+      "kernel_has_calls": false,
+      "binary_sha256": "90e07ddbd64043b367ba240a4a46c1bec29cef1cf83ba710b46846b0d741d73b",
+      "assembly_sha256": "5b63aefc205ae40d8df9d7954e7ca426cd2cce25c8ed80e11642d754a363d149",
+      "scope_note": "Capacity certificate requires serialized timing tiles. Wrapper host stack, DMA tags and queues belong to separate backend resources; no full-chip area or energy claim."
+    }
+  },
+  "allocation_receipts": [
+    {
+      "schema": "pytorchsim-allocation.v1",
+      "basis": "ELF static extent plus pinned compiler kernel stack",
+      "region": "lane_scratchpad",
+      "lanes": 128,
+      "capacity_bytes_per_lane": 8192,
+      "static_extent_bytes_per_lane": 1216,
+      "static_object_bytes_per_lane": 1216,
+      "alignment_padding_bytes_per_lane": 0,
+      "kernel_stack_bytes_per_lane": 176,
+      "required_bytes_per_lane": 1392,
+      "buffers": [
+        {
+          "name": "X_spad",
+          "offset_bytes": 0,
+          "bytes_per_lane": 128,
+          "region": "lane_scratchpad",
+          "lifetime": "entire_kernel",
+          "copies": 1
+        },
+        {
+          "name": "W_spad",
+          "offset_bytes": 128,
+          "bytes_per_lane": 1024,
+          "region": "lane_scratchpad",
+          "lifetime": "entire_kernel",
+          "copies": 1
+        },
+        {
+          "name": "Y_spad",
+          "offset_bytes": 1152,
+          "bytes_per_lane": 64,
+          "region": "lane_scratchpad",
+          "lifetime": "entire_kernel",
+          "copies": 1
+        }
+      ],
+      "compiler_capacity_pass": true,
+      "plain_gemm_scope": true,
+      "kernel_has_calls": false,
+      "binary_sha256": "90e07ddbd64043b367ba240a4a46c1bec29cef1cf83ba710b46846b0d741d73b",
+      "assembly_sha256": "5b63aefc205ae40d8df9d7954e7ca426cd2cce25c8ed80e11642d754a363d149",
+      "scope_note": "Capacity certificate requires serialized timing tiles. Wrapper host stack, DMA tags and queues belong to separate backend resources; no full-chip area or energy claim."
+    }
+  ],
+  "native_statistics": {
+    "schema": "togsim-final.v1",
+    "completed": true,
+    "scope": "cumulative",
+    "launched_kernels": 1,
+    "total_cycles": 637,
+    "dram_channels": 16,
+    "request_bytes": 32,
+    "read_transactions": 1536,
+    "write_transactions": 64,
+    "dma_load_instructions": 4,
+    "dma_store_instructions": 1,
+    "serial_tiles": true
+  },
+  "scope": "Pinned plain-GEMM backend; capacity certificate requires serial tiles; no graph/energy/global latency-optimality claim"
+}

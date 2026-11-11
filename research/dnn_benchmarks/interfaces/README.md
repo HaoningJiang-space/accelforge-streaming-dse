@@ -108,3 +108,6 @@ simulation timeouts are separate.
 
 The independent Graph Witness-to-TOG exporter remains the next implementation
 stage. Existing `sram_alloc` cache-plan attributes do not provide that semantics.
+
+Server validation and archived evidence are in
+[PYTORCHSIM_INTERFACE_RESULTS.md](../PYTORCHSIM_INTERFACE_RESULTS.md).
