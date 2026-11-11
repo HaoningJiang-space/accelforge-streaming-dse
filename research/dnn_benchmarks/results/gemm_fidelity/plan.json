@@ -1,0 +1,2739 @@
+{
+ "shapes": {
+  "bert_qkv": [
+   128,
+   768,
+   768
+  ],
+  "bert_ffn_up": [
+   128,
+   3072,
+   768
+  ],
+  "bert_ffn_down": [
+   128,
+   768,
+   3072
+  ],
+  "resnet_c3": [
+   784,
+   512,
+   128
+  ],
+  "resnet_c2": [
+   3136,
+   256,
+   64
+  ]
+ },
+ "budgets": [
+  128,
+  512,
+  2048,
+  8192
+ ],
+ "cells": [
+  {
+   "shape_name": "bert_qkv",
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "budget": 128,
+   "model_choice": [
+    32,
+    256,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_qkv_t32_256_8",
+     "tile": [
+      32,
+      256,
+      8
+     ],
+     "predicted_useful_bytes": 11010048,
+     "predicted_cells_per_lane": 112
+    },
+    {
+     "run": "bert_qkv_t32_256_16",
+     "tile": [
+      32,
+      256,
+      16
+     ],
+     "predicted_useful_bytes": 11010048,
+     "predicted_cells_per_lane": 128
+    },
+    {
+     "run": "bert_qkv_t32_128_32",
+     "tile": [
+      32,
+      128,
+      32
+     ],
+     "predicted_useful_bytes": 12189696,
+     "predicted_cells_per_lane": 96
+    },
+    {
+     "run": "bert_qkv_t32_128_64",
+     "tile": [
+      32,
+      128,
+      64
+     ],
+     "predicted_useful_bytes": 12189696,
+     "predicted_cells_per_lane": 128
+    }
+   ]
+  },
+  {
+   "shape_name": "bert_qkv",
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "budget": 512,
+   "model_choice": [
+    128,
+    256,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_qkv_t128_256_8",
+     "tile": [
+      128,
+      256,
+      8
+     ],
+     "predicted_useful_bytes": 3932160,
+     "predicted_cells_per_lane": 400
+    },
+    {
+     "run": "bert_qkv_t128_256_16",
+     "tile": [
+      128,
+      256,
+      16
+     ],
+     "predicted_useful_bytes": 3932160,
+     "predicted_cells_per_lane": 416
+    },
+    {
+     "run": "bert_qkv_t128_256_32",
+     "tile": [
+      128,
+      256,
+      32
+     ],
+     "predicted_useful_bytes": 3932160,
+     "predicted_cells_per_lane": 448
+    },
+    {
+     "run": "bert_qkv_t128_256_64",
+     "tile": [
+      128,
+      256,
+      64
+     ],
+     "predicted_useful_bytes": 3932160,
+     "predicted_cells_per_lane": 512
+    },
+    {
+     "run": "bert_qkv_t128_128_128",
+     "tile": [
+      128,
+      128,
+      128
+     ],
+     "predicted_useful_bytes": 5111808,
+     "predicted_cells_per_lane": 384
+    },
+    {
+     "run": "bert_qkv_t64_128_256",
+     "tile": [
+      64,
+      128,
+      256
+     ],
+     "predicted_useful_bytes": 7471104,
+     "predicted_cells_per_lane": 448
+    }
+   ]
+  },
+  {
+   "shape_name": "bert_qkv",
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "budget": 2048,
+   "model_choice": [
+    128,
+    768,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_qkv_t128_768_8",
+     "tile": [
+      128,
+      768,
+      8
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 944
+    },
+    {
+     "run": "bert_qkv_t128_768_16",
+     "tile": [
+      128,
+      768,
+      16
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 992
+    },
+    {
+     "run": "bert_qkv_t128_768_32",
+     "tile": [
+      128,
+      768,
+      32
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 1088
+    },
+    {
+     "run": "bert_qkv_t128_768_64",
+     "tile": [
+      128,
+      768,
+      64
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 1280
+    },
+    {
+     "run": "bert_qkv_t128_768_128",
+     "tile": [
+      128,
+      768,
+      128
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 1664
+    },
+    {
+     "run": "bert_qkv_t128_256_256",
+     "tile": [
+      128,
+      256,
+      256
+     ],
+     "predicted_useful_bytes": 3932160,
+     "predicted_cells_per_lane": 1024
+    },
+    {
+     "run": "bert_qkv_t128_128_768",
+     "tile": [
+      128,
+      128,
+      768
+     ],
+     "predicted_useful_bytes": 5111808,
+     "predicted_cells_per_lane": 1664
+    }
+   ]
+  },
+  {
+   "shape_name": "bert_qkv",
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "budget": 8192,
+   "model_choice": [
+    128,
+    768,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_qkv_t128_768_8",
+     "tile": [
+      128,
+      768,
+      8
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 944
+    },
+    {
+     "run": "bert_qkv_t128_768_16",
+     "tile": [
+      128,
+      768,
+      16
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 992
+    },
+    {
+     "run": "bert_qkv_t128_768_32",
+     "tile": [
+      128,
+      768,
+      32
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 1088
+    },
+    {
+     "run": "bert_qkv_t128_768_64",
+     "tile": [
+      128,
+      768,
+      64
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 1280
+    },
+    {
+     "run": "bert_qkv_t128_768_128",
+     "tile": [
+      128,
+      768,
+      128
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 1664
+    },
+    {
+     "run": "bert_qkv_t128_768_256",
+     "tile": [
+      128,
+      768,
+      256
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 2560
+    },
+    {
+     "run": "bert_qkv_t128_768_768",
+     "tile": [
+      128,
+      768,
+      768
+     ],
+     "predicted_useful_bytes": 3145728,
+     "predicted_cells_per_lane": 6144
+    }
+   ]
+  },
+  {
+   "shape_name": "bert_ffn_up",
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "budget": 128,
+   "model_choice": [
+    32,
+    256,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_ffn_up_t32_256_8",
+     "tile": [
+      32,
+      256,
+      8
+     ],
+     "predicted_useful_bytes": 44040192,
+     "predicted_cells_per_lane": 112
+    },
+    {
+     "run": "bert_ffn_up_t32_256_16",
+     "tile": [
+      32,
+      256,
+      16
+     ],
+     "predicted_useful_bytes": 44040192,
+     "predicted_cells_per_lane": 128
+    },
+    {
+     "run": "bert_ffn_up_t32_128_32",
+     "tile": [
+      32,
+      128,
+      32
+     ],
+     "predicted_useful_bytes": 48758784,
+     "predicted_cells_per_lane": 96
+    },
+    {
+     "run": "bert_ffn_up_t32_128_64",
+     "tile": [
+      32,
+      128,
+      64
+     ],
+     "predicted_useful_bytes": 48758784,
+     "predicted_cells_per_lane": 128
+    }
+   ]
+  },
+  {
+   "shape_name": "bert_ffn_up",
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "budget": 512,
+   "model_choice": [
+    128,
+    256,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_ffn_up_t128_256_8",
+     "tile": [
+      128,
+      256,
+      8
+     ],
+     "predicted_useful_bytes": 15728640,
+     "predicted_cells_per_lane": 400
+    },
+    {
+     "run": "bert_ffn_up_t128_256_16",
+     "tile": [
+      128,
+      256,
+      16
+     ],
+     "predicted_useful_bytes": 15728640,
+     "predicted_cells_per_lane": 416
+    },
+    {
+     "run": "bert_ffn_up_t128_256_32",
+     "tile": [
+      128,
+      256,
+      32
+     ],
+     "predicted_useful_bytes": 15728640,
+     "predicted_cells_per_lane": 448
+    },
+    {
+     "run": "bert_ffn_up_t128_256_64",
+     "tile": [
+      128,
+      256,
+      64
+     ],
+     "predicted_useful_bytes": 15728640,
+     "predicted_cells_per_lane": 512
+    },
+    {
+     "run": "bert_ffn_up_t128_128_128",
+     "tile": [
+      128,
+      128,
+      128
+     ],
+     "predicted_useful_bytes": 20447232,
+     "predicted_cells_per_lane": 384
+    },
+    {
+     "run": "bert_ffn_up_t64_128_256",
+     "tile": [
+      64,
+      128,
+      256
+     ],
+     "predicted_useful_bytes": 29884416,
+     "predicted_cells_per_lane": 448
+    }
+   ]
+  },
+  {
+   "shape_name": "bert_ffn_up",
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "budget": 2048,
+   "model_choice": [
+    128,
+    1024,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_ffn_up_t128_1024_8",
+     "tile": [
+      128,
+      1024,
+      8
+     ],
+     "predicted_useful_bytes": 12189696,
+     "predicted_cells_per_lane": 1216
+    },
+    {
+     "run": "bert_ffn_up_t128_1024_16",
+     "tile": [
+      128,
+      1024,
+      16
+     ],
+     "predicted_useful_bytes": 12189696,
+     "predicted_cells_per_lane": 1280
+    },
+    {
+     "run": "bert_ffn_up_t128_1024_32",
+     "tile": [
+      128,
+      1024,
+      32
+     ],
+     "predicted_useful_bytes": 12189696,
+     "predicted_cells_per_lane": 1408
+    },
+    {
+     "run": "bert_ffn_up_t128_1024_64",
+     "tile": [
+      128,
+      1024,
+      64
+     ],
+     "predicted_useful_bytes": 12189696,
+     "predicted_cells_per_lane": 1664
+    },
+    {
+     "run": "bert_ffn_up_t128_512_128",
+     "tile": [
+      128,
+      512,
+      128
+     ],
+     "predicted_useful_bytes": 13369344,
+     "predicted_cells_per_lane": 1152
+    },
+    {
+     "run": "bert_ffn_up_t128_512_256",
+     "tile": [
+      128,
+      512,
+      256
+     ],
+     "predicted_useful_bytes": 13369344,
+     "predicted_cells_per_lane": 1792
+    },
+    {
+     "run": "bert_ffn_up_t128_128_768",
+     "tile": [
+      128,
+      128,
+      768
+     ],
+     "predicted_useful_bytes": 20447232,
+     "predicted_cells_per_lane": 1664
+    }
+   ]
+  },
+  {
+   "shape_name": "bert_ffn_up",
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "budget": 8192,
+   "model_choice": [
+    128,
+    3072,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_ffn_up_t128_3072_8",
+     "tile": [
+      128,
+      3072,
+      8
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 3392
+    },
+    {
+     "run": "bert_ffn_up_t128_3072_16",
+     "tile": [
+      128,
+      3072,
+      16
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 3584
+    },
+    {
+     "run": "bert_ffn_up_t128_3072_32",
+     "tile": [
+      128,
+      3072,
+      32
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 3968
+    },
+    {
+     "run": "bert_ffn_up_t128_3072_64",
+     "tile": [
+      128,
+      3072,
+      64
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 4736
+    },
+    {
+     "run": "bert_ffn_up_t128_3072_128",
+     "tile": [
+      128,
+      3072,
+      128
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 6272
+    },
+    {
+     "run": "bert_ffn_up_t128_1024_256",
+     "tile": [
+      128,
+      1024,
+      256
+     ],
+     "predicted_useful_bytes": 12189696,
+     "predicted_cells_per_lane": 3328
+    },
+    {
+     "run": "bert_ffn_up_t128_1024_768",
+     "tile": [
+      128,
+      1024,
+      768
+     ],
+     "predicted_useful_bytes": 12189696,
+     "predicted_cells_per_lane": 7936
+    }
+   ]
+  },
+  {
+   "shape_name": "bert_ffn_down",
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "budget": 128,
+   "model_choice": [
+    32,
+    256,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_ffn_down_t32_256_8",
+     "tile": [
+      32,
+      256,
+      8
+     ],
+     "predicted_useful_bytes": 42860544,
+     "predicted_cells_per_lane": 112
+    },
+    {
+     "run": "bert_ffn_down_t32_256_16",
+     "tile": [
+      32,
+      256,
+      16
+     ],
+     "predicted_useful_bytes": 42860544,
+     "predicted_cells_per_lane": 128
+    },
+    {
+     "run": "bert_ffn_down_t32_128_32",
+     "tile": [
+      32,
+      128,
+      32
+     ],
+     "predicted_useful_bytes": 47579136,
+     "predicted_cells_per_lane": 96
+    },
+    {
+     "run": "bert_ffn_down_t32_128_64",
+     "tile": [
+      32,
+      128,
+      64
+     ],
+     "predicted_useful_bytes": 47579136,
+     "predicted_cells_per_lane": 128
+    }
+   ]
+  },
+  {
+   "shape_name": "bert_ffn_down",
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "budget": 512,
+   "model_choice": [
+    128,
+    256,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_ffn_down_t128_256_8",
+     "tile": [
+      128,
+      256,
+      8
+     ],
+     "predicted_useful_bytes": 14548992,
+     "predicted_cells_per_lane": 400
+    },
+    {
+     "run": "bert_ffn_down_t128_256_16",
+     "tile": [
+      128,
+      256,
+      16
+     ],
+     "predicted_useful_bytes": 14548992,
+     "predicted_cells_per_lane": 416
+    },
+    {
+     "run": "bert_ffn_down_t128_256_32",
+     "tile": [
+      128,
+      256,
+      32
+     ],
+     "predicted_useful_bytes": 14548992,
+     "predicted_cells_per_lane": 448
+    },
+    {
+     "run": "bert_ffn_down_t128_256_64",
+     "tile": [
+      128,
+      256,
+      64
+     ],
+     "predicted_useful_bytes": 14548992,
+     "predicted_cells_per_lane": 512
+    },
+    {
+     "run": "bert_ffn_down_t128_128_128",
+     "tile": [
+      128,
+      128,
+      128
+     ],
+     "predicted_useful_bytes": 19267584,
+     "predicted_cells_per_lane": 384
+    },
+    {
+     "run": "bert_ffn_down_t64_128_256",
+     "tile": [
+      64,
+      128,
+      256
+     ],
+     "predicted_useful_bytes": 28704768,
+     "predicted_cells_per_lane": 448
+    }
+   ]
+  },
+  {
+   "shape_name": "bert_ffn_down",
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "budget": 2048,
+   "model_choice": [
+    128,
+    768,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_ffn_down_t128_768_8",
+     "tile": [
+      128,
+      768,
+      8
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 944
+    },
+    {
+     "run": "bert_ffn_down_t128_768_16",
+     "tile": [
+      128,
+      768,
+      16
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 992
+    },
+    {
+     "run": "bert_ffn_down_t128_768_32",
+     "tile": [
+      128,
+      768,
+      32
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 1088
+    },
+    {
+     "run": "bert_ffn_down_t128_768_64",
+     "tile": [
+      128,
+      768,
+      64
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 1280
+    },
+    {
+     "run": "bert_ffn_down_t128_768_128",
+     "tile": [
+      128,
+      768,
+      128
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 1664
+    },
+    {
+     "run": "bert_ffn_down_t128_256_256",
+     "tile": [
+      128,
+      256,
+      256
+     ],
+     "predicted_useful_bytes": 14548992,
+     "predicted_cells_per_lane": 1024
+    },
+    {
+     "run": "bert_ffn_down_t128_256_512",
+     "tile": [
+      128,
+      256,
+      512
+     ],
+     "predicted_useful_bytes": 14548992,
+     "predicted_cells_per_lane": 1792
+    },
+    {
+     "run": "bert_ffn_down_t64_128_1024",
+     "tile": [
+      64,
+      128,
+      1024
+     ],
+     "predicted_useful_bytes": 28704768,
+     "predicted_cells_per_lane": 1600
+    }
+   ]
+  },
+  {
+   "shape_name": "bert_ffn_down",
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "budget": 8192,
+   "model_choice": [
+    128,
+    768,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "bert_ffn_down_t128_768_8",
+     "tile": [
+      128,
+      768,
+      8
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 944
+    },
+    {
+     "run": "bert_ffn_down_t128_768_16",
+     "tile": [
+      128,
+      768,
+      16
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 992
+    },
+    {
+     "run": "bert_ffn_down_t128_768_32",
+     "tile": [
+      128,
+      768,
+      32
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 1088
+    },
+    {
+     "run": "bert_ffn_down_t128_768_64",
+     "tile": [
+      128,
+      768,
+      64
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 1280
+    },
+    {
+     "run": "bert_ffn_down_t128_768_128",
+     "tile": [
+      128,
+      768,
+      128
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 1664
+    },
+    {
+     "run": "bert_ffn_down_t128_768_256",
+     "tile": [
+      128,
+      768,
+      256
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 2560
+    },
+    {
+     "run": "bert_ffn_down_t128_768_512",
+     "tile": [
+      128,
+      768,
+      512
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 4352
+    },
+    {
+     "run": "bert_ffn_down_t128_768_1024",
+     "tile": [
+      128,
+      768,
+      1024
+     ],
+     "predicted_useful_bytes": 11403264,
+     "predicted_cells_per_lane": 7936
+    },
+    {
+     "run": "bert_ffn_down_t128_128_3072",
+     "tile": [
+      128,
+      128,
+      3072
+     ],
+     "predicted_useful_bytes": 19267584,
+     "predicted_cells_per_lane": 6272
+    }
+   ]
+  },
+  {
+   "shape_name": "resnet_c3",
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "budget": 128,
+   "model_choice": [
+    16,
+    512,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "resnet_c3_t16_512_8",
+     "tile": [
+      16,
+      512,
+      8
+     ],
+     "predicted_useful_bytes": 14852096,
+     "predicted_cells_per_lane": 112
+    },
+    {
+     "run": "resnet_c3_t16_256_16",
+     "tile": [
+      16,
+      256,
+      16
+     ],
+     "predicted_useful_bytes": 15253504,
+     "predicted_cells_per_lane": 80
+    },
+    {
+     "run": "resnet_c3_t16_256_32",
+     "tile": [
+      16,
+      256,
+      32
+     ],
+     "predicted_useful_bytes": 15253504,
+     "predicted_cells_per_lane": 112
+    },
+    {
+     "run": "resnet_c3_t16_128_64",
+     "tile": [
+      16,
+      128,
+      64
+     ],
+     "predicted_useful_bytes": 16056320,
+     "predicted_cells_per_lane": 96
+    }
+   ]
+  },
+  {
+   "shape_name": "resnet_c3",
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "budget": 512,
+   "model_choice": [
+    16,
+    512,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "resnet_c3_t16_512_8",
+     "tile": [
+      16,
+      512,
+      8
+     ],
+     "predicted_useful_bytes": 14852096,
+     "predicted_cells_per_lane": 112
+    },
+    {
+     "run": "resnet_c3_t16_512_16",
+     "tile": [
+      16,
+      512,
+      16
+     ],
+     "predicted_useful_bytes": 14852096,
+     "predicted_cells_per_lane": 144
+    },
+    {
+     "run": "resnet_c3_t16_512_32",
+     "tile": [
+      16,
+      512,
+      32
+     ],
+     "predicted_useful_bytes": 14852096,
+     "predicted_cells_per_lane": 208
+    },
+    {
+     "run": "resnet_c3_t16_512_64",
+     "tile": [
+      16,
+      512,
+      64
+     ],
+     "predicted_useful_bytes": 14852096,
+     "predicted_cells_per_lane": 336
+    },
+    {
+     "run": "resnet_c3_t16_256_128",
+     "tile": [
+      16,
+      256,
+      128
+     ],
+     "predicted_useful_bytes": 15253504,
+     "predicted_cells_per_lane": 304
+    }
+   ]
+  },
+  {
+   "shape_name": "resnet_c3",
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "budget": 2048,
+   "model_choice": [
+    784,
+    128,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "resnet_c3_t784_128_8",
+     "tile": [
+      784,
+      128,
+      8
+     ],
+     "predicted_useful_bytes": 3473408,
+     "predicted_cells_per_lane": 1576
+    },
+    {
+     "run": "resnet_c3_t784_128_16",
+     "tile": [
+      784,
+      128,
+      16
+     ],
+     "predicted_useful_bytes": 3473408,
+     "predicted_cells_per_lane": 1584
+    },
+    {
+     "run": "resnet_c3_t784_128_32",
+     "tile": [
+      784,
+      128,
+      32
+     ],
+     "predicted_useful_bytes": 3473408,
+     "predicted_cells_per_lane": 1600
+    },
+    {
+     "run": "resnet_c3_t784_128_64",
+     "tile": [
+      784,
+      128,
+      64
+     ],
+     "predicted_useful_bytes": 3473408,
+     "predicted_cells_per_lane": 1632
+    },
+    {
+     "run": "resnet_c3_t784_128_128",
+     "tile": [
+      784,
+      128,
+      128
+     ],
+     "predicted_useful_bytes": 3473408,
+     "predicted_cells_per_lane": 1696
+    }
+   ]
+  },
+  {
+   "shape_name": "resnet_c3",
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "budget": 8192,
+   "model_choice": [
+    784,
+    512,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "resnet_c3_t784_512_8",
+     "tile": [
+      784,
+      512,
+      8
+     ],
+     "predicted_useful_bytes": 2269184,
+     "predicted_cells_per_lane": 3952
+    },
+    {
+     "run": "resnet_c3_t784_512_16",
+     "tile": [
+      784,
+      512,
+      16
+     ],
+     "predicted_useful_bytes": 2269184,
+     "predicted_cells_per_lane": 3984
+    },
+    {
+     "run": "resnet_c3_t784_512_32",
+     "tile": [
+      784,
+      512,
+      32
+     ],
+     "predicted_useful_bytes": 2269184,
+     "predicted_cells_per_lane": 4048
+    },
+    {
+     "run": "resnet_c3_t784_512_64",
+     "tile": [
+      784,
+      512,
+      64
+     ],
+     "predicted_useful_bytes": 2269184,
+     "predicted_cells_per_lane": 4176
+    },
+    {
+     "run": "resnet_c3_t784_512_128",
+     "tile": [
+      784,
+      512,
+      128
+     ],
+     "predicted_useful_bytes": 2269184,
+     "predicted_cells_per_lane": 4432
+    }
+   ]
+  },
+  {
+   "shape_name": "resnet_c2",
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "budget": 128,
+   "model_choice": [
+    32,
+    256,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "resnet_c2_t32_256_8",
+     "tile": [
+      32,
+      256,
+      8
+     ],
+     "predicted_useful_bytes": 10436608,
+     "predicted_cells_per_lane": 112
+    },
+    {
+     "run": "resnet_c2_t32_256_16",
+     "tile": [
+      32,
+      256,
+      16
+     ],
+     "predicted_useful_bytes": 10436608,
+     "predicted_cells_per_lane": 128
+    },
+    {
+     "run": "resnet_c2_t32_128_32",
+     "tile": [
+      32,
+      128,
+      32
+     ],
+     "predicted_useful_bytes": 11239424,
+     "predicted_cells_per_lane": 96
+    },
+    {
+     "run": "resnet_c2_t32_128_64",
+     "tile": [
+      32,
+      128,
+      64
+     ],
+     "predicted_useful_bytes": 11239424,
+     "predicted_cells_per_lane": 128
+    }
+   ]
+  },
+  {
+   "shape_name": "resnet_c2",
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "budget": 512,
+   "model_choice": [
+    64,
+    256,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "resnet_c2_t64_256_8",
+     "tile": [
+      64,
+      256,
+      8
+     ],
+     "predicted_useful_bytes": 7225344,
+     "predicted_cells_per_lane": 208
+    },
+    {
+     "run": "resnet_c2_t64_256_16",
+     "tile": [
+      64,
+      256,
+      16
+     ],
+     "predicted_useful_bytes": 7225344,
+     "predicted_cells_per_lane": 224
+    },
+    {
+     "run": "resnet_c2_t64_256_32",
+     "tile": [
+      64,
+      256,
+      32
+     ],
+     "predicted_useful_bytes": 7225344,
+     "predicted_cells_per_lane": 256
+    },
+    {
+     "run": "resnet_c2_t64_256_64",
+     "tile": [
+      64,
+      256,
+      64
+     ],
+     "predicted_useful_bytes": 7225344,
+     "predicted_cells_per_lane": 320
+    }
+   ]
+  },
+  {
+   "shape_name": "resnet_c2",
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "budget": 2048,
+   "model_choice": [
+    64,
+    256,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "resnet_c2_t64_256_8",
+     "tile": [
+      64,
+      256,
+      8
+     ],
+     "predicted_useful_bytes": 7225344,
+     "predicted_cells_per_lane": 208
+    },
+    {
+     "run": "resnet_c2_t64_256_16",
+     "tile": [
+      64,
+      256,
+      16
+     ],
+     "predicted_useful_bytes": 7225344,
+     "predicted_cells_per_lane": 224
+    },
+    {
+     "run": "resnet_c2_t64_256_32",
+     "tile": [
+      64,
+      256,
+      32
+     ],
+     "predicted_useful_bytes": 7225344,
+     "predicted_cells_per_lane": 256
+    },
+    {
+     "run": "resnet_c2_t64_256_64",
+     "tile": [
+      64,
+      256,
+      64
+     ],
+     "predicted_useful_bytes": 7225344,
+     "predicted_cells_per_lane": 320
+    }
+   ]
+  },
+  {
+   "shape_name": "resnet_c2",
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "budget": 8192,
+   "model_choice": [
+    3136,
+    128,
+    8
+   ],
+   "tiles": [
+    {
+     "run": "resnet_c2_t3136_128_8",
+     "tile": [
+      3136,
+      128,
+      8
+     ],
+     "predicted_useful_bytes": 4882432,
+     "predicted_cells_per_lane": 6280
+    },
+    {
+     "run": "resnet_c2_t3136_128_16",
+     "tile": [
+      3136,
+      128,
+      16
+     ],
+     "predicted_useful_bytes": 4882432,
+     "predicted_cells_per_lane": 6288
+    },
+    {
+     "run": "resnet_c2_t3136_128_32",
+     "tile": [
+      3136,
+      128,
+      32
+     ],
+     "predicted_useful_bytes": 4882432,
+     "predicted_cells_per_lane": 6304
+    },
+    {
+     "run": "resnet_c2_t3136_128_64",
+     "tile": [
+      3136,
+      128,
+      64
+     ],
+     "predicted_useful_bytes": 4882432,
+     "predicted_cells_per_lane": 6336
+    }
+   ]
+  }
+ ],
+ "runs": {
+  "bert_qkv_heuristic": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "heuristic",
+   "tile": null
+  },
+  "bert_qkv_t32_256_8": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    256,
+    8
+   ]
+  },
+  "bert_qkv_t32_256_16": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    256,
+    16
+   ]
+  },
+  "bert_qkv_t32_128_32": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    128,
+    32
+   ]
+  },
+  "bert_qkv_t32_128_64": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    128,
+    64
+   ]
+  },
+  "bert_qkv_t128_256_8": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    8
+   ]
+  },
+  "bert_qkv_t128_256_16": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    16
+   ]
+  },
+  "bert_qkv_t128_256_32": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    32
+   ]
+  },
+  "bert_qkv_t128_256_64": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    64
+   ]
+  },
+  "bert_qkv_t128_128_128": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    128,
+    128
+   ]
+  },
+  "bert_qkv_t64_128_256": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    64,
+    128,
+    256
+   ]
+  },
+  "bert_qkv_t128_768_8": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    8
+   ]
+  },
+  "bert_qkv_t128_768_16": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    16
+   ]
+  },
+  "bert_qkv_t128_768_32": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    32
+   ]
+  },
+  "bert_qkv_t128_768_64": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    64
+   ]
+  },
+  "bert_qkv_t128_768_128": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    128
+   ]
+  },
+  "bert_qkv_t128_256_256": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    256
+   ]
+  },
+  "bert_qkv_t128_128_768": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    128,
+    768
+   ]
+  },
+  "bert_qkv_t128_768_256": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    256
+   ]
+  },
+  "bert_qkv_t128_768_768": {
+   "shape": [
+    128,
+    768,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    768
+   ]
+  },
+  "bert_ffn_up_heuristic": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "heuristic",
+   "tile": null
+  },
+  "bert_ffn_up_t32_256_8": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    256,
+    8
+   ]
+  },
+  "bert_ffn_up_t32_256_16": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    256,
+    16
+   ]
+  },
+  "bert_ffn_up_t32_128_32": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    128,
+    32
+   ]
+  },
+  "bert_ffn_up_t32_128_64": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    128,
+    64
+   ]
+  },
+  "bert_ffn_up_t128_256_8": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    8
+   ]
+  },
+  "bert_ffn_up_t128_256_16": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    16
+   ]
+  },
+  "bert_ffn_up_t128_256_32": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    32
+   ]
+  },
+  "bert_ffn_up_t128_256_64": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    64
+   ]
+  },
+  "bert_ffn_up_t128_128_128": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    128,
+    128
+   ]
+  },
+  "bert_ffn_up_t64_128_256": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    64,
+    128,
+    256
+   ]
+  },
+  "bert_ffn_up_t128_1024_8": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    1024,
+    8
+   ]
+  },
+  "bert_ffn_up_t128_1024_16": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    1024,
+    16
+   ]
+  },
+  "bert_ffn_up_t128_1024_32": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    1024,
+    32
+   ]
+  },
+  "bert_ffn_up_t128_1024_64": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    1024,
+    64
+   ]
+  },
+  "bert_ffn_up_t128_512_128": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    512,
+    128
+   ]
+  },
+  "bert_ffn_up_t128_512_256": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    512,
+    256
+   ]
+  },
+  "bert_ffn_up_t128_128_768": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    128,
+    768
+   ]
+  },
+  "bert_ffn_up_t128_3072_8": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    3072,
+    8
+   ]
+  },
+  "bert_ffn_up_t128_3072_16": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    3072,
+    16
+   ]
+  },
+  "bert_ffn_up_t128_3072_32": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    3072,
+    32
+   ]
+  },
+  "bert_ffn_up_t128_3072_64": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    3072,
+    64
+   ]
+  },
+  "bert_ffn_up_t128_3072_128": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    3072,
+    128
+   ]
+  },
+  "bert_ffn_up_t128_1024_256": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    1024,
+    256
+   ]
+  },
+  "bert_ffn_up_t128_1024_768": {
+   "shape": [
+    128,
+    3072,
+    768
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    1024,
+    768
+   ]
+  },
+  "bert_ffn_down_heuristic": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "heuristic",
+   "tile": null
+  },
+  "bert_ffn_down_t32_256_8": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    256,
+    8
+   ]
+  },
+  "bert_ffn_down_t32_256_16": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    256,
+    16
+   ]
+  },
+  "bert_ffn_down_t32_128_32": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    128,
+    32
+   ]
+  },
+  "bert_ffn_down_t32_128_64": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    128,
+    64
+   ]
+  },
+  "bert_ffn_down_t128_256_8": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    8
+   ]
+  },
+  "bert_ffn_down_t128_256_16": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    16
+   ]
+  },
+  "bert_ffn_down_t128_256_32": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    32
+   ]
+  },
+  "bert_ffn_down_t128_256_64": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    64
+   ]
+  },
+  "bert_ffn_down_t128_128_128": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    128,
+    128
+   ]
+  },
+  "bert_ffn_down_t64_128_256": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    64,
+    128,
+    256
+   ]
+  },
+  "bert_ffn_down_t128_768_8": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    8
+   ]
+  },
+  "bert_ffn_down_t128_768_16": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    16
+   ]
+  },
+  "bert_ffn_down_t128_768_32": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    32
+   ]
+  },
+  "bert_ffn_down_t128_768_64": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    64
+   ]
+  },
+  "bert_ffn_down_t128_768_128": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    128
+   ]
+  },
+  "bert_ffn_down_t128_256_256": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    256
+   ]
+  },
+  "bert_ffn_down_t128_256_512": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    256,
+    512
+   ]
+  },
+  "bert_ffn_down_t64_128_1024": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    64,
+    128,
+    1024
+   ]
+  },
+  "bert_ffn_down_t128_768_256": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    256
+   ]
+  },
+  "bert_ffn_down_t128_768_512": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    512
+   ]
+  },
+  "bert_ffn_down_t128_768_1024": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    768,
+    1024
+   ]
+  },
+  "bert_ffn_down_t128_128_3072": {
+   "shape": [
+    128,
+    768,
+    3072
+   ],
+   "mode": "external",
+   "tile": [
+    128,
+    128,
+    3072
+   ]
+  },
+  "resnet_c3_heuristic": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "heuristic",
+   "tile": null
+  },
+  "resnet_c3_t16_512_8": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    16,
+    512,
+    8
+   ]
+  },
+  "resnet_c3_t16_256_16": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    16,
+    256,
+    16
+   ]
+  },
+  "resnet_c3_t16_256_32": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    16,
+    256,
+    32
+   ]
+  },
+  "resnet_c3_t16_128_64": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    16,
+    128,
+    64
+   ]
+  },
+  "resnet_c3_t16_512_16": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    16,
+    512,
+    16
+   ]
+  },
+  "resnet_c3_t16_512_32": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    16,
+    512,
+    32
+   ]
+  },
+  "resnet_c3_t16_512_64": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    16,
+    512,
+    64
+   ]
+  },
+  "resnet_c3_t16_256_128": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    16,
+    256,
+    128
+   ]
+  },
+  "resnet_c3_t784_128_8": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    784,
+    128,
+    8
+   ]
+  },
+  "resnet_c3_t784_128_16": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    784,
+    128,
+    16
+   ]
+  },
+  "resnet_c3_t784_128_32": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    784,
+    128,
+    32
+   ]
+  },
+  "resnet_c3_t784_128_64": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    784,
+    128,
+    64
+   ]
+  },
+  "resnet_c3_t784_128_128": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    784,
+    128,
+    128
+   ]
+  },
+  "resnet_c3_t784_512_8": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    784,
+    512,
+    8
+   ]
+  },
+  "resnet_c3_t784_512_16": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    784,
+    512,
+    16
+   ]
+  },
+  "resnet_c3_t784_512_32": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    784,
+    512,
+    32
+   ]
+  },
+  "resnet_c3_t784_512_64": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    784,
+    512,
+    64
+   ]
+  },
+  "resnet_c3_t784_512_128": {
+   "shape": [
+    784,
+    512,
+    128
+   ],
+   "mode": "external",
+   "tile": [
+    784,
+    512,
+    128
+   ]
+  },
+  "resnet_c2_heuristic": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "heuristic",
+   "tile": null
+  },
+  "resnet_c2_t32_256_8": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    256,
+    8
+   ]
+  },
+  "resnet_c2_t32_256_16": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    256,
+    16
+   ]
+  },
+  "resnet_c2_t32_128_32": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    128,
+    32
+   ]
+  },
+  "resnet_c2_t32_128_64": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    32,
+    128,
+    64
+   ]
+  },
+  "resnet_c2_t64_256_8": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    64,
+    256,
+    8
+   ]
+  },
+  "resnet_c2_t64_256_16": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    64,
+    256,
+    16
+   ]
+  },
+  "resnet_c2_t64_256_32": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    64,
+    256,
+    32
+   ]
+  },
+  "resnet_c2_t64_256_64": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    64,
+    256,
+    64
+   ]
+  },
+  "resnet_c2_t3136_128_8": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    3136,
+    128,
+    8
+   ]
+  },
+  "resnet_c2_t3136_128_16": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    3136,
+    128,
+    16
+   ]
+  },
+  "resnet_c2_t3136_128_32": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    3136,
+    128,
+    32
+   ]
+  },
+  "resnet_c2_t3136_128_64": {
+   "shape": [
+    3136,
+    256,
+    64
+   ],
+   "mode": "external",
+   "tile": [
+    3136,
+    128,
+    64
+   ]
+  }
+ }
+}
