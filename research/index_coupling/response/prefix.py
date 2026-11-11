@@ -288,12 +288,9 @@ if stats is not None:
 def make_kernel(projection=True, unit=False, frames=False, composition='eager', profile_prefix=False,
                 reductions=False):
     """Return (curve variant, unit-form registry); installation is separately timed."""
-    if unit and reductions:
-        # Native rename nodes know groups/loops/Hold, not analytic placeholders.
-        # Do not silently disable the oracle or restore it in the wrong namespace.
-        raise ValueError('analytic placeholder restoration with reductions is not integrated')
     if unit:
-        return make_exact_kernel(transform=lambda tree: transform(tree, projection, frames, composition, profile_prefix))
+        return make_exact_kernel(reductions=reductions, transform=lambda tree: transform(
+            tree, projection, frames, composition, profile_prefix, reductions))
     tree = ast.parse(SOURCE.read_text(), filename=str(SOURCE))
     transform(tree, projection, frames, composition, profile_prefix, reductions)
     namespace = dict(__name__='research.index_coupling.graph._prefix_experiment',

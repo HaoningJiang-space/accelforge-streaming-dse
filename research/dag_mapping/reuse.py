@@ -90,17 +90,21 @@ class RegionSession:
     Scalar whole-part Hold stays in native part_curve, outside the pool.
     Every query still runs one globally consistent topological order.
     """
-    def __init__(self, graph, *, shared=False, unit=False, certificate=False, audit=False, tile_domain='halving'):
+    def __init__(self, graph, *, shared=False, unit=False, certificate=False, audit=False,
+                 tile_domain='halving', reductions=False):
         start = perf_counter()
         self.graph = Graph(dict(graph.sizes), [(o, {t: tuple(ds) for t, ds in graph.access[o].items()})
                                                for o in graph.ops])
         Model(self.graph, tile_domain)
         self.tile_domain, self.unit = tile_domain, unit
+        self.reductions = reductions
+        if reductions and shared:
+            raise ValueError('closed-response pool combination is outside this integration')
         self.pool = ResponsePool(audit=audit) if shared else None
         self.recovery_cache = {}
 
         def transform(tree):
-            prefix.transform(tree, projection=True, frames=True, composition='numeric')
+            prefix.transform(tree, projection=True, frames=True, composition='numeric', reductions=reductions)
             outer = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'curve')
             if certificate:
                 solver = next(n for n in outer.body if isinstance(n, ast.FunctionDef) and n.name == '_solve')
@@ -132,7 +136,7 @@ if _cert is not None:
                     raise ValueError('native response anchors changed')
 
         if unit:
-            self.kernel, self.registry = make_exact_kernel(transform=transform)
+            self.kernel, self.registry = make_exact_kernel(transform=transform, reductions=reductions)
         else:
             tree = ast.parse(prefix.SOURCE.read_text(), filename=str(prefix.SOURCE))
             transform(tree)
@@ -145,7 +149,8 @@ if _cert is not None:
         self.install_seconds = perf_counter() - start
         self.active = False
 
-    def query(self, order=None, *, external=(), owned=(), entry='solve', stats=None):
+    def query(self, order=None, *, external=(), owned=(), entry='solve', stats=None,
+              prune_infeasible_groups=False, independent_ops=False, canonical_remainders=False):
         if self.active:
             raise ValueError('session queries are serial')
         order = self.graph.ops if order is None else tuple(order)
@@ -155,13 +160,16 @@ if _cert is not None:
         Model(ordered, self.tile_domain)  # also rejects non-topological permutations
         if not (set(external) | set(owned)) <= ordered.tensors(order):
             raise ValueError('unknown boundary tensor')
+        if not self.reductions and (prune_infeasible_groups or independent_ops or canonical_remainders):
+            raise ValueError('reductions require a composition-enabled session')
         self.active = True
         if self.pool is not None:
             self.pool.order = order
         try:
             return self.kernel(ordered, witness=True, partitions='dp', scalar_leaf='v2',
                                tile_domain=self.tile_domain, external=external, written=owned,
-                               entry=entry, stats=stats)
+                               entry=entry, stats=stats, prune_infeasible_groups=prune_infeasible_groups,
+                               independent_ops=independent_ops, canonical_remainders=canonical_remainders)
         finally:
             self.active = False
 

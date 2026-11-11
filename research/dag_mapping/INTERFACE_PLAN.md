@@ -671,3 +671,108 @@ Flag regressions and memory increases. Selecting the observed best arm is a
 post-measurement observation, not a validated automatic selection policy.
 Stop after this fixed matrix; keep defaults unchanged and do not tune matching
 limits, cases, combinations or thresholds to obtain a positive result.
+
+## 10. Analytic responses with transported witnesses
+
+Follow-up baseline: `4b9416c3`. Section 9's frozen study left a concrete
+implementation boundary: Unit-M placeholders could not pass through native
+remainder renaming. This section completes that interface; it does not change
+the closed forms, matching algorithm, independent split, scalar certificate,
+partition grammar or default flags. The stopped Gate 2/3 implementations are
+not combined or retuned.
+
+### Representation and scoped argument
+
+A registry entry continues to name the original state and graph namespace:
+`(ops, names, ext, external, owned, tile_domain)`. A four-field placeholder is
+`('exact', key, c, q)`. During final flattening, if a native `_RENAME` frame
+surrounds it, the opt-in analytic adapter emits the five-field note
+`('exact', key, c, q, phi)` instead. `phi` is the accumulated operator/tensor/rank
+map from the registry's namespace to the destination. It does not replace or
+mutate the registry state. Nested maps use native flatten's existing composition
+order: `phi_outer ∘ phi_inner`.
+
+Recovery first obtains the native witness of the original registered state at
+the requested resource point, exactly as the prior provider did. It then maps
+that pure groups/loops/Hold witness by `phi`. It never runs the source registry
+key against an incorrectly renamed graph. JSON lists are normalized back to
+the tuple grammar for untouched notes as well, avoiding mixed list/tuple subtree
+boundaries after recovery. Caller-paid reservations and compulsory traffic are
+still accounted outside the conditional response.
+
+The argument is a composition of already scoped facts. The guarded Unit-M form
+equals the native response in the registered source state. The ordered-remainder
+lemma gives a cost-preserving witness bijection into the destination state.
+Applying the bijection after recovery therefore gives a legal plan of the same
+cost. For two rename frames, associativity of map composition gives the same
+plan as applying the two maps sequentially. Complete-frontier preservation is
+independent of which tied witness the native recovery selects. Parent max/sum
+composition preserves the response under this substitution. This is not a new
+analytic bound, arbitrary-region continuation theorem or reduction of the
+complete execution grammar.
+
+With the explicit composition opt-in, the Unit-M provider no longer disables
+itself just because `independent_ops` or `canonical_remainders` is set. Its
+recognition guard must still pass. The existing scalar-separator certificate
+has plain native notes and can use the same rename transport without a new
+marker. Precedence is unchanged: native scalar entry, scalar-separator (when
+requested), Unit-M, independent split, then partition search.
+
+Supported scope is exact, unlimited, unconstrained, single-writer v2 with
+default costs, ownership projection and either native halving or divisor tiles.
+Unsupported combinations raise rather than silently disabling the analytic
+provider. Existing non-composed calls keep their previous guards. The new
+`RegionSession(..., reductions=True)` rejects the Gate 2 response pool, whose
+combined namespace/lifetime contract is outside this task. `curve.py` remains
+untouched; only the opt-in compiled copy of flatten understands the new note.
+
+### Verification and frozen matrix
+
+Before performance measurement, run all existing 56 relevant tests plus seven
+new analytic-composition tests. They cover all eight p/i/r combinations;
+literal partition enumeration on small graphs; conditional entry/residency/
+ownership; nonbinary shapes and both tile domains; full root numeric and
+resource execution; a positive renamed-GEMM example that actually transports
+placeholders; two successive maps with replay at the mapped child extents;
+JSON roundtrip; and invalid maps / unsupported modes. Require actual analytic
+hits where the provider is applicable, not merely accepted flags. A valid
+unrecognized Fork remains an explicit fallback control.
+
+On 221 freeze the implementation and this protocol before running
+`bench_analytic_composition.py`. Use five unchanged cases from section 9:
+`two_stage_join`, `asymmetric_join`, `mixed_join`, `ffn4`, `ancestor8`.
+Attention-4 is omitted because its incidence is isomorphic to FFN-4 here; no
+new independent attention evidence is claimed. No sizes are changed.
+
+Thirteen arms, all using the same certified global-order representatives:
+
+- Previously available controls: Prefix, Prefix+p, Prefix+i, Prefix+r, and
+  the old analytic+Prefix configuration (Unit-M plus scalar-separator).
+- The new analytic interface with none of p/i/r enabled, and all seven
+  nonempty p/i/r combinations. The `analytic_none` arm isolates interface
+  overhead from enabling any additional rule.
+
+The all-order native reference is correctness-only, not a new weak timing
+baseline. Every selected order's entire frontier and their complete union must
+match it. Every saved root witness must pass typed analysis and independent
+cell execution after full analytic recovery.
+
+First finish five reference plus 65 arm audits. Then three sequential fresh-
+process timing rounds in cyclic arm order, followed by 65 separate profile
+workers: **330 records** total. Hash seed 0, 180 seconds and 4 GiB per worker,
+CPU affinity 20/21 and nice 15 as before. Complete generation includes final
+union, flattening, recovery and renaming; setup and replay are separately
+reported. Store pre-replay RSS, provider checks/hits, reduction counters,
+recovery context count, selected placeholder/transport counts and all witnesses.
+Main-search counters exclude recovery's secondary native solves; full time
+includes them. Do not subtract profiled lookup time from unprofiled wall time.
+
+Primary descriptive comparison: `analytic_p` versus the old `analytic` on
+FFN-4, where the previous study found both mechanisms useful separately.
+Also compare every candidate to the fastest **currently remeasured** old
+control on each case, reporting all ranges, setup-inclusive time and RSS.
+An observed fastest configuration is not a validated selection policy.
+There is no universal speedup claim or post-hoc pass threshold. Preserve all
+failures and regressions; stop after this matrix without changing cases,
+rule order, matching budgets or provider guards to improve timing. Defaults
+stay unchanged even if one combination wins.

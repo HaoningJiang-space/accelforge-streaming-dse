@@ -101,8 +101,11 @@ class PrefixReductionsTests(unittest.TestCase):
                        dict(scalar_leaf='v1'), dict(canonical_spans=True)):
             with self.assertRaises(ValueError):
                 self.kernel(graph, **(OPTIONS | change), canonical_remainders=True)
+        # Analytic composition now has an explicit transported-placeholder path;
+        # its separate tests exercise recovery rather than silently disabling it.
+        analytic, _ = make_kernel(unit=True, reductions=True)
         with self.assertRaises(ValueError):
-            make_kernel(unit=True, reductions=True)
+            analytic(graph, **OPTIONS, spill_cost=1)
 
 
 if __name__ == '__main__':

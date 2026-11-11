@@ -43,7 +43,7 @@ def graph_for(name):
     return dag_graph(name)
 
 
-def run_arm(name, arm, profile=False):
+def run_arm(name, arm, profile=False, analytic_flags=None):
     start = perf_counter()
     graph = graph_for(name)
     orders, all_orders, automorphisms = select_orders(graph, arm != 'reference')
@@ -54,7 +54,7 @@ def run_arm(name, arm, profile=False):
         if arm == 'native_p':
             options['prune_infeasible_groups'] = True
     elif arm == 'analytic':
-        session = RegionSession(graph, unit=True, certificate=True)
+        session = RegionSession(graph, unit=True, certificate=True, reductions=analytic_flags is not None)
     else:
         suffix = arm.partition('_')[2]
         kernel, _ = make_kernel(frames=True, composition='numeric', reductions=bool(suffix))
@@ -64,7 +64,7 @@ def run_arm(name, arm, profile=False):
     aggregate, per_order, work = [], [], []
     for order in orders:
         ledger = {} if profile else None
-        points = (session.query(order, stats=ledger) if session else
+        points = (session.query(order, stats=ledger, **(analytic_flags or {})) if session else
                   kernel(resized(graph, graph.sizes, order), stats=ledger, **options))
         aggregate.extend((c, q, (order, notes)) for c, q, notes in points)
         per_order.append(dict(order=order, frontier=[list(p[:2]) for p in points]))
@@ -102,10 +102,14 @@ def run_arm(name, arm, profile=False):
                 recovery_seconds=recovery, replay_seconds=perf_counter()-start,
                 pre_replay_peak_rss_kib=memory, frontier=[list(p[:2]) for p in selected],
                 order_frontiers=per_order, witnesses=witnesses, replays=replays,
+                selected_exact_placeholders=sum(n[0] == 'exact' for _, _, (_, ns) in selected for n in ns),
+                selected_transported_placeholders=sum(n[0] == 'exact' and len(n) == 5
+                                                      for _, _, (_, ns) in selected for n in ns),
+                recovery_contexts=len(session.recovery_cache) if session else 0,
                 work=summary, ledgers=work if profile else None)
 
 
-def worker(args):
+def worker(args, runner=None, sources=None):
     if args.out.exists():
         raise ValueError('preserve prior record')
     resource.setrlimit(resource.RLIMIT_AS, (4*2**30, 4*2**30))
@@ -113,11 +117,13 @@ def worker(args):
         raise TimeoutError('180-second worker budget')
     signal.signal(signal.SIGALRM, timeout)
     signal.alarm(180)
+    runner = run_arm if runner is None else runner
+    sources = SOURCES if sources is None else sources
     result = dict(case=args.case, arm=args.arm, mode=args.mode, revision=args.revision,
                   python=platform.python_version(), hash_seed=os.environ.get('PYTHONHASHSEED'),
-                  source_sha256={p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in SOURCES})
+                  source_sha256={p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in sources})
     try:
-        result.update(run_arm(args.case, args.arm, profile=args.mode == 'work'))
+        result.update(runner(args.case, args.arm, profile=args.mode == 'work'))
         if args.reference:
             reference = json.loads(args.reference.read_text())
             expected = {tuple(row['order']): row['frontier'] for row in reference['order_frontiers']}
