@@ -118,3 +118,13 @@ python3 -m research.dag_mapping.summarize_composition research/dag_mapping/resul
 Continue method work directly on `research/main`. Hardware interface validation
 uses the existing `research/dnn-benchmarks` integration branch. Do not introduce
 a new branch for this study or edit running experiment sources.
+
+[Resident-separated interval audit](CONDITIONAL_SEPARATION_RESULTS.md) examines
+the remaining work under the strong Prefix+i baseline. The restricted solve
+factorization is proved in [the protocol](CONDITIONAL_SEPARATION.md); all 10,539
+eligible conditional frontiers and 157 oracle-substituted root executions agree.
+Different parent responses can reuse unaffected branch responses (5,395 paired
+examples), but optimistic DP-work ceilings are only 11.58%/13.31%/6.99% on the
+three DAGs. These are not speedups; no timed implementation or default change is
+introduced. An archived L-loop with three non-scalar obligations X/V0/V1 makes
+the remaining coupled decision and its order sensitivity concrete.
