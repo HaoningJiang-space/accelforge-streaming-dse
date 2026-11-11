@@ -592,3 +592,53 @@ benefit beyond the original two M8 cases, not general-DNN or hardware speedup.
 python3 -m unittest research.index_coupling.test_prefix_sharing -v
 python3 -m research.index_coupling.response.bench_prefix_frames run NEW_DIRECTORY --revision YOUR_SOURCE_COMMIT
 ```
+
+## 7. Numeric-first prefix witnesses (protocol before implementation)
+
+User-requested bounded follow-up to baseline `e7b9cd39`: change only the
+candidate composition inside `response/prefix.py::prefix_cached`. Keep the
+grammar, loop enumeration, capacity/traffic arithmetic, existing cache keys,
+and default core unchanged. No native solver call may reconstruct a witness.
+
+- **A, numeric-first:** collect (capacity, traffic, lightweight provenance),
+  use the existing stable Pareto ordering/dominance rule, and construct the
+  combined groups/decisions/witness only for survivors.
+- **B, ordered streams:** merge the capacity-ordered per-transition sweep
+  streams into their exact envelope. Preserve A's candidate set and tie
+  contract, using transition/candidate order to resolve equal numeric points.
+  Construct combined witnesses only after numeric survival.
+- Equal (C,Q) points must select the same earliest candidate as the existing
+  stable sort; provenance never participates in resource dominance. Each
+  survivor refers to an already legal prefix/group composition. Pruning
+  before witness construction is therefore exact. Ordered union must retain
+  the same numeric ordering and provenance, not change the mapping search.
+
+Before measurement, test small graphs against literal enumeration, including
+Residency, Ownership, solve/group entries, both tile domains, bounded capacity
+and spill options. Check tied points, empty streams, native-format witnesses,
+and witness-free queries. Existing prefix tests remain controls. Freeze the
+implementation commit after correctness checks; no tuning after timing.
+
+Four arms: native, unchanged parent-frame baseline, A, B. Reuse the six cases
+from section 6 without replacements or enlargement. Five sequential fresh-
+process rounds, hash seed 0, cyclically rotate arm order each round; one
+separate instrumented round. Each worker has the same 60-second/6-GiB limits.
+Replay every root witness and retain every failure. Report generation,
+installation, independent replay, pre-replay peak RSS, all ordinary work
+counters, and prefix-specific candidate/survivor counts plus combined-witness
+construction counts/time and numeric-union time. Instrumentation must be off
+in timed rounds and must not change the baseline's uninstrumented recurrence.
+
+Operationalize the user's success criterion before observing results:
+an arm must reduce median complete generation by at least **5%** versus the
+parent-frame baseline on **both M8-2 and M8-3**, and be faster in at least
+four of five corresponding rounds on each. M8-1 median regression must not
+exceed 5%. All frontiers/replays must match. Across all six cases, acceptable
+RSS is at most max(1.10 × baseline RSS, baseline RSS + 2 MiB). Report all
+ranges and installation-inclusive times; five rounds do not imply a formal
+statistical significance claim. Lower counts alone do not count as success.
+
+If neither A nor B meets the full criterion, retain the negative result and
+stop this route. If one succeeds, retain the bounded opt-in mechanism and
+stop at this experiment as requested; do not extend the cache quotient, add
+heuristics, or substitute chain timing for the DAG-region research.
