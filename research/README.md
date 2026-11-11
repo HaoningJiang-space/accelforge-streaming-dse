@@ -1,5 +1,12 @@
 # AccelForge research workspace
 
+**Start here: [whole-repository overview and consolidation](OVERVIEW.md)**
+(2026-11-10, reviewed through `2c8050c6`, with separately pinned DNN evidence).
+It is the current priority and claim ledger. The entries below preserve the
+earlier native/hardware investigations; their next-step statements are historical,
+not concurrent active projects. Current conditional-resource work lives in
+[index_coupling](index_coupling/STATUS.md).
+
 The [native motivation pilot](motivation/README.md) compares hardware selection
 under explicit per-operator DRAM materialization with graph-enabled FFM and
 then remaps the selected hardware. It verifies that zero fused loops alone

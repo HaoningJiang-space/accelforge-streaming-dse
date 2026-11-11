@@ -650,10 +650,15 @@ dropped.
 
 **Check** (`op_projection.py check`, `op_projection_check.jsonl`).
 
-- Every chain solve node of the 8 archives at any M, 17,857 nodes:
+- Every qualifying chain solve node of the 8 archives at any M, 17,647 nodes:
   **0 violations**.
-- The bound equals the actual curve in 6,416 nodes. That is 79% for the M8
+- The bound equals the actual curve in 5,796 nodes. That is 79% for the M8
   one-layer stack and 14% for FFN-4.
+
+These totals sum the eight archived JSONL records. They correct the earlier
+prose totals of 17,857 / 6,416, as independently checked in the
+[closure review](https://github.com/HaoningJiang-space/accelforge-streaming-dse/blob/3da98687/research/index_coupling/CLOSURE_REVIEW.md).
+The archived measurements and zero-violation result are unchanged.
 
 **C2** (`op_projection.py c2`, `c2_op_bound.jsonl`). Combined pointwise (max)
 with the slot bound, lifted as in §13. Every bound is asserted to stay below

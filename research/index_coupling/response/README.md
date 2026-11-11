@@ -33,7 +33,11 @@ python -m research.index_coupling.response.experiments exact-bench OUT.jsonl REP
   `../results/contraction_oracle/`.
 - `contraction_oracle.py`, the schedule-level oracle, stays one level up.
 
-## Where things stand (for the next experiment)
+## Where things stand
+
+Current priorities are in the [repository overview](../../OVERVIEW.md).
+The open questions below identify research boundaries; they are not the
+current implementation plan.
 
 - **Exact at unit M.** Substitution there gives a measured 6.8× speed-up in
   frontier search on FFN-4.
@@ -45,9 +49,14 @@ python -m research.index_coupling.response.experiments exact-bench OUT.jsonl REP
   tested curves and directly replays 49 native root witnesses, but slows
   both M8 cases and stops under its frozen rule. See
   [LOOP_CLOSURE_RESULTS.md](../LOOP_CLOSURE_RESULTS.md).
-- **Open problem.** An upper bound, or exact response, for fused M > 1 groups.
-  Sharing across different residency contexts remains open; the tested
-  `(start, suffix, Pareto(A, D))` closure does not yet provide an M8 speedup.
+- **Residency sharing.** The [latest offline study](../RESIDENCY_SHARING.md)
+  rejects context-invariant gaps, local-only interactions and simple curve
+  shifts at M > 1. Its 84–88% hypothetical DP-work ceiling is not a speedup
+  forecast. Different curve shapes do not prove computation cannot be shared.
+- **Open problem.** A cheap exact response or shared computation for fused
+  M > 1 groups remains unproved. Neither the tested closure nor the three
+  simple context-sharing structures establish it. Consolidate the existing
+  evidence before proposing another representation.
 
 ## Renamed modules
 

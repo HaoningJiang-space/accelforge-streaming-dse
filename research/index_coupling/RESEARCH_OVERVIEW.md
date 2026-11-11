@@ -1,5 +1,10 @@
 # Research overview after the unified replacement test
 
+**Historical assessment.** For the repository-wide status and current priorities
+through `2c8050c6`, read [research/OVERVIEW.md](../OVERVIEW.md). Later P19 server,
+loop-closure and residency-sharing results supersede pending-work statements
+below; the original scoped reasoning is retained as a record.
+
 This assessment combines the archived results through the branch-symmetry
 report at `a7cf85a1` with [ONE_OBLIGATION_RESULTS.md](ONE_OBLIGATION_RESULTS.md).
 It distinguishes fixed-order recurrence claims, order-complete claims, and

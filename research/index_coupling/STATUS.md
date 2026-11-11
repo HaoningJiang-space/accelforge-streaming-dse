@@ -1,8 +1,16 @@
 # Index coupling: current status (entry point)
 
+**Current repository-wide assessment and priorities:**
+[research/OVERVIEW.md](../OVERVIEW.md), reviewed through `2c8050c6` on 2026-11-10.
+The bounded [loop-closure pilot](LOOP_CLOSURE_RESULTS.md) stopped without an M8
+speedup; the latest [residency study](RESIDENCY_SHARING.md) rejects three simple
+sharing structures. Consolidation takes priority over starting another solver.
+
 This page is the index to the directory. README.md keeps the chronological record.
 PROTOCOL.md holds every frozen prediction, unchanged after freezing.
-Numbers below are copied from the linked result files. Next steps: RESEARCH_PLAN.md.
+Numbers below are copied from the linked result files. RESEARCH_PLAN.md and
+older next-step statements record earlier stages; use the overview above for
+current priorities. Historical counts are not a claim of a fresh whole-suite run.
 Contract review and the existing order-completion theorem: PLAN_CONTRACT_REVIEW.md.
 
 Remainder implementation: [REMAINDER_SEARCH_RESULTS.md](REMAINDER_SEARCH_RESULTS.md).
@@ -13,7 +21,11 @@ Precheck alone gives 1.31x/1.23x/1.11x median ratios on the tested forward FFN,
 attention and training cases. Reuse reduces the ancestor control from 12,866
 response entries to 81 and gives 4.08x, but slows the stack cases and increases
 their memory. The current core hash changed; frozen archives remain intact.
-Formal P19 server measurements and server synchronization remain pending.
+Formal P19 timing subsequently completed on the DNN branch:
+[pinned report](https://github.com/HaoningJiang-space/accelforge-streaming-dse/blob/5245c9cc/research/dnn_benchmarks/P19_SERVER_RESULTS.md).
+All baseline/precheck attempts finish with 192 exact replays, but precheck is
+15.7%/18.4% slower. All 12 remainder-containing attempts fail under the frozen
+4-GiB limit. Separate profiling collection was still pending in that report.
 
 Unified conditional search: [UNIFIED_SEARCH_RESULTS.md](UNIFIED_SEARCH_RESULTS.md).
 All 24 arms of a three-switch factorial study use the same order-complete serial
@@ -28,9 +40,9 @@ The skinny control has zero certificate hits. Memory rises slightly with the
 current proof ledger; quotienting still enumerates global order representatives,
 so this establishes a restricted joint method rather than general-DAG scaling.
 
-Current synthesis: [RESEARCH_OVERVIEW.md](RESEARCH_OVERVIEW.md), separating exact
-search reductions from capacity-dependent physical conflicts and identifying
-the next target as a unified conditional contract and dynamic quotient closure.
+Earlier synthesis: [RESEARCH_OVERVIEW.md](RESEARCH_OVERVIEW.md), separating exact
+search reductions from capacity-dependent physical conflicts. Its proposed
+next targets are historical; later closure and residency results are linked above.
 
 Grammar v2 (opt-in `scalar_leaf='v2'`): [GRAMMAR_V2.md](GRAMMAR_V2.md),
 [GRAMMAR_V2_RESULTS.md](GRAMMAR_V2_RESULTS.md). v1's mandatory multi-operator
@@ -50,7 +62,9 @@ exclude only 36/255 proper choices. Across that case the recorded-order shadow
 projects 20.29% less DP work, or 20.31% with operand-slot clipping. On the
 larger-extent two-layer FFN, slots skip 42.62% of choices but only 0.48% of DP
 work because shared responses remain reachable. No online pruning or speedup
-is claimed. Next derive a tighter conditional child bound before implementation.
+is claimed. The later operator bound, sandwich certificate and loop-closure
+audits are summarized in [the current overview](../OVERVIEW.md#5-应停止扩展保留为边界证据的路线);
+this earlier suggestion to derive another bound is no longer an active task.
 
 Order-complete Fork symmetry: [FORK_QUOTIENT_RESULTS.md](FORK_QUOTIENT_RESULTS.md).
 A separate exact quotient retains joint input/output residency profiles within
