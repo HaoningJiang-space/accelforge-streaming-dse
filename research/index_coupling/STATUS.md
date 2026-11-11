@@ -14,6 +14,14 @@ including placeholder recovery. All 39 distinct root points agree and all
 without a new optimization. Section 18 also corrects the interpretation of
 the hindsight edge policy: its 35–42% DP savings are not a universal ceiling.
 
+Bounded group-span diagnostic: [definition](FUSION_WIDTH_AUDIT.md), results
+in [CONTRACTION_ORACLE.md §19](CONTRACTION_ORACLE.md). All 3,193 archived M>1
+states reconstruct exactly without a size restriction. U_3 equality on
+M8-2 is 2,038/2,211 overall but only 20/193 for spans longer than three ops,
+covering 7.11% of that stratum's exclusive DP work. Nine framed control
+executions confirm that a long common row loop can have only two child
+activation cells. This completes an offline diagnosis, not a new solver.
+
 This page is the index to the directory. README.md keeps the chronological record.
 PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. RESEARCH_PLAN.md and

@@ -1,6 +1,6 @@
 # response: closed forms, bounds and substitution for chain states
 
-This package holds the code of CONTRACTION_ORACLE.md §6-18 and
+This package holds the code of CONTRACTION_ORACLE.md §6-19 and
 SANDWICH_RESULTS.md. It describes a chain state's grammar response
 (capacity -> least extra traffic, grammar v2) without searching. It covers
 FFN and attention stacks and any chain of dense contractions and elementwise
@@ -15,6 +15,7 @@ operators.
 | `dag.py` | Archived call DAGs: `load`, `reach`, `removed`, `terminal_work` | accounting of exclusive work |
 | `substitution.py` | `make_exact_kernel` (in-memory hook, `graph/curve.py` unchanged), lazy native witnesses `expand` | FFN-4: 6.8× historical frontier search, 6.60× complete native generation; no M8 benefit (§16/16a) |
 | `experiments.py` | Every experiment command, plus `verify` | entry point |
+| `fusion_width.py` | Bounded offline top-level group-span reconstruction from archived group interfaces | diagnostic only; high aggregate equality is mostly automatic n<=k coverage (§19) |
 
 ## Commands
 
@@ -27,6 +28,7 @@ python -m research.index_coupling.response.experiments archive|op-check|op-c2|op
 python -m research.index_coupling.response.experiments exact-check [CASE ...]
 python -m research.index_coupling.response.experiments exact-bench OUT.jsonl REPEATS CASE ...
 python -m research.index_coupling.response.experiments exact-mapping-bench NEW.jsonl REPEATS CASE ...
+python -m research.index_coupling.response.fusion_width NEW.jsonl
 ```
 
 - Archive commands default to the eight archived cases in `dag.CASES`.
@@ -61,6 +63,11 @@ current implementation plan.
   M > 1 groups remains unproved. Neither the tested closure nor the three
   simple context-sharing structures establish it. Consolidate the existing
   evidence before proposing another representation.
+- **Bounded group span.** The §19 diagnostic is complete: U_3 matches only
+  20/193 M8-2 states whose spans actually exceed three operators (7.11% of
+  that stratum's exclusive DP work). A shared row loop can span a long chain
+  while using two activation cells, so group span is not physical live width.
+  No online implementation follows this diagnostic.
 
 ## Renamed modules
 

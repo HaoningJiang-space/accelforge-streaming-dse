@@ -951,3 +951,130 @@ Attention matches FFN at equal depth.
 - Cheaper state evaluation and shared computation remain possible research
   questions; these diagnostics establish neither their impossibility nor
   a reason to start another solver after the current consolidation decision.
+
+## 19. Bounded top-level group span: coverage is mostly automatic
+
+The [diagnostic definition](FUSION_WIDTH_AUDIT.md) and semantic-control
+prediction were committed and pushed at `8245fcd6` before measurement.
+This offline study ends here; no solver option or new online method was built.
+
+For a chain solve state, U_k restricts the first partition's groups to at
+most k operators, including elementwise operators. Each admitted group uses
+its exact archived **group** response with the complete projected extents,
+external residency and write ownership. A long common M loop is excluded
+when its group exceeds k, even if it executes a row with few live cells.
+This quantity measures grammar group span, not physical live width.
+
+### Reconstruction and coverage
+
+All **3,193** qualifying M>1 states complete: 772 / 2,211 / 210 for M8-1,
+M8-2 and tiny FFN-4. The unrestricted reconstructed U_n equals every archived
+full frontier. U_1 >= U_2 >= U_3 >= F holds at all response breakpoints, hence
+throughout their constant intervals and final plateaus. U_1 also matches
+the existing singleton upper-bound function at the checked U_1/F breakpoints.
+There are no missing group interfaces or substitutions of solve for group.
+
+| Case | k | All equal / all M>1 states | Equal among spans with n>k | Exclusive DP work covered within n>k |
+| --- | ---: | ---: | ---: | ---: |
+| M8 FFN-1 | 1 | 521 / 772 | 2 / 253 | 26 / 2,201 (1.18%) |
+| | 2 | 659 / 772 | 4 / 117 | 52 / 1,521 (3.42%) |
+| | 3 | 772 / 772 | 0 / 0 | not applicable |
+| M8 FFN-2 | 1 | 1,207 / 2,211 | 13 / 1,017 | 105 / 14,085 (0.75%) |
+| | 2 | 1,677 / 2,211 | 25 / 559 | 325 / 11,795 (2.76%) |
+| | 3 | 2,038 / 2,211 | 20 / 193 | 500 / 7,037 (7.11%) |
+| Tiny FFN-4 | 1 | 131 / 210 | 0 / 79 | 0 / 831 |
+| | 2 | 187 / 210 | 0 / 23 | 0 / 551 |
+| | 3 | 209 / 210 | 0 / 1 | 0 / 265 |
+
+An n<=k state is unrestricted by definition. M8-1 has only three operators,
+so its U_3 success is automatic. M8-2's apparent 92.2% U_3 coverage is mostly
+this same effect: only 20 of the 193 genuinely longer spans match. Their
+covered exclusive DP work is 7.11%, not 92.2% of the long-span work.
+
+The M8-2 root fails U_3: at capacity 10, its extra traffic is 896 versus
+960 under the restriction. The tiny FFN-4 root also fails: at capacity 5,
+its extra traffic is 32 versus 56. These are extra-traffic figures excluding
+compulsory endpoint/weight transfers, not hardware latency.
+
+### Shared work and the cost hidden by archive lookup
+
+Treating every retrospectively equal M>1 state as a **free** terminal gives
+these increments in root DP-work removal beyond the existing unit-M terminals:
+
+| Case | U_1 | U_2 | U_3 |
+| --- | ---: | ---: | ---: |
+| M8 FFN-1 | +12.95 pp | +31.67 pp | +70.64 pp |
+| M8 FFN-2 | +5.19 pp | +16.54 pp | +38.83 pp |
+| Tiny FFN-4 | +0.02 pp | +0.07 pp | +0.12 pp |
+
+These are not implementable savings. In particular, U_3 removes the whole
+M8-1 search in this hypothetical ledger because its entire three-op root
+has been declared a free terminal. Obtaining its exact group response was
+the original problem. Equality with the completed reference is also not a
+pre-search certificate.
+
+For constructing all U_3 diagnostics:
+
+| Case | Distinct group interfaces | Keys without external sets | Maximum contexts per such key | Original DP work in their dependency union |
+| --- | ---: | ---: | ---: | ---: |
+| M8 FFN-1 | 726 | 180 | 16 | 3,757 / 3,770 (99.66%) |
+| M8 FFN-2 | 1,913 | 450 | 16 | 11,599 / 22,124 (52.43%) |
+| Tiny FFN-4 | 310 | 144 | 4 | 5,123 / 593,020 (0.86%) |
+
+This union accounts for baseline dependencies of every queried group,
+including queries for states where equality fails. It is not the measured
+cost of a hypothetical online replacement, nor should it be subtracted from
+the free-terminal percentages: those are different conditional sets of work.
+It demonstrates why reading already-solved local responses is not evidence
+that generating those responses is cheap. Ownership, extents and external
+interfaces remain distinct.
+
+Archive loading takes 0.009 / 0.045 / 0.308 s; composition **plus all checks**
+takes 2.979 / 0.386 / 0.019 s in the declared case order. Shared formula caches
+warm across cases. These are retrospective diagnostic costs, not fresh native
+response-construction timings and not a search-speedup comparison. A cheap
+fresh local-response constructor has not been established by this audit.
+
+### A large group can have a tiny additional live footprint
+
+The frozen six-op control matches all predictions at child capacity 2:
+
+| Response | F=U_6 | U_3 | U_2 | U_1 |
+| --- | ---: | ---: | ---: | ---: |
+| Total child traffic | 16 | 32 | 48 | 96 |
+
+All nine restricted-frontier points execute exactly inside a real two-trip
+caller frame. The frame reserves the four scalar weights, so total physical
+peak is child peak + 4, and total traffic is twice child traffic + 4 weight
+loads. The stated two cells are the child's activation footprint, not free
+physical storage for its weights.
+
+The underlying construction also has a simple weight-free form: an n-op chain
+of out-of-place elementwise row operations on M>2 elements. A legal common M
+loop with unit tiles executes the entire chain with two live cells and total
+traffic F(2)=2M. Under the top-level k restriction, every boundary activation
+has M cells and cannot be retained at capacity 2. Every cut must write and
+read it. At least ceil(n/k)-1 cuts are required, and groups of at most k ops
+attain that bound by streaming rows internally. Therefore
+
+    U_k(2) = 2M ceil(n/k),       F(2) = 2M.
+
+This is a constructive argument in the current grammar; the additional
+weight-free family was not added to the experiment set. It shows that no
+fixed k recovers every such chain even with a two-cell physical live peak.
+A large common-loop span need not mean many unresolved retention decisions.
+
+**Decision.** Small top-level groups do not explain most genuinely longer
+M8 conditional states in this sample. Do not turn the automatic short-span
+coverage into a new solver project. Conversely, this failure does not rule
+out local computation *inside* a shared outer loop. A future structural
+interface would have to distinguish loop coordination from live reservations;
+this diagnostic does not establish such an interface or start its development.
+
+Code: `response/fusion_width.py`. Summary and immutable source/archive hashes:
+`results/contraction_oracle/fusion_width.jsonl`. Per-state complete responses:
+`fusion_width.states.jsonl.gz` in the same directory.
+
+```sh
+python -m research.index_coupling.response.fusion_width NEW.jsonl
+```
