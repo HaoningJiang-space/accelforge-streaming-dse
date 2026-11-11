@@ -1,9 +1,33 @@
 # AccelForge：整体进度与收束决策
 
+## 当前主线调整：真实计算 DAG 的区域接口
+
+研究主线转为 **Graph-Structured Mapping Search for DAGs with Shared Data,
+Resource Constraints, and Cross-Operator Fusion**。M8 降为条件资源求解器的
+microbenchmark；不再以继续加速单条 FFN 链代表 DAG 扩展进展。下面较早快照中
+“暂停新增路线”和第 8 节的旧优先级保留为历史判断，当前执行入口以本节为准。
+
+首项限定工作是 [D1 区域边界诊断](dag_mapping/PROTOCOL.md)：在受支持的残差和
+Fork–Join 核心上，以完整 v2 搜索为参照，比较完整物化、边界驻留、共享外层循环
+跨区域三种组合。逐点核查前沿及见证，确认哪些图依赖、剩余消费者、写所有权和
+共同循环信息不能被摘要丢掉。不为了简化分解而把所有区域边界强制物化。
+
+这一步不宣称通用 DAG 算法或加速。只有证明边界摘要对声明的合法映射空间充分，
+再与现有 native FFM Event/cache 对照候选生成、Join 和完整生成时间，才能主张
+结构化消元改善搜索。Root Call DAG 是递归求解工作统计，不能替代计算 DAG 的
+拓扑、生命周期与 Fusion 分析。后续实现继续使用 `research/main`，不新增研究分支。
+
 审阅日期：2026-11-10（本地日期）。主线快照 `2c8050c6`；独立 DNN/硬件接入快照
 `5245c9cc`。本文核对各研究目录、结果报告和研究分支，汇总已有证据；没有重跑整库
 实验，也没有改变冻结协议或求解器。本文是当前研究优先级入口，旧文档的“下一步”
 保留为历史建议，不能同时视为待执行计划。
+
+**后续受限正例（协议 `e116c2a3`，实现 `e7dc2720`）：**
+[条件前缀复用](index_coupling/WORK_ATTRIBUTION.md)在不改变执行语法和完整前沿的情况下，
+让 M8 FFN-1/2 的完整 Root Mapping Generation 分别加速 **1.38× / 1.58×**；
+计入一次性 AST 安装为 **1.08× / 1.49×**。五轮计时、1,140 次 Witness 回放通过。
+完整条件状态数不变，减少的是多个状态内部重复的前缀构造；内存增加。该结果是用户要求
+的一次限定尝试，保持 opt-in，不恢复此前已停止的路线，也不建立一般 DNN 扩展性结论。
 
 ## 1. 研究现在走到了哪里
 
@@ -67,6 +91,7 @@ PyTorchSim 有不同的合法映射与计价，必须分别标注。
 | v2 恢复驻留单调性 | [v2](index_coupling/GRAMMAR_V2_RESULTS.md)：归档中 578 次违反降到 0；291 个根前沿点回放 | 19/48 根曲线改变；默认 v1 与冻结结论不能悄悄改成 v2 |
 | 某些完整条件响应可直接求解 | [Contraction oracle](index_coupling/CONTRACTION_ORACLE.md)、[response](index_coupling/response/README.md)：unit-M 链及单收缩响应；原 FFN-4 前沿搜索 6.81×；随后完整原生映射生成补测 FFN-4/注意力-4 为 6.60×/6.70× | 新计时包含 witness 恢复，安装与回放另列；M8 完整生成 0.84×/0.97×，仍无收益 |
 | 接口差别有独立检验 | [双收缩审计](https://github.com/HaoningJiang-space/accelforge-streaming-dse/blob/14a06502/research/index_coupling/TWO_CONTRACTION_INTERFACE_RESULTS.md)：208 条完整曲线、4,000 个容量点、571 次带调用者的回放 | `solve` 与 `group` 不可替换；仍是受限条件族，不是任意链闭式 |
+| 不同条件响应可共享内部构造 | [条件前缀复用](index_coupling/WORK_ATTRIBUTION.md)：投影前缀所需上下文并缓存边界前沿；M8 完整生成 1.38×/1.58×，1,140 次精确回放 | 原始状态和 Loop Choices 不变；收益也包含转移构造改进，内存增加；不能声称完整 Residency 曲线等价 |
 
 最合适的论文骨架不是一串优化开关，而是：**条件接口 → 语义保持的化简原则 →
 三个已验证实例 → 适用边界与失败解释。** 宽泛的架构联合优化是动机，不宜作为已经
@@ -75,7 +100,7 @@ PyTorchSim 有不同的合法映射与计价，必须分别标注。
 ### 4.1 每项加速消除的是哪一种冗余
 
 已有加速都没有被推翻。每一项只消除一种特定冗余，所以只在这种冗余占主导的图上
-出现。M8 上看不到它们，有两个原因：
+出现。此前 M8 上看不到这些收益，有两个原因（上述前缀复用是后续新增的受限正例）：
 
 - 前面的成果已并入后来的基线。后续实验均以 `partitions='dp'`（Cut DP）为基线。
 - M8 的主要工作来自尚未被现有化简覆盖的驻留上下文；这些计算是否冗余仍需证明。
