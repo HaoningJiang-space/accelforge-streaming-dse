@@ -14,6 +14,7 @@ Usage: python -m research.index_coupling.response.experiments COMMAND ...
   op-work CASE...                     ordered edge pruning on the shared DAG, with ceilings (§17-18)
   closed-form-work CASE...            work removed by unit-M closed-form terminals (§15)
   sandwich CASE...                    LB/UB certificate, coverage and work (SANDWICH_RESULTS.md)
+  residency CASE...                   sharing across residency contexts (RESIDENCY_SHARING.md)
   exact-check CASE...                 online substitution: curves and witness replay (§16)
   exact-bench OUT.jsonl REPEATS CASE...   fresh-process timing, baseline vs substitution
   exact-once MODE CASE                one measurement (used by exact-bench)
@@ -354,6 +355,70 @@ def sandwich(cases):
         print(json.dumps(out), flush=True)
 
 
+def residency(cases):
+    """How a sub-problem's response varies across weight-residency contexts.
+
+    A context-free key is (ops, ext, owned, non-weight external); its contexts
+    are the resident weight sets seen in the archive. Reports the work ceiling
+    of solving each key once (keeping its costliest member), whether the gap
+    F - LB is the same in every context, pairwise weight interactions of F
+    (by distance of the owning ops), and whether each context's curve is the
+    most-resident context's curve, a pure (capacity, traffic) shift of it, or
+    another shape.
+    """
+    from itertools import combinations
+    from research.index_coupling.c2_bound_audit import COUNTERS
+    for case in cases:
+        g = graph_of(case)
+        _, nodes, _ = dag.load(case)
+        weights = {t for op in g.ops for t in g.access[op] if 'M' not in g.access[op][t]}
+        owner = {t: op for op in g.ops for t in g.access[op] if t in weights}
+        pos = {op: i for i, op in enumerate(g.ops)}
+        keys, solves = defaultdict(list), defaultdict(dict)
+        for i, n in nodes.items():
+            s = n['state']
+            keys[(s['stage'], tuple(s['ops']), tuple(s['ext']), tuple(s['owned']), s['constrained'])].append(i)
+            if s['stage'] == 'solve' and not s['constrained']:
+                ext = set(s['external'])
+                solves[(tuple(s['ops']), tuple(s['ext']), tuple(s['owned']), frozenset(ext - weights))][
+                    frozenset(ext & weights)] = (tuple(map(tuple, n['points'])), archived(g, s))
+        total = {k: sum(n['work'][k] for n in nodes.values()) for k in COUNTERS}
+        once = {k: sum(max(nodes[i]['work'][k] for i in ids) for ids in keys.values()) for k in COUNTERS}
+        out = dict(case=case, states=len(nodes), context_free_keys=len(keys),
+                   ceiling={k: round(1 - once[k] / total[k], 4) for k in COUNTERS})
+        c = Counter()
+        for key, ctx in solves.items():
+            if len(ctx) < 2:
+                continue
+            multi = key[1][sorted(g.sizes).index('M')] > 1
+            top = max(max(cc for cc, _ in p) for p, _ in ctx.values()) + 3
+            if all(ch is not None for _, ch in ctx.values()):
+                gaps = {tuple(traffic_at(C, p) - bounds.lower(ch, C) if traffic_at(C, p) < INF else None
+                              for C in range(top)) for p, ch in ctx.values()}
+                c['gap_invariant' if len(gaps) == 1 else 'gap_varies'] += 1
+            ref_set = max(ctx, key=len)
+            ref = ctx[ref_set][0]
+            for R, (pts, _) in ctx.items():
+                if R == ref_set:
+                    continue
+                s_, t_ = pts[0][0] - ref[0][0], pts[0][1] - ref[0][1]
+                shape = ('identical' if pts == ref else
+                         f'shift{(s_, t_)}' if len(pts) == len(ref) and all((a - s_, b - t_) == r for (a, b), r in zip(pts, ref))
+                         else 'other')
+                c[('M>1' if multi else 'M=1') + ' ' + shape] += 1
+                free = [t for t in weights - R if any(t in g.access[o] for o in key[0])]
+                for a, b in combinations(sorted(free), 2):
+                    sets = (R | {a, b}, R | {a}, R | {b}, R)
+                    if not all(x in ctx for x in sets):
+                        continue
+                    f = [[traffic_at(C, ctx[x][0]) for C in range(top)] for x in sets]
+                    inter = any(v[0] - v[1] - v[2] + v[3] != 0 for v in zip(*f) if INF not in v[1:])
+                    near = abs(pos[owner[a]] - pos[owner[b]]) <= 2
+                    c[f"pair {'near' if near else 'far'} {'interact' if inter else 'additive'}"] += 1
+        out.update(dict(sorted(c.items())))
+        print(json.dumps(out), flush=True)
+
+
 # ------------------------------------------------------- online substitution
 
 def exact_check(cases):
@@ -434,7 +499,7 @@ def main(argv):
         exact_bench(args[0], int(args[1]), args[2:])
     else:
         dict(archive=archive, op_check=op_check, op_c2=op_c2, op_work=op_work, closed_form_work=closed_form_work,
-             sandwich=sandwich, exact_check=exact_check)[command.replace('-', '_')](cases())
+             sandwich=sandwich, residency=residency, exact_check=exact_check)[command.replace('-', '_')](cases())
 
 
 if __name__ == '__main__':
