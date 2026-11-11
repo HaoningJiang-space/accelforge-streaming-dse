@@ -1,0 +1,286 @@
+diff --git a/PyTorchSimFrontend/extension_codecache.py b/PyTorchSimFrontend/extension_codecache.py
+index 6192c47..93ca56d 100644
+--- a/PyTorchSimFrontend/extension_codecache.py
++++ b/PyTorchSimFrontend/extension_codecache.py
+@@ -201,6 +201,10 @@ class MLIRCodeCache:
+                 stack_size = val_llvm_caller.parse_stack_sizes(f"{write_path}/{key}.s", vlenb=vlenb)
+                 spad_size =  val_llvm_caller.get_spad_size(validation_binary_path)
+                 spad_usage = stack_size + spad_size # Spad usage per lane
++                if os.environ.get("TORCHSIM_INTERFACE_CONTRACT") == "1":
++                    from PyTorchSimFrontend.interface_manifest import emit_allocation_manifest
++                    emit_allocation_manifest(validation_binary_path, f"{write_path}/{key}.s",
++                        stack_size, spad_size, extension_config.CONFIG_SPAD_INFO["spad_size"], vectorlane_size)
+                 if extension_config.CONFIG_SPAD_INFO["spad_size"] < spad_usage:
+                     logger.debug(
+                         f"Scratchpad size exceeded: required {spad_usage} bytes, "
+diff --git a/PyTorchSimFrontend/extension_config.py b/PyTorchSimFrontend/extension_config.py
+index d79ca39..f340ecc 100644
+--- a/PyTorchSimFrontend/extension_config.py
++++ b/PyTorchSimFrontend/extension_config.py
+@@ -59,7 +59,7 @@ def __getattr__(name):
+         return {
+           "spad_vaddr" : 0xD0000000,
+           "spad_paddr" : 0x2000000000,
+-          "spad_size" : config_yaml["vpu_spad_size_kb_per_lane"] << 10 # Note: spad size per lane
++          "spad_size" : config_yaml.get("vpu_spad_size_bytes_per_lane", config_yaml["vpu_spad_size_kb_per_lane"] << 10) # Note: spad size per lane
+         }
+ 
+     if name == "CONFIG_NUM_CORES":
+diff --git a/PyTorchSimFrontend/interface_manifest.py b/PyTorchSimFrontend/interface_manifest.py
+new file mode 100644
+index 0000000..387d6b2
+--- /dev/null
++++ b/PyTorchSimFrontend/interface_manifest.py
+@@ -0,0 +1,28 @@
++"""Optional allocation receipt for the pinned plain-GEMM interface contract."""
++import hashlib,json,re,subprocess
++from pathlib import Path
++
++
++def emit_allocation_manifest(binary,assembly,stack_bytes,static_bytes,capacity,lanes):
++    binary=Path(binary);assembly=Path(assembly)
++    symbols=subprocess.check_output(['riscv64-unknown-elf-readelf','-sW',str(binary)],text=True)
++    (binary.parent/'allocation_symbols.txt').write_text(symbols)
++    entries=[]
++    for line in symbols.splitlines():
++        fields=line.split()
++        if len(fields)==8 and fields[0].endswith(':') and fields[0][:-1].isdigit():
++            entries.append(dict(address=int(fields[1],16),size=int(fields[2],0),type=fields[3],section=fields[6],name=fields[7]))
++    start=next(e for e in entries if e['type']=='SECTION' and e['name']=='.spad')
++    end=next(e for e in entries if e['name']=='spad_end')
++    objects=sorted((e for e in entries if e['type']=='OBJECT' and e['section']==start['section'] and e['size']),key=lambda e:e['address'])
++    if end['address']-start['address']!=static_bytes:raise RuntimeError('ELF scratchpad extent mismatch')
++    if any(e['address']<start['address'] or e['address']+e['size']>end['address'] for e in objects):raise RuntimeError('Scratchpad object exceeds allocation extent')
++    for left,right in zip(objects,objects[1:]):
++        if left['address']+left['size']>right['address']:raise RuntimeError('Overlapping scratchpad objects')
++    if type(stack_bytes) is not int or stack_bytes<0:raise RuntimeError('Unknown kernel stack requirement')
++    kernel_body=assembly.read_text().split('.cfi_startproc',1)[1].split('.cfi_endproc',1)[0]
++    calls=bool(re.search(r'^\s*(call|jal|jalr)\s',kernel_body,re.MULTILINE))
++    buffers=[dict(name=e['name'],offset_bytes=e['address']-start['address'],bytes_per_lane=e['size'],region='lane_scratchpad',lifetime='entire_kernel',copies=1) for e in objects]
++    supported=set(e['name'] for e in objects)=={'X_spad','W_spad','Y_spad'} and not calls
++    result=dict(schema='pytorchsim-allocation.v1',basis='ELF static extent plus pinned compiler kernel stack',region='lane_scratchpad',lanes=lanes,capacity_bytes_per_lane=capacity,static_extent_bytes_per_lane=static_bytes,static_object_bytes_per_lane=sum(e['size'] for e in objects),alignment_padding_bytes_per_lane=static_bytes-sum(e['size'] for e in objects),kernel_stack_bytes_per_lane=stack_bytes,required_bytes_per_lane=static_bytes+stack_bytes,buffers=buffers,compiler_capacity_pass=static_bytes+stack_bytes<=capacity,plain_gemm_scope=supported,kernel_has_calls=calls,binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),assembly_sha256=hashlib.sha256(assembly.read_bytes()).hexdigest(),scope_note='Capacity certificate requires serialized timing tiles. Wrapper host stack, DMA tags and queues belong to separate backend resources; no full-chip area or energy claim.')
++    (binary.parent/'allocation_manifest.json').write_text(json.dumps(result,indent=2)+'\n')
+diff --git a/PyTorchSimFrontend/mlir/mlir_gemm_template.py b/PyTorchSimFrontend/mlir/mlir_gemm_template.py
+index 4fc808c..dc39ee1 100644
+--- a/PyTorchSimFrontend/mlir/mlir_gemm_template.py
++++ b/PyTorchSimFrontend/mlir/mlir_gemm_template.py
+@@ -20,6 +20,7 @@ GEMM_TEMPLATE = r"""
+ // TILE_K = {{ TILE_K }}
+ // SUB_TILE_M = {{ SUB_TILE_M }}
+ // SUB_TILE_N = {{ SUB_TILE_N }}
++// SUB_TILE_K = {{ SUB_TILE_K }}
+ {{kernel.def_global_vars()}}
+ 
+ func.func @{{ KERNEL_NAME }}{{kernel.def_kernel(inputs=[X, W, Bias], outputs=[Y], names_str="X, W, Bias, Y", input_reorder=input_reorder)}} {
+@@ -70,6 +71,7 @@ GEMM_REDUCTION_TEMPLATE = r"""
+ // TILE_K = {{ TILE_K }}
+ // SUB_TILE_M = {{ SUB_TILE_M }}
+ // SUB_TILE_N = {{ SUB_TILE_N }}
++// SUB_TILE_K = {{ SUB_TILE_K }}
+ {{kernel.def_global_vars()}}
+ 
+ func.func @{{ KERNEL_NAME }}{{kernel.def_kernel(inputs=[X, W, Bias], outputs=[Y], names_str="X, W, Bias, Y", input_reorder=input_reorder)}} {
+diff --git a/Simulator/simulator.py b/Simulator/simulator.py
+index 2b9f05b..658e119 100644
+--- a/Simulator/simulator.py
++++ b/Simulator/simulator.py
+@@ -561,6 +561,8 @@ class TOGSimulator():
+ 
+         try:
+             cmd = f"{TOGSimulator.get_togsim_command(config_path, togsim_path)} --models_list {trace_file_path}"
++            if os.environ.get("TORCHSIM_INTERFACE_CONTRACT") == "1":
++                cmd += f" --stats_json {result_path.with_suffix('.stats.json')}"
+             if extension_config.CONFIG_TOGSIM_DEBUG_LEVEL:
+                 cmd += f" --log_level {extension_config.CONFIG_TOGSIM_DEBUG_LEVEL}"
+ 
+diff --git a/TOGSim/include/Core.h b/TOGSim/include/Core.h
+index 286feb5..a8f57c2 100644
+--- a/TOGSim/include/Core.h
++++ b/TOGSim/include/Core.h
+@@ -36,6 +36,9 @@ class Core {
+   virtual void pop_memory_request();
+   virtual mem_fetch* top_memory_request() { return _request_queue.front(); }
+   virtual void push_memory_response(mem_fetch* response);
++  uint64_t instruction_count(Opcode op) const { return _stat_inst_count.at(static_cast<size_t>(op)); }
++  void set_serial_tiles(bool value) { _interface_serial_tiles = value; }
++  bool _interface_serial_tiles = false;
+   void check_tag() { _dma.check_table(); }
+   void inc_numa_local_access() { _stat_numa_local_access++; }
+   void inc_numa_remote_access() { _stat_numa_remote_access++; }
+diff --git a/TOGSim/include/Dram.h b/TOGSim/include/Dram.h
+index 4a89755..a1d6b31 100644
+--- a/TOGSim/include/Dram.h
++++ b/TOGSim/include/Dram.h
+@@ -28,6 +28,7 @@ class Dram {
+   virtual void pop(uint32_t cid) = 0;
+   uint32_t get_channel_id(mem_fetch* request);
+   virtual void print_stat() {}
++  virtual std::pair<uint64_t,uint64_t> total_transactions() const { throw std::runtime_error("Final JSON requires Ramulator2"); }
+   virtual void print_cache_stats() {};
+   uint32_t get_channels_per_partition() { return _n_ch_per_partition; }
+   new_addr_type partition_dram_address(new_addr_type raw_addr) const;
+@@ -67,6 +68,7 @@ class DramRamulator2 : public Dram {
+   virtual void pop(uint32_t cid) override;
+   virtual void print_stat() override;
+   void print_cache_stats() override;
++  std::pair<uint64_t,uint64_t> total_transactions() const override;
+ 
+  private:
+   std::vector<std::unique_ptr<Ramulator2>> _mem;
+diff --git a/TOGSim/include/Simulator.h b/TOGSim/include/Simulator.h
+index e3542d5..14b84fa 100644
+--- a/TOGSim/include/Simulator.h
++++ b/TOGSim/include/Simulator.h
+@@ -40,6 +40,7 @@ class Simulator {
+   int get_partition_id(int core_id) { return _config.partiton_map[core_id]; }
+   std::unique_ptr<Scheduler>& get_partition_scheduler(int core_id) { return _partition_scheduler.at(get_partition_id(core_id)); }
+   void print_core_stat();
++  void write_final_json(const std::string& path, uint64_t launches);
+   void cycle();
+   const SimulationConfig& get_config() const { return _config; }
+   const YAML::Node& get_hardware_config_yaml() const { return _hardware_config_yaml; }
+diff --git a/TOGSim/src/Core.cc b/TOGSim/src/Core.cc
+index 9dad859..68fec4c 100644
+--- a/TOGSim/src/Core.cc
++++ b/TOGSim/src/Core.cc
+@@ -21,7 +21,7 @@ Core::Core(uint32_t id, SimulationConfig config)
+ 
+ bool Core::can_issue(const std::shared_ptr<Tile>& op) {
+   /* Check SRAM is enough to run tile */
+-  return _tiles.size() < 4  && !op->is_stonne_tile();
++  return _tiles.size() < (_interface_serial_tiles ? 1u : 4u) && !op->is_stonne_tile();
+ }
+ 
+ void Core::issue(std::shared_ptr<Tile> op) {
+diff --git a/TOGSim/src/Dram.cc b/TOGSim/src/Dram.cc
+index 5211ef4..ff83ffa 100644
+--- a/TOGSim/src/Dram.cc
++++ b/TOGSim/src/Dram.cc
+@@ -533,3 +533,9 @@ void SimpleDRAM::print_cache_stats() {
+     _m_caches[ch]->print_stats();
+   }
+ }
++
++std::pair<uint64_t,uint64_t> DramRamulator2::total_transactions() const {
++  uint64_t reads=0, writes=0;
++  for (const auto& channel : _mem) { reads += channel->total_reads(); writes += channel->total_writes(); }
++  return {reads,writes};
++}
+diff --git a/TOGSim/src/Simulator.cc b/TOGSim/src/Simulator.cc
+index d987d78..37e3a3e 100644
+--- a/TOGSim/src/Simulator.cc
++++ b/TOGSim/src/Simulator.cc
+@@ -16,7 +16,7 @@ Simulator::Simulator(SimulationConfig config, YAML::Node hardware_config_yaml)
+   _dram_time = 0;
+   _icnt_time = 0;
+   _slot_id = 0;
+-  _max_slot = 2;
++  _max_slot = _hardware_config_yaml["interface_serial_tiles"].as<bool>(false) ? 1 : 2;
+   _n_cores = config.num_cores;
+   _n_memories = config.dram_channels;
+   _memory_req_size = config.dram_req_size;
+@@ -32,6 +32,7 @@ Simulator::Simulator(SimulationConfig config, YAML::Node hardware_config_yaml)
+       spdlog::info("[Config/Core] Core {}: core_freq_mhz: {}, systolic_arrays_per_core: {}",
+                    core_index, config.core_freq_mhz, config.num_systolic_array_per_core);
+       _cores.at(core_index) = std::make_unique<Core>(core_index, _config);
++      _cores.at(core_index)->set_serial_tiles(_max_slot == 1);
+     } else if(config.core_type[core_index] == CoreType::STONNE) {
+       spdlog::info("[Config/Core] Core {}: core_freq_mhz: {}, core_type: Stonne", core_index, config.core_freq_mhz);
+       _cores.at(core_index) = std::make_unique<SparseCore>(core_index, _config);
+@@ -262,3 +263,19 @@ void Simulator::print_core_stat()
+   }
+   spdlog::info("Total execution cycles: {}", _core_cycles);
+ }
++
++void Simulator::write_final_json(const std::string& path, uint64_t launches) {
++  if (running() || launches == 0) throw std::runtime_error("Cannot certify incomplete or empty execution");
++  const auto counts = _dram->total_transactions();
++  uint64_t loads=0, stores=0;
++  for (const auto& core : _cores) { loads += core->instruction_count(Opcode::MOVIN); stores += core->instruction_count(Opcode::MOVOUT); }
++  const auto tmp = path + ".tmp";
++  std::ofstream out(tmp); out.exceptions(std::ios::badbit | std::ios::failbit);
++  out << "{\"schema\":\"togsim-final.v1\",\"completed\":true,\"scope\":\"cumulative\","
++      << "\"launched_kernels\":" << launches << ",\"total_cycles\":" << _core_cycles
++      << ",\"dram_channels\":" << _config.dram_channels << ",\"request_bytes\":" << _memory_req_size
++      << ",\"read_transactions\":" << counts.first << ",\"write_transactions\":" << counts.second
++      << ",\"dma_load_instructions\":" << loads << ",\"dma_store_instructions\":" << stores
++      << ",\"serial_tiles\":" << (_max_slot==1 ? "true" : "false") << "}\n";
++  out.close(); fs::rename(tmp,path);
++}
+diff --git a/TOGSim/src/main.cc b/TOGSim/src/main.cc
+index 010826e..1e018c5 100644
+--- a/TOGSim/src/main.cc
++++ b/TOGSim/src/main.cc
+@@ -23,14 +23,15 @@ void launchKernel(Simulator* simulator, unsigned int kernel_id, std::string onnx
+   simulator->enqueue_graph(partition_id, std::move(tile_graph));
+ }
+ 
+-void process_trace_file(Simulator* simulator, std::string trace_file_path, const YAML::Node& config_yaml) {
++uint64_t process_trace_file(Simulator* simulator, std::string trace_file_path, const YAML::Node& config_yaml) {
+   // Open trace file (can be FIFO or regular file)
+   std::ifstream trace_file;
+   trace_file.open(trace_file_path);
+   if (!trace_file.is_open()) {
+     spdlog::error("[TOGSim] Failed to open trace file: {}", trace_file_path);
+-    return;
++    throw std::runtime_error("Cannot open TOG trace");
+   }
++  uint64_t launches = 0;
+   spdlog::info("[TOGSim] Reading trace file: {}", trace_file_path);
+ 
+   // Read all available commands and process them
+@@ -56,7 +57,7 @@ void process_trace_file(Simulator* simulator, std::string trace_file_path, const
+ 
+     if (tokens.size() != 7) {
+       spdlog::error("[TOGSim] Invalid command format. Expected: command_type,kernel_id,device_index,stream_index,tog_path,attribute_path,timestamp. Got: {} ({} tokens)", line, tokens.size());
+-      continue;
++      throw std::runtime_error("Invalid TOG trace format");
+     }
+ 
+     std::string command_type = tokens[0];
+@@ -71,18 +72,21 @@ void process_trace_file(Simulator* simulator, std::string trace_file_path, const
+     try {
+       if (command_type == "LAUNCH_KERNEL") {
+         launchKernel(simulator, kernel_id, tog_path, attribute_path, config_yaml, timestamp, stream_index, device_index);
++        ++launches;
+       } else if (command_type == "DEVICE_SYNC") {
+         simulator->cycle();
+         spdlog::info("[Device {}] Device synchronization completed", device_index);
+       } else {
+-        spdlog::error("[TOGSim] Unknown command type: {}", command_type);
++        throw std::runtime_error("Unknown TOG command: " + command_type);
+       }
+     } catch (const std::exception& e) {
+       spdlog::error("[TOGSim] Error processing command {} (type: {}): {}", kernel_id, command_type, e.what());
++      throw;
+     }
+   }
+   trace_file.close();
+   simulator->cycle();
++  return launches;
+ }
+ 
+ Simulator* create_simulator(const std::string& config_path) {
+@@ -104,6 +108,7 @@ int main(int argc, char** argv) {
+       "models_list", "Path for the trace file (.trace)");
+   cmd_parser.add_command_line_option<std::string>(
+       "log_level", "Set for log level [trace, debug, info], default = info");
++  cmd_parser.add_command_line_option<std::string>("stats_json", "Write completed cumulative JSON statistics");
+   try {
+     cmd_parser.parse(argc, argv);
+   } catch (const CommandLineParser::ParsingError& e) {
+@@ -152,10 +157,13 @@ int main(int argc, char** argv) {
+ 
+   if (!trace_file_path.empty()) {
+     // Process trace file (unified mode: supports both FIFO and regular file)
+-    process_trace_file(simulator, trace_file_path,
++    const auto launches = process_trace_file(simulator, trace_file_path,
+                        simulator->get_hardware_config_yaml());
+     spdlog::info("Simulation finished");
+     simulator->print_core_stat();
++    std::string stats_path;
++    cmd_parser.set_if_defined("stats_json", &stats_path);
++    if (!stats_path.empty()) simulator->write_final_json(stats_path, launches);
+   } else {
+     spdlog::error("No trace file provided. Use --models_list to specify trace file path.");
+     exit(1);

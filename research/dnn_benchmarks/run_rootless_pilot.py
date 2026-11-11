@@ -10,6 +10,7 @@ import time
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--bundle',type=Path,required=True)
+    p.add_argument('--interface-request',type=Path)
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--mode',choices=('heuristic','autotune','external'),required=True)
     p.add_argument('--source-overlay',type=Path)
@@ -22,6 +23,10 @@ def main():
     a=p.parse_args();bundle=a.bundle.resolve();out=a.out.resolve()
     if a.seconds<=0:p.error('positive timeout required')
     out.mkdir(parents=True,exist_ok=False)
+    if a.interface_request:
+        from .interfaces.contract import normalize
+        request=normalize(json.loads(a.interface_request.read_text()))
+        (out/'request.json').write_text(json.dumps(request,indent=2)+'\n')
     source=Path(__file__).resolve().parents[2]
     base=bundle/'config.umoci.json'
     cfg=json.loads((base if base.exists() else bundle/'config.json').read_text())
@@ -31,6 +36,7 @@ def main():
         '--source','/workspace/PyTorchSim','--out','/experiment/result','--mode',a.mode,
         '--backend-lock','/study/research/dnn_benchmarks/'+a.backend_lock,
         '--shape',*map(str,a.shape),'--tile',*map(str,a.tile)])
+    if a.interface_request:cfg['process']['args']+=['--interface-request','/experiment/request.json']
     if a.fixed_timing_addresses:cfg['process']['args'].append('--fixed-timing-addresses')
     if a.source_overlay:
         cfg['mounts'].append(dict(destination='/workspace/PyTorchSim',type='bind',source=str(a.source_overlay.resolve()),options=['rbind','rw','nosuid','nodev']))
@@ -54,6 +60,8 @@ def main():
             except subprocess.TimeoutExpired:child.kill();child.wait()
             code=child.returncode;status='timeout'
         finally:subprocess.run(runc+['delete','--force',identity],stdout=stream,stderr=stream)
+    process_exitcode=code
+    audit_started=time.monotonic()
     audit_result=None
     if code==0 and status=='exited' and a.fixed_timing_addresses:
         from .audit_repaired_dma import audit
@@ -65,7 +73,7 @@ def main():
             code=1;status='dma_audit_failed'
             (out/'dma_audit_error.json').write_text(json.dumps({'error':f'{type(e).__name__}: {e}'})+'\n')
     (out/'launch_result.json').write_text(json.dumps(dict(status=status,exitcode=code,mode=a.mode,
-        dma_audit_passed=bool(audit_result and audit_result.get('timing_accepted')),wall_seconds=time.monotonic()-started,timeout_seconds=a.seconds),indent=2)+'\n')
+        dma_audit_passed=bool(audit_result and audit_result.get('timing_accepted')),wall_seconds=time.monotonic()-started,timeout_seconds=a.seconds,process_exitcode=process_exitcode,audit_seconds=time.monotonic()-audit_started),indent=2)+'\n')
     if code or status!='exited':raise SystemExit(1)
 
 

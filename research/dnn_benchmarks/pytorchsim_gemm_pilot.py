@@ -21,6 +21,7 @@ def write(path,value):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source',type=Path,required=True)
+    p.add_argument('--interface-request',type=Path)
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--mode',choices=('heuristic','autotune','external'),required=True)
     p.add_argument('--shape',type=int,nargs=3,default=(64,128,32),metavar=('M','N','K'))
@@ -29,12 +30,19 @@ def main():
     p.add_argument('--backend-lock',type=Path,default=Path(__file__).with_name('backend_lock.json'))
     p.add_argument('--fixed-timing-addresses',action='store_true')
     a=p.parse_args();src=a.source.resolve();out=a.out.resolve()
+    interface_request=None
+    if a.interface_request:
+        from .interfaces.contract import normalize,config_overrides,digest
+        interface_request=normalize(json.loads(a.interface_request.read_text()))
+        if interface_request['workload']['shape']!=list(a.shape) or interface_request['mapping']['mode']!=a.mode:raise ValueError('launcher/request mismatch')
+        os.environ['TORCHSIM_INTERFACE_CONTRACT']='1'
     named=dict(zip(FIELDS,a.tile));mapping=canonical_request(a.shape,named)
     if a.mode=='external':check_execution_scope(named,a.diagnostic_allow_n_split)
     m,n,k=a.shape;requested=list(a.tile)
     out.mkdir(parents=True,exist_ok=False)
     import yaml
     cfg=yaml.safe_load((src/'tutorial/session1/togsim_configs/togsim_config.yml').read_text())
+    if interface_request:cfg.update(config_overrides(interface_request['hardware']))
     cfg.update(pytorchsim_functional_mode=1,pytorchsim_timing_mode=1,
                codegen_mapping_strategy='external-then-heuristic' if a.mode=='external' else a.mode,
                codegen_compiler_optimization='none')
@@ -60,6 +68,8 @@ def main():
         dma_byte_audit='pending; no traffic equality claim',
         timing_accepted=False,timing_rejection='Pinned backend byte-address mismatch; see PYTORCHSIM_RESULTS.md',
         scope='standalone GEMM import smoke; external tiles are manual controls, not a solver-quality result')
+    if interface_request:
+        record.update(request_sha256=digest(interface_request),resolved_hardware=interface_request['hardware'],phase_seconds={},failed_stage=None)
     write(out/'result.json',record)
     try:
         lock=json.loads(a.backend_lock.read_text())
@@ -68,7 +78,7 @@ def main():
             record['timing_rejection']='Pending independent compiled-DMA ledger and functional verification'
         for name,sha in lock.get('runtime_binary_hashes',{}).items():
             path=Path('/')/name
-            if path.exists() and hashlib.sha256(path.read_bytes()).hexdigest()!=sha:
+            if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest()!=sha:
                 raise ValueError('runtime binary differs from lock: '+name)
         if record['source_commit']!=lock['runtime_git_commit']:
             raise ValueError('runtime commit differs from verified image')
@@ -78,6 +88,19 @@ def main():
         record['audited_source_commit']=lock['source_commit']
         record['source_difference']=lock['runtime_code_matches_submodule_except']
         import torch
+        if interface_request:
+            from Simulator.simulator import FunctionalSimulator,CycleSimulator,TOGSimulator
+            def instrument(fn,stage):
+                def measured(*args,**kwargs):
+                    start=time.monotonic()
+                    try:return fn(*args,**kwargs)
+                    except Exception:
+                        record['failed_stage']=stage;raise
+                    finally:record['phase_seconds'][stage]=record['phase_seconds'].get(stage,0)+time.monotonic()-start
+                return measured
+            FunctionalSimulator.run_spike=instrument(FunctionalSimulator.run_spike,'functional_simulation')
+            CycleSimulator.compile_and_simulate=instrument(CycleSimulator.compile_and_simulate,'compute_cycle_model')
+            TOGSimulator.run_standalone=staticmethod(instrument(TOGSimulator.run_standalone,'timing_simulation'))
         if a.fixed_timing_addresses:
             from Simulator.simulator import TOGSimulator
             original_attributes=TOGSimulator.write_kernel_attribute_file
@@ -101,7 +124,9 @@ def main():
             if a.mode=='external':
                 if tuple(int(x) for x in args[1:4])!=tuple(a.shape):raise ValueError('unexpected GEMM shape')
                 check_serialized_request(json.loads((out/'external_mapping.json').read_text()),a.shape,named)
+            selected_at=time.monotonic()
             choices=old_select(self,*args,**kw)
+            if interface_request:record['phase_seconds']['mapping_selection']=record['phase_seconds'].get('mapping_selection',0)+time.monotonic()-selected_at
             values=[[int(v) for v in row] for row in choices]
             record['candidate_tiles_observed'].append(values)
             if a.mode=='external' and values!=[requested]:
@@ -112,7 +137,7 @@ def main():
             if isinstance(result,str):
                 found={k:int(v) for k,v in re.findall(r'//\s*(TILE_[MNK]|SUB_TILE_[MNK])\s*=\s*(\d+)',result)}
                 if found:record['rendered_tiles_observed'].append(found)
-                if a.mode=='external' and any(found.get(k)!=named[k] for k in FIELDS[:5]):
+                if a.mode=='external' and any(found.get(k)!=named[k] for k in (FIELDS if interface_request else FIELDS[:5])):
                     raise ValueError('rendered GEMM tile differs from request')
             return result
         MLIRGemmTemplate.select_tile=select;MLIRGemmTemplate.render=render
@@ -134,6 +159,7 @@ def main():
             raise ValueError('missing evidence of external selection and rendering')
         record['status']='functional_import_pass; DMA ledger still pending'
     except Exception as e:
+        if interface_request and not record.get('failed_stage'):record['failed_stage']='compile_or_runtime_setup'
         record.update(status='failed',error=f'{type(e).__name__}: {e}')
         raise
     finally:
