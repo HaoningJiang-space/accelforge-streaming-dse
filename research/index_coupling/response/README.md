@@ -17,6 +17,7 @@ operators.
 | `experiments.py` | Every experiment command, plus `verify` | entry point |
 | `fusion_width.py` | Bounded offline top-level group-span reconstruction from archived group interfaces | diagnostic only; high aggregate equality is mostly automatic n<=k coverage (§19) |
 | `root_work.py` | Root-wide state families, parent provenance, free-terminal attribution and existing singleton-provider cost | read-only diagnostic; see WORK_ATTRIBUTION.md §4, no new replacement |
+| `prefix.py`, `bench_prefix.py` | Share projected cut-DP prefixes across conditional contexts; direct native witnesses and five-arm benchmark | opt-in, complete-root M8 1.38×/1.58×; installation-inclusive 1.08×/1.49×; more memory (WORK_ATTRIBUTION.md §5) |
 
 ## Commands
 
@@ -30,6 +31,7 @@ python -m research.index_coupling.response.experiments exact-check [CASE ...]
 python -m research.index_coupling.response.experiments exact-bench OUT.jsonl REPEATS CASE ...
 python -m research.index_coupling.response.experiments exact-mapping-bench NEW.jsonl REPEATS CASE ...
 python -m research.index_coupling.response.fusion_width NEW.jsonl
+python -m research.index_coupling.response.bench_prefix run NEW_DIRECTORY --revision YOUR_SOURCE_COMMIT
 ```
 
 - Archive commands default to the eight archived cases in `dag.CASES`.
@@ -60,10 +62,13 @@ current implementation plan.
   rejects context-invariant gaps, local-only interactions and simple curve
   shifts at M > 1. Its 84–88% hypothetical DP-work ceiling is not a speedup
   forecast. Different curve shapes do not prove computation cannot be shared.
-- **Open problem.** A cheap exact response or shared computation for fused
-  M > 1 groups remains unproved. Neither the tested closure nor the three
-  simple context-sharing structures establish it. Consolidate the existing
-  evidence before proposing another representation.
+- **Conditional prefix reuse.** The subsequent [bounded attempt](../WORK_ATTRIBUTION.md)
+  shares construction rather than equating full Residency curves: it keeps a
+  parent-span/cut contract and projects the prefix's context. Complete M8 root
+  generation improves 1.38×/1.58×, with 1,140 exact replays and higher RSS.
+  Numeric complete-state counts and loop choices remain unchanged. A cheap
+  direct constructor for general fused M>1 responses remains an open problem;
+  this result does not turn the earlier failed sharing structures into successes.
 - **Bounded group span.** The §19 diagnostic is complete: U_3 matches only
   20/193 M8-2 states whose spans actually exceed three operators (7.11% of
   that stratum's exclusive DP work). A shared row loop can span a long chain

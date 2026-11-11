@@ -349,3 +349,99 @@ This hoists repeated decision-dictionary construction out of numeric states.
 The projection-off control includes this same structural cache. Small oracle,
 boundary-contract and replay checks precede the frozen timing run; their work
 counters are not speedup measurements.
+
+### Completed result: modest positive full-root M8 acceleration
+
+Protocol `e116c2a3`, implementation frozen at `e7dc2720`. The default
+`graph/curve.py` is unchanged. `response/prefix.py` installs the opt-in
+recurrence; `response/bench_prefix.py` runs the frozen five arms. Artifacts:
+[results/prefix_sharing/](results/prefix_sharing/), including 100 uninstrumented
+timing records, 20 separate work records, source hashes and a recomputable summary.
+All executions are sequential fresh Python 3.10.12 processes on the same Linux
+server, with hash seed 0, alternating arm order, 60-second/6-GiB limits per arm.
+No arm times out. No implementation change follows the timing freeze.
+
+The 38 distinct complete root frontier points agree across all five methods.
+**1,140/1,140** root witnesses replay with exact traffic, peak and numerical
+execution. The prefix-only arms emit native notes directly: no placeholders,
+recovery solver or archived witness is used. The two unit-form arms include
+their usual native expansion in generation. Six targeted test methods cover
+literal partition enumeration, solve/group entry, external/internal residency,
+ownership, skipped-live-interval gaps, both tile domains, bounded capacity,
+spill options, unsupported guards, and unit-form composition. The local run
+also passed the seven existing unified-search tests; the six targeted methods
+passed again on the execution server before benchmarking.
+
+Five-round median **complete root mapping generation**, milliseconds:
+
+| Case | Native | Prefix, projection off | Prefix, projection on | On / native speedup | Existing unit forms | Unit + prefix |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| M8 FFN-1 | 64.67 | 51.63 | **46.96** | **1.38×** | 80.56 | 67.26 |
+| M8 FFN-2 | 312.35 | 248.77 | **197.71** | **1.58×** | 320.71 | 238.03 |
+| Tiny FFN-4 | 3,989.49 | 3,012.93 | 1,071.12 | 3.72× | **562.92** | **559.35** |
+| Mixed fork kki | 92.88 | 67.90 | **50.88** | **1.83×** | 95.89 | 53.89 |
+
+Installation and independent replay are separate from generation, as frozen.
+Prefix adapter installation costs about 13 ms. **Including installation**, the
+two M8 comparisons are 64.67→59.88 ms (**1.08×**) and 312.35→210.30 ms
+(**1.49×**). Installation-inclusive control speedups are 3.68× and 1.46×.
+Replaying every root point takes another 124–128 ms for M8-1 and 261–277 ms
+for M8-2 across the three native/prefix arms; it is validation, not free work
+included in the claimed generation ratios. Raw ranges are retained: native /
+shared generation is 63.85–70.33 / 46.05–47.30 ms for M8-1, and
+311.16–314.45 / 196.06–199.61 ms for M8-2.
+
+The gains have two sources, and must not all be assigned to projection.
+Backward evaluation, one final union prune per prefix, and cached structural
+transitions give 1.25× on both M8 cases **without** cross-context projection.
+Turning projection on gives a further **1.10× / 1.26×** over that control.
+The frozen combined implementation, rather than projection alone, achieves
+the 1.38× / 1.58× comparison with native.
+
+| Work counter | M8-1 native → shared | M8-2 native → shared |
+| --- | ---: | ---: |
+| Complete solve/group misses | 2,108 → **2,108** | 6,176 → **6,176** |
+| Loop choices | 5,578 → **5,578** | 15,636 → **15,636** |
+| Partition transitions | 3,770 → **2,582** (−31.51%) | 22,124 → **12,952** (−41.46%) |
+| Pareto candidates | 30,687 → **19,922** (−35.08%) | 218,960 → **106,845** (−51.20%) |
+| New cached prefix entries, projection off → on | 2,034 → 1,326 | 8,430 → 4,418 |
+
+The original complete responses still differ and are still constructed. What
+is shared is a sufficient intermediate response in their construction. This
+answers the earlier all-parent problem without removing one parent's edge:
+every caller of a projected prefix uses the same cached result. It is not a
+new equality between entire Residency curves, nor a reduction in original
+loop-choice count. The prefix cache is **additional** retained state; its
+entries must not be presented as a smaller replacement for the native cache.
+
+That extra storage is visible. Native→shared peak pre-replay RSS is
+20.25→22.91 MiB (M8-1), 27.19→35.82 MiB (M8-2), 40.12→77.12 MiB (tiny), and
+20.06→23.06 MiB (fork). Projection-off tiny reaches 149.06 MiB. Existing unit
+forms remain much faster and smaller on the tiny control. Combining reductions
+is not automatically beneficial: unit+prefix still loses to native on M8-1.
+No default dispatcher or automatic portfolio rule is inferred from these cases.
+
+For fixed parent span S and cut p, the new key keeps the full S and boundary
+bits but only prefix-used extents and resident/owned identities. Consequently,
+changes confined to future private weights or future-only rank extents do not
+multiply prefix construction. Full-span responses can still require all their
+distinct masks: there is **no polynomial-in-graph-size bound** or general-DNN
+scaling result here. The result is an executable, measured instance of sharing
+construction across different conditional responses, with a memory tradeoff.
+
+The predeclared primary criterion is met. Keep this as an opt-in result and
+retain the previous failed fixed-loop, closure and curve-shift experiments;
+this experiment does not reclassify them or justify expanding the search grammar.
+
+```sh
+python3 -m unittest research.index_coupling.test_prefix_sharing -v
+python3 -m research.index_coupling.response.bench_prefix run NEW_DIRECTORY --revision YOUR_SOURCE_COMMIT
+```
+
+For a single native-format query:
+
+```python
+from research.index_coupling.response.prefix import make_kernel
+solver, _ = make_kernel(projection=True)
+points = solver(graph, witness=True, partitions='dp', scalar_leaf='v2')
+```

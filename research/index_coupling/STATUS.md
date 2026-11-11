@@ -1,5 +1,15 @@
 # Index coupling: current status (entry point)
 
+**New bounded positive result:** [conditional prefix sharing, WORK_ATTRIBUTION.md §5](WORK_ATTRIBUTION.md)
+preserves all 38 root points with 1,140 exact replays. Five fresh-process rounds
+give **1.38× / 1.58× complete root mapping generation** on M8 FFN-1/2;
+including the opt-in AST adapter installation gives **1.08× / 1.49×**.
+The original solve/group misses and loop choices do not decrease; projected
+prefix reuse and cheaper partition construction reduce transitions and Pareto
+work. Memory increases. Existing unit forms remain better on tiny FFN-4, and
+combining them with prefix sharing hurts M8-1. Default solver unchanged; this
+is not a general-DNN scaling or hardware-execution speedup.
+
 **Current repository-wide assessment and priorities:**
 [research/OVERVIEW.md](../OVERVIEW.md), reviewed through `2c8050c6` on 2026-11-10.
 The bounded [loop-closure pilot](LOOP_CLOSURE_RESULTS.md) stopped without an M8
