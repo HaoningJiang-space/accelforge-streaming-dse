@@ -3,8 +3,22 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
+import subprocess
+from functools import lru_cache
 
 from .study import ARMS, CASES, compare, value
+
+
+@lru_cache(maxsize=None)
+def frozen_bytes(revision, source):
+    """Read the recorded source version, not a later working-tree revision."""
+    path = Path(source)
+    if (not re.fullmatch(r'[0-9a-f]{40}', revision) or path.is_absolute()
+            or '..' in path.parts):
+        raise ValueError('invalid frozen source reference')
+    repo = Path(__file__).resolve().parents[2]
+    return subprocess.check_output(['git', 'show', f'{revision}:{source}'], cwd=repo)
 
 
 def score(root):
@@ -15,7 +29,7 @@ def score(root):
             rows.append(dict(case=name, status=record['status']))
             continue
         for source, expected in record['source_sha256'].items():
-            if hashlib.sha256(Path(source).read_bytes()).hexdigest() != expected:
+            if hashlib.sha256(frozen_bytes(record['revision'], source)).hexdigest() != expected:
                 raise ValueError(f'source differs from frozen execution: {source}')
         arms = record['arms']
         reference = arms['native_all_orders']['frontier']

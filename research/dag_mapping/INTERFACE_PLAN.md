@@ -346,3 +346,91 @@ Review checks: the existing 13 prefix/boundary tests passed with
 `python3 -m unittest research.index_coupling.test_prefix_sharing research.dag_mapping.test_boundary`.
 The additional one-region scalar probe exposes an unhandled API generalization,
 not a passing new exactness test. No frozen D1 source or result was rewritten.
+
+## 7. Gate 1 implementation and bounded validation protocol
+
+This continuation adds `hierarchy.py`, a typed plan representation, flat-witness
+decoder/encoder and resource certificate checker. It does **not** select regions,
+search for plans, merge response states or prune candidates. It imports no native
+cost or search helpers. The independent cell executor remains the execution
+oracle; agreement with a second recurrence alone would not establish correct
+DRAM transactions or numerical outputs.
+
+The supported grammar is exact v2, a fixed topological single-writer order,
+halving or divisor tiles, `spill_cost=2`, `write_through=True`,
+`split_shared=True`, and corrected final-write ownership. No capacity rounding,
+layout conversion, alias, recomputation, arbitrary yield or asynchronous events
+are introduced. Closed queries can declare external tensors and owned writes;
+their reservations/paid transfers are excluded from the local response.
+
+**Representation theorem for this scope.** Let T_sigma be trees accepted by
+the checker at the given invocation, and N_sigma be the native generative v2
+grammar before dominated plans are removed. Decoding any N_sigma plan gives a
+T_sigma tree with the same resource pair; encoding any T_sigma tree gives an
+N_sigma plan with that pair. This is equality of the declared generative
+grammars, not physical optimality or a new compression theorem.
+
+Proof by normalized structural induction:
+
+1. A scalar singleton allocates its live operand cells; both entries give
+   `(|live|,0)`. A whole-parent multi-operator scalar part allocates the same
+   cells but has explicit Hold entry. The typed representation distinguishes
+   these from a scalar group that can repartition.
+2. At a solve Partition, contiguous child spans and the exact shared-tensor
+   decision set are identical in both representations. They induce identical
+   first/last reservation intervals and paid-write propagation. Apply induction
+   to each correctly typed child, then the same max/sum composition. The inverse
+   encoding uses those child spans and decisions as a native groups note.
+3. At a nonscalar group Loop, the common-domain, unfinished-intermediate and
+   declared-tile-domain guards are identical. The lacking-tensor keep/spill
+   sets agree. The body has the same span, a smaller extent, and the same updated
+   external/owned sets. Induction preserves its costs; adding held capacity,
+   spill/refetch traffic and multiplying child extra traffic by trips preserves
+   the enclosing costs. One uniform child repeats, just as in native grammar.
+4. Scalar group-to-solve delegation is normalized, and the trivial scalar part
+   ends in Hold. Proper scalar partitions reduce span length; nonscalar loops
+   reduce extent product; a nonscalar solve-to-whole-group call changes entry
+   phase. Thus the induction terminates and the two directions exhaust cases.
+
+Operator domains and global consumed/produced labels stay fixed. Compulsory
+input/output traffic is added once at the root. Equal canonical flat notes are
+also checked on roundtrip, so cost agreement does not conceal changed schedules.
+The proof assumes the implementation follows these rules; finite tests check
+that implementation without substituting for the structural argument.
+
+**The scalar one-region repair.** `RegionComposer.compose` now uses the Hold
+case when its only region is a whole-parent multi-operator scalar part. It no
+longer returns a repartitioned group response for that contract. A regression
+test checks empty and nonempty caller-resident sets against the native fixed
+root and executes the unconditional witness. D1's three-region arms are
+unaffected. Its original records remain immutable; `score.py` now verifies their
+source hashes against the recorded Git revision instead of the moving worktree.
+
+**Validation frozen before the server run:**
+
+- Reuse exactly D1's six cases, archived order families and four arms; no new
+  shapes or heuristic restrictions. Convert, re-encode, resource-check and
+  independently execute all 146 saved root witnesses.
+- Regenerate native v2 Cut DP for each archived global order. Check every
+  generated witness, then compare the all-order frontier with the complete
+  archived frontier at all breakpoints (exact point-set equality).
+- Preserve the `(5,32)` Fork–Join typed tree and per-tensor execution details.
+- Run the existing/new prefix, boundary and hierarchy tests (currently 24).
+  Six adversarial
+  categories cover omitted L scope, missing retention decision, unfinished
+  internal reduction, wrong tile domain, whole-scalar entry and changed order.
+- Run sequentially with hash seed 0, a 120-second / 2-GiB limit. Record source
+  hashes, input hashes, full generated witnesses and validation outcomes.
+  Failures stay failures; do not silently relax the checker to force equality.
+
+Commands (from a committed checkout):
+
+```sh
+python3 -m unittest research.index_coupling.test_prefix_sharing research.dag_mapping.test_boundary research.dag_mapping.test_hierarchy
+PYTHONHASHSEED=0 python3 -m research.dag_mapping.check_hierarchy --out FRESH_RESULT.json
+```
+
+The run measures representation correctness, not independent optimizer quality
+or search speed. A complete native frontier routed through this adapter remains
+a native result. Gate 2 still requires a useful conditional-equivalence theorem;
+arbitrary interleaving interfaces and state compression remain unimplemented.

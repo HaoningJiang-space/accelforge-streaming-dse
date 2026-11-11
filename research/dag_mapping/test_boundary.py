@@ -6,6 +6,16 @@ from .boundary import RegionComposer, boundary_description, compulsory, workload
 
 
 class BoundaryTests(unittest.TestCase):
+    def test_whole_scalar_part_uses_hold_instead_of_group_reentry(self):
+        graph, _ = workload('fork_join', (1, 1, 1, 1))
+        for external in ((), ('A',), ('X', 'U0')):
+            points = RegionComposer(graph, verify=True).compose((graph.ops,), external=external)
+            self.assertEqual(tuple(p[:2] for p in points), ((8-len(external), 0),))
+            self.assertEqual(points[0][2][-1], ('hold', graph.ops))
+        p, q, notes = RegionComposer(graph).compose((graph.ops,))[0]
+        actual = simulate(graph, notes, scalar_leaf='v2')
+        self.assertEqual((actual['peak'], actual['traffic']), (p, q+compulsory(graph, graph.sizes)))
+
     def test_scalar_join_keeps_caller_accounting_and_replays(self):
         graph, regions = workload('fork_join', (1, 2, 1, 1))
         composer = RegionComposer(graph, verify=True)

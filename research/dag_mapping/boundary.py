@@ -111,7 +111,8 @@ class RegionComposer:
         """Return EXTRA traffic, excluding caller reservations and root transfers.
 
 Exact only for these ordered sibling regions, their keep/DRAM decisions, and
-the unchanged group-entry grammar within each child. No loop spans the regions
+the native part entry within each child (including v2's whole-scalar Hold).
+No loop spans the regions
 unless the caller explicitly wraps this response with such a loop.
 """
         graph = self.graph
@@ -145,7 +146,14 @@ unless the caller explicitly wraps this response with such a loop.
             frontier = ((0, extra, (note,)),)
             for i, region in enumerate(regions):
                 across = sum(size(graph, t, sizes) for t in kept if users[t][0] <= i <= users[t][-1])
-                child = self.response(region, sizes, external | kept, child_owned)
+                live = graph.tensors(region) - external - kept
+                if (len(regions) == 1 and len(region) > 1
+                        and all(size(graph, t, sizes) == 1 for t in live)):
+                    # Native part_curve does not delegate a scalar whole-parent
+                    # part to group: doing so would silently allow repartition.
+                    child = ((len(live), 0, (('hold', region),)),)
+                else:
+                    child = self.response(region, sizes, external | kept, child_owned)
                 self.stats['join_candidates'] += len(frontier) * len(child)
                 frontier = pareto((max(p, across + c), q + t, w + v)
                                   for p, q, w in frontier for c, t, v in child)
