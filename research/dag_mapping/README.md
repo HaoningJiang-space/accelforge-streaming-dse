@@ -27,9 +27,17 @@ The plan's derivation review makes the solve/group/Hold grammar explicit,
 separates prefix-response reuse from continuation equivalence, and records a
 single-whole-region scalar corner not covered by D1's three-region protocol.
 
+[Gate 1 results](RESULTS.md#后续-gate-1带类型的层次表示通过验证): the typed hierarchy
+roundtrips and independently executes 146 archived plus 60 freshly generated
+witnesses; all six complete native frontiers agree and 24 tests pass. The scalar
+whole-part corner is repaired. This is representation/certification, not a new
+search algorithm, arbitrary-yield interface, or speedup result.
+
 ```sh
 python3 -m unittest research.dag_mapping.test_boundary
+python3 -m unittest research.dag_mapping.test_hierarchy
 PYTHONHASHSEED=0 python3 -m research.dag_mapping.study --out FRESH_DIRECTORY --revision SOURCE_COMMIT
+PYTHONHASHSEED=0 python3 -m research.dag_mapping.check_hierarchy --out FRESH_RESULT.json
 ```
 
 Continue method work directly on `research/main`. Hardware interface validation
