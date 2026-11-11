@@ -287,3 +287,56 @@ is old work actually removed versus **construction + all remaining queries +
 witness construction**, alongside any changed caller work. Counters locate
 that target; they do not establish that a cheap exact constructor exists.
 This interpretation introduces no new solver, experiment, or speedup claim.
+
+## 5. Attempt: share conditional partition prefixes (protocol before measurement)
+
+The requested implementation attempt targets an intermediate response that the
+current cache does not expose: the cut-DP prefix. Keep the original ordered
+parent span S and the terminal cut p in its key. At that cut, preserve each
+crossing tensor's keep/DRAM decision. Project extents, external residency and
+owned writes onto the operators/tensors of S[:p], using the existing projection
+rule. Do not merge different complete-state responses or consumer orders.
+
+Claim: for fixed S, p and cut decisions, the prefix frontier and a valid prefix
+witness depend only on this projected interface. Every transition in a partition
+ending at p touches tensors of S[:p]. Its carried reservations also touch that
+prefix; tensors used only later have no prefix allocation or traffic charged
+here. Caller allocations remain caller-owned. Induction on p preserves the
+transition costs, child group interfaces and Pareto envelope. The full span in
+the key preserves crossing incidence, global writer roles and the special v2
+whole-span hold branch. A backward memoized prefix recurrence can therefore
+share work across otherwise distinct complete Residency/extent contexts.
+
+This is a demand-driven implementation of joint conditional evaluation. It
+does not eagerly tabulate all masks, require equality of the complete curves,
+or recover witnesses by rerunning native search. The default solver is unchanged;
+an opt-in AST adapter replaces only cut_dp, reusing the original group recursion,
+costs and witness format. Initial scope: single-writer ordered graphs, grammar
+v2, exact frontiers, no root constraints or optional canonicalization. Both tile
+domains, solve/group entry, external residency and owned writes remain explicit.
+
+Before running performance comparisons, freeze these controls:
+
+- Native forward cut DP; backward prefix DP without context projection; backward
+  prefix DP with projection. The middle arm isolates recurrence-order overhead
+  from actual cross-context reuse. Also compare the existing unit-M substitution
+  with full witness expansion, and its combination with the same prefix adapter.
+- M8 FFN-1 and M8 FFN-2 are primary; tiny FFN-4 and mixed-role fork kki are
+  controls. Do not enlarge cases after a negative result to rescue the headline.
+- Complete root frontiers must agree. Replay every emitted root witness, including
+  unit-form expansion. Compare with literal partition enumeration on small chains,
+  forks, residuals and a branching control; exercise both entries and boundary
+  contexts. A failure blocks performance claims.
+- Report original solve/group misses, prefix cache entries/hits, actual partition
+  transitions and Pareto candidates separately. Prefix caching need not reduce
+  original whole-state misses. Count construction, queries and native-format
+  witness generation together; expansion belongs inside generation for unit forms.
+- Five fresh-process rounds, alternating arm order, fixed hash seed, 60 seconds
+  per arm. Report median complete generation and RSS, with adapter installation
+  separately. Instrumented work counts are separate from timed runs. No native
+  result or archived witness is input to the new search.
+- A useful primary result requires exactness and lower complete-generation time
+  on both M8 cases, with construction/replay costs visible. A win only over the
+  unprojected prototype is not a win over native. Freeze implementation before
+  these rounds; retain all measurements and do not start another algorithm if
+  the experiment fails.
