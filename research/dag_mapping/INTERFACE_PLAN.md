@@ -147,3 +147,202 @@ Do not increase graph size to mask a failed correctness or overhead gate.
 Actual ResNet/GLU extraction, FFM Event/cache candidate coverage, and hardware
 timing follow only after these gates. No choice of ordinary graph partitioner
 by itself resolves the boundary or nested-loop proof obligations.
+
+## 6. Derivation review: the precise statements to prove
+
+Checked against `curve.py`, `response/prefix.py`, and the archived D1 witness
+at `e7b9cd39`. These are proof annotations and bounded semantic probes, not a
+new partition algorithm or performance experiment.
+
+### Exactness needs two inequalities, not every original plan
+
+Fix a global order pi, tile domain, entry, v2 and all option flags. Define the
+value of an infeasible capacity query as infinity. A new search is exact if:
+
+1. Every returned witness is native-legal with its claimed costs (soundness).
+2. For every native plan there is a returned or representable plan with no
+   larger peak or traffic (coverage up to dominance).
+
+The first gives F_native <= F_new; the second gives the reverse inequality.
+Preserving every native syntax tree is sufficient but stronger than necessary.
+A certified analytic replacement can satisfy the second condition without
+enumerating every tree. If the reference unions several orders, both statements
+must use that same order family. Independently reordering each nested scope
+does not automatically belong to that family.
+
+### D1 identifies an omitted construct, not a universal necessary schedule
+
+The saved `(5,32)` witness has X row reservation 2, two scalar accumulators
+U0/U1, and one local C operand, giving peak 2+1+1+1=5. Join substitutes Y
+for that local operand; EX's own phase fits within 4. The outer I loop refetches
+B, C0 and C1, each of size 4, once: Q=20+3*4=32. No intermediate or partial
+sum reaches DRAM. Replaying the archived witness on the execution server
+reproduced these numbers, including the per-tensor counts in RESULTS.md.
+
+This proves the particular restricted grammar misses an optimum. It does not
+prove every native optimal witness must use this exact I/L/K tree. Restoring
+one witness proves representation of that point, not full-frontier coverage.
+
+### Fixed partitions: separability after the interface is fixed
+
+Let f_i(c) be the minimum *extra* traffic of the correct native child entry at
+capacity c, with infinity for infeasibility. For a fixed boundary policy K:
+
+    f_(regions,K)(C) = Q_boundary(K) + sum_i f_i(C - rho_i(K)).
+
+This is equivalent to the max/sum Pareto formula: max_i(rho_i+p_i)<=C iff
+every p_i<=C-rho_i. Independent minimization of the sum is then valid. The
+independence premise is substantive: child alternatives must have the same
+external data semantics, reservation lifetimes, ownership and exit guarantees.
+Otherwise a cheaper child may change another child's feasible set.
+
+Rho includes kept tensors even in an intervening region that does not access
+them. Ancestor-external reservations are excluded from the returned response
+and charged by the caller. Child compulsory terms must not be summed; the
+enclosing invocation's compulsory term is added once. Concatenation proves
+soundness, decomposition of any plan respecting these exact sibling boundaries
+proves coverage. It does not cover a loop crossing the sibling boundaries.
+
+There is an important **one-region scalar corner** in the diagnostic adapter.
+For the all-one Fork–Join, direct group entry can repartition and returns
+`{(3,2),(4,0)}` in extra-traffic units. A fixed single whole-parent group must
+instead use native `part_curve`'s v2 hold case, returning `{(8,0)}`. At the
+reviewed revision, `RegionComposer.compose((graph.ops,))` calls group entry
+directly and returns the former. Thus its general single-region extension is
+not an exact implementation of native fixed-root semantics. D1 always uses
+three regions, so this does not invalidate its archived comparisons. The
+frozen code/results are left unchanged; any generalized adapter must handle
+this hold case explicitly. A reproducer, also checked on the execution server:
+
+```python
+from research.dag_mapping.boundary import workload, RegionComposer, compulsory
+from research.index_coupling.graph.curve import curve
+g, _ = workload('fork_join', (1, 1, 1, 1))
+print([(p, q) for p, q, _ in RegionComposer(g).compose((g.ops,))])
+print([(p, q-compulsory(g, g.sizes)) for p, q in curve(
+    g, scalar_leaf='v2', partitions='dp', root_groups=(g.ops,), root_kept=())])
+```
+
+### Parent-frame equivalence is an equivalence of prefix computations
+
+Put A=T(P[:j]), B=T(P[j:]), H=T(S[p:]) and T(P)=A union B. Then
+
+    B_S(j) = A intersect (B union H)
+           = A intersect (B union (T(P) intersect H))
+           = A intersect (B union B_S(p)).
+
+This is a set identity, including shared graph inputs, not only DAG edges.
+To infer equal prefix recurrences, additionally preserve projected extents,
+resident/owned sets, exit decisions, writer classification and entry context.
+First uses and writers inside P come from P itself. A writer in the suffix
+needs a separate flag for the non-topological inputs accepted by the numeric
+core; that flag is empty for a valid topological single-writer order.
+Whole-parent versus proper-prefix status matters through the scalar hold rule.
+The implementation only interns proper prefixes, keeping full parents separate.
+
+Current caches live inside one graph/solver invocation: global tensor roles
+and option flags are shared closure data. Cross-graph reuse would need to carry
+or prove equality of those labels too. Inside one fixed order, actual parents
+are contiguous spans, not arbitrary subsequences.
+
+Equal frames imply equal *prefix construction responses*. Their suffixes can
+remain different and have different costs. This is not a theorem saying the
+two complete execution states have identical continuations. The latter is a
+separate requirement for merging execution histories.
+
+The premise that frame performance results are still pending is now outdated:
+WORK_ATTRIBUTION.md section 6 was archived at `e7b9cd39` (2,190 exact replays).
+Its incremental gains remain distinct from the older prefix-sharing results;
+one-layer M8 is within timing variation and mixed Fork slightly regresses.
+
+### Loop legality is hereditary; loop cost and optimality are not
+
+For a span S define M(S)=made(S) intersect read(S) and
+
+    Req_v(S) = {t in M(S): v not in dims(t)}.
+
+At fixed extents and R, the nonscalar group loop guard is exactly:
+
+    v in intersection_o D(o), extent_v > 1, Req_v(S) subseteq R.
+
+For S' contained in S, its common-domain intersection is a superset and
+M(S') is a subset of M(S). Therefore the guard remains true for S' with R
+projected to its tensors. The result applies to contiguous S' in the native
+grammar. It also shows increasing R can only enlarge this structural legal
+rank set. Neither conclusion compares resource costs: the lacking tensors,
+retention charges, parent reservations and children can change.
+
+All-scalar v2 states terminate/repartition instead of enumerating these loops;
+so downward closure of the structural guard is not the assertion that every
+child solver will actually enumerate the same loop. Precomputing common ranks
+and Req sets is safe; discarding non-maximal scopes is not justified. Native
+`loop_metadata` already caches common ranks and internal incidences, so the
+heredity proof alone is not a new search-work reduction.
+
+### An exact hierarchical representation needs a typed grammar
+
+Use solve S and group G entries, not an untyped arbitrary Plan tree:
+
+- A single-operator all-scalar entry is a leaf.
+- Solve chooses contiguous sibling partitions and their boundary decisions.
+  Children normally enter group. A single whole-parent, multi-operator,
+  all-scalar part instead becomes Hold(all live cells).
+- A nonscalar group must choose a guarded loop, a proper divisible tile and
+  its keep/spill mask; the body enters solve at the smaller extent.
+- An all-scalar multi-operator group has the scalar solve response: proper
+  partitions or the explicit whole-span Hold case.
+
+Each loop uses the native uniform child template across its trips. Its costs
+are `held + child_peak` and `refetch_or_spill + trips*child_extra_traffic`.
+The remaining global options and guards are inherited unchanged. Normalize
+scalar group-to-solve delegation and the trivial Hold case before induction;
+then proper partitions decrease span length, loops decrease the extent
+product, and a nonscalar whole-group entry decreases the entry phase.
+Constructor-by-constructor translation proves the two representations equal.
+It proves no search acceleration by itself.
+
+Within any one tree, scopes are nested, equal or disjoint (laminar); equal
+scopes occur for successive loops. The collection of candidate scopes across
+different trees need not be laminar. Preselecting one hierarchy can again
+exclude native mappings.
+
+### What sufficiency of a boundary key would actually mean
+
+For closed native subtree calls, the existing `(entry, ordered span, extents,
+R, W)` query plus fixed graph semantics already projects the ancestor context.
+Different ancestor stacks can share it: the caller owns repetition, reserved
+storage and boundary transfers. Retaining every ancestor frame in every cache
+key may destroy safe sharing without adding information needed by that query.
+
+For a yielded execution prefix, define concrete states and a projection
+alpha(x)=Theta before proposing equality. Loop frames must specify relevant
+cursors/control position, not just ranks and tile sizes. Boundary status must
+distinguish ready data from reserved/uninitialized cells and incomplete sums;
+remaining readers must be per tile when appropriate. Paid-write ownership is
+not the same as a valid DRAM copy or a dirty bit. Some fields can be derived
+from others, but that derivation must be stated rather than assumed.
+
+A sufficient proof obligation is a cost-preserving transition equivalence:
+equal projected states have equal termination/data guarantees; every enabled
+action in either state has a matching action in the other with the same
+observable effect, resource cost and projected successor. Induction over the
+finite remaining computation gives equal continuation responses. This is
+stronger than numerical agreement of standalone frontiers on sampled parents.
+
+With the same continuation contract and live-state costs, two histories
+`(p1,q1) <= (p2,q2)` can be pruned because, for every matching continuation
+`(p,q)`, `max(p1,p)<=max(p2,p)` and `q1+q<=q2+q`. Here continuation peaks
+include the retained footprint; an extra-scratch peak must first be shifted
+by that footprint. If regions interleave, use section 3's phase contract
+instead of collapsing their entire behavior into one pair.
+
+The verified building blocks are therefore a typed hierarchical recurrence,
+an observable-context projection, and monotone resource composition. The open
+algorithmic question is which projections share enough actual work to repay
+their construction and storage costs. Small graph cuts or laminar syntax
+alone provide no such bound.
+
+Review checks: the existing 13 prefix/boundary tests passed with
+`python3 -m unittest research.index_coupling.test_prefix_sharing research.dag_mapping.test_boundary`.
+The additional one-region scalar probe exposes an unhandled API generalization,
+not a passing new exactness test. No frozen D1 source or result was rewritten.

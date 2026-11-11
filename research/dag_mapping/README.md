@@ -23,6 +23,10 @@ optimizer. [Primary-source notes](RELATED_WORK_CHECK.md) avoid treating D1 as
 a counterexample to Welder or Crane; PolyMage 2020's full recurrence remains
 unverified because publisher/repository retrieval failed.
 
+The plan's derivation review makes the solve/group/Hold grammar explicit,
+separates prefix-response reuse from continuation equivalence, and records a
+single-whole-region scalar corner not covered by D1's three-region protocol.
+
 ```sh
 python3 -m unittest research.dag_mapping.test_boundary
 PYTHONHASHSEED=0 python3 -m research.dag_mapping.study --out FRESH_DIRECTORY --revision SOURCE_COMMIT
