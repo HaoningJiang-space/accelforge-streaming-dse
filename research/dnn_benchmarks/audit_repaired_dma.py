@@ -6,6 +6,7 @@ The C++ address unit test separately checks actual Simulator object code.
 import argparse,ast,hashlib,itertools,json,re
 from collections import Counter
 from pathlib import Path
+from .togsim_statistics import parse_completed_statistics
 
 
 def audit(run):
@@ -33,9 +34,13 @@ def audit(run):
     logs=list((run/'result/logs').glob('*.log'))
     if len(logs)!=1:raise ValueError('requires one timing log')
     log=logs[0].read_text();request=int(re.search(r'(\d+) bytes per request',log)[1])
-    observed=re.search(r'combined .*?\| (\d+) reads, (\d+) writes',log)
-    observed=dict(read=int(observed[1]),write=int(observed[2]))
-    inst_observed={d:int(re.search(rf'{op}\s+inst_count: (\d+)',log)[1]) for d,op in [('read','MOVIN'),('write','MOVOUT')]}
+    hardware=(run/'result/hardware.yml').read_text()
+    channels=int(re.search(r'^dram_channels: (\d+)$',hardware,re.MULTILINE)[1])
+    if int(re.search(r'^num_cores: (\d+)$',hardware,re.MULTILINE)[1])!=1:
+        raise ValueError('auditor currently supports one core')
+    statistics=parse_completed_statistics(log,channels)
+    observed=statistics['observed_transactions']
+    inst_observed=statistics['observed_dma']
     m,n,k=result['shape'];sizes=dict(arg0=m*k,arg1=k*n,arg2=m*n)
     transactions=Counter();visits=Counter();cells=Counter();outputs=Counter();tags={};skipped=0
     # Each tag maps to its precise region; tag reuse must never suppress a
@@ -80,7 +85,7 @@ def audit(run):
         emitted_dma=dict(visits),observed_dma=inst_observed,tag_reused_loads=skipped,
         useful_cells=dict(cells),useful_bytes=4*sum(cells.values()),expected_transactions=dict(transactions),observed_transactions=observed,
         transaction_bytes={d:v*request for d,v in transactions.items()},output_written_once=once,transactions_match=tx_match,instruction_counts_match=inst_match,
-        expected_address_stream_sha256=address_hash.hexdigest(),total_cycles=int(re.search(r'Total execution cycles: (\d+)',log)[1]),
+        expected_address_stream_sha256=address_hash.hexdigest(),total_cycles=statistics['total_cycles'],statistics=statistics,
         float_array_cells_per_lane=arrays,float_array_reserved_bytes=4*lanes*sum(arrays.values()),
         reservation_caveat='Static three-buffer reservation, not full peak including tags and overlap buffers',
         timing_accepted=accepted,timing_acceptance_scope='Internal repaired-backend pilot consistency only; no hardware calibration or whole-DNN claim')

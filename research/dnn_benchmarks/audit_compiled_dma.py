@@ -12,6 +12,7 @@ import hashlib
 import itertools
 import json
 from pathlib import Path
+from .togsim_statistics import parse_completed_statistics
 import re
 
 
@@ -36,8 +37,12 @@ def audit(run,source):
     log=logs[0].read_text()
     request_bytes=int(re.search(r'(\d+) bytes per request',log)[1])
     if request_bytes&(request_bytes-1):raise ValueError('requires power-of-two transaction size')
-    observed=re.search(r'combined .*?\| (\d+) reads, (\d+) writes',log)
-    observed=dict(read=int(observed[1]),write=int(observed[2]))
+    hardware=(run/'result/hardware.yml').read_text()
+    channels=int(re.search(r'^dram_channels: (\d+)$',hardware,re.MULTILINE)[1])
+    if int(re.search(r'^num_cores: (\d+)$',hardware,re.MULTILINE)[1])!=1:
+        raise ValueError('auditor currently supports one core')
+    statistics=parse_completed_statistics(log,channels)
+    observed=statistics['observed_transactions']
     expected=Counter();ported=Counter();cells=Counter();visits=Counter();mismatches=0;examples=[]
     m,n,k=result['shape'];sizes=dict(arg0=m*k,arg1=k*n,arg2=m*n)
     seen_outputs=Counter()
@@ -77,7 +82,7 @@ def audit(run,source):
         dma_visits=dict(visits),useful_cells=dict(cells),useful_bytes=4*sum(cells.values()),
         output_elements_written_once=(len(seen_outputs)==m*n and set(seen_outputs.values())=={1}),
         correct_byte_address_transactions=dict(expected),ported_backend_transactions=dict(ported),
-        observed_dram_transactions=observed,ported_expression_matches_logged_counts=dict(ported)==observed,
+        observed_dram_transactions=observed,statistics=statistics,ported_expression_matches_logged_counts=dict(ported)==observed,
         addressed_cells_differing_from_byte_contract=mismatches,examples=examples,
         generated_float_array_cells_per_lane=float_arrays,lanes=lanes,
         three_float_arrays_reserved_bytes=4*lanes*sum(float_arrays.values()),
