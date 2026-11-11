@@ -50,8 +50,8 @@ now accepts exact infeasibility checks, conditional independent-op splitting
 and ordered remainder isomorphism together. It keeps native rank/tensor witness
 restoration and checks numeric child feasibility before constructing the prefix.
 This is integration of existing reductions, not a new DAG equivalence theorem.
-The analytic placeholder interface, specialized Fork quotient and offline C2
-analysis are explicitly outside this combination; defaults stay unchanged.
+The specialized Fork quotient and offline C2 analysis remain separate;
+defaults stay unchanged. The first matrix did not combine analytic placeholders.
 
 ```python
 from research.index_coupling.response.prefix import make_kernel
@@ -73,6 +73,33 @@ still has a lower median. Remainder normalization gives about 5.7× on the
 rank-symmetric single-op control but slows the tested DAGs. All-on is not best;
 the complete eleven-arm matrix and costs are retained, and defaults stay off.
 
+[Analytic follow-up protocol](INTERFACE_PLAN.md#10-analytic-responses-with-transported-witnesses)
+extends the opt-in interface: a renamed analytic placeholder retains its source
+registry key and accumulated operator/tensor/rank map. Recovery constructs the
+source witness, then maps it to the caller. It supports p/i/r together with the
+existing Unit-M and scalar-separator providers under exact unlimited v2 default
+costs. The shared-response pool remains outside this combination.
+
+```python
+from research.dag_mapping.reuse import RegionSession
+
+session = RegionSession(graph, unit=True, certificate=True, reductions=True)
+points = [(c, q, session.recover(notes))
+          for c, q, notes in session.query(prune_infeasible_groups=True)]
+```
+
+`recover()` produces native executable notes; its work belongs in complete
+mapping-generation time. The compiled experimental adapter handles placeholder
+transport, while production `curve.py` stays unchanged.
+
+[Analytic composition results](RESULTS.md#解析响应组合续验见证接口接通收益没有继续叠加):
+330 server tasks, 1,365 per-order frontier comparisons, 2,310 root replays and
+63 tests pass. There are 200 transported analytic placeholders in saved root
+plans, including actual DAGs. No new combination beats the fastest declared
+old configuration on these cases. In FFN-4, analytic substitution has already
+removed every empty transition that the precheck could skip: 1,526 checks yield
+zero skips. The interface works, but the two separate gains do not multiply.
+
 ```sh
 python3 -m unittest research.dag_mapping.test_boundary
 python3 -m unittest research.dag_mapping.test_hierarchy
@@ -83,6 +110,9 @@ python3 -m research.dag_mapping.summarize_reuse research/dag_mapping/results/reu
 python3 -m unittest research.index_coupling.test_prefix_reductions
 python3 -m research.dag_mapping.bench_composition run --out FRESH_DIRECTORY --revision SOURCE_COMMIT
 python3 -m research.dag_mapping.summarize_composition research/dag_mapping/results/composition --out FRESH_SUMMARY.json
+python3 -m unittest research.index_coupling.test_analytic_composition
+python3 -m research.dag_mapping.bench_analytic_composition run --out FRESH_DIRECTORY --revision SOURCE_COMMIT
+python3 -m research.dag_mapping.summarize_composition research/dag_mapping/results/analytic_composition --out FRESH_SUMMARY.json
 ```
 
 Continue method work directly on `research/main`. Hardware interface validation

@@ -20,6 +20,7 @@ def summarize(root):
     records = {name: json.loads((root/name).read_text()) for name in sorted(expected)}
     sources = {}
     replay_count = comparison_count = 0
+    placeholders = transported = 0
     for name, record in records.items():
         if record['revision'] != revision or record['status'] != 'complete':
             raise ValueError(f'failed/unfrozen record: {name}')
@@ -50,9 +51,13 @@ def summarize(root):
             if replay['point'] != point or not actual['valid'] or [actual['peak'], actual['traffic']] != point:
                 raise ValueError(f'execution mismatch: {name}')
             replay_count += 1
+        placeholders += record.get('selected_exact_placeholders', 0)
+        transported += record.get('selected_transported_placeholders', 0)
 
     result = dict(revision=revision, records=len(records), source_files=len(sources),
                   full_order_comparisons=comparison_count, root_replays=replay_count,
+                  selected_exact_placeholders=placeholders,
+                  selected_transported_placeholders=transported,
                   all_frontiers_equal=True, cases={},
                   scorer_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
     for case in cases:
@@ -63,16 +68,25 @@ def summarize(root):
             table[arm] = dict(generation_median=statistics.median(generation),
                               generation_range=[min(generation), max(generation)],
                               inclusive_median=statistics.median(row['inclusive_seconds'] for row in times),
+                              recovery_median=statistics.median(row['recovery_seconds'] for row in times),
                               peak_rss_mib=statistics.median(row['pre_replay_peak_rss_kib']/1024 for row in times),
                               work=records[f'{case}_{arm}_work.json']['work'])
-        old = min(('native', 'native_p', 'prefix', 'analytic'), key=lambda arm: table[arm]['generation_median'])
-        best_new = min((arm for arm in arms if arm.startswith('prefix_')),
+        old = min(manifest.get('old_arms', ('native', 'native_p', 'prefix', 'analytic')),
+                  key=lambda arm: table[arm]['generation_median'])
+        best_new = min(manifest.get('new_arms', [arm for arm in arms if arm.startswith('prefix_')]),
                        key=lambda arm: table[arm]['generation_median'])
         for arm, row in table.items():
             row.update(speedup_vs_prefix=table['prefix']['generation_median']/row['generation_median'],
                        speedup_vs_best_old=table[old]['generation_median']/row['generation_median'],
-                       speedup_vs_native=table['native']['generation_median']/row['generation_median'],
+                       speedup_vs_native=table['native']['generation_median']/row['generation_median'] if 'native' in table else None,
+                       speedup_vs_analytic=table['analytic']['generation_median']/row['generation_median'],
                        rss_ratio_vs_prefix=row['peak_rss_mib']/table['prefix']['peak_rss_mib'],
+                       paired_wins_vs_analytic=sum(records[f'{case}_{arm}_{r}.json']['generation_seconds'] <
+                                                   records[f'{case}_analytic_{r}.json']['generation_seconds']
+                                                   for r in range(rounds)),
+                       paired_wins_vs_best_old=sum(records[f'{case}_{arm}_{r}.json']['generation_seconds'] <
+                                                   records[f'{case}_{old}_{r}.json']['generation_seconds']
+                                                   for r in range(rounds)),
                        paired_wins_vs_prefix=sum(records[f'{case}_{arm}_{r}.json']['generation_seconds'] <
                                                  records[f'{case}_prefix_{r}.json']['generation_seconds']
                                                  for r in range(rounds)))

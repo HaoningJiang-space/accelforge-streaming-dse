@@ -1,0 +1,48 @@
+{
+  "revision": "ce7473b8",
+  "cases": [
+    "two_stage_join",
+    "asymmetric_join",
+    "mixed_join",
+    "ffn4",
+    "ancestor8"
+  ],
+  "arms": [
+    "prefix",
+    "prefix_p",
+    "prefix_i",
+    "prefix_r",
+    "analytic",
+    "analytic_none",
+    "analytic_p",
+    "analytic_i",
+    "analytic_r",
+    "analytic_pi",
+    "analytic_pr",
+    "analytic_ir",
+    "analytic_pir"
+  ],
+  "rounds": 3,
+  "worker_seconds": 180,
+  "memory_gib": 4,
+  "hash_seed": "0",
+  "old_arms": [
+    "prefix",
+    "prefix_p",
+    "prefix_i",
+    "prefix_r",
+    "analytic"
+  ],
+  "new_arms": [
+    "analytic_none",
+    "analytic_p",
+    "analytic_i",
+    "analytic_r",
+    "analytic_pi",
+    "analytic_pr",
+    "analytic_ir",
+    "analytic_pir"
+  ],
+  "policy": "exact unlimited v2 default costs; halving; certified order representatives",
+  "primary_comparison": "analytic plus precheck versus old analytic on ffn4; descriptive fixed matrix"
+}

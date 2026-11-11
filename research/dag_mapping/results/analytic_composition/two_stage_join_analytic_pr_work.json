@@ -1,0 +1,3583 @@
+{
+  "case": "two_stage_join",
+  "arm": "analytic_pr",
+  "mode": "work",
+  "revision": "ce7473b8",
+  "python": "3.10.12",
+  "hash_seed": "0",
+  "source_sha256": {
+    "research/dag_mapping/INTERFACE_PLAN.md": "817b62dce4f4ed7e0023678e9ba48325d5d6072dfdc308c5c584c29fa3819b52",
+    "research/dag_mapping/bench_analytic_composition.py": "0e1b7b8fc7bb6dd2e83ed2e625beb72e8e0a6e258ad2c0b1c57b501b33603b49",
+    "research/dag_mapping/bench_composition.py": "276006cb829450a3596c95c61f90259ae44c147cb2079bd540fab94751446c24",
+    "research/dag_mapping/bench_reuse.py": "ec318f61e1d2802bfb38836aed75c2a9b69f5381740b5b83bcc6e1378bacbb3f",
+    "research/dag_mapping/boundary.py": "06d903acc0e8ad223e71688520af8a210ff447e5d3ce4a3bbd9b29ef66022a08",
+    "research/dag_mapping/hierarchy.py": "30bf509d54c1de1d8472e5da40793093c99e567bdb3d89e8b57355e35759bacd",
+    "research/dag_mapping/reuse.py": "708425b196e3832d11f67bd3d5164814f9d83e4da00c379be8d50508a7c763ea",
+    "research/dag_mapping/test_reuse.py": "123a517b4581f8a06f5642a2abe7f7e72701b556a94817b18f0ff55e985cbea1",
+    "research/index_coupling/graph/branch_symmetry.py": "0cfd1c44a611ba8cde83315303ee4d4ec6b965c76bdeeccc1a4b9c5d40dcfd1f",
+    "research/index_coupling/graph/curve.py": "a0af2842f6b5fbb5028c0affce710f194ad28a8df0002702bb4939b1f9045e49",
+    "research/index_coupling/graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "research/index_coupling/graph/remainder.py": "abb659434ccbf677161e556e56fc55186c69eef6638f20b8a9393d4330ffa181",
+    "research/index_coupling/graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "research/index_coupling/graph/stacks.py": "ec036a78514ccd85cd46ea20066f1d6d0a727de8c04c76f0d1cad02b90ce9d3b",
+    "research/index_coupling/response/chains.py": "7711caeff1aae3a494e8324f07bc47e204a726f765c2694eb66f7552335fe2ca",
+    "research/index_coupling/response/forms.py": "6d15bf28c287df252b9d05f5e4b31f03e94272ca9e7b222c1b4a64d5b8daf59a",
+    "research/index_coupling/response/prefix.py": "0dc521229ce1bf80d4cca2f3e1d2d09a738b492fb59bc263f53bd37d8d3e3263",
+    "research/index_coupling/response/substitution.py": "1acd7bd4884e1d8846f576f144ca3eecb59b7e6e31fd4e8a26ceaeaf0d6e55ff",
+    "research/index_coupling/run_ancestor_width.py": "bb50940a230d1320c2984f1ff9b40cc98ffb3db6bcaaaac55bc77c163992d0f4",
+    "research/index_coupling/simulate_nest.py": "7e9983a34b2d4caa249a1c5f435cae7271f20ed5dc599d8fe748f4b1753eeff4",
+    "research/index_coupling/test_analytic_composition.py": "91020d50cb19994d97ab8baf0f173e2abc6219c337ed0b10e6755c654555bc55",
+    "research/index_coupling/test_prefix_reductions.py": "188bacbc8b22471bc32868ac1c7633f6511d14d17bd4c05480adce476d63bfa5",
+    "research/index_coupling/unified_search.py": "1bc942bd32e6579921df4d07c317f9fcc11ba572ce52bd0b3e51672c020402b8"
+  },
+  "all_orders": 6,
+  "searched_orders": 3,
+  "automorphisms": 2,
+  "setup_seconds": 0.028190931072458625,
+  "generation_seconds": 2.5887659951113164,
+  "inclusive_seconds": 2.616956926183775,
+  "recovery_seconds": 0.0014885079581290483,
+  "replay_seconds": 0.026091200998052955,
+  "pre_replay_peak_rss_kib": 52432,
+  "frontier": [
+    [
+      3,
+      100
+    ],
+    [
+      4,
+      72
+    ],
+    [
+      5,
+      60
+    ],
+    [
+      6,
+      56
+    ],
+    [
+      7,
+      48
+    ],
+    [
+      9,
+      40
+    ],
+    [
+      11,
+      36
+    ],
+    [
+      13,
+      28
+    ]
+  ],
+  "order_frontiers": [
+    {
+      "order": [
+        "EX",
+        "E0",
+        "H0",
+        "E1",
+        "H1",
+        "Join"
+      ],
+      "frontier": [
+        [
+          3,
+          100
+        ],
+        [
+          4,
+          76
+        ],
+        [
+          5,
+          64
+        ],
+        [
+          6,
+          56
+        ],
+        [
+          7,
+          48
+        ],
+        [
+          9,
+          44
+        ],
+        [
+          10,
+          40
+        ],
+        [
+          11,
+          36
+        ],
+        [
+          13,
+          28
+        ]
+      ]
+    },
+    {
+      "order": [
+        "EX",
+        "E0",
+        "E1",
+        "H0",
+        "H1",
+        "Join"
+      ],
+      "frontier": [
+        [
+          3,
+          100
+        ],
+        [
+          4,
+          72
+        ],
+        [
+          5,
+          60
+        ],
+        [
+          6,
+          56
+        ],
+        [
+          7,
+          48
+        ],
+        [
+          9,
+          40
+        ],
+        [
+          11,
+          36
+        ],
+        [
+          13,
+          28
+        ]
+      ]
+    },
+    {
+      "order": [
+        "EX",
+        "E0",
+        "E1",
+        "H1",
+        "H0",
+        "Join"
+      ],
+      "frontier": [
+        [
+          3,
+          100
+        ],
+        [
+          4,
+          72
+        ],
+        [
+          5,
+          60
+        ],
+        [
+          6,
+          56
+        ],
+        [
+          7,
+          48
+        ],
+        [
+          9,
+          40
+        ],
+        [
+          11,
+          36
+        ],
+        [
+          13,
+          28
+        ]
+      ]
+    }
+  ],
+  "witnesses": [
+    {
+      "order": [
+        "EX",
+        "E0",
+        "H0",
+        "E1",
+        "H1",
+        "Join"
+      ],
+      "notes": [
+        [
+          "groups",
+          [
+            [
+              "EX",
+              "E0",
+              "H0",
+              "E1",
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX",
+            "E0",
+            "H0",
+            "E1",
+            "H1",
+            "Join"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "B",
+            "C0",
+            "C1",
+            "D0",
+            "D1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ],
+            [
+              "E0",
+              "H0",
+              "E1"
+            ],
+            [
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "U1",
+            "V0",
+            "X"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "A"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "J",
+          "tile 1 x2",
+          "kept",
+          [
+            "X"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0",
+            "H0",
+            "E1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "V0",
+            "X"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "E0"
+            ],
+            [
+              "H0"
+            ],
+            [
+              "E1"
+            ]
+          ],
+          "kept",
+          [
+            "U0"
+          ],
+          "via DRAM",
+          [
+            "X"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "E0"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [
+            "U1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1",
+            "Join"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "U1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "H1"
+            ],
+            [
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "V1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    },
+    {
+      "order": [
+        "EX",
+        "E0",
+        "E1",
+        "H0",
+        "H1",
+        "Join"
+      ],
+      "notes": [
+        [
+          "groups",
+          [
+            [
+              "EX",
+              "E0",
+              "E1",
+              "H0",
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX",
+            "E0",
+            "E1",
+            "H0",
+            "H1",
+            "Join"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "B",
+            "C0",
+            "C1",
+            "D0",
+            "D1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ],
+            [
+              "E0",
+              "E1"
+            ],
+            [
+              "H0",
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "X"
+          ],
+          "via DRAM",
+          [
+            "U0",
+            "U1"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "J",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [
+            "A"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0",
+            "E1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E0"
+            ],
+            [
+              "E1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [
+            "U0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [
+            "U1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0",
+            "H1",
+            "Join"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "U0",
+            "U1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "H0",
+              "H1"
+            ],
+            [
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "V0",
+            "V1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0",
+            "H1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "H0"
+            ],
+            [
+              "H1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ]
+      ]
+    },
+    {
+      "order": [
+        "EX",
+        "E0",
+        "E1",
+        "H0",
+        "H1",
+        "Join"
+      ],
+      "notes": [
+        [
+          "groups",
+          [
+            [
+              "EX",
+              "E0",
+              "E1",
+              "H0",
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX",
+            "E0",
+            "E1",
+            "H0",
+            "H1",
+            "Join"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "B",
+            "C0",
+            "C1",
+            "D0",
+            "D1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ],
+            [
+              "E0"
+            ],
+            [
+              "E1"
+            ],
+            [
+              "H0",
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "U1",
+            "X"
+          ],
+          "via DRAM",
+          [
+            "U0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "J",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [
+            "A"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [
+            "U0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0",
+            "H1",
+            "Join"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "U0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "H0"
+            ],
+            [
+              "H1"
+            ],
+            [
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "V0",
+            "V1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    },
+    {
+      "order": [
+        "EX",
+        "E0",
+        "H0",
+        "E1",
+        "H1",
+        "Join"
+      ],
+      "notes": [
+        [
+          "groups",
+          [
+            [
+              "EX",
+              "E0",
+              "H0",
+              "E1",
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX",
+            "E0",
+            "H0",
+            "E1",
+            "H1",
+            "Join"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "B",
+            "C0",
+            "C1",
+            "D0",
+            "D1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX",
+              "E0"
+            ],
+            [
+              "H0"
+            ],
+            [
+              "E1"
+            ],
+            [
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "U0",
+            "U1",
+            "V0"
+          ],
+          "via DRAM",
+          [
+            "X"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EX",
+            "E0"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [
+            "A"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ],
+            [
+              "E0"
+            ]
+          ],
+          "kept",
+          [
+            "X"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "J",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "H0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [
+            "X"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1",
+            "Join"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "H1"
+            ],
+            [
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "V1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    },
+    {
+      "order": [
+        "EX",
+        "E0",
+        "H0",
+        "E1",
+        "H1",
+        "Join"
+      ],
+      "notes": [
+        [
+          "groups",
+          [
+            [
+              "EX",
+              "E0",
+              "H0",
+              "E1",
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX",
+            "E0",
+            "H0",
+            "E1",
+            "H1",
+            "Join"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "B",
+            "C0",
+            "C1",
+            "D0",
+            "D1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ],
+            [
+              "E0",
+              "H0"
+            ],
+            [
+              "E1"
+            ],
+            [
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "U1",
+            "V0",
+            "X"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "J",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [
+            "A"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0",
+            "H0"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E0"
+            ],
+            [
+              "H0"
+            ]
+          ],
+          "kept",
+          [
+            "U0"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1",
+            "Join"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "H1"
+            ],
+            [
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "V1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    },
+    {
+      "order": [
+        "EX",
+        "E0",
+        "E1",
+        "H0",
+        "H1",
+        "Join"
+      ],
+      "notes": [
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ],
+            [
+              "E0"
+            ],
+            [
+              "E1"
+            ],
+            [
+              "H0",
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "U1",
+            "X"
+          ],
+          "via DRAM",
+          [
+            "U0"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "J",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [
+            "B"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [
+            "C0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0",
+            "H1",
+            "Join"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "U0"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "H0"
+            ],
+            [
+              "H1"
+            ],
+            [
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "V0",
+            "V1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "H0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [
+            "D0"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "Join"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    },
+    {
+      "order": [
+        "EX",
+        "E0",
+        "H0",
+        "E1",
+        "H1",
+        "Join"
+      ],
+      "notes": [
+        [
+          "groups",
+          [
+            [
+              "EX",
+              "E0"
+            ],
+            [
+              "H0"
+            ],
+            [
+              "E1"
+            ],
+            [
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "U0",
+            "U1",
+            "V0"
+          ],
+          "via DRAM",
+          [
+            "X"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "EX",
+            "E0"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [
+            "A"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ],
+            [
+              "E0"
+            ]
+          ],
+          "kept",
+          [
+            "X"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "J",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "H0"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [
+            "C1"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1",
+            "Join"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "H1"
+            ],
+            [
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "V1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "Join"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    },
+    {
+      "order": [
+        "EX",
+        "E0",
+        "H0",
+        "E1",
+        "H1",
+        "Join"
+      ],
+      "notes": [
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ],
+            [
+              "E0",
+              "H0"
+            ],
+            [
+              "E1"
+            ],
+            [
+              "H1",
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "U1",
+            "V0",
+            "X"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "J",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "EX"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "EX"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [
+            "B"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0",
+            "H0"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E0"
+            ],
+            [
+              "H0"
+            ]
+          ],
+          "kept",
+          [
+            "U0"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E0"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H0"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "K",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "E1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "E1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1",
+            "Join"
+          ],
+          "N",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "H1"
+            ],
+            [
+              "Join"
+            ]
+          ],
+          "kept",
+          [
+            "V1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "H1"
+          ],
+          "L",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "Join"
+          ],
+          "I",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    }
+  ],
+  "replays": [
+    {
+      "point": [
+        3,
+        100
+      ],
+      "actual": {
+        "peak": 3,
+        "reads": {
+          "A": 8,
+          "B": 8,
+          "C0": 8,
+          "C1": 8,
+          "D0": 8,
+          "D1": 8,
+          "U1": 8,
+          "V0": 8,
+          "X": 16
+        },
+        "writes": {
+          "U1": 4,
+          "V0": 8,
+          "X": 4,
+          "Y": 4
+        },
+        "traffic": 100,
+        "partial_reads": {
+          "V0": 4
+        },
+        "partial_writes": {
+          "V0": 4
+        },
+        "peak_by_tensor": {
+          "A": 1,
+          "B": 1,
+          "X": 1
+        },
+        "steps": 44,
+        "consumer_checks": 88,
+        "outputs_checked": 4,
+        "valid": true
+      }
+    },
+    {
+      "point": [
+        4,
+        72
+      ],
+      "actual": {
+        "peak": 4,
+        "reads": {
+          "A": 4,
+          "B": 8,
+          "C0": 8,
+          "C1": 8,
+          "D0": 8,
+          "D1": 8,
+          "U0": 8,
+          "U1": 8
+        },
+        "writes": {
+          "U0": 4,
+          "U1": 4,
+          "Y": 4
+        },
+        "traffic": 72,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "A": 1,
+          "B": 1,
+          "X": 2
+        },
+        "steps": 44,
+        "consumer_checks": 88,
+        "outputs_checked": 4,
+        "valid": true
+      }
+    },
+    {
+      "point": [
+        5,
+        60
+      ],
+      "actual": {
+        "peak": 5,
+        "reads": {
+          "A": 4,
+          "B": 8,
+          "C0": 8,
+          "C1": 8,
+          "D0": 8,
+          "D1": 8,
+          "U0": 8
+        },
+        "writes": {
+          "U0": 4,
+          "Y": 4
+        },
+        "traffic": 60,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "C1": 1,
+          "U1": 2,
+          "X": 2
+        },
+        "steps": 44,
+        "consumer_checks": 88,
+        "outputs_checked": 4,
+        "valid": true
+      }
+    },
+    {
+      "point": [
+        6,
+        56
+      ],
+      "actual": {
+        "peak": 6,
+        "reads": {
+          "A": 4,
+          "B": 8,
+          "C0": 8,
+          "C1": 8,
+          "D0": 8,
+          "D1": 8,
+          "X": 4
+        },
+        "writes": {
+          "X": 4,
+          "Y": 4
+        },
+        "traffic": 56,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "A": 2,
+          "B": 1,
+          "U0": 2,
+          "X": 1
+        },
+        "steps": 44,
+        "consumer_checks": 88,
+        "outputs_checked": 4,
+        "valid": true
+      }
+    },
+    {
+      "point": [
+        7,
+        48
+      ],
+      "actual": {
+        "peak": 7,
+        "reads": {
+          "A": 4,
+          "B": 8,
+          "C0": 8,
+          "C1": 8,
+          "D0": 8,
+          "D1": 8
+        },
+        "writes": {
+          "Y": 4
+        },
+        "traffic": 48,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "C1": 1,
+          "U1": 2,
+          "V0": 2,
+          "X": 2
+        },
+        "steps": 44,
+        "consumer_checks": 88,
+        "outputs_checked": 4,
+        "valid": true
+      }
+    },
+    {
+      "point": [
+        9,
+        40
+      ],
+      "actual": {
+        "peak": 9,
+        "reads": {
+          "A": 4,
+          "B": 4,
+          "C0": 4,
+          "C1": 4,
+          "D0": 4,
+          "D1": 4,
+          "U0": 8
+        },
+        "writes": {
+          "U0": 4,
+          "Y": 4
+        },
+        "traffic": 40,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "C1": 1,
+          "U1": 4,
+          "X": 4
+        },
+        "steps": 44,
+        "consumer_checks": 88,
+        "outputs_checked": 4,
+        "valid": true
+      }
+    },
+    {
+      "point": [
+        11,
+        36
+      ],
+      "actual": {
+        "peak": 11,
+        "reads": {
+          "A": 4,
+          "B": 4,
+          "C0": 4,
+          "C1": 4,
+          "D0": 4,
+          "D1": 4,
+          "X": 4
+        },
+        "writes": {
+          "X": 4,
+          "Y": 4
+        },
+        "traffic": 36,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "A": 4,
+          "B": 1,
+          "U0": 4,
+          "X": 2
+        },
+        "steps": 44,
+        "consumer_checks": 88,
+        "outputs_checked": 4,
+        "valid": true
+      }
+    },
+    {
+      "point": [
+        13,
+        28
+      ],
+      "actual": {
+        "peak": 13,
+        "reads": {
+          "A": 4,
+          "B": 4,
+          "C0": 4,
+          "C1": 4,
+          "D0": 4,
+          "D1": 4
+        },
+        "writes": {
+          "Y": 4
+        },
+        "traffic": 28,
+        "partial_reads": {},
+        "partial_writes": {},
+        "peak_by_tensor": {
+          "C1": 1,
+          "U1": 4,
+          "V0": 4,
+          "X": 4
+        },
+        "steps": 44,
+        "consumer_checks": 88,
+        "outputs_checked": 4,
+        "valid": true
+      }
+    }
+  ],
+  "selected_exact_placeholders": 12,
+  "selected_transported_placeholders": 7,
+  "recovery_contexts": 6,
+  "work": {
+    "dp_transitions": 40061,
+    "loop_choices": 10831,
+    "pareto_candidates": 175255,
+    "independent_splits": 0,
+    "renamed_calls": 12493,
+    "rename_nodes": 13521,
+    "group_prechecks": 85614,
+    "empty_group_skips": 5709,
+    "prefix_infeasible_skips": 5709,
+    "retention_batches_skipped": 0,
+    "exact_checks": 4050,
+    "exact_hits": 151,
+    "separator_checks": 4701,
+    "separator_hits": 651,
+    "response_bodies": 7339,
+    "prefix_entries": 7879,
+    "remainder_seconds": 1.1233996336814016
+  },
+  "ledgers": [
+    {
+      "pareto_calls": 13980,
+      "pareto_candidates": 49246,
+      "pareto_points": 27278,
+      "max_frontier": 10,
+      "merge_calls": 11122,
+      "merge_inputs": 39135,
+      "merge_points": 23976,
+      "partition_masks": 0,
+      "partition_choices": 0,
+      "loop_choices": 2779,
+      "dp_states": 2231,
+      "dp_transitions": 11122,
+      "max_crossing": 2,
+      "dp_multiwriter_fallbacks": 0,
+      "witness_nodes": 9851,
+      "pareto_seconds": 0.032038577599450946,
+      "merge_seconds": 0.032680083299055696,
+      "cache_misses_by_span": {
+        "solve:EX,E0,H0,E1,H1,Join": 33,
+        "group:EX,E0,H0,E1,H1,Join": 1,
+        "group:EX": 11,
+        "solve:EX": 18,
+        "group:E0,H0,E1": 82,
+        "solve:E0,H0,E1": 136,
+        "group:E0": 23,
+        "group:H0,E1": 99,
+        "solve:H0,E1": 142,
+        "group:H0": 12,
+        "group:E0,H0": 13,
+        "solve:E0,H0": 24,
+        "solve:E0": 26,
+        "group:EX,E0": 28,
+        "solve:EX,E0": 51,
+        "solve:H0": 16,
+        "group:H1,Join": 16,
+        "solve:H1,Join": 20,
+        "group:Join": 9,
+        "group:E0,H0,E1,H1": 144,
+        "solve:E0,H0,E1,H1": 264,
+        "group:H0,E1,H1": 162,
+        "solve:H0,E1,H1": 272,
+        "solve:Join": 6,
+        "group:H1": 7,
+        "solve:H1": 9,
+        "group:E1,H1": 12,
+        "solve:E1,H1": 12,
+        "group:E1": 5,
+        "solve:E1": 6,
+        "group:E0,H0,E1,H1,Join": 2,
+        "solve:E0,H0,E1,H1,Join": 32,
+        "group:H0,E1,H1,Join": 4,
+        "solve:H0,E1,H1,Join": 32,
+        "group:EX,E0,H0": 4,
+        "solve:EX,E0,H0": 32,
+        "group:E1,H1,Join": 4,
+        "solve:E1,H1,Join": 16,
+        "group:EX,E0,H0,E1": 4,
+        "solve:EX,E0,H0,E1": 64,
+        "group:EX,E0,H0,E1,H1": 4,
+        "solve:EX,E0,H0,E1,H1": 128
+      },
+      "cache_misses_by_extents": {
+        "solve:(2, 2, 2, 2, 2)": 1,
+        "group:(2, 2, 2, 2, 2)": 13,
+        "solve:(1, 2, 2, 2, 2)": 256,
+        "group:(1, 2, 2, 1, 1)": 4,
+        "solve:(1, 1, 2, 1, 1)": 9,
+        "solve:(1, 2, 1, 1, 1)": 6,
+        "group:(1, 1, 2, 2, 2)": 400,
+        "solve:(1, 1, 2, 1, 2)": 399,
+        "group:(1, 1, 2, 1, 1)": 7,
+        "group:(1, 1, 2, 1, 2)": 9,
+        "group:(1, 1, 1, 1, 2)": 8,
+        "solve:(1, 1, 1, 1, 1)": 15,
+        "group:(1, 2, 2, 2, 1)": 16,
+        "solve:(1, 2, 1, 2, 1)": 27,
+        "group:(1, 2, 1, 1, 1)": 3,
+        "group:(1, 1, 2, 2, 1)": 6,
+        "solve:(1, 1, 2, 2, 2)": 480,
+        "group:(1, 1, 1, 2, 1)": 2,
+        "solve:(1, 1, 1, 2, 1)": 18,
+        "group:(1, 1, 1, 2, 2)": 14,
+        "solve:(1, 1, 1, 1, 2)": 5,
+        "group:(1, 1, 1, 1, 1)": 3,
+        "group:(2, 2, 2, 1, 1)": 2,
+        "solve:(2, 1, 2, 1, 1)": 5,
+        "group:(2, 1, 2, 1, 1)": 5,
+        "solve:(1, 2, 2, 1, 1)": 4,
+        "group:(2, 1, 2, 2, 2)": 62,
+        "group:(2, 2, 2, 2, 1)": 4,
+        "solve:(1, 2, 2, 2, 1)": 16,
+        "solve:(2, 2, 1, 2, 1)": 8,
+        "group:(2, 2, 1, 2, 1)": 8,
+        "group:(2, 1, 2, 2, 1)": 4,
+        "solve:(1, 1, 2, 2, 1)": 8,
+        "group:(2, 1, 1, 2, 1)": 9,
+        "solve:(2, 1, 1, 1, 1)": 8,
+        "group:(2, 1, 1, 1, 1)": 5,
+        "solve:(2, 1, 1, 2, 1)": 9,
+        "solve:(2, 1, 2, 1, 2)": 51,
+        "group:(2, 1, 2, 1, 2)": 51,
+        "group:(2, 1, 1, 1, 2)": 5,
+        "group:(2, 1, 1, 2, 2)": 6,
+        "solve:(1, 1, 1, 2, 2)": 12,
+        "solve:(2, 1, 1, 1, 2)": 2
+      },
+      "cache_misses_by_residency": {
+        "solve:n=6,external=0,local_outputs=0,owned=0": 2,
+        "group:n=6,external=0,local_outputs=0,owned=0": 1,
+        "solve:n=6,external=5,local_outputs=0,owned=0": 1,
+        "group:n=1,external=2,local_outputs=1,owned=0": 9,
+        "solve:n=1,external=2,local_outputs=1,owned=0": 13,
+        "solve:n=1,external=3,local_outputs=1,owned=0": 2,
+        "group:n=3,external=6,local_outputs=2,owned=0": 8,
+        "solve:n=3,external=6,local_outputs=2,owned=0": 12,
+        "group:n=1,external=3,local_outputs=1,owned=0": 2,
+        "group:n=2,external=6,local_outputs=2,owned=0": 2,
+        "solve:n=2,external=6,local_outputs=2,owned=0": 2,
+        "group:n=1,external=2,local_outputs=0,owned=1": 4,
+        "group:n=2,external=5,local_outputs=2,owned=0": 5,
+        "solve:n=2,external=5,local_outputs=2,owned=0": 7,
+        "group:n=2,external=4,local_outputs=1,owned=0": 2,
+        "solve:n=2,external=4,local_outputs=1,owned=0": 2,
+        "group:n=1,external=1,local_outputs=0,owned=1": 12,
+        "solve:n=1,external=1,local_outputs=0,owned=1": 18,
+        "solve:n=1,external=2,local_outputs=0,owned=1": 5,
+        "group:n=3,external=5,local_outputs=2,owned=0": 14,
+        "solve:n=3,external=5,local_outputs=2,owned=0": 29,
+        "group:n=2,external=4,local_outputs=2,owned=0": 8,
+        "solve:n=2,external=4,local_outputs=2,owned=0": 14,
+        "group:n=2,external=3,local_outputs=1,owned=1": 18,
+        "solve:n=2,external=4,local_outputs=1,owned=1": 18,
+        "solve:n=2,external=3,local_outputs=1,owned=1": 33,
+        "group:n=2,external=2,local_outputs=0,owned=2": 9,
+        "solve:n=2,external=3,local_outputs=0,owned=2": 9,
+        "solve:n=2,external=2,local_outputs=0,owned=2": 17,
+        "group:n=2,external=3,local_outputs=1,owned=0": 3,
+        "solve:n=2,external=3,local_outputs=1,owned=0": 6,
+        "group:n=2,external=3,local_outputs=0,owned=0": 1,
+        "solve:n=2,external=3,local_outputs=0,owned=0": 2,
+        "group:n=1,external=2,local_outputs=0,owned=0": 3,
+        "group:n=1,external=1,local_outputs=0,owned=0": 3,
+        "group:n=3,external=5,local_outputs=1,owned=1": 13,
+        "solve:n=3,external=5,local_outputs=1,owned=1": 24,
+        "group:n=3,external=4,local_outputs=1,owned=1": 28,
+        "solve:n=3,external=4,local_outputs=1,owned=1": 58,
+        "group:n=2,external=5,local_outputs=1,owned=1": 3,
+        "solve:n=2,external=5,local_outputs=1,owned=1": 4,
+        "group:n=2,external=4,local_outputs=1,owned=1": 9,
+        "group:n=2,external=3,local_outputs=0,owned=1": 1,
+        "solve:n=2,external=3,local_outputs=0,owned=1": 2,
+        "group:n=2,external=2,local_outputs=0,owned=1": 3,
+        "solve:n=2,external=2,local_outputs=0,owned=1": 6,
+        "group:n=2,external=2,local_outputs=0,owned=0": 5,
+        "solve:n=2,external=2,local_outputs=0,owned=0": 7,
+        "group:n=1,external=0,local_outputs=0,owned=0": 3,
+        "group:n=3,external=4,local_outputs=0,owned=2": 6,
+        "solve:n=3,external=4,local_outputs=0,owned=2": 12,
+        "group:n=3,external=3,local_outputs=0,owned=2": 14,
+        "solve:n=3,external=3,local_outputs=0,owned=2": 29,
+        "group:n=2,external=4,local_outputs=0,owned=2": 1,
+        "solve:n=2,external=4,local_outputs=0,owned=2": 2,
+        "group:n=2,external=3,local_outputs=0,owned=2": 4,
+        "group:n=2,external=1,local_outputs=0,owned=0": 7,
+        "solve:n=2,external=1,local_outputs=0,owned=0": 8,
+        "group:n=4,external=7,local_outputs=2,owned=0": 1,
+        "solve:n=4,external=7,local_outputs=2,owned=0": 2,
+        "group:n=3,external=7,local_outputs=2,owned=0": 2,
+        "solve:n=3,external=7,local_outputs=2,owned=0": 2,
+        "group:n=4,external=6,local_outputs=2,owned=0": 5,
+        "solve:n=4,external=6,local_outputs=2,owned=0": 11,
+        "solve:n=1,external=2,local_outputs=0,owned=0": 2,
+        "group:n=4,external=6,local_outputs=1,owned=1": 2,
+        "solve:n=4,external=6,local_outputs=1,owned=1": 4,
+        "group:n=4,external=5,local_outputs=1,owned=1": 10,
+        "solve:n=4,external=5,local_outputs=1,owned=1": 22,
+        "group:n=3,external=6,local_outputs=1,owned=1": 2,
+        "solve:n=3,external=6,local_outputs=1,owned=1": 4,
+        "solve:n=1,external=1,local_outputs=0,owned=0": 2,
+        "group:n=4,external=5,local_outputs=0,owned=2": 1,
+        "solve:n=4,external=5,local_outputs=0,owned=2": 2,
+        "group:n=4,external=4,local_outputs=0,owned=2": 5,
+        "solve:n=4,external=4,local_outputs=0,owned=2": 11,
+        "group:n=3,external=5,local_outputs=0,owned=2": 1,
+        "solve:n=3,external=5,local_outputs=0,owned=2": 2,
+        "solve:n=1,external=0,local_outputs=0,owned=0": 2,
+        "solve:n=6,external=4,local_outputs=0,owned=0": 5,
+        "group:n=2,external=0,local_outputs=0,owned=0": 3,
+        "solve:n=2,external=0,local_outputs=0,owned=0": 3,
+        "group:n=4,external=5,local_outputs=2,owned=0": 10,
+        "solve:n=4,external=5,local_outputs=2,owned=0": 24,
+        "group:n=1,external=1,local_outputs=1,owned=0": 16,
+        "solve:n=1,external=1,local_outputs=1,owned=0": 19,
+        "group:n=3,external=4,local_outputs=2,owned=0": 18,
+        "solve:n=3,external=4,local_outputs=2,owned=0": 36,
+        "group:n=2,external=2,local_outputs=1,owned=0": 5,
+        "solve:n=2,external=2,local_outputs=1,owned=0": 7,
+        "group:n=4,external=4,local_outputs=1,owned=1": 20,
+        "solve:n=4,external=4,local_outputs=1,owned=1": 48,
+        "group:n=1,external=0,local_outputs=0,owned=1": 15,
+        "solve:n=1,external=0,local_outputs=0,owned=1": 18,
+        "group:n=3,external=3,local_outputs=1,owned=1": 36,
+        "solve:n=3,external=3,local_outputs=1,owned=1": 72,
+        "group:n=2,external=1,local_outputs=0,owned=1": 5,
+        "solve:n=2,external=1,local_outputs=0,owned=1": 7,
+        "group:n=4,external=3,local_outputs=0,owned=2": 10,
+        "solve:n=4,external=3,local_outputs=0,owned=2": 24,
+        "group:n=3,external=2,local_outputs=0,owned=2": 18,
+        "solve:n=3,external=2,local_outputs=0,owned=2": 36,
+        "group:n=2,external=3,local_outputs=2,owned=0": 11,
+        "solve:n=2,external=3,local_outputs=2,owned=0": 15,
+        "group:n=2,external=2,local_outputs=1,owned=1": 22,
+        "solve:n=2,external=2,local_outputs=1,owned=1": 32,
+        "group:n=2,external=1,local_outputs=0,owned=2": 11,
+        "solve:n=2,external=1,local_outputs=0,owned=2": 16,
+        "solve:n=6,external=3,local_outputs=0,owned=0": 10,
+        "group:n=4,external=4,local_outputs=2,owned=0": 10,
+        "solve:n=4,external=4,local_outputs=2,owned=0": 26,
+        "group:n=3,external=3,local_outputs=2,owned=0": 15,
+        "solve:n=3,external=3,local_outputs=2,owned=0": 24,
+        "group:n=4,external=3,local_outputs=1,owned=1": 20,
+        "solve:n=4,external=3,local_outputs=1,owned=1": 52,
+        "group:n=3,external=2,local_outputs=1,owned=1": 30,
+        "solve:n=3,external=2,local_outputs=1,owned=1": 48,
+        "group:n=4,external=2,local_outputs=0,owned=2": 10,
+        "solve:n=4,external=2,local_outputs=0,owned=2": 26,
+        "group:n=3,external=1,local_outputs=0,owned=2": 15,
+        "solve:n=3,external=1,local_outputs=0,owned=2": 24,
+        "group:n=2,external=1,local_outputs=1,owned=0": 3,
+        "solve:n=2,external=1,local_outputs=1,owned=0": 3,
+        "group:n=2,external=0,local_outputs=0,owned=1": 3,
+        "solve:n=2,external=0,local_outputs=0,owned=1": 3,
+        "group:n=2,external=2,local_outputs=2,owned=0": 6,
+        "solve:n=2,external=2,local_outputs=2,owned=0": 6,
+        "group:n=2,external=1,local_outputs=1,owned=1": 12,
+        "solve:n=2,external=1,local_outputs=1,owned=1": 12,
+        "group:n=2,external=0,local_outputs=0,owned=2": 6,
+        "solve:n=2,external=0,local_outputs=0,owned=2": 6,
+        "solve:n=6,external=2,local_outputs=0,owned=0": 10,
+        "group:n=4,external=3,local_outputs=2,owned=0": 7,
+        "solve:n=4,external=3,local_outputs=2,owned=0": 15,
+        "group:n=3,external=2,local_outputs=2,owned=0": 7,
+        "solve:n=3,external=2,local_outputs=2,owned=0": 7,
+        "group:n=4,external=2,local_outputs=1,owned=1": 14,
+        "solve:n=4,external=2,local_outputs=1,owned=1": 30,
+        "group:n=3,external=1,local_outputs=1,owned=1": 14,
+        "solve:n=3,external=1,local_outputs=1,owned=1": 14,
+        "group:n=4,external=1,local_outputs=0,owned=2": 7,
+        "solve:n=4,external=1,local_outputs=0,owned=2": 15,
+        "group:n=3,external=0,local_outputs=0,owned=2": 7,
+        "solve:n=3,external=0,local_outputs=0,owned=2": 7,
+        "solve:n=6,external=1,local_outputs=0,owned=0": 5,
+        "group:n=4,external=2,local_outputs=2,owned=0": 4,
+        "solve:n=4,external=2,local_outputs=2,owned=0": 4,
+        "group:n=4,external=1,local_outputs=1,owned=1": 8,
+        "solve:n=4,external=1,local_outputs=1,owned=1": 8,
+        "group:n=4,external=0,local_outputs=0,owned=2": 4,
+        "solve:n=4,external=0,local_outputs=0,owned=2": 4,
+        "group:n=5,external=1,local_outputs=0,owned=0": 1,
+        "solve:n=5,external=5,local_outputs=0,owned=0": 1,
+        "solve:n=5,external=4,local_outputs=0,owned=0": 5,
+        "solve:n=5,external=3,local_outputs=0,owned=0": 10,
+        "solve:n=5,external=2,local_outputs=0,owned=0": 10,
+        "solve:n=5,external=1,local_outputs=0,owned=0": 5,
+        "group:n=5,external=0,local_outputs=0,owned=0": 1,
+        "solve:n=5,external=0,local_outputs=0,owned=0": 1,
+        "group:n=4,external=2,local_outputs=0,owned=0": 1,
+        "solve:n=4,external=5,local_outputs=0,owned=0": 1,
+        "solve:n=4,external=4,local_outputs=0,owned=0": 5,
+        "solve:n=4,external=3,local_outputs=0,owned=0": 10,
+        "solve:n=4,external=2,local_outputs=0,owned=0": 10,
+        "group:n=4,external=1,local_outputs=0,owned=0": 2,
+        "solve:n=4,external=1,local_outputs=0,owned=0": 5,
+        "group:n=4,external=0,local_outputs=0,owned=0": 1,
+        "solve:n=4,external=0,local_outputs=0,owned=0": 1,
+        "group:n=3,external=2,local_outputs=0,owned=0": 1,
+        "solve:n=3,external=4,local_outputs=0,owned=0": 1,
+        "solve:n=3,external=3,local_outputs=0,owned=0": 4,
+        "solve:n=3,external=2,local_outputs=0,owned=0": 6,
+        "group:n=3,external=1,local_outputs=0,owned=0": 2,
+        "solve:n=3,external=1,local_outputs=0,owned=0": 4,
+        "group:n=3,external=0,local_outputs=0,owned=0": 1,
+        "solve:n=3,external=0,local_outputs=0,owned=0": 1,
+        "group:n=5,external=2,local_outputs=2,owned=0": 1,
+        "solve:n=5,external=7,local_outputs=2,owned=0": 1,
+        "solve:n=5,external=6,local_outputs=2,owned=0": 5,
+        "solve:n=5,external=5,local_outputs=2,owned=0": 10,
+        "solve:n=5,external=4,local_outputs=2,owned=0": 10,
+        "solve:n=5,external=3,local_outputs=2,owned=0": 5,
+        "solve:n=5,external=2,local_outputs=2,owned=0": 1,
+        "group:n=5,external=1,local_outputs=1,owned=1": 2,
+        "solve:n=5,external=6,local_outputs=1,owned=1": 2,
+        "solve:n=5,external=5,local_outputs=1,owned=1": 10,
+        "solve:n=5,external=4,local_outputs=1,owned=1": 20,
+        "solve:n=5,external=3,local_outputs=1,owned=1": 20,
+        "solve:n=5,external=2,local_outputs=1,owned=1": 10,
+        "solve:n=5,external=1,local_outputs=1,owned=1": 2,
+        "group:n=5,external=0,local_outputs=0,owned=2": 1,
+        "solve:n=5,external=5,local_outputs=0,owned=2": 1,
+        "solve:n=5,external=4,local_outputs=0,owned=2": 5,
+        "solve:n=5,external=3,local_outputs=0,owned=2": 10,
+        "solve:n=5,external=2,local_outputs=0,owned=2": 10,
+        "solve:n=5,external=1,local_outputs=0,owned=2": 5,
+        "solve:n=5,external=0,local_outputs=0,owned=2": 1
+      },
+      "renamed_calls": 3589,
+      "rename_nodes": 4133,
+      "independent_splits": 0,
+      "separator_checks": 1317,
+      "separator_hits": 198,
+      "exact_checks": 1119,
+      "exact_hits": 56,
+      "exact_seconds": 0.02001384738832712,
+      "group_prechecks": 24437,
+      "empty_group_skips": 2206,
+      "prefix_infeasible_skips": 2206,
+      "solve_cache": {
+        "hits": 1451,
+        "misses": 1339,
+        "maxsize": null,
+        "currsize": 1339
+      },
+      "group_cache": {
+        "hits": 10463,
+        "misses": 646,
+        "maxsize": null,
+        "currsize": 646
+      },
+      "cut_metadata_cache": {
+        "hits": 122,
+        "misses": 18,
+        "maxsize": null,
+        "currsize": 18
+      },
+      "span_classes": null,
+      "remainder": {
+        "calls": 13899,
+        "builds": 2638,
+        "classes": 1985,
+        "exact_checks": 653,
+        "match_steps": 209,
+        "reused": 653,
+        "seconds": 0.3102524185087532,
+        "aliases": {
+          "hits": 11261,
+          "misses": 2638,
+          "maxsize": 4096,
+          "currsize": 2638
+        }
+      },
+      "feasibility_metadata_cache": {
+        "hits": 24313,
+        "misses": 124,
+        "maxsize": null,
+        "currsize": 124
+      },
+      "seconds": 0.7042642349842936,
+      "prefix_cache": {
+        "hits": 8680,
+        "misses": 2231,
+        "maxsize": null,
+        "currsize": 2231
+      },
+      "prefix_transition_cache": {
+        "hits": 2125,
+        "misses": 106,
+        "maxsize": null,
+        "currsize": 106
+      },
+      "prefix_projection": true,
+      "prefix_parent_cache": {
+        "hits": 9814,
+        "misses": 34,
+        "maxsize": null,
+        "currsize": 34
+      },
+      "prefix_frame_classes": 23,
+      "prefix_frame_aliases": 11,
+      "prefix_frames_enabled": true
+    },
+    {
+      "pareto_calls": 19174,
+      "pareto_candidates": 67256,
+      "pareto_points": 37183,
+      "max_frontier": 10,
+      "merge_calls": 15249,
+      "merge_inputs": 52263,
+      "merge_points": 32120,
+      "partition_masks": 0,
+      "partition_choices": 0,
+      "loop_choices": 4137,
+      "dp_states": 2969,
+      "dp_transitions": 15249,
+      "max_crossing": 2,
+      "dp_multiwriter_fallbacks": 0,
+      "witness_nodes": 13841,
+      "pareto_seconds": 0.04315775539726019,
+      "merge_seconds": 0.04412465658970177,
+      "cache_misses_by_span": {
+        "solve:EX,E0,E1,H0,H1,Join": 33,
+        "group:EX,E0,E1,H0,H1,Join": 1,
+        "group:EX,E0,E1": 44,
+        "solve:EX,E0,E1": 103,
+        "group:EX": 12,
+        "group:E0,E1": 65,
+        "solve:E0,E1": 107,
+        "group:E0": 20,
+        "group:EX,E0": 30,
+        "solve:EX,E0": 49,
+        "solve:EX": 18,
+        "solve:E0": 20,
+        "group:H0,H1,Join": 24,
+        "solve:H0,H1,Join": 36,
+        "group:H1,Join": 18,
+        "solve:H1,Join": 20,
+        "group:Join": 9,
+        "group:H1": 23,
+        "group:H0,H1": 234,
+        "solve:H0,H1": 267,
+        "group:E1": 12,
+        "solve:E1": 12,
+        "group:E0,E1,H0": 82,
+        "solve:E0,E1,H0": 136,
+        "group:E1,H0": 97,
+        "solve:E1,H0": 139,
+        "group:H0": 8,
+        "solve:H0": 13,
+        "group:E0,E1,H0,H1": 144,
+        "solve:E0,E1,H0,H1": 264,
+        "group:E1,H0,H1": 162,
+        "solve:E1,H0,H1": 272,
+        "solve:H1": 12,
+        "solve:Join": 6,
+        "group:E0,E1,H0,H1,Join": 2,
+        "solve:E0,E1,H0,H1,Join": 32,
+        "group:E1,H0,H1,Join": 4,
+        "solve:E1,H0,H1,Join": 32,
+        "group:EX,E0,E1,H0": 4,
+        "solve:EX,E0,E1,H0": 64,
+        "group:EX,E0,E1,H0,H1": 4,
+        "solve:EX,E0,E1,H0,H1": 128
+      },
+      "cache_misses_by_extents": {
+        "solve:(2, 2, 2, 2, 2)": 1,
+        "group:(2, 2, 2, 2, 2)": 9,
+        "solve:(1, 2, 2, 2, 2)": 224,
+        "group:(1, 2, 2, 2, 1)": 48,
+        "solve:(1, 2, 1, 2, 1)": 88,
+        "group:(1, 2, 1, 1, 1)": 4,
+        "group:(1, 1, 1, 2, 1)": 75,
+        "solve:(1, 1, 1, 2, 1)": 117,
+        "group:(1, 2, 1, 2, 1)": 2,
+        "group:(1, 2, 2, 1, 1)": 4,
+        "solve:(1, 1, 2, 1, 1)": 25,
+        "solve:(1, 2, 1, 1, 1)": 6,
+        "group:(1, 1, 2, 2, 1)": 26,
+        "solve:(1, 1, 2, 2, 1)": 40,
+        "group:(1, 1, 2, 1, 1)": 20,
+        "solve:(1, 1, 1, 1, 1)": 94,
+        "group:(1, 1, 1, 1, 1)": 15,
+        "group:(1, 1, 1, 2, 2)": 90,
+        "group:(1, 1, 2, 2, 2)": 384,
+        "solve:(1, 1, 2, 1, 2)": 381,
+        "group:(1, 1, 2, 1, 2)": 7,
+        "group:(1, 1, 1, 1, 2)": 68,
+        "solve:(1, 1, 2, 2, 2)": 448,
+        "solve:(1, 1, 1, 1, 2)": 62,
+        "group:(2, 2, 2, 1, 1)": 2,
+        "solve:(2, 1, 2, 1, 1)": 12,
+        "group:(2, 1, 2, 1, 1)": 9,
+        "solve:(1, 2, 2, 1, 1)": 4,
+        "group:(2, 1, 2, 2, 2)": 54,
+        "group:(2, 2, 2, 2, 1)": 8,
+        "solve:(1, 2, 2, 2, 1)": 48,
+        "solve:(2, 2, 1, 2, 1)": 16,
+        "group:(2, 2, 1, 2, 1)": 16,
+        "group:(2, 1, 2, 2, 1)": 12,
+        "group:(2, 1, 1, 2, 1)": 36,
+        "solve:(2, 1, 1, 1, 1)": 28,
+        "group:(2, 1, 1, 1, 1)": 25,
+        "solve:(2, 1, 1, 2, 1)": 33,
+        "group:(2, 1, 1, 2, 2)": 22,
+        "solve:(1, 1, 1, 2, 2)": 76,
+        "solve:(2, 1, 2, 1, 2)": 46,
+        "group:(2, 1, 2, 1, 2)": 46,
+        "group:(2, 1, 1, 1, 2)": 17,
+        "solve:(2, 1, 1, 1, 2)": 14
+      },
+      "cache_misses_by_residency": {
+        "solve:n=6,external=0,local_outputs=0,owned=0": 2,
+        "group:n=6,external=0,local_outputs=0,owned=0": 1,
+        "solve:n=6,external=5,local_outputs=0,owned=0": 1,
+        "group:n=3,external=5,local_outputs=2,owned=0": 15,
+        "solve:n=3,external=6,local_outputs=2,owned=0": 13,
+        "group:n=1,external=3,local_outputs=1,owned=0": 3,
+        "group:n=2,external=5,local_outputs=2,owned=0": 18,
+        "solve:n=2,external=5,local_outputs=2,owned=0": 22,
+        "group:n=1,external=2,local_outputs=0,owned=1": 5,
+        "group:n=2,external=4,local_outputs=2,owned=0": 28,
+        "solve:n=2,external=4,local_outputs=2,owned=0": 42,
+        "group:n=1,external=2,local_outputs=1,owned=0": 14,
+        "group:n=2,external=4,local_outputs=1,owned=1": 38,
+        "solve:n=2,external=4,local_outputs=1,owned=1": 52,
+        "solve:n=3,external=5,local_outputs=2,owned=0": 32,
+        "solve:n=1,external=2,local_outputs=1,owned=0": 13,
+        "solve:n=1,external=3,local_outputs=1,owned=0": 2,
+        "group:n=1,external=1,local_outputs=0,owned=1": 16,
+        "solve:n=1,external=1,local_outputs=0,owned=1": 18,
+        "solve:n=1,external=2,local_outputs=0,owned=1": 5,
+        "group:n=2,external=3,local_outputs=1,owned=1": 61,
+        "solve:n=2,external=3,local_outputs=1,owned=1": 90,
+        "group:n=3,external=4,local_outputs=0,owned=0": 1,
+        "solve:n=3,external=4,local_outputs=0,owned=0": 2,
+        "group:n=2,external=3,local_outputs=0,owned=0": 2,
+        "solve:n=2,external=3,local_outputs=0,owned=0": 2,
+        "group:n=1,external=2,local_outputs=0,owned=0": 3,
+        "group:n=1,external=1,local_outputs=0,owned=0": 3,
+        "group:n=2,external=2,local_outputs=0,owned=0": 6,
+        "solve:n=2,external=2,local_outputs=0,owned=0": 7,
+        "group:n=1,external=0,local_outputs=0,owned=0": 3,
+        "group:n=2,external=5,local_outputs=1,owned=1": 5,
+        "solve:n=2,external=5,local_outputs=1,owned=1": 5,
+        "group:n=2,external=4,local_outputs=0,owned=2": 2,
+        "solve:n=2,external=4,local_outputs=0,owned=2": 3,
+        "group:n=3,external=4,local_outputs=1,owned=1": 30,
+        "solve:n=3,external=5,local_outputs=1,owned=1": 26,
+        "solve:n=3,external=4,local_outputs=1,owned=1": 66,
+        "group:n=3,external=3,local_outputs=0,owned=0": 4,
+        "solve:n=3,external=3,local_outputs=0,owned=0": 8,
+        "group:n=2,external=2,local_outputs=0,owned=2": 31,
+        "solve:n=2,external=3,local_outputs=0,owned=2": 26,
+        "solve:n=2,external=2,local_outputs=0,owned=2": 47,
+        "group:n=3,external=3,local_outputs=0,owned=2": 15,
+        "solve:n=3,external=4,local_outputs=0,owned=2": 13,
+        "solve:n=3,external=3,local_outputs=0,owned=2": 33,
+        "group:n=2,external=3,local_outputs=0,owned=2": 18,
+        "group:n=3,external=2,local_outputs=0,owned=0": 8,
+        "solve:n=3,external=2,local_outputs=0,owned=0": 13,
+        "group:n=3,external=6,local_outputs=2,owned=0": 8,
+        "group:n=2,external=6,local_outputs=2,owned=0": 1,
+        "solve:n=2,external=6,local_outputs=2,owned=0": 1,
+        "group:n=3,external=5,local_outputs=1,owned=1": 13,
+        "group:n=3,external=4,local_outputs=0,owned=2": 6,
+        "group:n=2,external=1,local_outputs=0,owned=0": 7,
+        "solve:n=2,external=1,local_outputs=0,owned=0": 8,
+        "group:n=4,external=7,local_outputs=2,owned=0": 1,
+        "solve:n=4,external=7,local_outputs=2,owned=0": 2,
+        "group:n=3,external=7,local_outputs=2,owned=0": 2,
+        "solve:n=3,external=7,local_outputs=2,owned=0": 2,
+        "group:n=4,external=6,local_outputs=2,owned=0": 5,
+        "solve:n=4,external=6,local_outputs=2,owned=0": 11,
+        "solve:n=1,external=2,local_outputs=0,owned=0": 2,
+        "group:n=4,external=6,local_outputs=1,owned=1": 2,
+        "solve:n=4,external=6,local_outputs=1,owned=1": 4,
+        "group:n=4,external=5,local_outputs=1,owned=1": 10,
+        "solve:n=4,external=5,local_outputs=1,owned=1": 22,
+        "group:n=3,external=6,local_outputs=1,owned=1": 2,
+        "solve:n=3,external=6,local_outputs=1,owned=1": 4,
+        "solve:n=1,external=1,local_outputs=0,owned=0": 2,
+        "group:n=4,external=5,local_outputs=0,owned=2": 1,
+        "solve:n=4,external=5,local_outputs=0,owned=2": 2,
+        "group:n=4,external=4,local_outputs=0,owned=2": 5,
+        "solve:n=4,external=4,local_outputs=0,owned=2": 11,
+        "group:n=3,external=5,local_outputs=0,owned=2": 1,
+        "solve:n=3,external=5,local_outputs=0,owned=2": 2,
+        "solve:n=1,external=0,local_outputs=0,owned=0": 2,
+        "solve:n=6,external=4,local_outputs=0,owned=0": 5,
+        "group:n=1,external=1,local_outputs=1,owned=0": 19,
+        "solve:n=1,external=1,local_outputs=1,owned=0": 19,
+        "group:n=1,external=0,local_outputs=0,owned=1": 18,
+        "solve:n=1,external=0,local_outputs=0,owned=1": 18,
+        "group:n=3,external=1,local_outputs=0,owned=0": 8,
+        "solve:n=3,external=1,local_outputs=0,owned=0": 10,
+        "group:n=2,external=3,local_outputs=2,owned=0": 37,
+        "solve:n=2,external=3,local_outputs=2,owned=0": 48,
+        "group:n=2,external=2,local_outputs=1,owned=1": 74,
+        "solve:n=2,external=2,local_outputs=1,owned=1": 97,
+        "group:n=2,external=1,local_outputs=0,owned=2": 37,
+        "solve:n=2,external=1,local_outputs=0,owned=2": 49,
+        "group:n=2,external=0,local_outputs=0,owned=0": 3,
+        "solve:n=2,external=0,local_outputs=0,owned=0": 3,
+        "group:n=4,external=5,local_outputs=2,owned=0": 10,
+        "solve:n=4,external=5,local_outputs=2,owned=0": 24,
+        "group:n=3,external=4,local_outputs=2,owned=0": 21,
+        "solve:n=3,external=4,local_outputs=2,owned=0": 42,
+        "group:n=4,external=4,local_outputs=1,owned=1": 20,
+        "solve:n=4,external=4,local_outputs=1,owned=1": 48,
+        "group:n=3,external=3,local_outputs=1,owned=1": 42,
+        "solve:n=3,external=3,local_outputs=1,owned=1": 84,
+        "group:n=4,external=3,local_outputs=0,owned=2": 10,
+        "solve:n=4,external=3,local_outputs=0,owned=2": 24,
+        "group:n=3,external=2,local_outputs=0,owned=2": 21,
+        "solve:n=3,external=2,local_outputs=0,owned=2": 42,
+        "solve:n=6,external=3,local_outputs=0,owned=0": 10,
+        "group:n=3,external=0,local_outputs=0,owned=0": 3,
+        "solve:n=3,external=0,local_outputs=0,owned=0": 3,
+        "group:n=2,external=2,local_outputs=2,owned=0": 19,
+        "solve:n=2,external=2,local_outputs=2,owned=0": 20,
+        "group:n=2,external=1,local_outputs=1,owned=1": 38,
+        "solve:n=2,external=1,local_outputs=1,owned=1": 40,
+        "group:n=2,external=0,local_outputs=0,owned=2": 19,
+        "solve:n=2,external=0,local_outputs=0,owned=2": 20,
+        "group:n=4,external=4,local_outputs=2,owned=0": 10,
+        "solve:n=4,external=4,local_outputs=2,owned=0": 26,
+        "group:n=3,external=3,local_outputs=2,owned=0": 19,
+        "solve:n=3,external=3,local_outputs=2,owned=0": 29,
+        "group:n=4,external=3,local_outputs=1,owned=1": 20,
+        "solve:n=4,external=3,local_outputs=1,owned=1": 52,
+        "group:n=3,external=2,local_outputs=1,owned=1": 38,
+        "solve:n=3,external=2,local_outputs=1,owned=1": 58,
+        "group:n=4,external=2,local_outputs=0,owned=2": 10,
+        "solve:n=4,external=2,local_outputs=0,owned=2": 26,
+        "group:n=3,external=1,local_outputs=0,owned=2": 19,
+        "solve:n=3,external=1,local_outputs=0,owned=2": 29,
+        "solve:n=6,external=2,local_outputs=0,owned=0": 10,
+        "group:n=4,external=3,local_outputs=2,owned=0": 7,
+        "solve:n=4,external=3,local_outputs=2,owned=0": 15,
+        "group:n=3,external=2,local_outputs=2,owned=0": 9,
+        "solve:n=3,external=2,local_outputs=2,owned=0": 9,
+        "group:n=4,external=2,local_outputs=1,owned=1": 14,
+        "solve:n=4,external=2,local_outputs=1,owned=1": 30,
+        "group:n=3,external=1,local_outputs=1,owned=1": 18,
+        "solve:n=3,external=1,local_outputs=1,owned=1": 18,
+        "group:n=4,external=1,local_outputs=0,owned=2": 7,
+        "solve:n=4,external=1,local_outputs=0,owned=2": 15,
+        "group:n=3,external=0,local_outputs=0,owned=2": 9,
+        "solve:n=3,external=0,local_outputs=0,owned=2": 9,
+        "solve:n=6,external=1,local_outputs=0,owned=0": 5,
+        "group:n=4,external=2,local_outputs=2,owned=0": 4,
+        "solve:n=4,external=2,local_outputs=2,owned=0": 4,
+        "group:n=4,external=1,local_outputs=1,owned=1": 8,
+        "solve:n=4,external=1,local_outputs=1,owned=1": 8,
+        "group:n=4,external=0,local_outputs=0,owned=2": 4,
+        "solve:n=4,external=0,local_outputs=0,owned=2": 4,
+        "group:n=5,external=1,local_outputs=0,owned=0": 1,
+        "solve:n=5,external=5,local_outputs=0,owned=0": 1,
+        "solve:n=5,external=4,local_outputs=0,owned=0": 5,
+        "solve:n=5,external=3,local_outputs=0,owned=0": 10,
+        "solve:n=5,external=2,local_outputs=0,owned=0": 10,
+        "solve:n=5,external=1,local_outputs=0,owned=0": 5,
+        "group:n=5,external=0,local_outputs=0,owned=0": 1,
+        "solve:n=5,external=0,local_outputs=0,owned=0": 1,
+        "group:n=4,external=2,local_outputs=0,owned=0": 1,
+        "solve:n=4,external=5,local_outputs=0,owned=0": 1,
+        "solve:n=4,external=4,local_outputs=0,owned=0": 5,
+        "solve:n=4,external=3,local_outputs=0,owned=0": 10,
+        "solve:n=4,external=2,local_outputs=0,owned=0": 10,
+        "group:n=4,external=1,local_outputs=0,owned=0": 2,
+        "solve:n=4,external=1,local_outputs=0,owned=0": 5,
+        "group:n=4,external=0,local_outputs=0,owned=0": 1,
+        "solve:n=4,external=0,local_outputs=0,owned=0": 1,
+        "group:n=5,external=2,local_outputs=2,owned=0": 1,
+        "solve:n=5,external=7,local_outputs=2,owned=0": 1,
+        "solve:n=5,external=6,local_outputs=2,owned=0": 5,
+        "solve:n=5,external=5,local_outputs=2,owned=0": 10,
+        "solve:n=5,external=4,local_outputs=2,owned=0": 10,
+        "solve:n=5,external=3,local_outputs=2,owned=0": 5,
+        "solve:n=5,external=2,local_outputs=2,owned=0": 1,
+        "group:n=5,external=1,local_outputs=1,owned=1": 2,
+        "solve:n=5,external=6,local_outputs=1,owned=1": 2,
+        "solve:n=5,external=5,local_outputs=1,owned=1": 10,
+        "solve:n=5,external=4,local_outputs=1,owned=1": 20,
+        "solve:n=5,external=3,local_outputs=1,owned=1": 20,
+        "solve:n=5,external=2,local_outputs=1,owned=1": 10,
+        "solve:n=5,external=1,local_outputs=1,owned=1": 2,
+        "group:n=5,external=0,local_outputs=0,owned=2": 1,
+        "solve:n=5,external=5,local_outputs=0,owned=2": 1,
+        "solve:n=5,external=4,local_outputs=0,owned=2": 5,
+        "solve:n=5,external=3,local_outputs=0,owned=2": 10,
+        "solve:n=5,external=2,local_outputs=0,owned=2": 10,
+        "solve:n=5,external=1,local_outputs=0,owned=2": 5,
+        "solve:n=5,external=0,local_outputs=0,owned=2": 1
+      },
+      "renamed_calls": 4474,
+      "rename_nodes": 4762,
+      "independent_splits": 0,
+      "separator_checks": 1741,
+      "separator_hits": 213,
+      "exact_checks": 1528,
+      "exact_hits": 39,
+      "exact_seconds": 0.021294939098879695,
+      "group_prechecks": 32267,
+      "empty_group_skips": 1873,
+      "prefix_infeasible_skips": 1873,
+      "solve_cache": {
+        "hits": 2396,
+        "misses": 1763,
+        "maxsize": null,
+        "currsize": 1763
+      },
+      "group_cache": {
+        "hits": 14146,
+        "misses": 999,
+        "maxsize": null,
+        "currsize": 999
+      },
+      "cut_metadata_cache": {
+        "hits": 128,
+        "misses": 20,
+        "maxsize": null,
+        "currsize": 20
+      },
+      "span_classes": null,
+      "remainder": {
+        "calls": 19304,
+        "builds": 3864,
+        "classes": 2762,
+        "exact_checks": 1102,
+        "match_steps": 288,
+        "reused": 1102,
+        "seconds": 0.3899839415680617,
+        "aliases": {
+          "hits": 15440,
+          "misses": 3864,
+          "maxsize": 4096,
+          "currsize": 3864
+        }
+      },
+      "feasibility_metadata_cache": {
+        "hits": 32117,
+        "misses": 150,
+        "maxsize": null,
+        "currsize": 150
+      },
+      "seconds": 0.9627456821035594,
+      "prefix_cache": {
+        "hits": 11719,
+        "misses": 2969,
+        "maxsize": null,
+        "currsize": 2969
+      },
+      "prefix_transition_cache": {
+        "hits": 2856,
+        "misses": 113,
+        "maxsize": null,
+        "currsize": 113
+      },
+      "prefix_projection": true,
+      "prefix_parent_cache": {
+        "hits": 13164,
+        "misses": 35,
+        "maxsize": null,
+        "currsize": 35
+      },
+      "prefix_frame_classes": 24,
+      "prefix_frame_aliases": 11,
+      "prefix_frames_enabled": true
+    },
+    {
+      "pareto_calls": 17256,
+      "pareto_candidates": 58753,
+      "pareto_points": 32485,
+      "max_frontier": 10,
+      "merge_calls": 13690,
+      "merge_inputs": 46089,
+      "merge_points": 27910,
+      "partition_masks": 0,
+      "partition_choices": 0,
+      "loop_choices": 3915,
+      "dp_states": 2679,
+      "dp_transitions": 13690,
+      "max_crossing": 2,
+      "dp_multiwriter_fallbacks": 0,
+      "witness_nodes": 12077,
+      "pareto_seconds": 0.03861965797841549,
+      "merge_seconds": 0.03919057548046112,
+      "cache_misses_by_span": {
+        "solve:EX,E0,E1,H1,H0,Join": 33,
+        "group:EX,E0,E1,H1,H0,Join": 1,
+        "group:EX,E0,E1": 44,
+        "solve:EX,E0,E1": 103,
+        "group:EX": 12,
+        "group:E0,E1": 65,
+        "solve:E0,E1": 107,
+        "group:E0": 20,
+        "group:EX,E0": 30,
+        "solve:EX,E0": 54,
+        "solve:EX": 18,
+        "solve:E0": 20,
+        "group:H1,H0,Join": 24,
+        "solve:H1,H0,Join": 36,
+        "group:H0,Join": 18,
+        "solve:H0,Join": 20,
+        "group:Join": 9,
+        "group:H0": 1,
+        "group:H1,H0": 234,
+        "solve:H1,H0": 267,
+        "group:E1": 12,
+        "solve:E1": 12,
+        "group:E0,E1,H1": 82,
+        "solve:E0,E1,H1": 136,
+        "group:E1,H1": 25,
+        "solve:E1,H1": 36,
+        "group:H1": 30,
+        "solve:H1": 25,
+        "group:E0,E1,H1,H0": 144,
+        "solve:E0,E1,H1,H0": 264,
+        "group:E1,H1,H0": 162,
+        "solve:E1,H1,H0": 272,
+        "solve:Join": 6,
+        "group:E0,E1,H1,H0,Join": 2,
+        "solve:E0,E1,H1,H0,Join": 32,
+        "group:E1,H1,H0,Join": 4,
+        "solve:E1,H1,H0,Join": 32,
+        "group:EX,E0,E1,H1": 4,
+        "solve:EX,E0,E1,H1": 64,
+        "group:EX,E0,E1,H1,H0": 4,
+        "solve:EX,E0,E1,H1,H0": 128
+      },
+      "cache_misses_by_extents": {
+        "solve:(2, 2, 2, 2, 2)": 1,
+        "group:(2, 2, 2, 2, 2)": 9,
+        "solve:(1, 2, 2, 2, 2)": 224,
+        "group:(1, 2, 2, 2, 1)": 48,
+        "solve:(1, 2, 1, 2, 1)": 93,
+        "group:(1, 2, 1, 1, 1)": 4,
+        "group:(1, 1, 1, 2, 1)": 75,
+        "solve:(1, 1, 1, 2, 1)": 117,
+        "group:(1, 2, 1, 2, 1)": 2,
+        "group:(1, 2, 2, 1, 1)": 4,
+        "solve:(1, 1, 2, 1, 1)": 25,
+        "solve:(1, 2, 1, 1, 1)": 6,
+        "group:(1, 1, 2, 2, 1)": 26,
+        "solve:(1, 1, 2, 2, 1)": 40,
+        "group:(1, 1, 2, 1, 1)": 20,
+        "solve:(1, 1, 1, 1, 1)": 94,
+        "group:(1, 1, 1, 1, 1)": 15,
+        "group:(1, 1, 1, 2, 2)": 90,
+        "group:(1, 1, 2, 2, 2)": 336,
+        "solve:(1, 1, 2, 1, 2)": 336,
+        "group:(1, 1, 2, 1, 2)": 5,
+        "group:(1, 1, 1, 1, 2)": 68,
+        "solve:(1, 1, 1, 1, 2)": 62,
+        "group:(2, 2, 2, 1, 1)": 2,
+        "solve:(2, 1, 2, 1, 1)": 12,
+        "group:(2, 1, 2, 1, 1)": 9,
+        "solve:(1, 2, 2, 1, 1)": 4,
+        "group:(2, 1, 2, 2, 2)": 42,
+        "solve:(1, 1, 2, 2, 2)": 400,
+        "group:(2, 2, 2, 2, 1)": 8,
+        "solve:(1, 2, 2, 2, 1)": 48,
+        "solve:(2, 2, 1, 2, 1)": 16,
+        "group:(2, 2, 1, 2, 1)": 16,
+        "group:(2, 1, 2, 2, 1)": 12,
+        "group:(2, 1, 1, 2, 1)": 36,
+        "solve:(2, 1, 1, 1, 1)": 28,
+        "group:(2, 1, 1, 1, 1)": 25,
+        "solve:(2, 1, 1, 2, 1)": 33,
+        "group:(2, 1, 1, 2, 2)": 22,
+        "solve:(1, 1, 1, 2, 2)": 76,
+        "solve:(2, 1, 2, 1, 2)": 36,
+        "group:(2, 1, 2, 1, 2)": 36,
+        "group:(2, 1, 1, 1, 2)": 17,
+        "solve:(2, 1, 1, 1, 2)": 14
+      },
+      "cache_misses_by_residency": {
+        "solve:n=6,external=0,local_outputs=0,owned=0": 2,
+        "group:n=6,external=0,local_outputs=0,owned=0": 1,
+        "solve:n=6,external=5,local_outputs=0,owned=0": 1,
+        "group:n=3,external=5,local_outputs=2,owned=0": 15,
+        "solve:n=3,external=6,local_outputs=2,owned=0": 13,
+        "group:n=1,external=3,local_outputs=1,owned=0": 3,
+        "group:n=2,external=5,local_outputs=2,owned=0": 13,
+        "solve:n=2,external=5,local_outputs=2,owned=0": 15,
+        "group:n=1,external=2,local_outputs=0,owned=1": 5,
+        "group:n=2,external=4,local_outputs=2,owned=0": 21,
+        "solve:n=2,external=4,local_outputs=2,owned=0": 31,
+        "group:n=1,external=2,local_outputs=1,owned=0": 14,
+        "group:n=2,external=4,local_outputs=1,owned=1": 29,
+        "solve:n=2,external=4,local_outputs=1,owned=1": 36,
+        "solve:n=3,external=5,local_outputs=2,owned=0": 32,
+        "solve:n=1,external=2,local_outputs=1,owned=0": 13,
+        "solve:n=1,external=3,local_outputs=1,owned=0": 2,
+        "group:n=1,external=1,local_outputs=0,owned=1": 16,
+        "solve:n=1,external=1,local_outputs=0,owned=1": 18,
+        "solve:n=1,external=2,local_outputs=0,owned=1": 5,
+        "group:n=2,external=3,local_outputs=1,owned=1": 46,
+        "solve:n=2,external=3,local_outputs=1,owned=1": 67,
+        "group:n=3,external=4,local_outputs=0,owned=0": 1,
+        "solve:n=3,external=4,local_outputs=0,owned=0": 2,
+        "group:n=2,external=3,local_outputs=0,owned=0": 2,
+        "solve:n=2,external=3,local_outputs=0,owned=0": 2,
+        "group:n=1,external=2,local_outputs=0,owned=0": 3,
+        "group:n=1,external=1,local_outputs=0,owned=0": 3,
+        "group:n=2,external=2,local_outputs=0,owned=0": 6,
+        "solve:n=2,external=2,local_outputs=0,owned=0": 7,
+        "group:n=1,external=0,local_outputs=0,owned=0": 3,
+        "group:n=2,external=5,local_outputs=1,owned=1": 2,
+        "solve:n=2,external=5,local_outputs=1,owned=1": 2,
+        "group:n=2,external=4,local_outputs=0,owned=2": 1,
+        "solve:n=2,external=4,local_outputs=0,owned=2": 1,
+        "group:n=3,external=4,local_outputs=1,owned=1": 30,
+        "solve:n=3,external=5,local_outputs=1,owned=1": 26,
+        "solve:n=3,external=4,local_outputs=1,owned=1": 66,
+        "group:n=3,external=3,local_outputs=0,owned=0": 4,
+        "solve:n=3,external=3,local_outputs=0,owned=0": 8,
+        "group:n=2,external=2,local_outputs=0,owned=2": 23,
+        "solve:n=2,external=3,local_outputs=0,owned=2": 18,
+        "solve:n=2,external=2,local_outputs=0,owned=2": 34,
+        "group:n=3,external=3,local_outputs=0,owned=2": 15,
+        "solve:n=3,external=4,local_outputs=0,owned=2": 13,
+        "solve:n=3,external=3,local_outputs=0,owned=2": 33,
+        "group:n=2,external=3,local_outputs=0,owned=2": 14,
+        "group:n=3,external=2,local_outputs=0,owned=0": 8,
+        "solve:n=3,external=2,local_outputs=0,owned=0": 13,
+        "group:n=3,external=6,local_outputs=2,owned=0": 8,
+        "group:n=2,external=4,local_outputs=1,owned=0": 2,
+        "solve:n=2,external=4,local_outputs=1,owned=0": 2,
+        "group:n=2,external=3,local_outputs=1,owned=0": 3,
+        "solve:n=2,external=3,local_outputs=1,owned=0": 6,
+        "group:n=3,external=5,local_outputs=1,owned=1": 13,
+        "group:n=2,external=3,local_outputs=0,owned=1": 1,
+        "solve:n=2,external=3,local_outputs=0,owned=1": 2,
+        "group:n=2,external=2,local_outputs=0,owned=1": 3,
+        "solve:n=2,external=2,local_outputs=0,owned=1": 6,
+        "group:n=3,external=4,local_outputs=0,owned=2": 6,
+        "group:n=2,external=1,local_outputs=0,owned=0": 7,
+        "solve:n=2,external=1,local_outputs=0,owned=0": 8,
+        "group:n=4,external=7,local_outputs=2,owned=0": 1,
+        "solve:n=4,external=7,local_outputs=2,owned=0": 2,
+        "group:n=3,external=7,local_outputs=2,owned=0": 2,
+        "solve:n=3,external=7,local_outputs=2,owned=0": 2,
+        "group:n=4,external=6,local_outputs=2,owned=0": 5,
+        "solve:n=4,external=6,local_outputs=2,owned=0": 11,
+        "solve:n=1,external=2,local_outputs=0,owned=0": 2,
+        "group:n=4,external=6,local_outputs=1,owned=1": 2,
+        "solve:n=4,external=6,local_outputs=1,owned=1": 4,
+        "group:n=4,external=5,local_outputs=1,owned=1": 10,
+        "solve:n=4,external=5,local_outputs=1,owned=1": 22,
+        "group:n=3,external=6,local_outputs=1,owned=1": 2,
+        "solve:n=3,external=6,local_outputs=1,owned=1": 4,
+        "solve:n=1,external=1,local_outputs=0,owned=0": 2,
+        "group:n=4,external=5,local_outputs=0,owned=2": 1,
+        "solve:n=4,external=5,local_outputs=0,owned=2": 2,
+        "group:n=4,external=4,local_outputs=0,owned=2": 5,
+        "solve:n=4,external=4,local_outputs=0,owned=2": 11,
+        "group:n=3,external=5,local_outputs=0,owned=2": 1,
+        "solve:n=3,external=5,local_outputs=0,owned=2": 2,
+        "solve:n=1,external=0,local_outputs=0,owned=0": 2,
+        "solve:n=6,external=4,local_outputs=0,owned=0": 5,
+        "group:n=3,external=1,local_outputs=0,owned=0": 8,
+        "solve:n=3,external=1,local_outputs=0,owned=0": 10,
+        "group:n=3,external=4,local_outputs=2,owned=0": 21,
+        "solve:n=3,external=4,local_outputs=2,owned=0": 42,
+        "group:n=1,external=1,local_outputs=1,owned=0": 19,
+        "solve:n=1,external=1,local_outputs=1,owned=0": 19,
+        "group:n=2,external=2,local_outputs=1,owned=0": 5,
+        "solve:n=2,external=2,local_outputs=1,owned=0": 7,
+        "group:n=3,external=3,local_outputs=1,owned=1": 42,
+        "solve:n=3,external=3,local_outputs=1,owned=1": 84,
+        "group:n=1,external=0,local_outputs=0,owned=1": 18,
+        "solve:n=1,external=0,local_outputs=0,owned=1": 18,
+        "group:n=2,external=1,local_outputs=0,owned=1": 5,
+        "solve:n=2,external=1,local_outputs=0,owned=1": 7,
+        "group:n=3,external=2,local_outputs=0,owned=2": 21,
+        "solve:n=3,external=2,local_outputs=0,owned=2": 42,
+        "group:n=2,external=3,local_outputs=2,owned=0": 29,
+        "solve:n=2,external=3,local_outputs=2,owned=0": 39,
+        "group:n=4,external=5,local_outputs=2,owned=0": 10,
+        "solve:n=4,external=5,local_outputs=2,owned=0": 24,
+        "group:n=2,external=2,local_outputs=1,owned=1": 58,
+        "solve:n=2,external=2,local_outputs=1,owned=1": 78,
+        "group:n=4,external=4,local_outputs=1,owned=1": 20,
+        "solve:n=4,external=4,local_outputs=1,owned=1": 48,
+        "group:n=2,external=1,local_outputs=0,owned=2": 29,
+        "solve:n=2,external=1,local_outputs=0,owned=2": 39,
+        "group:n=4,external=3,local_outputs=0,owned=2": 10,
+        "solve:n=4,external=3,local_outputs=0,owned=2": 24,
+        "group:n=2,external=0,local_outputs=0,owned=0": 3,
+        "solve:n=2,external=0,local_outputs=0,owned=0": 3,
+        "solve:n=6,external=3,local_outputs=0,owned=0": 10,
+        "group:n=3,external=0,local_outputs=0,owned=0": 3,
+        "solve:n=3,external=0,local_outputs=0,owned=0": 3,
+        "group:n=2,external=2,local_outputs=2,owned=0": 16,
+        "solve:n=2,external=2,local_outputs=2,owned=0": 17,
+        "group:n=2,external=1,local_outputs=1,owned=1": 32,
+        "solve:n=2,external=1,local_outputs=1,owned=1": 34,
+        "group:n=2,external=0,local_outputs=0,owned=2": 16,
+        "solve:n=2,external=0,local_outputs=0,owned=2": 17,
+        "group:n=4,external=4,local_outputs=2,owned=0": 10,
+        "solve:n=4,external=4,local_outputs=2,owned=0": 26,
+        "group:n=3,external=3,local_outputs=2,owned=0": 19,
+        "solve:n=3,external=3,local_outputs=2,owned=0": 29,
+        "group:n=4,external=3,local_outputs=1,owned=1": 20,
+        "solve:n=4,external=3,local_outputs=1,owned=1": 52,
+        "group:n=3,external=2,local_outputs=1,owned=1": 38,
+        "solve:n=3,external=2,local_outputs=1,owned=1": 58,
+        "group:n=4,external=2,local_outputs=0,owned=2": 10,
+        "solve:n=4,external=2,local_outputs=0,owned=2": 26,
+        "group:n=3,external=1,local_outputs=0,owned=2": 19,
+        "solve:n=3,external=1,local_outputs=0,owned=2": 29,
+        "group:n=2,external=1,local_outputs=1,owned=0": 3,
+        "solve:n=2,external=1,local_outputs=1,owned=0": 3,
+        "group:n=2,external=0,local_outputs=0,owned=1": 3,
+        "solve:n=2,external=0,local_outputs=0,owned=1": 3,
+        "solve:n=6,external=2,local_outputs=0,owned=0": 10,
+        "group:n=4,external=3,local_outputs=2,owned=0": 7,
+        "solve:n=4,external=3,local_outputs=2,owned=0": 15,
+        "group:n=3,external=2,local_outputs=2,owned=0": 9,
+        "solve:n=3,external=2,local_outputs=2,owned=0": 9,
+        "group:n=4,external=2,local_outputs=1,owned=1": 14,
+        "solve:n=4,external=2,local_outputs=1,owned=1": 30,
+        "group:n=3,external=1,local_outputs=1,owned=1": 18,
+        "solve:n=3,external=1,local_outputs=1,owned=1": 18,
+        "group:n=4,external=1,local_outputs=0,owned=2": 7,
+        "solve:n=4,external=1,local_outputs=0,owned=2": 15,
+        "group:n=3,external=0,local_outputs=0,owned=2": 9,
+        "solve:n=3,external=0,local_outputs=0,owned=2": 9,
+        "solve:n=6,external=1,local_outputs=0,owned=0": 5,
+        "group:n=4,external=2,local_outputs=2,owned=0": 4,
+        "solve:n=4,external=2,local_outputs=2,owned=0": 4,
+        "group:n=4,external=1,local_outputs=1,owned=1": 8,
+        "solve:n=4,external=1,local_outputs=1,owned=1": 8,
+        "group:n=4,external=0,local_outputs=0,owned=2": 4,
+        "solve:n=4,external=0,local_outputs=0,owned=2": 4,
+        "group:n=5,external=1,local_outputs=0,owned=0": 1,
+        "solve:n=5,external=5,local_outputs=0,owned=0": 1,
+        "solve:n=5,external=4,local_outputs=0,owned=0": 5,
+        "solve:n=5,external=3,local_outputs=0,owned=0": 10,
+        "solve:n=5,external=2,local_outputs=0,owned=0": 10,
+        "solve:n=5,external=1,local_outputs=0,owned=0": 5,
+        "group:n=5,external=0,local_outputs=0,owned=0": 1,
+        "solve:n=5,external=0,local_outputs=0,owned=0": 1,
+        "group:n=4,external=2,local_outputs=0,owned=0": 1,
+        "solve:n=4,external=5,local_outputs=0,owned=0": 1,
+        "solve:n=4,external=4,local_outputs=0,owned=0": 5,
+        "solve:n=4,external=3,local_outputs=0,owned=0": 10,
+        "solve:n=4,external=2,local_outputs=0,owned=0": 10,
+        "group:n=4,external=1,local_outputs=0,owned=0": 2,
+        "solve:n=4,external=1,local_outputs=0,owned=0": 5,
+        "group:n=4,external=0,local_outputs=0,owned=0": 1,
+        "solve:n=4,external=0,local_outputs=0,owned=0": 1,
+        "group:n=5,external=2,local_outputs=2,owned=0": 1,
+        "solve:n=5,external=7,local_outputs=2,owned=0": 1,
+        "solve:n=5,external=6,local_outputs=2,owned=0": 5,
+        "solve:n=5,external=5,local_outputs=2,owned=0": 10,
+        "solve:n=5,external=4,local_outputs=2,owned=0": 10,
+        "solve:n=5,external=3,local_outputs=2,owned=0": 5,
+        "solve:n=5,external=2,local_outputs=2,owned=0": 1,
+        "group:n=5,external=1,local_outputs=1,owned=1": 2,
+        "solve:n=5,external=6,local_outputs=1,owned=1": 2,
+        "solve:n=5,external=5,local_outputs=1,owned=1": 10,
+        "solve:n=5,external=4,local_outputs=1,owned=1": 20,
+        "solve:n=5,external=3,local_outputs=1,owned=1": 20,
+        "solve:n=5,external=2,local_outputs=1,owned=1": 10,
+        "solve:n=5,external=1,local_outputs=1,owned=1": 2,
+        "group:n=5,external=0,local_outputs=0,owned=2": 1,
+        "solve:n=5,external=5,local_outputs=0,owned=2": 1,
+        "solve:n=5,external=4,local_outputs=0,owned=2": 5,
+        "solve:n=5,external=3,local_outputs=0,owned=2": 10,
+        "solve:n=5,external=2,local_outputs=0,owned=2": 10,
+        "solve:n=5,external=1,local_outputs=0,owned=2": 5,
+        "solve:n=5,external=0,local_outputs=0,owned=2": 1
+      },
+      "renamed_calls": 4430,
+      "rename_nodes": 4626,
+      "independent_splits": 0,
+      "separator_checks": 1643,
+      "separator_hits": 240,
+      "exact_checks": 1403,
+      "exact_hits": 56,
+      "exact_seconds": 0.020947751589119434,
+      "group_prechecks": 28910,
+      "empty_group_skips": 1630,
+      "prefix_infeasible_skips": 1630,
+      "solve_cache": {
+        "hits": 2269,
+        "misses": 1665,
+        "maxsize": null,
+        "currsize": 1665
+      },
+      "group_cache": {
+        "hits": 12663,
+        "misses": 927,
+        "maxsize": null,
+        "currsize": 927
+      },
+      "cut_metadata_cache": {
+        "hits": 124,
+        "misses": 19,
+        "maxsize": null,
+        "currsize": 19
+      },
+      "span_classes": null,
+      "remainder": {
+        "calls": 17524,
+        "builds": 3645,
+        "classes": 2592,
+        "exact_checks": 1053,
+        "match_steps": 427,
+        "reused": 1053,
+        "seconds": 0.4231632736045867,
+        "aliases": {
+          "hits": 13879,
+          "misses": 3645,
+          "maxsize": 4096,
+          "currsize": 3645
+        }
+      },
+      "feasibility_metadata_cache": {
+        "hits": 28760,
+        "misses": 150,
+        "maxsize": null,
+        "currsize": 150
+      },
+      "seconds": 0.9199500088579953,
+      "prefix_cache": {
+        "hits": 10514,
+        "misses": 2679,
+        "maxsize": null,
+        "currsize": 2679
+      },
+      "prefix_transition_cache": {
+        "hits": 2571,
+        "misses": 108,
+        "maxsize": null,
+        "currsize": 108
+      },
+      "prefix_projection": true,
+      "prefix_parent_cache": {
+        "hits": 11811,
+        "misses": 35,
+        "maxsize": null,
+        "currsize": 35
+      },
+      "prefix_frame_classes": 23,
+      "prefix_frame_aliases": 12,
+      "prefix_frames_enabled": true
+    }
+  ],
+  "reference_sha256": "824eb122655fdd6956b053ba0054c674202d44f870442aba71adf0bfc6efa1f5",
+  "equal": true,
+  "status": "complete"
+}
