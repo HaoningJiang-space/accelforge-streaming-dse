@@ -8,7 +8,7 @@ operators.
 
 | Module | Contents | Status |
 | --- | --- | --- |
-| `forms.py` | Unit-M closed forms: `loop_nest`, group forms (`single`, `pair`, `ce`, `ec`, `cec`) and the boundary DP `predict` | exact; frozen and held out (§6-11) |
+| `forms.py` | Unit-M forms: `loop_nest`, segment macros (`single`, `pair`, `ce`, `ec`, `cec`) and the boundary DP `predict` | chain envelope verified (§6-11); individual macros are not full native group frontiers (§21) |
 | `keep_level.py` | One contraction at any M: keep-level `predict`, cached frontier `curve_of` | exact; frozen and held out (§12) |
 | `chains.py` | `recognise` / `archived`: structural chain-state recognition returning a `Chain` | shared by every module below |
 | `bounds.py` | `lower` (operator projection, any M) and `upper` (singleton partition) | proved / constructive (§14, sandwich) |
@@ -16,6 +16,7 @@ operators.
 | `substitution.py` | `make_exact_kernel` (in-memory hook, `graph/curve.py` unchanged), lazy native witnesses `expand` | FFN-4: 6.8× historical frontier search, 6.60× complete native generation; no M8 benefit (§16/16a) |
 | `experiments.py` | Every experiment command, plus `verify` | entry point |
 | `fusion_width.py` | Bounded offline top-level group-span reconstruction from archived group interfaces | diagnostic only; high aggregate equality is mostly automatic n<=k coverage (§19) |
+| `root_work.py` | Root-wide state families, parent provenance, free-terminal attribution and existing singleton-provider cost | read-only diagnostic; see WORK_ATTRIBUTION.md §4, no new replacement |
 
 ## Commands
 

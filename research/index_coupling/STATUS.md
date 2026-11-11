@@ -41,6 +41,17 @@ and selected solve partitions must be inlined. Removing only root M-to-one
 calls makes zero M8 child states unreachable. This continuation also stops;
 there is no M8 root integration or general scaling claim.
 
+Root-wide follow-up: [WORK_ATTRIBUTION.md §4](WORK_ATTRIBUTION.md) audits four
+existing v2 call DAGs and every parent source. After free unit-M replacement,
+multi-op M>1 solves carry 82.37%/92.99% of residual M8 DP work; singleton
+groups carry 66.49%/52.67% of residual loop choices. The available singleton
+constructor takes 1.93/2.30 seconds for the requested numeric responses alone,
+versus diagnostic full-root native generation of 0.051/0.251 seconds. No
+cheap high-coverage provider is established. These are work attribution and
+one-run construction diagnostics, not new solver speedups. Demand-driven FFM
+generation is a separate next audit with Event/cache and policy coverage as
+required baselines; no new implementation starts in this follow-up.
+
 This page is the index to the directory. README.md keeps the chronological record.
 PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. RESEARCH_PLAN.md and
