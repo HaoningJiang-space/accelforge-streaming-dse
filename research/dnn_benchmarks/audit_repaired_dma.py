@@ -9,6 +9,42 @@ from pathlib import Path
 from .togsim_statistics import parse_completed_statistics
 
 
+class DMABoundsError(ValueError):
+    """The emitted DMA exceeds the declared logical tensor, before tag reuse."""
+
+    def __init__(self, node, indices, low, high, logical_cells):
+        self.details = dict(
+            node_id=node['node_id'], tensor=node['base_address'],
+            direction='write' if node['is_write'] else 'read',
+            cell_interval=[low, high + 1], logical_cells=logical_cells,
+            byte_interval=[4 * low, 4 * (high + 1)], logical_bytes=4 * logical_cells,
+            tile_size=node['tile_size'], tile_stride=node['tile_stride'],
+            loop_indices=dict(indices),
+        )
+        super().__init__(
+            f"DMA exceeds tensor: {self.details['tensor']} {self.details['direction']} "
+            f"at node {node['node_id']}, cell interval [{low}, {high + 1}) "
+            f"outside [0, {logical_cells}); tile={node['tile_size']}"
+        )
+
+
+def checked_region(node, indices, logical_cells):
+    """Check exact affine extrema before allocating the per-cell ledger.
+
+    The interval is the enclosing address range, not a claim that a strided
+    region is contiguous. Padding requires an explicit storage contract; the
+    validation harness's extra malloc space does not change tensor bounds.
+    """
+    offset=sum(indices[idx]*stride for idx,stride in zip(node['loop_idx_list'],node['loop_stride_list']))
+    if any(s == 0 for s in node['tile_size']):return ()
+    ends=[(size-1)*stride for size,stride in zip(node['tile_size'],node['tile_stride'])]
+    low=offset+sum(min(0,end) for end in ends)
+    high=offset+sum(max(0,end) for end in ends)
+    if low < 0 or high >= logical_cells:
+        raise DMABoundsError(node,indices,low,high,logical_cells)
+    return tuple(offset+sum(v*s for v,s in zip(index,node['tile_stride'])) for index in itertools.product(*(range(s) for s in node['tile_size'])))
+
+
 def audit(run):
     result=json.loads((run/'result/result.json').read_text())
     graphs=list((run/'result/compiler').glob('*/*_tog.py'))
@@ -56,9 +92,7 @@ def audit(run):
         if kind==3:
             if node['indirect_mode'] or node['element_size']!=32:raise ValueError('only direct float32 DMA')
             name=node['base_address'];base=bases[name]
-            offset=sum(indices[idx]*stride for idx,stride in zip(node['loop_idx_list'],node['loop_stride_list']))
-            region=tuple(offset+sum(v*s for v,s in zip(index,node['tile_stride'])) for index in itertools.product(*(range(s) for s in node['tile_size'])))
-            if not all(0<=x<sizes[name] for x in region):raise ValueError('DMA exceeds tensor')
+            region=checked_region(node,indices,sizes[name])
             if not node['is_write']:
                 accum=tuple(indices[idx] for idx in node['loop_idx_list'] if loops[idx]['loop_type']=='accumulation_loop') or (0,)
                 tag=sum((indices.get(idx,0)//min(loops[idx]['loop_step'],systolic) if idx in loops else 0)*stride for idx,stride in zip(node['tag_idx_list'],node['tag_stride_list']))

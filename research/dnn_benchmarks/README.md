@@ -124,3 +124,8 @@ separately in [P19_SERVER_RESULTS.md](P19_SERVER_RESULTS.md).
 The apparent K=3072 failure boundary was an auditor interval/total mix-up,
 corrected with 15/15 re-audits and four fresh executions. See
 [PYTORCHSIM_INTERVAL_AUDIT_FIX.md](PYTORCHSIM_INTERVAL_AUDIT_FIX.md).
+
+The two ResNet heuristic exclusions in the fidelity study are now explained in
+[RESNET_DMA_TAIL_AUDIT.md](RESNET_DMA_TAIL_AUDIT.md): DMA includes padded rows
+beyond the logical tensor, while the functional wrapper's doubled allocation
+masks the bounds issue. Their timing remains rejected under the current contract.

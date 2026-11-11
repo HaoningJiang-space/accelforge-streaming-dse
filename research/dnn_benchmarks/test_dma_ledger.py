@@ -1,6 +1,7 @@
 import ast,json,shutil,tempfile,unittest
 from pathlib import Path
-from .audit_repaired_dma import audit
+from .audit_repaired_dma import audit, checked_region, DMABoundsError
+from .audit_gemm_tail import diagnose
 
 class CompiledLedgerTests(unittest.TestCase):
     root=Path(__file__).parent/'results/pytorchsim/1860f851'
@@ -24,5 +25,34 @@ class CompiledLedgerTests(unittest.TestCase):
                 if node['node_type']==3 and not node['is_write'] and node['base_address']=='arg1':node['tag_stride_list']=[0]*len(node['tag_stride_list'])
             path.write_text('graph = '+repr(graph)+'\n')
             with self.assertRaisesRegex(ValueError,'load-tag collision'):audit(run)
+
+    def test_resnet_tail_is_not_implicit_padding(self):
+        root=Path(__file__).parent/'results/resnet_tail'
+        archived=json.loads((root/'diagnosis.json').read_text())
+        for saved,expected in zip(archived,[(3200,16384,65536),(896,57344,229376)]):
+            with self.subTest(case=saved['case']):
+                r=diagnose(root/saved['case'])
+                self.assertEqual(r,saved)
+                self.assertTrue(r['transactions_match'])
+                self.assertTrue(r['instruction_counts_match'])
+                self.assertNotEqual(r['observed_transactions'],r['hypothetical_clipped_transactions'])
+                self.assertEqual((r['padded_m'],r['tensors']['arg0']['excess_bytes'],r['tensors']['arg2']['excess_bytes']),expected)
+                self.assertTrue(all(t['inside_validation_malloc'] for t in r['tensors'].values()))
+                self.assertTrue(r['numerical_equal'])
+                self.assertFalse(r['timing_accepted'])
+                with self.assertRaises(DMABoundsError) as error:audit(root/saved['case'])
+                self.assertEqual(error.exception.details,r['strict_rejection'])
+
+    def test_affine_region_extrema_preserve_strides(self):
+        node=dict(node_id=7,base_address='arg2',is_write=True,
+                  loop_idx_list=['i'],loop_stride_list=[1],
+                  tile_size=[2,3],tile_stride=[10,2])
+        self.assertEqual(checked_region(node,{'i':1},16),(1,3,5,11,13,15))
+        with self.assertRaises(DMABoundsError) as error:checked_region(node,{'i':1},15)
+        self.assertEqual(error.exception.details['direction'],'write')
+        self.assertEqual(error.exception.details['cell_interval'],[1,16])
+        node['tile_stride']=[-10,-2]
+        self.assertEqual(checked_region(node,{'i':15},16),(15,13,11,5,3,1))
+        with self.assertRaises(DMABoundsError):checked_region(node,{'i':13},16)
 
 if __name__=='__main__':unittest.main()

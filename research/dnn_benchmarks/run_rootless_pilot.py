@@ -71,7 +71,9 @@ def main():
             if not audit_result['timing_accepted']:code=1;status='dma_audit_failed'
         except Exception as e:
             code=1;status='dma_audit_failed'
-            (out/'dma_audit_error.json').write_text(json.dumps({'error':f'{type(e).__name__}: {e}'})+'\n')
+            error={'error':f'{type(e).__name__}: {e}'}
+            if hasattr(e,'details'):error['details']=e.details
+            (out/'dma_audit_error.json').write_text(json.dumps(error)+'\n')
     (out/'launch_result.json').write_text(json.dumps(dict(status=status,exitcode=code,mode=a.mode,
         dma_audit_passed=bool(audit_result and audit_result.get('timing_accepted')),wall_seconds=time.monotonic()-started,timeout_seconds=a.seconds,process_exitcode=process_exitcode,audit_seconds=time.monotonic()-audit_started),indent=2)+'\n')
     if code or status!='exited':raise SystemExit(1)
