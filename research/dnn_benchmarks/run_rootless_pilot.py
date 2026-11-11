@@ -54,8 +54,18 @@ def main():
             except subprocess.TimeoutExpired:child.kill();child.wait()
             code=child.returncode;status='timeout'
         finally:subprocess.run(runc+['delete','--force',identity],stdout=stream,stderr=stream)
+    audit_result=None
+    if code==0 and status=='exited' and a.fixed_timing_addresses:
+        from .audit_repaired_dma import audit
+        try:
+            audit_result=audit(out)
+            (out/'dma_audit.json').write_text(json.dumps(audit_result,indent=2)+'\n')
+            if not audit_result['timing_accepted']:code=1;status='dma_audit_failed'
+        except Exception as e:
+            code=1;status='dma_audit_failed'
+            (out/'dma_audit_error.json').write_text(json.dumps({'error':f'{type(e).__name__}: {e}'})+'\n')
     (out/'launch_result.json').write_text(json.dumps(dict(status=status,exitcode=code,mode=a.mode,
-        wall_seconds=time.monotonic()-started,timeout_seconds=a.seconds),indent=2)+'\n')
+        dma_audit_passed=bool(audit_result and audit_result.get('timing_accepted')),wall_seconds=time.monotonic()-started,timeout_seconds=a.seconds),indent=2)+'\n')
     if code or status!='exited':raise SystemExit(1)
 
 

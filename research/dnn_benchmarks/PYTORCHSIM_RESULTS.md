@@ -1,3 +1,7 @@
+> Update: the separately patched backend now passes the complete GEMM pilot.
+> See [repaired results](PYTORCHSIM_REPAIRED_RESULTS.md). This document preserves
+> the original unmodified-backend findings and failures.
+
 # PyTorchSim runtime and GEMM import checks
 
 The pinned image now runs without root on the designated CPU host. The first

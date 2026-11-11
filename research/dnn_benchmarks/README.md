@@ -116,3 +116,7 @@ native heuristic, native autotune, or explicit manual tiles. Eight actual runs
 are archived in [PYTORCHSIM_RESULTS.md](PYTORCHSIM_RESULTS.md), including three
 numerical failures. Independent checks of the generated DMA regions exposed a
 backend byte-address mismatch, so hardware timing acceptance remains blocked.
+
+The repaired PyTorchSim GEMM path and one-command validation are documented in
+[PYTORCHSIM_REPAIRED_RESULTS.md](PYTORCHSIM_REPAIRED_RESULTS.md). P19 is finalized
+separately in [P19_SERVER_RESULTS.md](P19_SERVER_RESULTS.md).
