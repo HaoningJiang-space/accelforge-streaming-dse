@@ -493,3 +493,102 @@ Frozen measurements for this continuation:
 - No native/archived answer enters the new recurrence. Keep all old frozen
   results intact. Stop at this bounded continuation rather than widening its
   frame signature or changing test cases after timing results.
+
+### Completed result: useful on longer spans; negligible on one-layer M8
+
+Protocol `10e5b381`, implementation frozen at `02867737` before performance
+measurement. [results/prefix_frames/](results/prefix_frames/) contains 150
+uninstrumented timing records, 30 separate instrumented work records, the
+manifest and a recomputable summary. All six cases and five arms complete
+under the frozen limits on the same Linux/Python 3.10.12 server as section 5.
+All 11 manifest source hashes match the frozen commit. No implementation or
+case change follows measurement. The nine targeted tests cover the earlier
+contracts plus parent aliases, distinct exit sets, scalar-entry distinction,
+future-writer classification, and composition with unit forms. The artificial
+non-topological writer test compares grammar costs only; it is not claimed as
+an executable DAG example.
+
+**All 73 distinct complete root frontier points agree; 2,190/2,190 repeated
+root witnesses replay exactly.** Prefix arms return native witnesses directly,
+with no recovery search. Unit-form arms include expansion. Five-round median
+complete mapping generation, milliseconds:
+
+| Case | Native | Previous prefix | Parent-frame prefix | New / native speedup | Previous / new speedup | Unit forms | Unit + frames |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| M8 FFN-1 | 64.53 | 46.64 | 46.25 | 1.40× | 1.008× | 81.12 | 67.81 |
+| M8 FFN-2 | 312.97 | 197.38 | 188.37 | 1.66× | 1.048× | 320.26 | 229.12 |
+| Tiny FFN-4 | 3,990.76 | 1,070.25 | 732.94 | 5.44× | 1.460× | 561.62 | 557.74 |
+| Mixed fork kki | 92.44 | 50.86 | 51.04 | 1.81× | 0.996× | 94.69 | 54.18 |
+| Holdout M16 FFN-2 | 441.02 | 286.39 | 262.32 | 1.68× | 1.092× | 476.89 | 329.48 |
+| Holdout M8 FFN-3 | 2,526.74 | 1,153.81 | 954.09 | 2.65× | 1.209× | 2,257.52 | 1,077.40 |
+
+Both established M8 medians beat the previous-prefix control, meeting the
+literal predeclared criterion, but **M8-1 does not establish a robust additional
+speedup**: previous/new ranges are 46.25–46.86 / 45.77–48.31 ms. Its 0.8%
+median difference is smaller than run variability. M8-2 ranges do separate:
+196.65–198.65 / 185.92–189.55 ms. The two holdouts also separate:
+283.88–287.61 / 260.53–263.38 ms and 1,147.34–1,161.60 /
+945.69–970.10 ms. Fork slightly regresses; it is retained as a negative
+incremental result. Existing unit forms remain better on tiny FFN-4. These
+observations do not define an automatic dispatcher.
+
+Adapter installation remains separately timed, about 13 ms. Including it,
+new generation is 59.52 / 201.74 ms on M8-1/2 (**1.08× / 1.55×** native),
+275.67 ms on M16-2 (**1.60×**), and 967.02 ms on M8-3 (**2.61×**).
+Independent executor validation is excluded from generation: its medians for
+the new arm are 126.2 / 260.8 / 643.5 / 418.7 ms on those four cases. Raw
+records report it separately; neither witness generation nor AST installation
+is being mistaken for replay.
+
+| Construction work | Native | Previous prefix | Parent-frame prefix |
+| --- | ---: | ---: | ---: |
+| M8-1 partition transitions | 3,770 | 2,582 | 2,486 |
+| M8-2 partition transitions | 22,124 | 12,952 | 11,416 |
+| M8-2 Pareto candidates | 218,960 | 106,845 | 98,097 |
+| M16-2 partition transitions | 29,184 | 17,028 | 14,988 |
+| M16-2 Pareto candidates | 329,879 | 164,535 | 151,622 |
+| M8-3 partition transitions | 204,350 | 84,030 | 62,802 |
+| M8-3 Pareto candidates | 2,650,082 | 857,954 | 696,812 |
+
+Original solve/group misses and loop choices remain identical across the
+native and two prefix-only arms in every case. For M8-1/2, M16-2, M8-3,
+the counts are respectively 2,108/5,578; 6,176/15,636; 8,015/23,881; and
+14,336/40,829. The result shares intermediate construction across parents,
+not whole conditional responses, and does not remove loop enumeration.
+
+| Case | Numeric prefix entries, previous → new | Proper parent keys → frame classes | Peak RSS MiB, native / previous / new |
+| --- | ---: | ---: | ---: |
+| M8 FFN-1 | 1,326 → 1,230 | 4 → 3 | 20.25 / 23.08 / 22.89 |
+| M8 FFN-2 | 4,418 → 3,818 | 35 → 15 | 27.19 / 36.12 / 34.91 |
+| Tiny FFN-4 | 14,706 → 8,918 | 286 → 66 | 40.31 / 77.24 / 60.33 |
+| Mixed fork kki | 1,778 → 1,703 | 10 → 6 | 20.25 / 23.14 / 23.02 |
+| Holdout M16 FFN-2 | 5,766 → 4,974 | 35 → 15 | 30.56 / 42.25 / 40.26 |
+| Holdout M8 FFN-3 | 13,606 → 9,994 | 120 → 36 | 48.75 / 83.26 / 72.91 |
+
+The memory prediction holds in these measurements relative to the previous
+prefix implementation; memory still exceeds native. Numeric prefix entries
+are additional to the original response caches. Frame aliases are counts of
+structural parent keys merged, not removed complete solver states.
+
+There is a simple structural explanation for the chain-length trend. In an
+adjacent-activation chain with private weights and topological order, a proper
+prefix [i,j) of parent [i,k) has the same exit tensor for every k>j, and no
+future writer. Thus its parent-frame class depends on (i,j), not k. Across
+all contiguous spans, the number of potential proper parent/cut keys is
+binomial(n+1,3), while the number of frame classes is binomial(n,2). The
+observed counts for 3, 6, 9 and 12 operators are exactly 4→3, 35→15,
+120→36 and 286→66. This is a bound on the **structural frame dimension
+only**. Extents, resident/owned identities, boundary decisions and Pareto
+frontier size still multiply numeric work; no polynomial bound for complete
+mapping search follows. It explains why longer spans expose more reusable
+construction without assuming their complete responses are equal.
+
+Keep the implementation opt-in (`make_kernel(projection=True, frames=True)`),
+preserve the old control, and stop this bounded continuation here. The default
+core and mapping grammar remain unchanged. The holdouts provide evidence of
+benefit beyond the original two M8 cases, not general-DNN or hardware speedup.
+
+```sh
+python3 -m unittest research.index_coupling.test_prefix_sharing -v
+python3 -m research.index_coupling.response.bench_prefix_frames run NEW_DIRECTORY --revision YOUR_SOURCE_COMMIT
+```

@@ -1,5 +1,17 @@
 # Index coupling: current status (entry point)
 
+**Parent-frame continuation complete:** [WORK_ATTRIBUTION.md §6](WORK_ATTRIBUTION.md)
+shares equivalent prefix boundaries across different parent-span lengths.
+All 73 root points agree and 2,190 repeated witnesses replay exactly. Complete
+generation is **1.40× / 1.66× native** on M8 FFN-1/2, and **1.68× / 2.65×**
+on the specified M16-2 / M8-3 holdouts (installation-inclusive: 1.08× / 1.55× /
+1.60× / 2.61×). Relative to the previous prefix method, M8-1's 0.8% median
+gain is within run variability; M8-2 and both holdouts improve clearly, fork
+slightly regresses. Memory decreases versus the previous prefix method but
+still exceeds native. Original state/loop counts remain unchanged. This
+bounded continuation stops with an opt-in implementation, not a new default
+or a general-DAG scaling claim.
+
 **New bounded positive result:** [conditional prefix sharing, WORK_ATTRIBUTION.md §5](WORK_ATTRIBUTION.md)
 preserves all 38 root points with 1,140 exact replays. Five fresh-process rounds
 give **1.38× / 1.58× complete root mapping generation** on M8 FFN-1/2;
