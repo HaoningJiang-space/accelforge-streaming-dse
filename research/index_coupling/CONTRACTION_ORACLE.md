@@ -1290,3 +1290,47 @@ transitions and recovery search work. Keep the old artifacts intact. Do not
 change the default solver, expand shapes, integrate at the root or introduce
 another method in this continuation. Report the observed result without a
 predeclared speedup claim; the experiment ends after this bounded comparison.
+
+### Local-interface correction before timing
+
+The extra standalone-group check above **fails**: 176 of 672 factor
+occurrences differ from the full native group frontier, across the three
+cases and two tile domains. This is not a failed timing run and is not
+silently counted as a passed check. The structural correspondence assumed
+for witness recovery was too strong. Two examples with streamed weights:
+
+- `cec`, sizes (4,8,8,4), neither end resident: at capacity 3 the formula
+  gives 84 extra transfers and native group gives 76; at traffic 28 the
+  formula needs capacity 7 whereas native group needs 6. Native can spill
+  an internal activation that the local form keeps in this construction.
+- `cc`, sizes (8,4,8), neither end resident: the formula reaches zero at
+  capacity 6, but native group needs 18. The form includes a full-tile
+  partition into separate operators, which belongs to the solve entry.
+
+Consequently these local forms are **segment plan macros**, not complete
+native group responses. Equality of their chain envelope with the native
+solve response does not imply equality for each factor. Sections 20 and
+the preceding protocol used "exact local group" too broadly; their archived
+whole-branch equality and replay measurements are unaffected.
+
+The breakpoint algebra remains exact relative to `forms.predict`: it only
+reorders the same finite choices. The local tests also confirm that no form
+point beats the native **solve** response in these 672 occurrences. The
+comparison with the full native branch remains the independent correctness
+check; standalone group equality is withdrawn as an incorrect interface
+assumption, not relabeled a successful test.
+
+Before performance measurement, correct local recovery to use solve entry.
+If its selected native witness starts with a partition, inline that first
+partition into the enclosing chain partition, carrying its kept/dropped
+annotations and child records. Private weights and unique-use chain
+activations ensure these local internal boundaries do not escape the
+segment. Their first/last use and ownership are unchanged by inlining.
+All remaining loop subtrees stay intact. Scalar hold/leaf records can stay
+as one group. Native recovery must find the selected local cost at no greater
+capacity; otherwise fail rather than falling back to an uncharged global
+search. Replay still checks every complete selected witness exactly.
+
+This correction changes the recovery interface, not the cases, domains,
+breakpoint DP, baseline, timing definition or five-round comparison.
+Records: `results/loop_conditioned_factors/local_interface.json`.
