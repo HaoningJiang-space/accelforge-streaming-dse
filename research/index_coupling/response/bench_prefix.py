@@ -33,7 +33,9 @@ def worker(case, arm, instrumented, graph=None):
     if arm=='native':fn,registry=curve,{}
     elif arm=='unit':fn,registry=make_exact_kernel()
     else:fn,registry=make_kernel(projection=arm!='prefix_raw',unit=arm in ('unit_prefix','unit_frames'),
-                                 frames=arm in ('prefix_frames','unit_frames'))
+                                 frames=arm in ('prefix_frames','unit_frames','prefix_numeric','prefix_ordered'),
+                                 composition={'prefix_numeric':'numeric','prefix_ordered':'ordered'}.get(arm,'eager'),
+                                 profile_prefix=instrumented)
     installation=time.perf_counter()-start
     stats={} if instrumented else None
     start=time.perf_counter()
@@ -46,6 +48,7 @@ def worker(case, arm, instrumented, graph=None):
     # RSS is sampled before replay, which expands numerical tensor cells.
     rss=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     if sys.platform=='darwin':rss/=1024
+    witness_digest=hashlib.sha256(repr(points).encode()).hexdigest()
     start=time.perf_counter();replays=0
     for c,q,w in points:
         if any(note[0] not in ('groups','loop','hold') for note in w):
@@ -61,11 +64,12 @@ def worker(case, arm, instrumented, graph=None):
                 replay_seconds=time.perf_counter()-start,replayed_points=replays,
                 points=[list(p[:2]) for p in points],peak_rss_kib=rss,
                 witness_notes=sum(len(p[2]) for p in points),recovery_states=len(cache),
+                witness_sha256=witness_digest,
                 stats=stats,unit_curve_cache=frontier_of.cache_info()._asdict())
 
 
 def run(out,revision,*,cases=CASES,arms=ARMS,protocol_commit='e116c2a3',
-        worker_module=None,extra_sources=()):
+        worker_module=None,extra_sources=(),rotate=False):
     out=Path(out);out.mkdir(parents=True,exist_ok=False)
     root=Path(__file__).resolve().parent.parent
     files=[root/p for p in ('graph/curve.py','graph/model.py','graph/stacks.py',
@@ -76,12 +80,15 @@ def run(out,revision,*,cases=CASES,arms=ARMS,protocol_commit='e116c2a3',
                   timeout_seconds=60,memory_gib=6,python=platform.python_version(),
                   platform=platform.system(),hash_seed=0,
                   source_sha256={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in files},
+                  arm_order='cyclic' if rotate else 'alternating',
                   scope='complete root generation; installation and replay separately reported; work runs instrumented')
     (out/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     for instrumented,rounds in ((False,range(5)),(True,range(1))):
         for round_id in rounds:
             for case in cases:
-                for arm in (arms if round_id%2==0 else tuple(reversed(arms))):
+                order=(arms[round_id%len(arms):]+arms[:round_id%len(arms)]) if rotate else (
+                    arms if round_id%2==0 else tuple(reversed(arms)))
+                for arm in order:
                     name=f'{case}_{arm}_{"work" if instrumented else round_id}.json'
                     cmd=[sys.executable,'-m',worker_module or __spec__.name,'worker',case,arm]
                     if instrumented:cmd.append('--instrumented')

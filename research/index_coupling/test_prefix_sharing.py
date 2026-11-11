@@ -1,11 +1,12 @@
 """Exact prefix interfaces, enumeration controls, and native witness replay."""
 from itertools import product
+import random
 import unittest
 
-from .graph.curve import curve
+from .graph.curve import curve, pareto
 from .graph.model import Graph, fork, residual
 from .graph.stacks import ffn_stack
-from .response.prefix import make_kernel
+from .response.prefix import make_kernel, ordered_union
 from .response.substitution import expand
 from .simulate_nest import simulate
 from .unified_search import mixed_branch_graph
@@ -17,7 +18,9 @@ OPTIONS = dict(partitions='dp', scalar_leaf='v2')
 class PrefixSharingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.kernels = [make_kernel(False)[0], make_kernel(True)[0], make_kernel(frames=True)[0]]
+        cls.kernels = [make_kernel(False)[0], make_kernel(True)[0], make_kernel(frames=True)[0],
+                       make_kernel(frames=True,composition='numeric')[0],
+                       make_kernel(frames=True,composition='ordered')[0]]
 
     def compare(self, g, **options):
         expected = curve(g, scalar_leaf='v2', partitions='enumerate', **options)
@@ -124,6 +127,41 @@ class PrefixSharingTests(unittest.TestCase):
         for c,q,w in fn(g,witness=True,**OPTIONS):
             r=simulate(g,expand(g,w,registry,cache),scalar_leaf='v2')
             self.assertTrue(r['valid']);self.assertEqual((r['peak'],r['traffic']),(c,q))
+
+    def test_ordered_union_stable_ties_empty_streams_and_capacity(self):
+        # Distinct unorderable provenance; only stable numeric keys may decide.
+        rng=random.Random(137)
+        for _ in range(100):
+            streams=[tuple(sorted(((rng.randrange(8),rng.randrange(8),object())
+                                   for _ in range(rng.randrange(12))),key=lambda p:p[:2]))
+                     for _ in range(rng.randrange(6))]
+            for cap in (0,3,float('inf')):
+                self.assertEqual(ordered_union(streams,cap),
+                                 pareto([p for stream in streams for p in stream],cap))
+
+    def test_lazy_composition_preserves_exact_selected_witness_and_work(self):
+        for g in (ffn_stack(2,m=2,d=1,f=2),fork(2,2,2,2,'ki')):
+            for domain,entry,external,written in product(
+                    ('halving','divisors'),('solve','group'),((),('W1_0',)),((),('H0',))):
+                # Only actual graph tensors enter conditional queries.
+                ts=g.tensors(g.ops)
+                opts=dict(OPTIONS,witness=True,tile_domain=domain,entry=entry,
+                          external=ts.intersection(external),written=ts.intersection(written))
+                expected=self.kernels[2](g,**opts)
+                for fn in self.kernels[3:]:self.assertEqual(fn(g,**opts),expected)
+            counters=[]
+            for mode in ('eager','numeric','ordered'):
+                stats={};fn,_=make_kernel(frames=True,composition=mode,profile_prefix=True)
+                actual=fn(g,stats=stats,witness=True,**OPTIONS)
+                self.assertEqual(actual,self.kernels[2](g,witness=True,**OPTIONS))
+                counters.append(stats)
+            for stats in counters[1:]:
+                for key in ('prefix_candidates','prefix_survivors','pareto_candidates','pareto_points',
+                            'dp_transitions','loop_choices','merge_points'):
+                    self.assertEqual(stats[key],counters[0][key],key)
+                self.assertEqual(stats['prefix_witness_constructions'],stats['prefix_survivors'])
+                self.assertLess(stats['prefix_witness_constructions'],counters[0]['prefix_witness_constructions'])
+            self.assertEqual(counters[0]['prefix_witness_constructions'],counters[0]['prefix_candidates'])
 
 
 if __name__=='__main__':unittest.main()
