@@ -18,6 +18,8 @@ Usage: python -m research.index_coupling.response.experiments COMMAND ...
   exact-check CASE...                 online substitution: curves and witness replay (§16)
   exact-bench OUT.jsonl REPEATS CASE...   fresh-process timing, baseline vs substitution
   exact-once MODE CASE                one measurement (used by exact-bench)
+  exact-mapping-bench OUT.jsonl REPEATS CASE...  native witness generation, including recovery
+  exact-mapping-once MODE CASE        one mapping measurement, followed by untimed replay
 Archive-based commands default to all eight archived cases when none is given.
 """
 from collections import Counter, defaultdict
@@ -450,24 +452,48 @@ def exact_check(cases):
         print(json.dumps(record), flush=True)
 
 
-def exact_once(mode, case):
-    """One frontier-only (witness=False) measurement in this fresh process."""
+def exact_once(mode, case, timing='frontier'):
+    """Fresh-process search; mapping timing also charges native witness recovery."""
     import platform
     import resource
+    if mode not in ('baseline', 'exact') or timing not in ('frontier', 'mapping'):
+        raise ValueError((mode, timing))
     graph = graph_of(case)
-    solver = curve if mode == 'baseline' else make_exact_kernel()[0]
+    start = time.perf_counter()
+    solver, registry = (curve, {}) if mode == 'baseline' else make_exact_kernel()
+    setup_seconds = time.perf_counter() - start
     stats = {}
     start = time.perf_counter()
-    points = solver(graph, stats=stats, **OPTIONS)
+    points = solver(graph, stats=stats, witness=timing == 'mapping', **OPTIONS)
+    search_seconds = time.perf_counter() - start
+    cache = {}
+    if timing == 'mapping' and mode == 'exact':
+        native_points = [(c, q, expand(graph, w, registry, cache)) for c, q, w in points]
+    else:
+        native_points = points
     seconds = time.perf_counter() - start
     rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     keys = ('dp_transitions', 'loop_choices', 'pareto_candidates', 'merge_inputs', 'exact_checks', 'exact_hits',
             'exact_seconds')
-    print(json.dumps(dict(mode=mode, case=case, seconds=seconds,
-                          peak_rss_mib=rss / 2**20 if platform.system() == 'Darwin' else rss / 2**10,
-                          curve=[p[:2] for p in points],
-                          misses=stats['solve_cache']['misses'] + stats['group_cache']['misses'],
-                          **{k: stats.get(k) for k in keys})))
+    record = dict(mode=mode, case=case, timing=timing, seconds=seconds,
+                  search_seconds=search_seconds, recovery_seconds=seconds-search_seconds,
+                  setup_seconds=setup_seconds, setup_and_generation_seconds=setup_seconds+seconds,
+                  peak_rss_mib=rss / 2**20 if platform.system() == 'Darwin' else rss / 2**10,
+                  curve=[p[:2] for p in points], expanded_states=len(cache),
+                  misses=stats['solve_cache']['misses'] + stats['group_cache']['misses'],
+                  **{k: stats.get(k) for k in keys})
+    if timing == 'mapping':
+        from research.index_coupling.simulate_nest import simulate
+        assert points
+        assert all(note[0] != 'exact' for _, _, w in native_points for note in w)
+        start = time.perf_counter()
+        for c, q, w in native_points:
+            run = simulate(graph, w, scalar_leaf='v2')
+            assert run['valid'] and (run['peak'], run['traffic']) == (c, q), (case, c, q, run)
+        record.update(replay_exact=len(points), replay_total=len(points),
+                      replay_seconds=time.perf_counter()-start,
+                      placeholders=sum(note[0] == 'exact' for _, _, w in points for note in w))
+    print(json.dumps(record))
 
 
 def exact_bench(out, repeats, cases):
@@ -486,6 +512,65 @@ def exact_bench(out, repeats, cases):
                           flush=True)
 
 
+def exact_mapping_bench(out, repeats, cases):
+    """Finish the existing timing ledger; no new search strategy or shape sweep."""
+    import hashlib
+    import os
+    import platform
+    import statistics
+    import subprocess
+    if repeats < 1 or not cases or len(set(cases)) != len(cases):
+        raise ValueError('positive repeats and distinct cases required')
+    out = Path(out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    root = Path(__file__).resolve().parents[3]
+    here = root / 'research/index_coupling'
+    sources = ('response/experiments.py', 'response/substitution.py', 'response/forms.py',
+               'response/chains.py', 'graph/curve.py', 'graph/model.py', 'graph/stacks.py',
+               'simulate_nest.py', 'census_tools.py')
+    manifest = dict(cases=cases, repeats=repeats, python_version=platform.python_version(),
+                    system=platform.system(), machine=platform.machine(), pythonhashseed=0,
+                    options=OPTIONS, worker_timeout_seconds=120,
+                    git_base_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip(),
+                    source_sha256={f: hashlib.sha256((here/f).read_bytes()).hexdigest() for f in sources},
+                    timing='witness=True search + recovery of every root point, sharing recovery cache within run',
+                    excluded='imports, graph construction, kernel setup (separately reported), executor replay')
+    rows, references = [], {}
+    with out.open('x') as stream:
+        with out.with_suffix('.manifest.json').open('x') as mf:
+            json.dump(manifest, mf, indent=2)
+            mf.write('\n')
+        for case in cases:
+            for repeat in range(repeats):
+                for mode in (('baseline', 'exact') if repeat % 2 == 0 else ('exact', 'baseline')):
+                    result = subprocess.run(
+                        [sys.executable, '-m', 'research.index_coupling.response.experiments',
+                         'exact-mapping-once', mode, case], cwd=root,
+                        env=dict(os.environ, PYTHONHASHSEED='0'), capture_output=True, text=True, timeout=120,
+                        check=True)
+                    row = dict(json.loads(result.stdout), repeat=repeat)
+                    row['same_curve'] = row['curve'] == references.setdefault(case, row['curve'])
+                    assert row['same_curve'] and row['replay_exact'] == row['replay_total']
+                    if mode == 'exact':
+                        assert row['expanded_states'] > 0 and row['placeholders'] > 0
+                    rows.append(row)
+                    stream.write(json.dumps(row) + '\n')
+                    stream.flush()
+                    print(json.dumps({k: row[k] for k in ('case', 'mode', 'repeat', 'seconds',
+                                                         'search_seconds', 'recovery_seconds', 'replay_exact')}), flush=True)
+    summary = []
+    for case in cases:
+        modes = {}
+        for mode in ('baseline', 'exact'):
+            subset = [r for r in rows if r['case'] == case and r['mode'] == mode]
+            modes[mode] = {k: statistics.median(r[k] for r in subset) for k in
+                           ('seconds', 'search_seconds', 'recovery_seconds', 'setup_seconds',
+                            'setup_and_generation_seconds', 'replay_seconds', 'peak_rss_mib')}
+        summary.append(dict(case=case, modes=modes, frontier_points=len(references[case]),
+                            speedup=modes['baseline']['seconds']/modes['exact']['seconds']))
+    out.with_suffix('.summary.json').write_text(json.dumps(summary, indent=2) + '\n')
+
+
 def main(argv):
     command, args = argv[0], argv[1:]
     cases = lambda: args or list(dag.CASES)
@@ -497,6 +582,10 @@ def main(argv):
         exact_once(*args)
     elif command == 'exact-bench':
         exact_bench(args[0], int(args[1]), args[2:])
+    elif command == 'exact-mapping-once':
+        exact_once(*args, timing='mapping')
+    elif command == 'exact-mapping-bench':
+        exact_mapping_bench(args[0], int(args[1]), args[2:])
     else:
         dict(archive=archive, op_check=op_check, op_c2=op_c2, op_work=op_work, closed_form_work=closed_form_work,
              sandwich=sandwich, residency=residency, exact_check=exact_check)[command.replace('-', '_')](cases())

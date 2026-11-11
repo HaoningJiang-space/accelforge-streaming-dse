@@ -6,6 +6,14 @@ The bounded [loop-closure pilot](LOOP_CLOSURE_RESULTS.md) stopped without an M8
 speedup; the latest [residency study](RESIDENCY_SHARING.md) rejects three simple
 sharing structures. Consolidation takes priority over starting another solver.
 
+The existing unit-M substitution now has complete native-witness timings:
+[CONTRACTION_ORACLE.md §16a](CONTRACTION_ORACLE.md). Three fresh-process rounds
+give 6.60×/6.70× on tiny FFN-4/attention-4 and 0.84×/0.97× on M8-1/M8-2,
+including placeholder recovery. All 39 distinct root points agree and all
+234 repeated executions replay exactly. This closes a measurement gap,
+without a new optimization. Section 18 also corrects the interpretation of
+the hindsight edge policy: its 35–42% DP savings are not a universal ceiling.
+
 This page is the index to the directory. README.md keeps the chronological record.
 PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. RESEARCH_PLAN.md and

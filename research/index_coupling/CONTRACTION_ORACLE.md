@@ -743,7 +743,8 @@ each ledger counter's total (`closed_form_work.jsonl`).
 - Each case expanded at least one closed-form state, so the replay does
   exercise substituted points.
 
-**Speed** (`exact_search.py bench`). Each measurement is a fresh process,
+**Frontier-only speed** (`exact_search.py bench`). These historical times
+exclude native witness recovery. Each measurement is a fresh process,
 with three repeats; the table gives the median. Closed-form time is the time
 spent in the hook.
 
@@ -770,10 +771,11 @@ M8-1 0.14 → 0.17 s, M8-2 0.62 → 0.68 s.
   2,108 → 1,841 and DP transitions 3,770 → 2,672 in M8-1. That is consistent
   with the offline audit (§15). The remaining work is at M > 1 states: loop
   choices over M tiles, weight slices under F and D loops, and their merges.
-- **The mechanism is the work distribution, not sharing.** Unit-M states are
-  the bottom of every M > 1 subtree. When M is tiny, they hold almost all of
-  the work. When M grows, the work moves to M > 1 states, which the closed
-  forms do not cover. Real models have large M.
+- **The measured mechanism is the work distribution.** In these tiny roots,
+  unit-M descendants account for most of the original work; in the two M8
+  controls, much remains in M > 1 states. This observation does not prove
+  that speedup decreases monotonically with M or that all real operators
+  have M > 8. Row extent depends on the operator, execution phase and tiling.
 
 **Consequence.** Unit-M substitution is a correct, measured speed-up only
 where unit-M work dominates. To matter at realistic M, the expensive M > 1
@@ -782,7 +784,69 @@ states need either:
 - an exact response (§12 shows that this is the full loop-order problem for
   one op); or
 - a pruning bound that removes whole M > 1 subtrees. §14's operator bound is
-  the candidate, and its shared-DAG work accounting is the next measurement.
+  the candidate originally proposed here. Its shared-DAG work accounting is
+  now complete in §17; it is not a pending experiment.
+
+### 16a. Complete native mapping generation: timing closure
+
+The existing four controls were remeasured with `witness=True` on both arms.
+The exact arm expands **every root frontier witness**, with one initially
+empty recovery cache shared across root points in that worker. Generation
+time includes search and the baseline-solver calls inside `expand()`.
+Executor replay is timed separately after generation. Kernel construction
+(about 12.6 ms for the exact arm), imports and graph construction are outside
+generation, as in the loop-closure pilot; setup-inclusive times are also saved.
+This is native graph-grammar mapping generation, not hardware code generation.
+
+There are three fresh-process repetitions per case/arm, alternating arm order,
+with `PYTHONHASHSEED=0`, grammar v2 and partition DP. Python is 3.14.2 on local
+Darwin arm64. All 24 runs complete. The 39 distinct case/frontier points agree
+across arms and all **234/234** executions, including repeated controls,
+replay with exact numerical outputs, traffic and peak occupancy. Every exact
+run exercises placeholders, and no placeholder remains after recovery.
+
+| Case | Baseline native generation | Exact search with placeholders | Recovery | Complete exact generation | Generation speedup |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| FFN-4, M=2, d=f=2 | 3.9924 s | 0.5962 s | 0.0087 s | 0.6048 s | **6.60×** |
+| Attention-4 proxy, M=p=d=2 | 3.9883 s | 0.5862 s | 0.0087 s | 0.5949 s | **6.70×** |
+| FFN M8-1, d=4, f=8 | 0.0620 s | 0.0653 s | 0.0082 s | 0.0735 s | **0.84×** |
+| FFN M8-2, d=4, f=8 | 0.3042 s | 0.2975 s | 0.0155 s | 0.3126 s | **0.97×** |
+
+Each column is its own median; component medians need not sum to the median
+total. Including kernel setup, the tiny-case ratios are 6.46× and 6.57×.
+Replay medians are about 7 ms for the tiny cases, 96–98 ms for M8-1 and
+210–214 ms for M8-2, and are excluded from both generation arms.
+The M8-2 exact times are 0.5154, 0.3019 and 0.3126 s; the slower first run
+is retained, with no selective rerun. These are small local timing samples.
+
+Recovery is cheap here because only selected root witnesses are expanded:
+three placeholders share one conditional recovery state in each tiny case;
+M8-1/M8-2 recover five/six states. It does not re-solve every substituted state.
+Thus the tiny positive result survives complete witness recovery. It remains
+a restricted positive result, and the M8 controls still show no benefit.
+
+The structural reason for the positive case is more specific than small M.
+With M=1, distinct feature ranks along a dense chain and at most one intervening
+elementwise op, a nontrivial shared loop spans at most two contractions and
+their intervening op. The possible patterns are `c`, `e`, `cc`, `ce`, `ec`,
+`cec`, whose conditional responses are already exact. A boundary DP needs only
+the boundary position and whether its activation is retained. At fixed caller
+context and capacity, this gives O(n d²) candidate work, where d bounds the
+reachable tile-domain size; full-frontier enumeration and all outer residency
+contexts require additional accounting. This is the restricted argument in the
+[independent review](https://github.com/HaoningJiang-space/accelforge-streaming-dse/blob/3da98687/research/index_coupling/CLOSURE_REVIEW.md).
+At M>1, a common M loop can span the entire chain and couple its weight
+reservations. The bounded-span proof no longer applies; its failure is not
+an impossibility proof for a faster M>1 algorithm.
+
+Records: `results/contraction_oracle/exact_mapping_local.jsonl`, with sibling
+`.manifest.json` (source hashes and timing contract) and `.summary.json`.
+This closes the existing measurement gap; no search rule or default changed.
+
+```sh
+python -m research.index_coupling.response.experiments exact-mapping-bench NEW.jsonl 3 \
+  ffn_forward_l4 attention_forward_l4 ffn_forward_l1_m8 ffn_forward_l2_m8
+```
 
 ## 17. Operator bound on the shared call DAG: why edge pruning saves little at M > 1
 
@@ -839,21 +903,24 @@ fall only through state-level reasoning, of two kinds:
 The closed forms and bounds remain correct and useful where work sits under
 unit-M states (§16: 6.8× on FFN-4). They do not address the M > 1 lattice.
 
-## 18. Ceilings for any edge-level pruning
+## 18. Recorded-order pruning and hindsight edge selection
 
-`op_projection.py work` now also reports three ceilings, all measured on the
-shared call DAG as in §17.
+`op_projection.py work` also reports three diagnostics on the shared call DAG
+as in §17. The original all-order ceiling interpretation of `oracle` was too
+strong; the archived numbers are unchanged by the scope correction below.
 
 | Mode | Bound used | Order |
 | --- | --- | --- |
 | `perfect` | exact child curve, proper choices only | the captured order, with the ordered incumbent |
 | `perfect_any` | the same, with anchors also cuttable | captured |
-| `oracle` | none: every loop edge is cut except the first action attaining each point of the final parent frontier | any order |
+| `oracle` | none: keep the first action attaining each final parent frontier point | first attainment in the captured action order |
 
-Every sound edge-level bound is below `perfect` and `perfect_any` under the
-captured order, and below `oracle` under any order. This covers C2, §14, the
-Level-h residency hierarchy, and retention-subcube bounds such as a knapsack
-relaxation over undecided masks.
+An exact child response limits sound lower-bound rejection against the same
+captured incumbent, giving the `perfect` / `perfect_any` recorded-policy
+controls. `oracle` is a particular hindsight selection of attaining actions.
+It does not optimize among all tied witnesses to minimize shared reachable
+work, and so is not an established upper bound for arbitrary edge selection
+or arbitrary execution order. No such all-order bound has been proved here.
 
 Figures are saved DP transitions, saved Pareto candidates, and states made
 unreachable by `oracle`. The first five data columns are DP, the next two are
@@ -872,15 +939,15 @@ Attention matches FFN at equal depth.
 
 **Reading.**
 
-- **M8.** Even an exact child response used as a bound saves at most 16-24%
-  of DP work under the recorded order. With the answer known in advance, the
-  saving is at most 35-42%, which is a speed-up of at most about 1.5-1.7× from
-  pruning alone.
+- **M8.** Exact-child rejection saves 16-24% of DP work under the recorded
+  policy. The selected hindsight policy saves 35-42%. These are exclusive DP
+  counters, not time fractions. Taking their reciprocals does not establish
+  a wall-time speedup bound: other work, unequal state costs and pruning
+  overhead must also be measured.
 - **Tiny stacks.** The ceiling is high, 77-88% for FFN-4. There, unit-M
   substitution (§16) already obtains most of it.
-- **The remaining 58-65% at M8 is unprunable at the edge level.** It is the
-  work of states that every optimal choice still needs: a state on the
-  frontier path of some parent is solved however good the bound is.
-- Reducing it requires cheaper evaluation of those states, by exact state-level
-  responses or by sharing responses across residency contexts, rather than
-  better bounds.
+- **The remaining 58-65% at M8 stays reachable under this hindsight policy.**
+  It has not been proved necessary under every optimal witness selection.
+- Cheaper state evaluation and shared computation remain possible research
+  questions; these diagnostics establish neither their impossibility nor
+  a reason to start another solver after the current consolidation decision.

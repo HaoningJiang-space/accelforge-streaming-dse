@@ -13,7 +13,7 @@ operators.
 | `chains.py` | `recognise` / `archived`: structural chain-state recognition returning a `Chain` | shared by every module below |
 | `bounds.py` | `lower` (operator projection, any M) and `upper` (singleton partition) | proved / constructive (§14, sandwich) |
 | `dag.py` | Archived call DAGs: `load`, `reach`, `removed`, `terminal_work` | accounting of exclusive work |
-| `substitution.py` | `make_exact_kernel` (in-memory hook, `graph/curve.py` unchanged), lazy native witnesses `expand` | 6.8× frontier search on FFN-4, none at M8 (§16) |
+| `substitution.py` | `make_exact_kernel` (in-memory hook, `graph/curve.py` unchanged), lazy native witnesses `expand` | FFN-4: 6.8× historical frontier search, 6.60× complete native generation; no M8 benefit (§16/16a) |
 | `experiments.py` | Every experiment command, plus `verify` | entry point |
 
 ## Commands
@@ -26,6 +26,7 @@ python -m research.index_coupling.response.experiments grammar SET PRED OUT   # 
 python -m research.index_coupling.response.experiments archive|op-check|op-c2|op-work|closed-form-work|sandwich [CASE ...]
 python -m research.index_coupling.response.experiments exact-check [CASE ...]
 python -m research.index_coupling.response.experiments exact-bench OUT.jsonl REPEATS CASE ...
+python -m research.index_coupling.response.experiments exact-mapping-bench NEW.jsonl REPEATS CASE ...
 ```
 
 - Archive commands default to the eight archived cases in `dag.CASES`.
@@ -40,9 +41,12 @@ The open questions below identify research boundaries; they are not the
 current implementation plan.
 
 - **Exact at unit M.** Substitution there gives a measured 6.8× speed-up in
-  frontier search on FFN-4.
-- **Little at M8.** Work at M8 sits in M > 1 states. Edge pruning is capped at
-  16-24% of DP work, or 35-42% with oracle knowledge (§18).
+  historical frontier search on FFN-4. The complete native-witness follow-up
+  retains 6.60×/6.70× on FFN-4/attention-4, including recovery; M8 gives
+  0.84×/0.97×. See CONTRACTION_ORACLE.md §16a for scope and timing exclusions.
+- **Little at M8.** Much work remains in M > 1 states. Recorded-order exact-child
+  pruning removes 16-24% of DP work; one hindsight witness-selection policy
+  removes 35-42%. The latter is not a proved all-order or wall-time bound (§18).
 - **Sandwich certificate.** It is exact wherever it holds, but it stopped by
   its frozen rule. Its upper bound fails because the optimum fuses operators.
 - **Factorized loop closure.** The bounded full-grammar pilot preserves all

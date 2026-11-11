@@ -21,9 +21,10 @@ each exclusive counter:
 | FFN M8 1 layer | 2,108 | 469 | 84.1% | 69.9% | 71.6% |
 | FFN M8 2 layers | 6,176 | 1,230 | 87.6% | 70.4% | 81.6% |
 
-This is far above every edge-pruning ceiling (§18 of CONTRACTION_ORACLE.md:
-at most 35-42% even with oracle knowledge) and the residual path redundancy
-in PREFIX_DOMINANCE_RESULTS.md. Residency multiplicity is where the M8 work
+This is far above the 35-42% DP savings of the tested hindsight edge policy
+(CONTRACTION_ORACLE.md §18) and the residual path redundancy in
+PREFIX_DOMINANCE_RESULTS.md. That policy is not a proved universal pruning
+ceiling. Residency multiplicity is where much of the measured M8 work
 is. The ceiling is not achievable unless one key's computation can serve all
 of its contexts.
 
@@ -74,17 +75,19 @@ different problems.
    Weights of distant ops therefore compete for one capacity budget, a
    knapsack, which gives the non-local interactions in (b).
 
-Any exact representation shared across contexts must therefore carry the
-reservation knapsack and the per-weight keep/re-fetch trade-off. That is the
-same object the search enumerates, now with symbolic residency.
+An exact representation shared across contexts must account for these
+reservation conflicts and per-weight keep/re-fetch trade-offs. This does not
+prove it must enumerate the same choices as the current search.
 
 ## 4. Conclusion
 
-- In this grammar at M > 1, the residency contexts of a sub-problem are
-  mostly *not* redundant: 76-81% have distinct response shapes.
+- In the measured M > 1 comparisons, 76-81% of contexts do not match the
+  reference response by identity or a pure shift. Different response shapes
+  alone do not establish that their computations cannot share work.
 - Their interaction is global, because of shared reservations.
-- The 84-88% ceiling therefore measures distinct work, not waste. No cheap
-  exact sharing structure was found:
+- The 84-88% hypothetical saving measures the cost of context multiplicity,
+  not a proved amount of unavoidable work. No cheap exact sharing structure
+  was found among the three tested candidates:
   - invariant gap: no;
   - local interactions: no;
   - shift: only at unit M, where closed forms already apply.
