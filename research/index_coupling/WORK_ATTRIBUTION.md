@@ -445,3 +445,51 @@ from research.index_coupling.response.prefix import make_kernel
 solver, _ = make_kernel(projection=True)
 points = solver(graph, witness=True, partitions='dp', scalar_leaf='v2')
 ```
+
+## 6. Continuation: quotient parent frames (protocol before measurement)
+
+The user requests further improvement of the successful prefix-sharing route.
+This continuation changes only which parent frames can share a prefix. Let
+P=S[:p]. Replace the complete parent-span identity in the prefix cache by:
+
+    (P, B_exit, later_writers, whole_parent)
+
+Here B_exit is the original parent cut's crossing tensor set (including caller
+residents, whose decisions are subsequently projected), later_writers records
+which tensors touched by P have their writer later in S, and whole_parent
+distinguishes p=len(S) from a proper prefix. Numeric extents, Residency,
+Ownership and terminal keep/DRAM bits keep their existing projected semantics.
+
+Sufficiency argument: for any earlier cut j, the original crossing set is
+exactly tensors(P[:j]) intersect (tensors(P[j:]) union B_exit). First-use and
+within-prefix writer positions follow from P. A writer later than p can affect
+read/write classification but cannot fall inside any prefix group; its identity
+flag suffices. Global produced/consumed roles stay fixed in the graph closure.
+The whole_parent bit preserves v2's whole-span scalar-hold versus proper-group
+entry. Thus all prefix transitions, capacities, traffic and native notes agree
+for equal frames. Intern one representative parent per frame and reuse the
+existing implementation; do not equate full graph responses or change loops.
+
+The implementation must keep the old projected-prefix method as a control and
+remain opt-in. No timing-based dispatcher or default-core change is authorized
+by this experiment. Prove/test the frame conditions, including differing exit
+sets and the scalar-entry bit, before freezing code and measuring performance.
+
+Frozen measurements for this continuation:
+
+- Same four established cases, plus two specified holdouts: FFN-2 at M=16,
+  d=4,f=8 and FFN-3 at M=8,d=4,f=8. These separately increase row extent and
+  chain length; no post-result replacement or enlargement of cases.
+- Five arms: native, previous projected-prefix, frame-quotiented prefix,
+  existing unit forms, unit forms plus frame-quotiented prefix.
+- Five fresh-process rounds, alternating order, fixed hash seed; one separate
+  instrumented round; 60 seconds and 6 GiB per worker. Every complete root
+  witness is replayed. Failures/timeouts remain results, never passes.
+- Report complete generation, installation, replay, RSS, original state and
+  loop counts, partition work, numeric prefix-cache size and frame aliases.
+  The new method must beat the previous prefix control on both established
+  M8 cases to establish an incremental performance win; holdouts are reported
+  even if negative. Memory reduction is a prediction to check, not an assumption.
+- No native/archived answer enters the new recurrence. Keep all old frozen
+  results intact. Stop at this bounded continuation rather than widening its
+  frame signature or changing test cases after timing results.
