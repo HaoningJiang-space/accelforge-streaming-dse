@@ -1,11 +1,14 @@
 """Single entry point for immutable requests and unified evaluation results."""
-import argparse,json,subprocess,sys,time
+import argparse,hashlib,json,re,subprocess,sys,time
 from pathlib import Path
-from .contract import normalize,digest
+from .contract import normalize,digest,config_overrides
 from .receipts import receipt,capacity_verdict
 
 
-def read(path):return json.loads(path.read_text()) if path.is_file() else None
+def read(path):
+    try:
+        value=json.loads(path.read_text());return value if isinstance(value,dict) else None
+    except (OSError,ValueError):return None
 
 
 def finalize(out,request,wall_seconds,driver_exitcode):
@@ -30,7 +33,12 @@ def finalize(out,request,wall_seconds,driver_exitcode):
     native_files=list((out/'result/logs').glob('*.stats.json'))
     native=read(native_files[0]) if len(native_files)==1 else None;result['native_statistics']=native
     checks['native_statistics']=bool(native and native.get('schema')=='togsim-final.v1' and native.get('completed') is True and native.get('scope')=='cumulative' and native.get('launched_kernels')==1 and native.get('serial_tiles')==request['hardware']['serial_tiles'] and native.get('total_cycles')==audit.get('total_cycles') and native.get('request_bytes')==audit.get('request_bytes') and native.get('dram_channels')==request['hardware']['dram_channels'] and {'read':native.get('read_transactions'),'write':native.get('write_transactions')}==audit.get('observed_transactions') and {'read':native.get('dma_load_instructions'),'write':native.get('dma_store_instructions')}==audit.get('observed_dma'))
-    checks['hardware']=record.get('resolved_hardware')==request['hardware'] and record.get('request_sha256')==digest(request)
+    config_path=out/'result/hardware.yml'
+    config_text=config_path.read_text() if config_path.is_file() else ''
+    overrides=config_overrides(request['hardware'])
+    config_matches=all(re.search(r'^'+re.escape(key)+r': '+re.escape(str(value).lower() if type(value) is bool else str(value))+r'$',config_text,re.MULTILINE) for key,value in overrides.items())
+    result['provenance']['hardware_config_sha256']=hashlib.sha256(config_text.encode()).hexdigest()
+    checks['hardware']=bool(config_matches and record.get('resolved_hardware')==request['hardware'] and record.get('request_sha256')==digest(request))
     if cap['status']=='capacity_exceeded':result['failure_stage']='capacity';result['reason']='capacity_exceeded'
     elif launch.get('status')=='timeout':result['failure_stage']='timeout'
     else:

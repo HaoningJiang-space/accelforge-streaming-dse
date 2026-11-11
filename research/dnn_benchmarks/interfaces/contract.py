@@ -48,3 +48,5 @@ def config_overrides(hw):
     return dict(vpu_num_lanes=hw['lanes'],num_cores=hw['cores'],num_systolic_array_per_core=hw['systolic_arrays_per_core'],
         vpu_spad_size_bytes_per_lane=hw['sram_bytes_per_lane'],vpu_spad_size_kb_per_lane=max(1,hw['sram_bytes_per_lane']//1024),
         core_freq_mhz=hw['core_freq_mhz'],dram_channels=hw['dram_channels'],interface_serial_tiles=hw['serial_tiles'])
+
+if __name__=='__main__':print(json.dumps(CAPABILITIES,indent=2))
