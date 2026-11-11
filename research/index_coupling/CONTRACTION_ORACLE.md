@@ -1219,3 +1219,74 @@ the full root curves agree and all 14 selected witnesses replay exactly.
 ```sh
 python -m research.index_coupling.hypergraph_audit run NEW_DIRECTORY
 ```
+
+## 21. Continuation: sweep local breakpoints once, retain the chosen partition
+
+This follow-up is authorized by the user's request to continue after §20.
+The preceding result and protocol remain unchanged. Freeze this derivation
+and bounded measurement plan before implementing or timing the continuation.
+The scope is still the same three roots and the same fixed M-to-one branch.
+
+### Exact change of evaluation order
+
+Section 20 repeatedly evaluates the same child capacity c=C-a under different
+parent capacities and final allocations. Instead, fix c once and run the
+boundary DP for **all** final allocations simultaneously. At boundary j keep
+the minimum extra traffic for each (activation flag, prefix allocation u).
+For a local segment choice with reservation d_a, outer refetch d_q and
+unit-row response g_B(c-rho), the transition is
+
+    (j, beta, u, q) -> (k, beta', u+d_a,
+                         q+d_q+r*(g_B(c-rho)+spill)).
+
+Every final label (a,q) produces a feasible point (a+c,q). Pareto-prune the
+union over c. This accounts for **all** outer weights in the final peak,
+including weights whose consumer has not run yet. No prefix is allowed to
+borrow their eventual storage: the completed plan uses one fixed child
+budget c throughout and reserves the full a outside it.
+
+Each local response is a nonnegative monotone step function. Build its
+frontier once per structural argument tuple, stop at its first zero, and
+reuse it for every graph occurrence with the same arguments. Let B be the
+union of its capacity breakpoints after adding the two endpoint reservations
+rho. Between consecutive elements of B, every local factor has the same
+value and feasibility; the entire DP therefore has the same result. For
+any c, rounding down to the last breakpoint cannot increase traffic and
+reduces capacity. Thus only c in B can be needed on the branch frontier.
+
+Completeness follows from the §20 correspondence between masks/partitions
+and DP paths, followed by this breakpoint argument. Conversely, every DP
+path is a legal fixed-loop plan. This is the same exact joint minimization,
+with neither a parent-capacity sweep nor a separate DP per final allocation.
+It does not require equal curves for different resident sets.
+
+Local frontier construction may initially scan integer capacities up to a
+constructive zero-traffic bound, so this is not a new polynomial complexity
+claim. Actual cost depends on local frontier construction, |B|, reachable
+allocation sums and DP transitions. Record all of them, not just mask count.
+
+### Witnesses and frozen comparison
+
+Store the chosen segments, endpoint flags, local weight bits and local
+response points as backpointers. Recover native witnesses only for these
+local groups (at most three operators under the guard), using projected
+external residency, the correct group entry and write ownership. Assemble
+the enclosing partition and M-loop notes and replay the whole branch.
+This avoids discarding the selected partition and searching the complete
+unit-row chain again; local recovery is still real search and must be timed.
+
+Compare the existing native, per-mask forms and capacity-sweep joint methods
+against this one new implementation on exactly the §20 cases. Use five
+fresh-process rounds, hash seed zero, rotate arm order, 120-second timeout.
+Require complete fixed-branch frontier equality and exact numerical,
+traffic and peak replay for every point in every round. Separately verify
+each requested local factor's complete frontier against the native group
+interface, including both tile domains on the existing local shapes.
+
+Record search, factor construction, native local recovery, generation,
+setup-inclusive generation, replay and peak RSS. Attribute unique local
+factor construction, capacity probes, child budget breakpoints, DP states,
+transitions and recovery search work. Keep the old artifacts intact. Do not
+change the default solver, expand shapes, integrate at the root or introduce
+another method in this continuation. Report the observed result without a
+predeclared speedup claim; the experiment ends after this bounded comparison.
