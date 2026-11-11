@@ -14,6 +14,9 @@ def finalize(out,request,wall_seconds,driver_exitcode):
         requested_hardware=request['hardware'],process_exitcode=launch.get('process_exitcode'),driver_exitcode=driver_exitcode,
         verdict='rejected',failure_stage=None,checks={},metrics={},costs=dict(evaluation_wall_seconds=wall_seconds,audit_seconds=launch.get('audit_seconds'),phases=record.get('phase_seconds',{})),
         provenance=dict(backend_lock_sha256=record.get('backend_lock_sha256'),file_sha256=record.get('file_sha256',{})))
+    result['costs']['compile_and_execute_seconds']=record.get('compile_and_execute_seconds')
+    if record.get('compile_and_execute_seconds') is not None:
+        result['costs']['other_compile_and_execution_seconds']=max(0,record['compile_and_execute_seconds']-sum(record.get('phase_seconds',{}).values()))
     checks=result['checks'];checks['execution']=result['process_exitcode']==0;checks['numerical']=record.get('numerical_equal') is True
     checks['dma']=audit.get('timing_accepted') is True
     allocs=[read(p) for p in (out/'result/compiler').glob('*/allocation_manifest.json')]
@@ -43,10 +46,15 @@ def finalize(out,request,wall_seconds,driver_exitcode):
 
 def evaluate(request_path,out,bundle,source_overlay,seconds=600):
     if out.exists():raise FileExistsError('evaluation output must be fresh')
+    if seconds<=0:raise ValueError('positive execution timeout required')
     start=time.monotonic()
-    try:request=normalize(json.loads(request_path.read_text()))
+    payload=None
+    try:
+        payload=json.loads(request_path.read_text());request=normalize(payload)
     except (ValueError,KeyError,TypeError) as e:
         out.mkdir(parents=True);r=dict(schema='gemm-evaluation.v1',verdict='rejected',failure_stage='request',reason=str(e),process_exitcode=None,costs=dict(evaluation_wall_seconds=time.monotonic()-start))
+        (out/'request.json').write_bytes(request_path.read_bytes())
+        if isinstance(payload,dict):r.update(operator_id=payload.get('operator_id'),mapping_id=payload.get('mapping_id'))
         (out/'evaluation.json').write_text(json.dumps(r,indent=2)+'\n');return r
     mapping=request['mapping'];args=[sys.executable,'-u','-m','research.dnn_benchmarks.run_rootless_pilot','--bundle',str(bundle),'--source-overlay',str(source_overlay),'--backend-lock','interfaces_backend_lock.json','--fixed-timing-addresses','--interface-request',str(request_path.resolve()),'--out',str(out),'--mode',mapping['mode'],'--shape',*map(str,request['workload']['shape']),'--seconds',str(seconds)]
     if mapping['mode']=='external':args+=['--tile',*map(str,mapping['tile']+mapping['subtile'])]

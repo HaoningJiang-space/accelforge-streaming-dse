@@ -21,10 +21,11 @@ class ContractTests(unittest.TestCase):
             with self.subTest(key=key),self.assertRaises(ValueError):normalize(r)
     def test_capacity_requires_serial_scope_and_fits(self):
         r=normalize(request());hw=r['hardware']
-        a=dict(schema='pytorchsim-allocation.v1',plain_gemm_scope=True,capacity_bytes_per_lane=1024,lanes=128,required_bytes_per_lane=800)
+        a=dict(schema='pytorchsim-allocation.v1',plain_gemm_scope=True,capacity_bytes_per_lane=1024,lanes=128,required_bytes_per_lane=800,static_extent_bytes_per_lane=640,kernel_stack_bytes_per_lane=160,static_object_bytes_per_lane=640,alignment_padding_bytes_per_lane=0,buffers=[dict(name='all',bytes_per_lane=640,offset_bytes=0,copies=1,lifetime='entire_kernel')])
         self.assertTrue(capacity_verdict(a,hw)['passed'])
         self.assertEqual(capacity_verdict(a,dict(hw,serial_tiles=False))['status'],'capacity_not_certified')
-        self.assertEqual(capacity_verdict(dict(a,required_bytes_per_lane=1025),hw)['status'],'capacity_exceeded')
+        self.assertEqual(capacity_verdict(dict(a,required_bytes_per_lane=1025,kernel_stack_bytes_per_lane=385),hw)['status'],'capacity_exceeded')
+        self.assertEqual(capacity_verdict(dict(a,required_bytes_per_lane=0),hw)['status'],'invalid_allocation_receipt')
     def test_invalid_request_produces_result_without_process(self):
         import json
         with tempfile.TemporaryDirectory() as d:
