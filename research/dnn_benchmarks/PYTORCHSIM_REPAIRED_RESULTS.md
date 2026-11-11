@@ -4,7 +4,10 @@ The repaired path now executes external six-field GEMM mappings through code
 selection, rendered MLIR, generated TOG, Spike functional execution and TOGSim
 with an independent DMA ledger. The first matrix at `1860f851` has eight of eight
 numerically correct runs, exact DMA instruction/transaction agreement, and
-identical 736-cycle results for all four equivalent full-tile controls. These
+identical 736-cycle results for all four equivalent full-tile controls. The one-command rerun at `28dba658` also passes all eight cases, with the same
+cycles and address-stream digests for each corresponding case. Thus **16/16**
+GEMM runs pass; the 1,348-case object-code probe passes independently in both
+rounds. These
 are backend integration controls, **not a mapping-search speedup result**.
 
 ## Fixes and scope
@@ -101,8 +104,11 @@ python3 -m unittest research.dnn_benchmarks.test_mapping_contract \
 Artifacts in `results/pytorchsim/1860f851` preserve numerical arrays, inputs,
 outputs, MLIR, TOG, allocation headers, hardware configuration and logs. Raw
 `result.json` files retain their pre-ledger pending status; `dma_score.json`
-records the subsequent acceptance. A fresh one-command validation is archived
-separately, with its source revision and final summary.
+records the subsequent acceptance. The fresh one-command validation is in `results/pytorchsim/28dba658`; its
+`summary.json` reports `passed: true`, and `archive_sha256.json` verifies all
+159 copied evidence files. All eight unit tests also pass on the server. Build
+logs, including the first launch failure, are preserved under
+`results/pytorchsim/repaired_build`.
 
 ## Research consequence
 
