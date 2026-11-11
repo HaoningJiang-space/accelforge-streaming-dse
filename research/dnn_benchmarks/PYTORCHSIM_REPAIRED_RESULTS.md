@@ -1,5 +1,9 @@
 # Repaired PyTorchSim: complete GEMM validation path
 
+Update: the subsequent K=3072 scale-scan rejections came from our auditor
+selecting interval counters. The backend completed correctly. See
+[the parser correction and 15-run re-audit](PYTORCHSIM_INTERVAL_AUDIT_FIX.md).
+
 The repaired path now executes external six-field GEMM mappings through code
 selection, rendered MLIR, generated TOG, Spike functional execution and TOGSim
 with an independent DMA ledger. The first matrix at `1860f851` has eight of eight

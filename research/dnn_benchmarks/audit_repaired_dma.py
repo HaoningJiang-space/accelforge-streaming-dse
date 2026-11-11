@@ -34,7 +34,6 @@ def audit(run):
     logs=list((run/'result/logs').glob('*.log'))
     if len(logs)!=1:raise ValueError('requires one timing log')
     log=logs[0].read_text();request=int(re.search(r'(\d+) bytes per request',log)[1])
-    hardware=(run/'result/hardware.yml').read_text()
     channels=int(re.search(r'^dram_channels: (\d+)$',hardware,re.MULTILINE)[1])
     if int(re.search(r'^num_cores: (\d+)$',hardware,re.MULTILINE)[1])!=1:
         raise ValueError('auditor currently supports one core')

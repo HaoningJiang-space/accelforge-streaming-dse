@@ -120,3 +120,7 @@ backend byte-address mismatch, so hardware timing acceptance remains blocked.
 The repaired PyTorchSim GEMM path and one-command validation are documented in
 [PYTORCHSIM_REPAIRED_RESULTS.md](PYTORCHSIM_REPAIRED_RESULTS.md). P19 is finalized
 separately in [P19_SERVER_RESULTS.md](P19_SERVER_RESULTS.md).
+
+The apparent K=3072 failure boundary was an auditor interval/total mix-up,
+corrected with 15/15 re-audits and four fresh executions. See
+[PYTORCHSIM_INTERVAL_AUDIT_FIX.md](PYTORCHSIM_INTERVAL_AUDIT_FIX.md).
