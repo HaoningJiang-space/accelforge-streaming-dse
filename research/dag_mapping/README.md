@@ -16,6 +16,13 @@ and 146 exact root replays. All three restricted arms lose complete-frontier
 points on every case. The concrete missing witness has nested I and L loops
 with different operator scopes; a single common outer loop is insufficient.
 
+[Conditional separator plan](INTERFACE_PLAN.md) distinguishes closed subtree
+interfaces from interleaved event protocols, gives a restricted substitution
+lemma, and specifies the representation/substitution/work gates before a new
+optimizer. [Primary-source notes](RELATED_WORK_CHECK.md) avoid treating D1 as
+a counterexample to Welder or Crane; PolyMage 2020's full recurrence remains
+unverified because publisher/repository retrieval failed.
+
 ```sh
 python3 -m unittest research.dag_mapping.test_boundary
 PYTHONHASHSEED=0 python3 -m research.dag_mapping.study --out FRESH_DIRECTORY --revision SOURCE_COMMIT
