@@ -434,3 +434,122 @@ The run measures representation correctness, not independent optimizer quality
 or search speed. A complete native frontier routed through this adapter remains
 a native result. Gate 2 still requires a useful conditional-equivalence theorem;
 arbitrary interleaving interfaces and state compression remain unimplemented.
+
+## 8. Gate 2: closed responses shared across global-order parents
+
+### What is already shared, and the remaining opportunity
+
+Within one fixed-order invocation, native `projected` plus solve/group caches
+already share identical `(entry, ordered span, extents, R, W)` queries. Adding
+another identical key there cannot constitute a new reduction. The existing
+Parent-Frame experiment instead shares intermediate prefix construction.
+
+This continuation tests a different cache lifetime: separate legal global
+orders of the same DAG can reach an identical **closed ordered subregion**.
+Currently each root-order invocation rebuilds its response caches. A session
+can reuse the entire response across those invocations without identifying
+different local operator orders or changing the allowed loop scopes.
+
+This is a specialization/application of existing conditional-response
+sufficiency, not a new minimal-interface theorem. It does not eliminate the
+global-order enumeration or prove polynomial DAG search.
+
+### Sufficient cross-parent contract and proof
+
+Fix one immutable single-writer DAG with rank projections, full sizes and tensor
+roles, the default exact unlimited v2 policy, and a tile domain. Suppose a
+contiguous ordered span S occurs in two legal global orders pi1 and pi2. At
+the same entry, projected extents, external R and paid-write W:
+
+    F_(pi1)(entry,S,e,R,W) = F_(pi2)(entry,S,e,R,W).
+
+These are internal capacity/extra-traffic responses, excluding caller storage
+and compulsory transfers. Neither parent's suffix is claimed equivalent.
+
+Proof: the normalized typed recurrence from section 7 never inspects the
+complement's order. Scalar tests use the same live tensors and extents.
+Partition children are the same contiguous subspans of S; shared tensors,
+first/last uses and boundary/write charges agree. Loop domains, unfinished
+intermediates, lacking sets, tiles and retention charges also agree. The child
+queries have equal projected contracts, so induction gives equal responses.
+Fixed global produced/consumed labels and option flags are indispensable.
+Whole-span restrictions would inspect the root parent and are excluded.
+
+Witness substitution follows by the same induction. Native notes name the
+same operators/tensors/ranks and use relative loop templates, not absolute
+addresses. The caller supplies tile coordinates, repetitions, boundary values
+and reservations; these remain its responsibility. There is no alias,
+data-dependent control or layout conversion. Thus a stored closed witness is
+valid in the destination parent, with its own reservation and transfer costs.
+This does not authorize yielding halfway through a subtree.
+
+### Implementation and baseline composition
+
+`reuse.py` binds a session to a copied graph and fixed policy, keeping one
+witness namespace and analytic registry alive. A shared pool sits beneath the
+existing local solve/group caches. Keys retain the entire ordered span, entry,
+projected extents, R and W. The native scalar whole-part Hold remains outside
+this pool. No rank/tensor renaming, new dominance, prefix-key change, or local
+order permutation is introduced. The production `curve.py` is unchanged.
+
+The prefix baseline uses existing parent-frame sharing and numeric-first
+composition. Existing whole-graph automorphisms remove redundant orders before
+the new sharing is measured. The analytic pair additionally uses the existing
+scalar-separator certificate and guarded Unit-M forms, in that order; both
+arms have identical guards. Unit-form witness recovery is included in complete
+generation and uses the session's existing recovery cache in both arms.
+
+Audit mode recomputes each observed pool hit's **complete conditional frontier**
+from its destination body's recurrence, with new pool lookups disabled during
+that reference evaluation. Native local caches may supply responses previously
+computed or verified in that invocation. Numeric equality includes empty
+responses. Audit calls change execution work and are never timing samples.
+Full root frontiers are separately checked against unshared native all-order
+DP, per order as well as after union; independent cell execution checks the
+reused witnesses in their actual destination parents.
+
+### Frozen experiment before measurement
+
+Correctness cases are D1's six unchanged graphs plus:
+
+| Case | Graph and shape | Role |
+| --- | --- | --- |
+| two_stage_join | EX, two E→H branches, Join; I=J=K=L=N=2 | Primary symmetric multi-stage DAG |
+| asymmetric_join | additional Prepare0 on one branch, Join; I=K=L=2,J=N=1 | Primary asymmetry control |
+| mixed_join | three consumers, one extra elementwise branch op, Join; I=J=K=L=2 | Unequal branch structure |
+
+Six arms, all with complete native-order grammar coverage:
+
+1. Native Cut DP over every global order.
+2. Prefix sharing over every order.
+3. Certified order representatives + prefix sharing.
+4. The same representatives + prefix sharing + shared closed responses.
+5. Arm 3 plus existing analytic providers.
+6. Arm 5 plus shared closed responses.
+
+When there is only one representative and one root query, arms 4/6 disable
+the extra pool: there is no cross-order reuse opportunity. This structural
+guard is fixed before timing. Analytic providers are disabled in both arms
+3/4 and enabled in both 5/6, so their old benefits are not new sharing gains.
+
+First complete all nine correctness audits and tests. Any audit failure stops
+the timing stage. Then time only residual_rectangle and fork_join_tiny controls
+plus the three new DAGs: five fresh-process sequential rounds, cyclic arm
+order, hash seed 0, 120 seconds / 3 GiB per worker. Run one separate work worker
+per arm/case. Record order enumeration/symmetry/installation setup, complete
+generation including recovery and final union, independent execution, peak RSS
+before replay, conditional cache hits/entries and native work counters.
+
+Primary success criterion: arm 4 must reduce median complete generation by at
+least 10% on **both** primary DAGs against the faster unshared arm 3 or 5 on
+each case, win at least four of five paired rounds against that baseline,
+also improve setup-inclusive median time, and use at most twice that baseline's
+median peak RSS. This is a predeclared practical gate, not a significance test.
+Arm 6 is an ablation and cannot rescue a failed arm-4 primary criterion.
+Retain all timeouts, regressions and failed conditions. Stop this bounded
+continuation without tuning keys, changing cases or adding another cache after
+seeing timing results.
+
+The implementation is experimental and opt-in. A successful run would establish
+reuse across a bounded family of global-order contexts, not arbitrary-region
+replacement, general-DNN scalability or hardware speedup.
