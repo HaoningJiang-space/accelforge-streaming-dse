@@ -553,3 +553,121 @@ seeing timing results.
 The implementation is experimental and opt-in. A successful run would establish
 reuse across a bounded family of global-order contexts, not arbitrary-region
 replacement, general-DNN scalability or hardware speedup.
+
+## 9. Existing-optimization compatibility audit and composition study
+
+This is a separate integration study after Gates 2 and 3 stopped under their
+frozen criteria. It does not tune their caches, change their cases or revise
+their verdicts. Baseline source inspected: `4788ee82`. Work stays on
+`research/main`; experimental execution checkouts are detached, not new branches.
+
+### What was and was not combined
+
+| Mechanism | Previous DAG comparison | Compatibility finding / action |
+| --- | --- | --- |
+| Cut DP, ownership projection, v2 | enabled | retain identically in every arm |
+| Prefix projection, parent-frame quotient, numeric composition | enabled in prefix arms | retain; default adapter remains unchanged |
+| Certified global-order representatives | enabled in symmetric arms | same representatives in every timed arm here |
+| Infeasible-group precheck | explicitly rejected by prefix adapter | compatible; add exact numeric-child precheck before prefix recursion |
+| Conditional independent-op split | explicitly rejected by prefix adapter | compatible closed-response replacement; retain native guard and witness |
+| Ordered remainder isomorphism | explicitly rejected by prefix adapter | compatible under native exact matching and witness restoration; no order quotient |
+| `canonical_spans` | not enabled | leave rejected; weaker alternative to remainder normalization, not another additive layer |
+| Unit-M / scalar-separator | separate matched analytic arms | retain a separate analytic control; do not claim all-provider integration |
+| Scalar-X / streamed / free-retention Fork rules | not all enabled | family-specific providers and historical leaf assumptions require separate integration |
+| Internal Fork residency quotient | not enabled | different reorderable Fork family; not equivalent to the global-order representative filter |
+| C2 audit | offline response/work analysis | `c2_bound_audit.py` explicitly never prunes a solve; not a live switch to enable |
+| Gate 2 pool / Gate 3 downsets | separate stopped studies | excluded here; no attempt to rescue either result |
+
+In particular, the Unit-M provider stores `('exact', key, c, q)` placeholders
+in its registry. Native remainder restoration understands groups, loops and
+Hold, not such placeholders. Its current guard also disables the oracle for
+remainder normalization or independent splitting. Silently removing these
+guards would not establish valid witness restoration. The new reductions
+adapter rejects `unit=True` explicitly. This is a conservative integration
+boundary, not a mathematical impossibility of combining the methods.
+
+### Restricted composition argument
+
+Fix an exact, unlimited, single-writer v2 query with consistent projections,
+positive integer extents and no root/cut constraints. Fix its operator order,
+tile domain and boundary cost options. The original Prefix Sharing recurrence
+has the same response as native Cut DP under these conditions.
+
+1. **Infeasibility.** Test the *actual* numeric group state
+   `(group, ext, external | kept)` before recursing into its prefix. An empty
+   group gives no feasible product for any prefix response, so the transition
+   can be discarded. The predicate examines all nonscalar live tensors before
+   its common-rank test. Thus scalar v2 groups are never declared empty;
+   whole-parent scalar Hold is safe too. Extents and private residency remain
+   outside the structural transition cache. This implementation skips individual
+   transitions, not optimistic keep-bit batches, and reports that distinction.
+2. **Independent split.** If every shared tensor is caller-resident, the
+   existing projection argument gives the exact max/sum combination of singleton
+   groups. The native rule replaces the solve response before partition search;
+   no prefix transition observes a changed boundary contract. Caller allocations
+   are still outside the local response. Scalar v2 partitions can realize this
+   split, including when the original whole-span Hold is larger.
+3. **Remainder reuse.** Keep native exact tensor/rank bijection checks and
+   solve/group entry labels. For v2, extend the old equivariance proof with the
+   scalar partition recurrence: whole-span Hold costs the number of live cells,
+   proper scalar parts have shorter spans, and every partition charge depends
+   only on the labelled remainder. Normalize the scalar group-to-solve delegation
+   before induction, avoiding a false solve/group phase descent at equal extents.
+   All rules then commute with the bijection. Prefix caching is an implementation
+   of the same partition response inside the representative's graph context.
+   Native lazy rename nodes map the completed response back to the caller.
+4. **Combination.** Each rule either preserves the full response, removes only
+   an empty product, or restores an isomorphic response to the caller's names.
+   Native max/sum and Pareto composition are monotone. Structural induction on
+   the normalized v2 grammar therefore preserves every complete frontier in
+   combination, with executable witnesses. No new physical-optimality or
+   arbitrary-yield substitution claim follows.
+
+The adapter is opt-in via `make_kernel(..., reductions=True)` and the three
+existing curve flags. `graph/curve.py` and the default prefix path are not
+changed. Unsupported constraints retain their errors. Native matching-budget
+fallbacks decline reuse safely. The original default-off flags stay default-off.
+
+### Pre-measurement protocol
+
+First run the new combination tests and existing prefix/remainder/v2/hierarchy/
+reuse/downset tests. New tests cover all eight flag combinations; complete
+small frontiers against literal partition enumeration; independent root
+execution; all 64 private-residency masks of a two-consumer mixed Fork at both
+entries and with/without owned X; nonbinary and divisor tiles; boundary cost
+options; scalar Hold; true empty groups; rank/tensor witness restoration; and
+explicit rejection of unintegrated modes. Counters must show actual precheck,
+independent split and remainder hits, not just accepted switches.
+
+Run `bench_composition.py` on 221 from a frozen Git revision. Six fixed cases:
+Gate 2's unchanged `two_stage_join`, `asymmetric_join`, `mixed_join`; four-layer
+FFN and attention stacks with every extent 2; and the eight-rank single-op
+ancestor control. The stack shapes are microbenchmarks; attention retains its
+elementwise softmax abstraction. FFN and attention have isomorphic incidence,
+so their agreement is not two independent structural findings.
+
+Eleven timed arms: native Cut DP; native plus precheck; the existing separate
+analytic+prefix arm; prefix alone; and all seven nonempty combinations of
+precheck (p), independent split (i), remainder normalization (r). Each uses
+the same certified global-order representatives. Only the reference audit
+enumerates all legal global orders. Full per-order frontiers and their Pareto
+union must match that reference. Every saved root point is independently
+executed and checked by typed hierarchy analysis.
+
+Before timing, finish all six references and 66 arm audits. Then run three
+sequential fresh-process rounds in cyclic arm order, followed by 66 separate
+profile workers. Hash seed 0, 180 seconds and 4 GiB per worker. Record setup,
+complete generation (including union, flattening and analytic recovery), replay
+time, RSS before replay, response-body executions, DP transitions, Pareto work,
+each reduction's usage and remainder-matching time. No profiled time is used as
+a search-time sample. All 336 records, including failures, must be retained.
+
+The purpose is a factorial compatibility/coverage audit, not a new universal
+speedup gate. Report every arm's three-run median and range, incremental ratios
+against prefix alone and the best declared old control (native/native-p/prefix/
+analytic), and cumulative ratios against native under the same order reduction.
+Do not multiply gains from historical timings on other machines/grammars.
+Flag regressions and memory increases. Selecting the observed best arm is a
+post-measurement observation, not a validated automatic selection policy.
+Stop after this fixed matrix; keep defaults unchanged and do not tune matching
+limits, cases, combinations or thresholds to obtain a positive result.

@@ -210,7 +210,8 @@ def prefix_transitions(ops, q, external, bits_q):
     return max(map(len, crossing)), tuple(transitions)
 
 
-def transform(tree, projection=True, frames=False, composition='eager', profile_prefix=False):
+def transform(tree, projection=True, frames=False, composition='eager', profile_prefix=False,
+              reductions=False):
     if composition not in ('eager', 'numeric', 'ordered'):
         raise ValueError('unknown prefix composition')
     if frames and not projection:
@@ -231,6 +232,18 @@ def transform(tree, projection=True, frames=False, composition='eager', profile_
             node.name = 'prefix_cached'
         if function is prefix_cached and profile_prefix:
             instrument_eager(node)
+        if reductions and function in (prefix_cached, prefix_numeric):
+            # Test the actual child contract before recursively constructing its
+            # prefix. Extents and private residency MUST NOT enter the structural
+            # transition cache. Native part_curve's scalar Hold is nonempty, so
+            # the same predicate is safe for the whole-parent special case.
+            loop = next(n for n in node.body if isinstance(n, ast.For))
+            loop.body[:0] = ast.parse('''
+if empty_groups is not None and infeasible(group, ext, external | kept):
+    if stats is not None:
+        stats['prefix_infeasible_skips'] = stats.get('prefix_infeasible_skips', 0) + 1
+    continue
+''').body
         if function in (prefix_parent, prefix_cached, prefix_numeric, prefix_transitions):
             node.decorator_list = ast.parse('@lru_cache(maxsize=None)\ndef f(): pass').body[0].decorator_list
         class Constants(ast.NodeTransformer):
@@ -251,10 +264,11 @@ _prefix_work = dict(prefix_candidates=0, prefix_survivors=0,
                    prefix_union_seconds=0.) if {bool(profile_prefix)!r} else None
 if (partitions != 'dp' or scalar_leaf != 'v2' or grid is not None
     or root_groups is not None or root_kept is not None or whole_span_cuts is not None
-    or legacy_nested_writes or canonical_spans or canonical_remainders
-    or independent_ops or prune_infeasible_groups or not ownership_projection
+    or legacy_nested_writes or canonical_spans
+    or (not {bool(reductions)!r} and (canonical_remainders or independent_ops or prune_infeasible_groups))
+    or not ownership_projection
     or len(graph.produced()) != len(graph.ops)):
-    raise ValueError('prefix adapter requires exact unconstrained v2 single-writer cut DP without other reductions')
+    raise ValueError('prefix adapter requires exact unconstrained v2 single-writer cut DP; reductions need opt-in')
 ''').body
     final = next(n for n in reversed(outer.body) if isinstance(n, ast.Try) and n.finalbody)
     final.finalbody.extend(ast.parse('''
@@ -271,12 +285,17 @@ if stats is not None:
 ''').body)
 
 
-def make_kernel(projection=True, unit=False, frames=False, composition='eager', profile_prefix=False):
+def make_kernel(projection=True, unit=False, frames=False, composition='eager', profile_prefix=False,
+                reductions=False):
     """Return (curve variant, unit-form registry); installation is separately timed."""
+    if unit and reductions:
+        # Native rename nodes know groups/loops/Hold, not analytic placeholders.
+        # Do not silently disable the oracle or restore it in the wrong namespace.
+        raise ValueError('analytic placeholder restoration with reductions is not integrated')
     if unit:
         return make_exact_kernel(transform=lambda tree: transform(tree, projection, frames, composition, profile_prefix))
     tree = ast.parse(SOURCE.read_text(), filename=str(SOURCE))
-    transform(tree, projection, frames, composition, profile_prefix)
+    transform(tree, projection, frames, composition, profile_prefix, reductions)
     namespace = dict(__name__='research.index_coupling.graph._prefix_experiment',
                      __package__='research.index_coupling.graph')
     exec(compile(ast.fix_missing_locations(tree), str(SOURCE), 'exec'), namespace)
