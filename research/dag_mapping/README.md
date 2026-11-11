@@ -33,11 +33,20 @@ witnesses; all six complete native frontiers agree and 24 tests pass. The scalar
 whole-part corner is repaired. This is representation/certification, not a new
 search algorithm, arbitrary-yield interface, or speedup result.
 
+[Gate 2 results](RESULTS.md#后续-gate-2跨顺序闭合响应复用正确但未通过效率门槛): identical
+closed responses can be shared across global-order parents, with 13,102 exact
+conditional checks and 1,554 root replays. The frozen efficiency criterion
+fails: only 0.44%/4.69% improvement on the two primary DAGs and a 2.30% mixed-DAG
+regression, with higher memory. This bounded cache application is stopped;
+neither order enumeration nor Residency-mask growth is removed.
+
 ```sh
 python3 -m unittest research.dag_mapping.test_boundary
 python3 -m unittest research.dag_mapping.test_hierarchy
 PYTHONHASHSEED=0 python3 -m research.dag_mapping.study --out FRESH_DIRECTORY --revision SOURCE_COMMIT
 PYTHONHASHSEED=0 python3 -m research.dag_mapping.check_hierarchy --out FRESH_RESULT.json
+python3 -m unittest research.dag_mapping.test_reuse
+python3 -m research.dag_mapping.summarize_reuse research/dag_mapping/results/reuse --out FRESH_SUMMARY.json
 ```
 
 Continue method work directly on `research/main`. Hardware interface validation
