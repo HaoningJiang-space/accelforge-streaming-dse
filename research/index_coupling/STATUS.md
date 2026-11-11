@@ -1,5 +1,14 @@
 # Index coupling: current status (entry point)
 
+**Numeric-first witness follow-up stops:** [WORK_ATTRIBUTION.md §7](WORK_ATTRIBUTION.md).
+A avoids 70.10%/85.44% of combined-prefix witness constructions on M8-2/3,
+but complete generation improves only 1.38%/5.18% over Parent-frame. It misses
+the frozen requirement of at least 5% on both. Ordered-stream B is slower on
+all six medians. All 73 frontiers agree, 1,752 replays pass, and A/B select
+the same witnesses as Parent-frame. Numeric work/cache counts are unchanged;
+RSS stays within the frozen limits. Preserve the partial gain and negative
+verdict as opt-in experiment arms; no further tuning or default change.
+
 **Parent-frame continuation complete:** [WORK_ATTRIBUTION.md §6](WORK_ATTRIBUTION.md)
 shares equivalent prefix boundaries across different parent-span lengths.
 All 73 root points agree and 2,190 repeated witnesses replay exactly. Complete

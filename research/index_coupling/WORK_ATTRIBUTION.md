@@ -642,3 +642,117 @@ If neither A nor B meets the full criterion, retain the negative result and
 stop this route. If one succeeds, retain the bounded opt-in mechanism and
 stop at this experiment as requested; do not extend the cache quotient, add
 heuristics, or substitute chain timing for the DAG-region research.
+
+### Completed: A helps M8-3 modestly; neither arm meets the joint criterion
+
+Protocol `56325880`, code frozen at `e8e73b55` before timing. No tuning follows
+measurement. [results/prefix_numeric/](results/prefix_numeric/) stores 120 timed
+and 24 work records, the manifest and recomputable summary. All 12 source
+hashes match the frozen commit. All workers finish under the frozen limits;
+the six cases are unchanged. The default core is byte-identical to the
+baseline, and the eager recurrence/cache-key functions are AST-identical to
+`e7b9cd39`. Its additional per-prefix timers are inserted only for the
+instrumented work run. Timed A/B workers compile out their detailed timers.
+
+Local checks pass **18/18** methods (11 prefix tests plus seven existing
+unified-search tests); the 11 prefix tests also pass on the server before
+the experiment. Tests include literal enumeration, both entries/domains,
+resident and owned boundary contexts, capacity clipping, witness-free mode,
+stable equal-cost provenance, empty streams and exact selected witnesses.
+The ordered-union test includes 100 deterministic sets of streams at three
+capacity bounds with unorderable provenance objects, checking stable numeric
+selection against the existing sort. **All 73 complete root frontier points
+agree and all 1,752 repeated root witnesses replay exactly.** A and B's full
+root witness digests also match Parent-frame in every timed and work run.
+Neither arm performs native recovery search.
+
+Five-round median complete root mapping generation in milliseconds:
+
+| Case | Native | Parent-frame | A: numeric-first | A time reduction vs parent | B: ordered streams | B time increase vs parent |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| M8 FFN-1 | 65.01 | 46.74 | 46.29 | 0.97% | 50.57 | 8.19% |
+| M8 FFN-2 | 313.42 | 187.80 | 185.20 | 1.38% | 202.09 | 7.61% |
+| Tiny FFN-4 | 4,020.16 | 736.02 | 715.74 | 2.76% | 779.44 | 5.90% |
+| Mixed fork kki | 92.16 | 51.35 | 50.93 | 0.82% | 57.42 | 11.83% |
+| M16 FFN-2 | 441.79 | 263.25 | 259.25 | 1.52% | 280.75 | 6.65% |
+| M8 FFN-3 | 2,535.52 | 951.12 | 901.88 | **5.18%** | 987.72 | 3.85% |
+
+A wins four of five paired rounds on M8-2 and all five on M8-3. However,
+M8-2's median reduction is only 1.38%, below the frozen 5% threshold. Its
+parent/A ranges overlap (186.88–190.39 / 184.55–191.48 ms). M8-3's ranges
+separate (949.29–961.82 / 896.07–906.91 ms), supporting a bounded improvement
+there. M8-1 is essentially flat (46.40–46.96 / 46.11–47.35 ms). B loses on
+every median, and also exceeds the allowed M8-1 regression. Both arms pass
+correctness and the predeclared RSS limits, but **neither passes the complete
+primary success criterion**. The small A gain is retained without relabeling
+the experiment as a successful general continuation.
+
+Installation-inclusive parent/A/B times are 60.71/61.39/65.98 ms (M8-1),
+201.86/200.05/216.93 ms (M8-2), 749.87/730.81/795.19 ms (tiny),
+65.54/65.56/72.62 ms (fork), 277.21/274.10/295.93 ms (M16-2), and
+965.72/917.31/1,002.87 ms (M8-3). A's complete generation on M8-3 is 2.81×
+native, or 2.76× including installation. These exclude independent validation
+replay (A: 126.7/260.2/641.6/419.9 ms for M8-1/2, M16-2, M8-3), whose full
+cost remains in the raw records. Existing section 6 timings are not replaced.
+
+The intended work reduction happens, but its scope is narrower than the
+total Pareto-candidate count. A/B both build the same lightweight numeric
+candidates and retain the same survivors:
+
+| Case | Prefix candidates / eager combined-witness constructions | Prefix survivors / A or B constructions | Avoided constructions |
+| --- | ---: | ---: | ---: |
+| M8 FFN-1 | 5,351 | 2,597 | 51.47% |
+| M8 FFN-2 | 35,258 | 10,543 | 70.10% |
+| Tiny FFN-4 | 89,880 | 23,246 | 74.14% |
+| Mixed fork kki | 6,370 | 1,981 | 68.90% |
+| M16 FFN-2 | 51,668 | 14,944 | 71.08% |
+| M8 FFN-3 | 299,636 | 43,627 | 85.44% |
+
+One construction means materializing the combined prefix's groups tuple,
+decision-set union and witness concatenation reference. The original solver
+already uses a shared concatenation tree: it does **not** copy a complete
+execution tree for each candidate. Child witness creation and final flattening
+are outside this counter. Light provenance allocations remain necessary.
+
+Selected diagnostic timings from the separate instrumented run, milliseconds:
+
+| Case / phase | Parent-frame | A | B |
+| --- | ---: | ---: | ---: |
+| M8-2 combined-prefix witness materialization | 17.22 | 6.51 | 5.88 |
+| M8-2 prefix numeric union | 8.12 | 7.99 | 19.80 |
+| M8-2 all Pareto / merge time | 21.26 / 19.45 | 21.13 / 19.40 | 35.51 / 19.85 |
+| M8-3 combined-prefix witness materialization | 207.99 | 48.75 | 23.61 |
+| M8-3 prefix numeric union | 51.36 | 51.47 | 121.58 |
+| M8-3 all Pareto / merge time | 128.20 / 135.76 | 130.23 / 138.37 | 206.21 / 135.71 |
+
+These are single instrumented-phase measurements including local iteration
+and allocation/collection costs; they cannot be subtracted to predict
+uninstrumented speedup. In particular, A/B's identical survivor count does
+not imply identical timed allocation cost. B's heap-based union is over twice
+as expensive as the stable-sort union in these measurements. Avoiding the
+sort does not help this Python implementation.
+
+All original solve/group and prefix cache misses, loop choices, partition
+transitions, numeric candidates/survivors and sweep points remain identical
+between the three prefix arms. For M8-3, that still means 14,336 complete
+response misses, 40,829 loop choices, 62,802 partition transitions and
+696,812 total Pareto candidates. The 299,636 prefix-union candidates are a
+subset of this total. Witness concatenation-node accounting falls from
+437,662 to 207,924, but no recursive numeric response is eliminated.
+
+Memory is essentially unchanged. M8-2 parent/A/B pre-replay peak RSS is
+34.61/34.75/34.79 MiB; M8-3 is 73.01/72.90/73.16 MiB. Every case satisfies
+max(1.10 × parent RSS, parent RSS + 2 MiB). No new memory-versus-time problem
+explains the outcome; the remaining numeric work and lightweight-reference
+processing limit the benefit of skipping witness materialization.
+
+**Decision:** stop this optimization route under the frozen joint criterion.
+Keep A/B as opt-in reproducible experiment arms (`composition='numeric'` or
+`'ordered'`, with `frames=True`); do not promote either to the default or add
+further variants/cases to rescue the result. Parent-frame remains the bounded
+positive mechanism. DAG-region composition is a separate research task.
+
+```sh
+python3 -m unittest research.index_coupling.test_prefix_sharing research.index_coupling.test_unified_search -v
+python3 -m research.index_coupling.response.bench_prefix_numeric run NEW_DIRECTORY --revision YOUR_SOURCE_COMMIT
+```

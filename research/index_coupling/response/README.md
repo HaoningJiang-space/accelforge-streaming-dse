@@ -19,6 +19,7 @@ operators.
 | `root_work.py` | Root-wide state families, parent provenance, free-terminal attribution and existing singleton-provider cost | read-only diagnostic; see WORK_ATTRIBUTION.md §4, no new replacement |
 | `prefix.py`, `bench_prefix.py` | Share projected cut-DP prefixes across conditional contexts; direct native witnesses and five-arm benchmark | opt-in, complete-root M8 1.38×/1.58×; installation-inclusive 1.08×/1.49×; more memory (WORK_ATTRIBUTION.md §5) |
 | `prefix.py` with `frames=True`, `bench_prefix_frames.py` | Additionally quotient equivalent parent spans by prefix boundary contract | opt-in; M8 1.40×/1.66× native, held-out M16-2/M8-3 1.68×/2.65×; M8-1 incremental gain within noise, fork slightly worse; 2,190 exact replays (§6) |
+| `prefix.py` with `composition='numeric'` / `'ordered'`, `bench_prefix_numeric.py` | Materialize combined prefix witnesses only after stable numeric survival | A improves M8-2/3 by 1.38%/5.18% over Parent-frame; B slower; neither meets joint 5% criterion; 1,752 exact replays, route stopped (§7) |
 
 ## Commands
 
@@ -34,6 +35,7 @@ python -m research.index_coupling.response.experiments exact-mapping-bench NEW.j
 python -m research.index_coupling.response.fusion_width NEW.jsonl
 python -m research.index_coupling.response.bench_prefix run NEW_DIRECTORY --revision YOUR_SOURCE_COMMIT
 python -m research.index_coupling.response.bench_prefix_frames run NEW_DIRECTORY --revision YOUR_SOURCE_COMMIT
+python -m research.index_coupling.response.bench_prefix_numeric run NEW_DIRECTORY --revision YOUR_SOURCE_COMMIT
 ```
 
 - Archive commands default to the eight archived cases in `dag.CASES`.
@@ -80,6 +82,12 @@ current implementation plan.
   slightly. RSS falls relative to prefix sharing but still exceeds native.
   All 73 complete root points agree. This bounded continuation is complete;
   `make_kernel(projection=True, frames=True)` remains opt-in.
+- **Deferred prefix witnesses.** Section 7's A/B experiment preserves selected
+  witnesses as well as the full frontier. A reduces witness construction but
+  misses the frozen joint performance criterion; heap-stream B is slower.
+  The original witness representation already shares concatenation trees.
+  Numeric response/candidate work is unchanged. Retain the bounded partial
+  benefit as an experimental option and stop; no further local variants.
 - **Bounded group span.** The §19 diagnostic is complete: U_3 matches only
   20/193 M8-2 states whose spans actually exceed three operators (7.11% of
   that stratum's exclusive DP work). A shared row loop can span a long chain
