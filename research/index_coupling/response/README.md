@@ -1,6 +1,6 @@
 # response: closed forms, bounds and substitution for chain states
 
-This package holds the code of CONTRACTION_ORACLE.md §6-19 and
+This package holds the code of CONTRACTION_ORACLE.md §6-20 and
 SANDWICH_RESULTS.md. It describes a chain state's grammar response
 (capacity -> least extra traffic, grammar v2) without searching. It covers
 FFN and attention stacks and any chain of dense contractions and elementwise
@@ -68,6 +68,12 @@ current implementation plan.
   that stratum's exclusive DP work). A shared row loop can span a long chain
   while using two activation cells, so group span is not physical live width.
   No online implementation follows this diagnostic.
+- **Fixed M-to-one joint elimination.** The [proof and bounded plan](../LOOP_CONDITIONED_FACTORS.md)
+  lead to an exact allocation/boundary DP in `../hypergraph_audit.py`. All
+  36 branch frontier points match, with 324 exact replays. Complete branch
+  generation is 0.52×/0.34× native on M8 and slower than existing forms;
+  tiny FFN-4 only ties those forms. Section 20 records the factor-construction
+  overhead. The pilot stops; no general hypergraph solver or root integration.
 
 ## Renamed modules
 

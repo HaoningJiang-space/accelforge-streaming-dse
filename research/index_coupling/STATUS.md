@@ -22,6 +22,15 @@ covering 7.11% of that stratum's exclusive DP work. Nine framed control
 executions confirm that a long common row loop can have only two child
 activation cells. This completes an offline diagnosis, not a new solver.
 
+Fixed-loop joint factorization: [proof/scope](LOOP_CONDITIONED_FACTORS.md),
+[CONTRACTION_ORACLE.md §20](CONTRACTION_ORACLE.md). Conditioning on M-to-one
+permits exact joint elimination of private weight choices and unit-M group
+boundaries. All 36 fixed-branch frontier points match three methods, with
+324 exact repeated replays. The direct capacity-sweep implementation makes
+more local-factor queries than the existing cached forms: complete branch
+generation is 0.52×/0.34× native on M8, and slower than forms. The bounded
+pilot stops without changing the default solver or starting root integration.
+
 This page is the index to the directory. README.md keeps the chronological record.
 PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. RESEARCH_PLAN.md and

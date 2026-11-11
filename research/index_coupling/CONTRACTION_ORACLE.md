@@ -1078,3 +1078,144 @@ Code: `response/fusion_width.py`. Summary and immutable source/archive hashes:
 ```sh
 python -m research.index_coupling.response.fusion_width NEW.jsonl
 ```
+
+## 20. Fixed M-to-one factorization: exact joint elimination, no M8 speedup
+
+[LOOP_CONDITIONED_FACTORS.md](LOOP_CONDITIONED_FACTORS.md) was committed and
+pushed at `b3cd183d` before implementation and measurement. It proves a
+restricted joint minimization: condition on the whole-span M loop with tile
+one, fix final outer weight allocation a, and use a unit-M boundary DP whose
+state is (position, boundary retention, prefix weight allocation). Every
+local factor receives capacity C-a, including weight storage reserved for
+consumers that have not executed yet. Past weight identities are witness
+payload rather than state keys, because private weights have no later uses.
+
+This exchanges finite minimizations using the already exact unit-M local
+forms. It does **not** equate different complete residency response curves.
+The grammar's long common loop is preserved; only decisions inside that
+fixed branch are reorganized. The pseudopolynomial capacity domain is part
+of the cost, not a free scalar signature.
+
+### Semantic and execution checks
+
+The primary cases are the two existing M8 FFNs; tiny FFN-4 is the declared
+control with eight private weights. At each root, only the whole-span M-to-one
+group branch is admitted. Native descendants remain unrestricted. The three
+methods are:
+
+- **Native:** the original recurrence, including shared memoization across
+  mask children; this is not repeated independent whole-solver invocations.
+- **Forms:** existing unit-M substitution, still enumerating the outer masks.
+- **Joint:** local response factors plus the allocation/boundary DP, with no
+  complete-mask child response calls during response search.
+
+The prototype starts from empty caller residency and ownership on these
+three roots. The broader fixed-caller interface in the proof is not an
+additional experimentally validated scope here.
+
+All 276 archived outer choices (4 / 16 / 256) have matching unary capacity
+and traffic coefficients, full child states and transformed branch curves.
+All three methods independently reproduce the archived complete branch
+frontiers: **13 / 12 / 11 points, 36 distinct case/points** in total.
+Every selected native witness executes exactly. Across three fresh-process
+rounds and three methods, **324/324** numerical/peak/traffic replays pass.
+
+Both replacement methods recover selected native witnesses with the existing
+plain solver and charge that time. Native generation emits witnesses directly.
+The joint DP stores one minimizing mask as a backpointer, not in its state key.
+Neither replacement reads archived curves or witnesses while solving.
+
+### Timings: the smaller mask representation does not win on M8
+
+All times below are median milliseconds, with witness recovery included in
+generation. Kernel installation and replay are excluded and separately
+recorded; imports and graph construction are outside the timers. The Python
+version is 3.14.2 on local Darwin arm64. Hash seed is zero;
+arm order alternates; all 27 workers finish within their 120-second limits.
+
+| Case | Native generation | Forms generation | Joint generation | Joint vs native | Joint vs forms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| M8 FFN-1 | 13.70 | 14.29 | 26.51 | **0.52×** | **0.54×** |
+| M8 FFN-2 | 42.65 | 70.32 | 126.56 | **0.34×** | **0.56×** |
+| Tiny FFN-4 | 478.89 | 132.36 | 129.70 | **3.69×** | **1.02×** |
+
+The tiny control's 1.02× over existing forms is not convincing evidence of
+an incremental speedup from three runs. Its larger advantage over native
+search is already largely explained by the existing local forms.
+
+| Case | Native search | Forms search / recovery | Joint search / recovery | Joint factor construction within search |
+| --- | ---: | ---: | ---: | ---: |
+| M8 FFN-1 | 13.70 | 1.52 / 12.78 | 12.77 / 13.96 | about 11.4 |
+| M8 FFN-2 | 42.65 | 4.83 / 65.49 | 71.49 / 55.12 | about 56.0 |
+| Tiny FFN-4 | 478.89 | 52.10 / 79.02 | 47.69 / 80.95 | about 19.1 |
+
+Search/recovery columns are separate medians and need not sum exactly to a
+median total. Factor-construction figures describe the first recorded joint
+run and are a subset of its search time, not an additional charge.
+Native/forms kernel installation is approximately 13 ms per fresh process;
+joint factor construction is entirely inside its search timer. With setup
+included, M8-1 is 27.45 / 27.72 / 26.51 ms and M8-2 is 55.71 / 83.69 /
+126.57 ms (native/forms/joint). The tiny M8-1 setup-inclusive difference is
+not a material improvement in branch search.
+
+Pre-replay peak RSS medians are 25.14 / 24.59 / 22.20 MiB for M8-1,
+24.50 / 26.64 / 27.06 MiB for M8-2 and 29.72 / 29.73 / 29.89 MiB for
+tiny FFN-4. There is no consistent memory advantage.
+
+### What was removed, and what replaced it
+
+| Case | Complete-mask formula responses, forms → joint | Joint reservation-sum values | Capacities scanned | Joint DP states / admitted transitions | Local factor cache misses, forms → joint |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| M8 FFN-1 | 4 → 0 | 3 | 75 | 742 / 2,170 | 198 → 1,800 |
+| M8 FFN-2 | 16 → 0 | 5 | 139 | 6,827 / 36,025 | 446 → 8,896 |
+| Tiny FFN-4 | 256 → 0 | 9 | 37 | 10,537 / 75,916 | 242 → 2,220 |
+
+The whole-chain formula calls really disappear during joint response search.
+However, the existing forms already cache their local responses across masks.
+The joint implementation scans parent capacities and final reservation sums,
+requesting many more distinct local capacity arguments. Even when a local
+response has saturated at zero extra traffic, these different arguments still
+produce new cache entries. Small state counts at one boundary do not bound
+the aggregate work over all capacities and reservations.
+
+Recovery still invokes native child responses: forms/joint recover 3/3,
+6/5 and 9/9 unique conditional states for the three cases. Different tied
+winning masks explain the M8-2 difference. Native recursion during recovery
+is included in time but not in the search-only counters above. Native search
+itself has 566 / 1,570 / 5,760 total solve/group cache misses and
+1,056 / 3,632 / 69,827 partition transitions. These operations are not
+interchangeable with a local-factor lookup or a joint budget transition;
+their counts must not be added as a universal runtime model.
+
+### Relevance to the complete root response
+
+At complete-root Pareto capacities, the fixed branch attains 5/14 points for
+M8-1, 4/15 for M8-2 and 3/5 for tiny FFN-4. For M8-2 those are capacities
+3, 4, 6 and 10, at the high-traffic end. This is not a partition of total
+search cost: other branches can still request the same child states.
+
+The branch has additional Pareto points dominated in the full root problem.
+Recovering all branch witnesses therefore costs more than recovering just
+the finally selected root witnesses. These timings must not replace §16a's
+complete-root 6.60× result or be compared as though they generated the same
+set of mappings.
+
+**Decision.** The exact joint factorization is established for the stated
+M-to-one chain branch and verified on the bounded cases. The current direct
+capacity-sweep implementation does not outperform existing forms on M8 and
+does not justify online root integration. Stop this pilot without extending
+to F/D loops, partial-sum factors or larger shapes. It neither establishes
+general hypergraph acceleration nor disproves a more economical evaluation
+of the same restricted recurrence.
+
+Code: [hypergraph_audit.py](hypergraph_audit.py). Records are in
+`results/loop_conditioned_factors/run1`: `manifest.json`, `factors.json`,
+`runs.jsonl`, `summary.json`. An optional AST-transform argument to
+`make_exact_kernel` applies the audit's root-branch restriction; its default
+behaviour and `graph/curve.py` are unchanged.
+The existing default `exact-check ffn_forward_l1_m8` command also passes:
+the full root curves agree and all 14 selected witnesses replay exactly.
+
+```sh
+python -m research.index_coupling.hypergraph_audit run NEW_DIRECTORY
+```

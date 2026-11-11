@@ -112,6 +112,7 @@ M8 保留了大量 M>1 状态的工作。忽略驻留集合、每个 key 只计�
 | 廉价跨 Residency 共享 | [最新分析](index_coupling/RESIDENCY_SHARING.md)：gap 不恒定、存在远距交互、M>1 多数曲线不能只平移 | 三种具体复用结构未成立；不据此启动通用 symbolic solver |
 | 一般 remainder 规范化作为默认加速 | [本地](index_coupling/REMAINDER_SEARCH_RESULTS.md) 正负混合；[P19 服务器](https://github.com/HaoningJiang-space/accelforge-streaming-dse/blob/5245c9cc/research/dnn_benchmarks/P19_SERVER_RESULTS.md) remainder 12/12 受内存限制失败，precheck 慢 15.7%/18.4% | 保留等价性结果及局部正例，不宣称普遍时间/内存收益 |
 | 限制顶层融合组至多 2–3 个算子 | [§19 诊断](index_coupling/CONTRACTION_ORACLE.md)：M8-2 的 U_3 总覆盖 2,038/2,211，但真正长于三算子的状态仅 20/193 相等，覆盖该层 7.11% 的独占 DP 工作 | 诊断已完成，不转为新求解器；共同逐行循环可跨长链而只需两个局部激活单元，组跨度不是物理耦合宽度 |
+| 固定 M→1 后联合消去权重选择 | [条件化分解](index_coupling/LOOP_CONDITIONED_FACTORS.md)有精确递推；[§20](index_coupling/CONTRACTION_ORACLE.md) 的 36 个分支前沿点相等、324 次回放通过；但 M8 完整分支生成仅为 native 的 0.52×/0.34×，慢于现有闭式 | 直接容量扫描增加了局部因子计算，试验到此停止；不把正确分解、减少完整 mask 调用当作实际加速 |
 
 最新 Residency 报告的 84–88% 是“若每个不含驻留集合的 key 只付一次最贵成员成本”
 的假想 DP 工作节省。**曲线形状不同，不证明计算不可共享；共享上限很大，也不证明

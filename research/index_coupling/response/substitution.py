@@ -40,7 +40,7 @@ def frontier_of(kinds, sizes, first, last, streamed, tile_domain):
     raise AssertionError(f'no zero-traffic point below {top} for {kinds} {sizes}')
 
 
-def make_exact_kernel(registry=None):
+def make_exact_kernel(registry=None, transform=None):
     """(curve variant, registry of substituted states)."""
     registry = {} if registry is None else registry
     tree = ast.parse(CURVE_SOURCE.read_text(), filename=str(CURVE_SOURCE))
@@ -80,6 +80,8 @@ if _exact_enabled and not constrained and (allowed_mask is None or ops != graph.
         return _pts
 ''').body
     solver.body[positions[0] + 1:positions[0] + 1] = hook
+    if transform is not None:
+        transform(tree)  # optional audit restriction; no default behaviour change
     namespace = dict(__name__='research.index_coupling.graph._exact_experiment',
                      __package__='research.index_coupling.graph', _exact=exact)
     exec(compile(ast.fix_missing_locations(tree), str(CURVE_SOURCE), 'exec'), namespace)
