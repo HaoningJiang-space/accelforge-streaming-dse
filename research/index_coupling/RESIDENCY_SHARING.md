@@ -94,3 +94,19 @@ prove it must enumerate the same choices as the current search.
 - This does not prove that no symbolic solver could share work. It does
   show that any such solver must reason about the reservation knapsack
   itself, and it would not be a reuse of existing responses.
+
+## 5. Later result: sharing at the level of intermediate responses
+
+The conclusion above concerns sharing **whole responses** across contexts.
+Its final sentence is too strong. [WORK_ATTRIBUTION.md §5-6](WORK_ATTRIBUTION.md)
+shares an **intermediate** response instead: the cut-DP prefix, projected onto
+the tensors that the prefix uses. Contexts that differ only in future-private
+weights or extents then share one prefix computation.
+
+On M8 FFN-1/2, this gives exact root frontiers and native witnesses, at
+1.40× / 1.66× complete generation. On the held-out M16 FFN-2 and M8 FFN-3 it
+gives 1.68× / 2.65×. Original state and loop-choice counts are unchanged, and
+memory grows.
+
+The three negative tests above still stand for whole-curve reuse. But
+cross-context sharing of construction is possible, and it was measured.
