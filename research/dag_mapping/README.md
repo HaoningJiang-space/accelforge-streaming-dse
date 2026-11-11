@@ -11,6 +11,11 @@ search on six small supported graphs. `boundary.py` implements the exact fixed
 region building block. `study.py` records its limits; it is not a new scalable
 optimizer, dynamic topological-order DP, or complete DNN frontend.
 
+[D1 results](RESULTS.md): six completed cases, 642 exact boundary-policy checks
+and 146 exact root replays. All three restricted arms lose complete-frontier
+points on every case. The concrete missing witness has nested I and L loops
+with different operator scopes; a single common outer loop is insufficient.
+
 ```sh
 python3 -m unittest research.dag_mapping.test_boundary
 PYTHONHASHSEED=0 python3 -m research.dag_mapping.study --out FRESH_DIRECTORY --revision SOURCE_COMMIT
