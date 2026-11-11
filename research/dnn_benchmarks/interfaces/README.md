@@ -1,9 +1,13 @@
 # Versioned plain-GEMM evaluation interfaces
 
-This branch extends the integration without changing the frozen 100-run fidelity
+These interfaces extend the integration without changing the frozen 100-run fidelity
 protocol or its hardware. The new requests explicitly select hardware capacity
 and scheduling policy. Graph witnesses, cross-operator residency, arbitrary loop
 orders, bias, tails, other dtypes, and energy remain unsupported capabilities.
+
+Continue routine DNN and simulator interface work on `research/dnn-benchmarks`;
+do not create a separate branch for each interface or experiment. Preserve pinned
+execution checkouts for running experiments independently of branch cleanup.
 
 ## Request and capabilities
 

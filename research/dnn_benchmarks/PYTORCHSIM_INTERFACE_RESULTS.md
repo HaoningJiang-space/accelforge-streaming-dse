@@ -6,8 +6,9 @@ budgeted candidate evaluation. This is a **plain-GEMM** integration. The Graph
 Witness-to-TOG exporter, cross-operator Keep/Spill, and energy modelling are not
 implemented by this change.
 
-The implementation lives on `research/pytorchsim-interfaces`, based on
-`77b737df`. The frozen 100-run fidelity experiment and its backend were left
+The implementation is integrated into `research/dnn-benchmarks`, based on
+`77b737df`. The temporary interface branch has been retired. The frozen 100-run
+fidelity experiment and its backend were left
 unchanged. See [the API documentation](interfaces/README.md) for supported
 capabilities and invocation examples.
 
