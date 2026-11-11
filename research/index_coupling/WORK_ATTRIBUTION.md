@@ -239,3 +239,51 @@ validation follows from this root-work audit.
 python -m research.index_coupling.response.root_work NEW_DIRECTORY
 python -m research.index_coupling.response.root_work providers NEW_PROVIDER_DIRECTORY
 ```
+
+### Interpretation: minimizing contexts is different from serving contexts
+
+For a fixed parent loop, let `x` denote its new retention decisions. Its
+extra-traffic response is
+
+    F_parent(C) = min_x [d_parent(x) + r_parent F_child(x)(C-a_parent(x))].
+
+The fixed-row-loop joint DP exactly reorganizes this minimization. It need
+not construct every `F_child(x)`: it can return the parent's envelope and
+the winning choices. That is useful, but this envelope does not in general
+determine the individual conditional responses. Taking a minimum loses
+alternatives that another parent, with different reservations, trip count,
+or admissible contexts, may need. Replacing all those child queries therefore
+requires a response representation that preserves their complete interfaces,
+or a separate proof that the discarded alternatives cannot help any remaining
+caller. The branch proof alone supplies neither. This is also why a direct
+witness constructor, while necessary to remove recovery search, would not
+by itself invalidate the zero-unreachable-M8-states branch experiment.
+
+Three distinctions prevent the diagnosis from becoming an impossibility claim:
+
+- Different curves do not imply that their construction cannot share work.
+  The failed shift/additivity tests exclude those representations, not every
+  conditional representation or exact algorithm.
+- The archived call DAG belongs to the current recurrence implementation.
+  Reachability after removing edges measures that intervention, not work that
+  every future algorithm must perform. Memoization already serves a complete
+  state once; deleting another route to it is not a second cache-miss saving.
+- M>1 is a useful label for these forward-chain hotspots, not a universal
+  hardness criterion. The training control's costly M=1 states already
+  preclude that inference. The M8 native full roots
+  here take about 0.05/0.25 seconds in the one-run diagnostic; their failure to
+  benefit from a replacement is not a measured large-DNN scaling law.
+
+There is no unexploited quadratic sibling-frontier merge in the current core:
+`graph/curve.py::merge_staircases` already combines serial peak-capacity/summed-
+traffic responses in linear time in the two frontier lengths. More general
+candidate construction and pruning still cost work, but this particular
+algebraic shortcut is already present.
+
+Thus the outstanding concrete target is the complete multi-op conditional
+`solve` response shared by M=2/4 and feature-loop parents, with executable
+witness decisions produced during construction. The required net comparison
+is old work actually removed versus **construction + all remaining queries +
+witness construction**, alongside any changed caller work. Counters locate
+that target; they do not establish that a cheap exact constructor exists.
+This interpretation introduces no new solver, experiment, or speedup claim.

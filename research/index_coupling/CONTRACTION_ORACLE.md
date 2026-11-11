@@ -1363,11 +1363,17 @@ the predeclared M8 comparison does not beat native generation. M8-2 improves
 1.44× over existing forms and 2.61× over the old scan; M8-1 is slower than
 both. No shapes or additional methods were added after these results.
 
-| Case | Breakpoint search | Factor construction within search | Local native recovery | Search speed vs native |
+| Case | Breakpoint search | Factor construction within search | Local native recovery | Native generation / breakpoint search (mixed scopes) |
 | --- | ---: | ---: | ---: | ---: |
 | M8 FFN-1 | 1.44 | 1.08 | 27.10 | 9.35× |
 | M8 FFN-2 | 3.35 | 1.97 | 45.50 | 12.68× |
 | Tiny FFN-4 | 2.49 | 0.98 | 10.41 | 186.67× |
+
+The last column divides **native generation with witness construction** by
+**breakpoint numeric search without recovery**. Its former label, "Search
+speed vs native", was misleading: these ratios are not matched search-only
+speedups. The complete-generation comparison in the preceding table remains
+the performance result; neither raw timings nor the frozen verdict change.
 
 The separate medians need not sum exactly to the median total. Imports,
 graph construction and replay remain outside generation; factor construction
