@@ -17,7 +17,7 @@ OPTIONS = dict(partitions='dp', scalar_leaf='v2')
 class PrefixSharingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.kernels = [make_kernel(False)[0], make_kernel(True)[0]]
+        cls.kernels = [make_kernel(False)[0], make_kernel(True)[0], make_kernel(frames=True)[0]]
 
     def compare(self, g, **options):
         expected = curve(g, scalar_leaf='v2', partitions='enumerate', **options)
@@ -84,6 +84,46 @@ class PrefixSharingTests(unittest.TestCase):
         for change in (dict(scalar_leaf='v1'),dict(grid=2),dict(canonical_spans=True),
                        dict(whole_span_cuts=()),dict(root_groups=(g.ops,))):
             with self.assertRaises(ValueError):fn(g,**(OPTIONS|change))
+
+    def test_parent_frame_keeps_exit_and_scalar_entry_contracts(self):
+        # P's X has a distant consumer. Prefixes ending before/after Q do not
+        # have the same exit tensor set; scalar proper groups may repartition.
+        for extent in (1,2):
+            g=Graph(dict(I=extent,J=2),[
+                ('P',{'A':('I','J'),'X':('I',)}),
+                ('Q',{'X':('I',),'B':('I',),'Y':('I',)}),
+                ('R',{'X':('I',),'Y':('I',),'Z':('I',)}),
+                ('S',{'Z':('I',),'D':('I',),'O':('I',)})])
+            for external in ((),('X',),('Y','Z'),('X','Y','Z')):
+                self.compare(g,external=external)
+            for c,q,w in self.kernels[-1](g,witness=True,**OPTIONS):
+                r=simulate(g,w,scalar_leaf='v2')
+                self.assertTrue(r['valid']);self.assertEqual((r['peak'],r['traffic']),(c,q))
+
+    def test_later_writer_classification_is_not_lost(self):
+        # Deliberately non-topological input: numerical grammar comparison only.
+        # The single-writer core accepts it, so the quotient must retain the
+        # later-writer flag even though this is not a valid executable DAG.
+        g=Graph(dict(I=2),[
+            ('P',{'X':('I',),'A':('I',),'Y':('I',)}),
+            ('Q',{'Y':('I',),'B':('I',),'Z':('I',)}),
+            ('R',{'D':('I',),'X':('I',)})])
+        self.compare(g)
+        self.compare(g,written={'X'})
+
+    def test_frame_aliases_reduce_cached_prefixes(self):
+        g=ffn_stack(2,m=2,d=1,f=2)
+        old,new={},{}
+        a=self.kernels[1](g,stats=old,**OPTIONS)
+        b=self.kernels[2](g,stats=new,**OPTIONS)
+        self.assertEqual(a,b)
+        self.assertGreater(new['prefix_frame_aliases'],0)
+        self.assertLess(new['prefix_cache']['misses'],old['prefix_cache']['misses'])
+        self.assertLess(new['dp_transitions'],old['dp_transitions'])
+        fn,registry=make_kernel(frames=True,unit=True);cache={}
+        for c,q,w in fn(g,witness=True,**OPTIONS):
+            r=simulate(g,expand(g,w,registry,cache),scalar_leaf='v2')
+            self.assertTrue(r['valid']);self.assertEqual((r['peak'],r['traffic']),(c,q))
 
 
 if __name__=='__main__':unittest.main()

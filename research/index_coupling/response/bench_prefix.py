@@ -25,21 +25,22 @@ ARMS=('native','prefix_raw','prefix_shared','unit','unit_prefix')
 OPTIONS=dict(partitions='dp',scalar_leaf='v2',witness=True)
 
 
-def worker(case, arm, instrumented):
+def worker(case, arm, instrumented, graph=None):
     if sys.platform.startswith('linux'):
         resource.setrlimit(resource.RLIMIT_AS,(6*2**30,6*2**30))
-    g=graph_of(case)
+    g=graph_of(case) if graph is None else graph
     start=time.perf_counter()
     if arm=='native':fn,registry=curve,{}
     elif arm=='unit':fn,registry=make_exact_kernel()
-    else:fn,registry=make_kernel(projection=arm!='prefix_raw',unit=arm=='unit_prefix')
+    else:fn,registry=make_kernel(projection=arm!='prefix_raw',unit=arm in ('unit_prefix','unit_frames'),
+                                 frames=arm in ('prefix_frames','unit_frames'))
     installation=time.perf_counter()-start
     stats={} if instrumented else None
     start=time.perf_counter()
     points=fn(g,stats=stats,**OPTIONS)
     search=time.perf_counter()-start
     start=time.perf_counter();cache={}
-    if arm in ('unit','unit_prefix'):
+    if arm in ('unit','unit_prefix','unit_frames'):
         points=tuple((c,q,expand(g,w,registry,cache)) for c,q,w in points)
     recovery=time.perf_counter()-start
     # RSS is sampled before replay, which expands numerical tensor cells.
@@ -63,13 +64,15 @@ def worker(case, arm, instrumented):
                 stats=stats,unit_curve_cache=frontier_of.cache_info()._asdict())
 
 
-def run(out,revision):
+def run(out,revision,*,cases=CASES,arms=ARMS,protocol_commit='e116c2a3',
+        worker_module=None,extra_sources=()):
     out=Path(out);out.mkdir(parents=True,exist_ok=False)
     root=Path(__file__).resolve().parent.parent
     files=[root/p for p in ('graph/curve.py','graph/model.py','graph/stacks.py',
           'response/prefix.py','response/bench_prefix.py','response/substitution.py',
           'response/chains.py','response/forms.py','simulate_nest.py','census_tools.py')]
-    manifest=dict(protocol_commit='e116c2a3',revision=revision,cases=CASES,arms=ARMS,rounds=5,
+    files.extend(root/p for p in extra_sources)
+    manifest=dict(protocol_commit=protocol_commit,revision=revision,cases=cases,arms=arms,rounds=5,
                   timeout_seconds=60,memory_gib=6,python=platform.python_version(),
                   platform=platform.system(),hash_seed=0,
                   source_sha256={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in files},
@@ -77,10 +80,10 @@ def run(out,revision):
     (out/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     for instrumented,rounds in ((False,range(5)),(True,range(1))):
         for round_id in rounds:
-            for case in CASES:
-                for arm in (ARMS if round_id%2==0 else tuple(reversed(ARMS))):
+            for case in cases:
+                for arm in (arms if round_id%2==0 else tuple(reversed(arms))):
                     name=f'{case}_{arm}_{"work" if instrumented else round_id}.json'
-                    cmd=[sys.executable,'-m',__spec__.name,'worker',case,arm]
+                    cmd=[sys.executable,'-m',worker_module or __spec__.name,'worker',case,arm]
                     if instrumented:cmd.append('--instrumented')
                     try:
                         proc=subprocess.run(cmd,env=dict(os.environ,PYTHONHASHSEED='0'),
@@ -92,15 +95,15 @@ def run(out,revision):
                     row.update(round=round_id,instrumented=instrumented)
                     (out/name).write_text(json.dumps(row,indent=2)+'\n')
                     print(name,row['status'],round(row.get('generation_seconds',0),4),flush=True)
-    summary=summarize(out)
+    summary=summarize(out,cases=cases,arms=arms)
     (out/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
     if not summary['all_equal_and_replayed']:raise SystemExit(1)
 
 
-def summarize(out):
+def summarize(out,*,cases=CASES,arms=ARMS):
     rows=[json.loads(p.read_text()) for p in Path(out).glob('*.json') if p.name not in ('manifest.json','summary.json')]
     result=dict(all_equal_and_replayed=True,total_replays=0,cases={})
-    for case in CASES:
+    for case in cases:
         cr=[r for r in rows if r['case']==case]
         references=[r['points'] for r in cr if r['arm']=='native' and r['status']=='complete']
         if not references:
@@ -108,12 +111,12 @@ def summarize(out):
             result['cases'][case]=dict(equal_and_replayed=False,error='no completed native reference')
             continue
         reference=references[0]
-        okay=(len(cr)==len(ARMS)*6 and all(r['status']=='complete' and r['points']==reference
+        okay=(len(cr)==len(arms)*6 and all(r['status']=='complete' and r['points']==reference
                    and r['replayed_points']==len(reference) for r in cr))
         result['all_equal_and_replayed'] &= okay
         result['total_replays']+=sum(r.get('replayed_points',0) for r in cr)
         report=dict(equal_and_replayed=okay,points=len(reference),arms={})
-        for arm in ARMS:
+        for arm in arms:
             timed=[r for r in cr if r['arm']==arm and not r['instrumented'] and r['status']=='complete']
             work=[r for r in cr if r['arm']==arm and r['instrumented'] and r['status']=='complete']
             if not timed:continue
