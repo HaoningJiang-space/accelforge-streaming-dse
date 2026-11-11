@@ -1334,3 +1334,121 @@ search. Replay still checks every complete selected witness exactly.
 This correction changes the recovery interface, not the cases, domains,
 breakpoint DP, baseline, timing definition or five-round comparison.
 Records: `results/loop_conditioned_factors/local_interface.json`.
+
+### Results: response work falls, M8 generation still loses
+
+The derivation was frozen in `96a752a4`; the local-interface correction and
+its negative standalone-group check were recorded in `de21093b` before
+performance measurement. The implementation uses local solve witnesses and
+inlines their first partitions as described above. All four methods return
+the same 36 complete branch frontier points. Across five rounds and four
+methods, **720/720** complete witnesses replay with exact numerical outputs,
+peak capacity and traffic. The 176/672 standalone-group mismatches remain
+recorded as mismatches; full-branch success does not erase them.
+The denominator counts factor occurrences in both domains, not distinct
+functions or unseen shapes. These cases have power-of-two feature sizes,
+so their two reachable tile domains coincide.
+
+Median milliseconds, including all native witness recovery:
+
+| Case | Native generation | Existing forms | Old joint scan | Breakpoint joint | Breakpoints / native speed |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| M8 FFN-1 | 13.48 | 14.39 | 26.11 | **28.54** | **0.47×** |
+| M8 FFN-2 | 42.52 | 70.14 | 127.29 | **48.85** | **0.87×** |
+| Tiny FFN-4 | 464.55 | 131.32 | 127.82 | **12.89** | **36.05×** |
+
+These are fixed-branch timings, not complete root-search acceleration.
+The tiny control improves 10.19× over existing forms in this branch, but
+the predeclared M8 comparison does not beat native generation. M8-2 improves
+1.44× over existing forms and 2.61× over the old scan; M8-1 is slower than
+both. No shapes or additional methods were added after these results.
+
+| Case | Breakpoint search | Factor construction within search | Local native recovery | Search speed vs native |
+| --- | ---: | ---: | ---: | ---: |
+| M8 FFN-1 | 1.44 | 1.08 | 27.10 | 9.35× |
+| M8 FFN-2 | 3.35 | 1.97 | 45.50 | 12.68× |
+| Tiny FFN-4 | 2.49 | 0.98 | 10.41 | 186.67× |
+
+The separate medians need not sum exactly to the median total. Imports,
+graph construction and replay remain outside generation; factor construction
+is inside it. With AST installation included, native / breakpoint generation
+is 26.93 / 28.54 ms, 55.60 / 48.85 ms and 477.62 / 12.89 ms. The resulting
+1.14× for M8-2 includes avoiding the audit harness's native AST installation;
+it is not a recurring solver-search advantage. The preceding fixed timing
+definition remains the primary comparison.
+
+Pre-replay RSS medians, native / breakpoint, are 24.17 / 21.47 MiB,
+24.48 / 22.33 MiB and 29.19 / 21.39 MiB respectively.
+
+### The representation improvement is real; recovery duplicates search
+
+| Case | Old → new local capacity evaluations | New distinct local frontiers | Child budget breakpoints | Old → new joint transitions | New DP prefix states |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| M8 FFN-1 | 1,800 → 142 | 24 | 14 | 2,170 → 341 | 95 |
+| M8 FFN-2 | 8,896 → 326 | 64 | 16 | 36,025 → 2,165 | 390 |
+| Tiny FFN-4 | 2,220 → 224 | 60 | 5 | 75,916 → 2,915 | 449 |
+
+The old column counts local formula cache misses; the new column counts
+capacity probes during cached local-frontier construction (also misses in
+these fresh runs). New factor occurrences are 24 / 88 / 224, with structural
+sharing reducing them to the distinct-frontier counts shown. Past mask
+identities are still absent from the DP keys, and all final allocations are
+handled together at each child budget. This is a measured reduction in
+response construction, not merely a reduction in represented alternatives.
+
+However, recovering separate local segments does not share their recursive
+native memo tables. It makes 11 / 15 / 28 local native queries. On M8-1
+their combined cache misses and loop choices are 1,498 and 2,394, versus
+566 and 891 for the original branch search. On M8-2 they are 2,536 and
+3,891, versus 1,570 and 2,187. A smaller subgraph per recovery query does not
+mean less total recovery work. In the tiny control recovery uses only
+531 cache misses, versus 5,760 in native branch search; this accounts for
+the different outcome. Recovery counters and timings are included, rather
+than hiding the regression behind response-only speedups.
+
+### Root relevance: all M8 child states remain reachable
+
+An additional read-only attribution uses the existing full-root native call
+archives, without changing the solver or benchmark cases. Remove precisely
+the root-group cache-query edges for M-to-one actions, leaving every other
+branch intact, then recompute reachability from the root.
+
+| Case | Removed action edges | States newly unreachable | Exclusive DP work removed |
+| --- | ---: | ---: | ---: |
+| M8 FFN-1 | 4 | **0 / 2,108** | **0%** |
+| M8 FFN-2 | 16 | **0 / 6,176** | **0%** |
+| Tiny FFN-4 | 256 | 512 / 10,834 | 11.44% |
+
+The M8 children are still needed by other paths. This attribution excludes
+the removed actions' work inside the still-reachable parent and excludes
+replacement cost; it is not an upper bound for every possible search
+algorithm. It does establish that replacing **only this root branch**, with
+all other calls unchanged, removes no M8 child-state computations from the
+archived graph. The original 5/14, 4/15 and 3/5 root-frontier attainment counts
+are unchanged and do not imply a runtime share.
+
+The three existing cases are not a controlled scaling series: their extents
+and lengths differ. Their 14 / 16 / 5 breakpoints and 3 / 5 / 9 reachable
+reservation totals must not be presented as a general growth law. Large
+numeric capacity domains, other M tiles, sliced weights and other loop
+orders remain outside the measured claim.
+
+**Decision.** Keep the exact evaluation-order transformation and the tiny
+branch positive result. The requested M8 complete-generation advantage is
+absent, and single-root-branch replacement has no M8 child-state reachability
+benefit in these archives. Stop fixed M-to-one optimization here: no further
+recovery variants, shape expansion or root integration in this experiment.
+This is not evidence that all conditional response sharing is impossible.
+
+Artifacts: `results/loop_conditioned_factors/run2/{manifest.json,factors.json,
+runs.jsonl,summary.json,local_interface.json,root_relevance.json}`. The first
+series remains intact in `run1`. The manifest's document hash identifies the
+premeasurement report at `de21093b`; the result section was appended later.
+The standalone checks can be reproduced with `check-local`. Root attribution
+uses `dag.reach(..., cut={(f['parent'], f['child']) for f in factors})`, followed
+by `dag.removed`, and records archive hashes and unreachable state IDs.
+
+```sh
+python -m research.index_coupling.hypergraph_audit run-breakpoints NEW_DIRECTORY
+python -m research.index_coupling.hypergraph_audit check-local NEW_LOCAL_CHECK.json
+```

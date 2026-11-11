@@ -1,6 +1,6 @@
 # response: closed forms, bounds and substitution for chain states
 
-This package holds the code of CONTRACTION_ORACLE.md §6-20 and
+This package holds the code of CONTRACTION_ORACLE.md §6-21 and
 SANDWICH_RESULTS.md. It describes a chain state's grammar response
 (capacity -> least extra traffic, grammar v2) without searching. It covers
 FFN and attention stacks and any chain of dense contractions and elementwise
@@ -74,6 +74,13 @@ current implementation plan.
   generation is 0.52×/0.34× native on M8 and slower than existing forms;
   tiny FFN-4 only ties those forms. Section 20 records the factor-construction
   overhead. The pilot stops; no general hypergraph solver or root integration.
+  Section 21's bounded continuation sweeps local breakpoints and retains the
+  selected partition: search is faster, but complete M8 branch generation is
+  still 0.47×/0.87× native after recovery. Tiny's fixed branch is 36.05× native;
+  this is not a root speedup. All 720 repeated replays pass. The independent
+  local audit finds 176/672 differences from native group frontiers: the
+  forms are segment-plan macros, not individually exact group responses.
+  Local solve partitions are inlined during recovery. The experiment stops.
 
 ## Renamed modules
 

@@ -31,6 +31,16 @@ more local-factor queries than the existing cached forms: complete branch
 generation is 0.52×/0.34× native on M8, and slower than forms. The bounded
 pilot stops without changing the default solver or starting root integration.
 
+Its bounded continuation is recorded in §21: breakpoint evaluation reduces
+M8 response search to 1.44/3.35 ms, but local native witness recovery leaves
+complete branch generation at 0.47×/0.87× native. Tiny FFN-4's fixed branch
+improves 36.05× native, 10.19× existing forms. All 720 repeated full-witness
+replays pass. A separate interface audit corrects an overclaim: 176/672
+local forms differ from native group frontiers; they are segment macros,
+and selected solve partitions must be inlined. Removing only root M-to-one
+calls makes zero M8 child states unreachable. This continuation also stops;
+there is no M8 root integration or general scaling claim.
+
 This page is the index to the directory. README.md keeps the chronological record.
 PROTOCOL.md holds every frozen prediction, unchanged after freezing.
 Numbers below are copied from the linked result files. RESEARCH_PLAN.md and

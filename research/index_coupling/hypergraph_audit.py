@@ -23,6 +23,8 @@ from research.index_coupling.c2_bound_audit import frontier, state_key, transfor
 from research.index_coupling.census_tools import graph_of
 from research.index_coupling.graph.analysis import traffic_at
 from research.index_coupling.graph.curve import tile_sizes
+from research.index_coupling.graph.curve import curve, pareto
+from research.index_coupling.graph.model import Graph
 from research.index_coupling.response import dag, forms
 from research.index_coupling.response.chains import recognise
 from research.index_coupling.response.experiments import loop_actions
@@ -167,6 +169,145 @@ class JointFactors:
         raise AssertionError('constructive zero-traffic bound not attained')
 
 
+class BreakpointFactors(JointFactors):
+    """Same branch, one boundary DP per local-response breakpoint, all sums at once."""
+    def __init__(self, graph, domain='halving'):
+        super().__init__(graph)
+        self.domain = domain
+        self.local_curves = {}
+        self.factors = []
+        start = time.perf_counter()
+        ch = self.chain
+        for j, k, pattern in self.segments:
+            variables = [i for i in range(j, k) if i in self.weights]
+            assert len(variables) <= 2
+            for incoming in ((ch.first,) if j == 0 else (False, True)):
+                for outgoing in ((ch.last,) if k == self.n else (False, True)):
+                    rho = ch.sizes[j] * (incoming and j > 0) + ch.sizes[k] * (outgoing and k < self.n)
+                    spill = 2 * ch.sizes[k] if k < self.n and not outgoing else 0
+                    for bits in product((False, True), repeat=len(variables)):
+                        kept = {i for i, keep in zip(variables, bits) if keep}
+                        allocation = sum(self.weights[i][1] for i in kept)
+                        extra = (self.r-1) * sum(self.weights[i][1] for i in variables if i not in kept)
+                        streamed = tuple(int(i in self.weights and i not in kept) for i in range(j, k))
+                        key = (pattern, ch.sizes[j:k+1], incoming, outgoing, domain, streamed)
+                        self.work['local_factor_requests'] += 1
+                        points = self.local_frontier(key)
+                        self.factors.append((j, k, incoming, outgoing, allocation, extra, rho,
+                                             spill, sum(1 << i for i in kept), key, points))
+        self.budgets = sorted({c + f[6] for f in self.factors for c, _ in f[-1]})
+        self.work['child_budget_breakpoints'] = len(self.budgets)
+        self.factor_seconds = time.perf_counter()-start
+
+    def local_frontier(self, key):
+        if key not in self.local_curves:
+            pattern, sizes, incoming, outgoing, domain, streamed = key
+            points, best = [], float('inf')
+            for c in range(2*sum(sizes)+len(pattern)+5):
+                self.work['local_capacity_probes'] += 1
+                q = forms._group(pattern, sizes, c, incoming, outgoing, domain, streamed)
+                if q < best:
+                    points.append((c, q))
+                    best = q
+                if q == 0:
+                    break
+            assert best == 0, key
+            self.local_curves[key] = tuple(points)
+            self.work['local_frontiers'] += 1
+            self.work['local_frontier_points'] += len(points)
+        return self.local_curves[key]
+
+    def frontier(self):
+        results = []
+        for budget in self.budgets:
+            self.work['capacity_queries'] += 1
+            edges = defaultdict(list)
+            for f in self.factors:
+                feasible = next(((c, q) for c, q in reversed(f[-1]) if c+f[6] <= budget), None)
+                if feasible is not None:
+                    edges[f[0], f[2]].append((f, feasible))
+            states = [dict() for _ in range(self.n+1)]
+            states[0][self.chain.first, 0] = (0, None)
+            for j in range(self.n):
+                for (incoming, used), (value, path) in states[j].items():
+                    self.work['dp_states'] += 1
+                    for f, (c, q) in edges.get((j, incoming), ()):
+                        self.work['dp_transitions'] += 1
+                        k, outgoing, allocation, extra = f[1], f[3], f[4], f[5]
+                        cost = value+extra+self.r*(q+f[7])
+                        key = outgoing, used+allocation
+                        if cost < states[k].get(key, (float('inf'), None))[0]:
+                            states[k][key] = cost, (path, f, (c, q))
+            self.work['max_layer_states'] = max(self.work['max_layer_states'], max(map(len, states)))
+            for (outgoing, allocation), (q, path) in states[-1].items():
+                assert outgoing == self.chain.last
+                results.append((allocation+budget, q, (allocation, path)))
+        self.work['branch_candidates'] = len(results)
+        return pareto(results)
+
+
+def local_native(graph, ops, external, owned, domain, cache, ledger, entry='group'):
+    """Conditional native frontier at the explicit entry; selected segments only."""
+    tensors = graph.tensors(ops)
+    external = frozenset(external & tensors)
+    owned = frozenset(owned & {graph.output(op) for op in ops})
+    key = ops, external, owned, domain, entry
+    if key not in cache:
+        ranks = {v for t in tensors for v in graph.dims(t)}
+        sub = Graph({v: 1 if v == 'M' else graph.sizes[v] for v in ranks},
+                    [(op, graph.access[op]) for op in ops])
+        stats = {}
+        pts = curve(sub, witness=True, entry=entry, external=external, written=owned,
+                    tile_domain=domain, stats=stats, **OPTIONS)
+        base = compulsory(sub, external)
+        cache[key] = tuple((c, q-base, w) for c, q, w in pts)
+        ledger['local_native_queries'] += 1
+        for name in ('dp_transitions', 'loop_choices', 'pareto_candidates'):
+            ledger[name] += stats[name]
+        ledger['cache_misses'] += stats['solve_cache']['misses']+stats['group_cache']['misses']
+    return cache[key]
+
+
+def recover_partition(joint, point, cache, ledger):
+    c, q, (allocation, path) = point
+    chosen = []
+    while path is not None:
+        path, f, local_point = path
+        chosen.append((f, local_point))
+    chosen.reverse()
+    graph = joint.graph
+    mask = 0
+    for f, _ in chosen:
+        mask |= f[8]
+    weights = frozenset(t for i, (t, _) in joint.weights.items() if mask >> i & 1)
+    kept, dropped = set(), set()
+    for f, _ in chosen:
+        if f[1] < joint.n:
+            (kept if f[3] else dropped).add(graph.output(graph.ops[f[1]-1]))
+    groups, inner = [], []
+    for f, (pc, pq) in chosen:
+        ops = graph.ops[f[0]:f[1]]
+        points = local_native(graph, ops, weights | kept, dropped, joint.domain, cache, ledger, entry='solve')
+        match = [w for cc, qq, w in points if cc <= pc and qq == pq]
+        assert match, (ops, pc, pq)
+        notes = match[0]
+        if notes and notes[0][0] == 'groups':
+            # Local forms include full-tile cuts, so they are segment macros,
+            # not necessarily one native group. Inline their first partition.
+            groups.extend(notes[0][1])
+            kept.update(notes[0][3])
+            dropped.update(notes[0][5])
+            inner.extend(notes[1:])
+        else:
+            groups.append(ops)
+            inner.extend(notes)
+    inner.insert(0, ('groups', tuple(groups), 'kept', tuple(sorted(kept)), 'via DRAM', tuple(sorted(dropped))))
+    refetched = tuple(sorted(t for t, _ in joint.weights.values() if t not in weights))
+    note = ('loop', graph.ops, 'M', f'tile 1 x{joint.r}', 'kept', tuple(sorted(weights)),
+            'refetched', refetched)
+    return c, q+compulsory(graph), (note, *inner)
+
+
 def compulsory(graph, external=frozenset()):
     return sum(graph.size(t, ()) for t in (graph.consumed() ^ graph.produced()) - external)
 
@@ -174,12 +315,15 @@ def compulsory(graph, external=frozenset()):
 def worker(case, mode):
     graph = graph_of(case)
     start = time.perf_counter()
-    solver, registry = kernel(mode) if mode != 'joint' else (None, {})
+    solver, registry = kernel(mode) if mode not in ('joint', 'breakpoints') else (None, {})
     setup_seconds = time.perf_counter()-start
     start = time.perf_counter()
     stats, cache = {}, {}
-    joint = None
-    if mode == 'joint':
+    joint, recovery_work = None, Counter()
+    if mode == 'breakpoints':
+        joint = BreakpointFactors(graph)
+        extra_points = joint.frontier()
+    elif mode == 'joint':
         joint = JointFactors(graph)
         extra_points = joint.frontier()
         base = compulsory(graph)
@@ -187,7 +331,9 @@ def worker(case, mode):
     else:
         points = solver(graph, entry='group', witness=True, stats=stats, **OPTIONS)
     search_seconds = time.perf_counter()-start
-    if mode == 'joint':
+    if mode == 'breakpoints':
+        native_points = [recover_partition(joint, point, cache, recovery_work) for point in extra_points]
+    elif mode == 'joint':
         native_points = []
         ext = tuple(1 if v == 'M' else graph.sizes[v] for v in joint.names)
         for c, q, a, mask in extra_points:
@@ -215,6 +361,7 @@ def worker(case, mode):
                   whole_chain_formula_cache=frontier_of.cache_info()._asdict(),
                   native_stats=stats,
                   joint_work=dict(joint.work) if joint else None,
+                  recovery_work=dict(recovery_work),
                   factor_construction_seconds=joint.factor_seconds if joint else None)
     start = time.perf_counter()
     for c, q, w in native_points:
@@ -260,23 +407,65 @@ def extract(case):
                 root_frontier=full, root_points_attained=matched)
 
 
-def run(out):
+def check_local(out):
+    """Audit both entries: segment macros need not equal the native group curve."""
+    records = []
+    for case in CASES:
+        graph = graph_of(case)
+        for domain in ('halving', 'divisors'):
+            joint = BreakpointFactors(graph, domain)
+            cache, ledger = {}, Counter()
+            mismatches = []
+            for f in joint.factors:
+                j, k, incoming, outgoing = f[:4]
+                ops = graph.ops[j:k]
+                external = {t for i, (t, _) in joint.weights.items() if f[8] >> i & 1}
+                if incoming:
+                    external.add(next(t for t in graph.access[ops[0]]
+                                      if t != graph.output(ops[0]) and 'M' in graph.dims(t)))
+                if outgoing:
+                    external.add(graph.output(ops[-1]))
+                owned = {graph.output(ops[-1])} if k < joint.n and not outgoing else set()
+                native_points = local_native(graph, ops, external, owned, domain, cache, ledger)
+                actual = tuple(p[:2] for p in native_points)
+                if actual != f[-1]:
+                    mismatches.append(dict(ops=ops, key=f[9], formula=f[-1], native=actual))
+                solve_points = local_native(graph, ops, external, owned, domain, cache, ledger, entry='solve')
+                for c, q in f[-1]:
+                    assert traffic_at(c, solve_points) <= q, (case, domain, f[9], c, q)
+            records.append(dict(case=case, domain=domain, factors_checked=len(joint.factors),
+                                distinct_local_frontiers=len(joint.local_curves),
+                                native_work=dict(ledger), mismatches=mismatches))
+    result = dict(protocol_commit='96a752a4', source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                  records=records)
+    with Path(out).open('x') as f:
+        json.dump(result, f, indent=2)
+        f.write('\n')
+    print(json.dumps(dict(factors_checked=sum(r['factors_checked'] for r in records), domains=2,
+                         mismatches=sum(len(r['mismatches']) for r in records))))
+
+
+def run(out, modes=MODES, repeats=3, protocol='b3cd183d'):
     out = Path(out)
     out.mkdir(parents=True, exist_ok=False)
-    sources = ('hypergraph_audit.py', 'LOOP_CONDITIONED_FACTORS.md', 'graph/curve.py',
+    sources = ('hypergraph_audit.py', 'LOOP_CONDITIONED_FACTORS.md', 'CONTRACTION_ORACLE.md', 'graph/curve.py',
                'response/forms.py', 'response/chains.py', 'response/substitution.py', 'simulate_nest.py')
-    manifest = dict(protocol_commit='b3cd183d', cases=CASES, modes=MODES, repeats=3, hashseed=0,
+    manifest = dict(protocol_commit=protocol, cases=CASES, modes=modes, repeats=repeats, hashseed=0,
                     worker_timeout_seconds=120, python=platform.python_version(), system=platform.system(),
                     machine=platform.machine(),
                     sources={f: hashlib.sha256((HERE/f).read_bytes()).hexdigest() for f in sources})
+    if 'breakpoints' in modes:
+        manifest['interface_correction_commit'] = 'de21093b'
     (out/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
     refs = {c: extract(c) for c in CASES}
     (out/'factors.json').write_text(json.dumps(refs)+'\n')
     records = []
     with (out/'runs.jsonl').open('x') as stream:
         for case in CASES:
-            for repeat in range(3):
-                for mode in (MODES if repeat % 2 == 0 else tuple(reversed(MODES))):
+            for repeat in range(repeats):
+                order = (modes if repeat % 2 == 0 else tuple(reversed(modes))) if repeats == 3 else (
+                    modes[repeat % len(modes):]+modes[:repeat % len(modes)])
+                for mode in order:
                     try:
                         p = subprocess.run([sys.executable, '-m', 'research.index_coupling.hypergraph_audit',
                                             'worker', case, mode], cwd=ROOT, env=dict(os.environ, PYTHONHASHSEED='0'),
@@ -297,7 +486,7 @@ def run(out):
     scores = []
     for case in CASES:
         medians = {}
-        for mode in MODES:
+        for mode in modes:
             rows = [r for r in records if r['case'] == case and r['mode'] == mode]
             medians[mode] = {k: statistics.median(r[k] for r in rows) for k in
                              ('setup_seconds', 'search_seconds', 'recovery_seconds', 'generation_seconds',
@@ -308,12 +497,20 @@ def run(out):
                            frontier_points=len(refs[case]['branch_frontier']),
                            root_points=len(refs[case]['root_frontier']),
                            root_points_attained=len(refs[case]['root_points_attained'])))
+        if 'breakpoints' in modes:
+            scores[-1]['breakpoints_vs'] = {mode: medians[mode]['generation_seconds']/
+                                                   medians['breakpoints']['generation_seconds']
+                                            for mode in MODES}
     (out/'summary.json').write_text(json.dumps(scores, indent=2)+'\n')
 
 
 if __name__ == '__main__':
     if sys.argv[1] == 'worker':
         worker(*sys.argv[2:])
+    elif sys.argv[1] == 'check-local':
+        check_local(sys.argv[2])
+    elif sys.argv[1] == 'run-breakpoints':
+        run(sys.argv[2], MODES+('breakpoints',), 5, '96a752a4')
     else:
         assert sys.argv[1] == 'run'
         run(sys.argv[2])
