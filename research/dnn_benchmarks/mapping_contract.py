@@ -26,9 +26,11 @@ def check_serialized_request(data,shape,values):
     return [data[key][f] for f in FIELDS]
 
 
-def check_execution_scope(values,diagnostic=False):
-    if values['SUB_TILE_N']!=values['TILE_N'] and not diagnostic:
-        raise ValueError('N-split subtiles are outside the validated pilot subset; diagnostic flag required')
+def check_execution_scope(values,diagnostic=False,lanes=128):
+    for rank in ('N','K'):
+        sub=values['SUB_TILE_'+rank];tile=values['TILE_'+rank]
+        if sub<tile and sub%lanes and not diagnostic:
+            raise ValueError(f'{rank} subtile split requires lane-group alignment ({lanes})')
 
 
 def template_ledger(shape,tile,element_bytes=4):

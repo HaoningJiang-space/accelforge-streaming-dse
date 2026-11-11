@@ -1,0 +1,45 @@
+{
+  "schema": "pytorchsim-pilot-lock.v1",
+  "source_url": "https://github.com/PSAL-POSTECH/PyTorchSim.git",
+  "source_commit": "509f42554202edb29cf8d31ddf619776f465e717",
+  "submodule_path": "research/dnn_benchmarks/vendor/PyTorchSim",
+  "image_tag": "ghcr.io/psal-postech/torchsim-ci:v1.1.0",
+  "image_index_digest": "sha256:81c7c0bc4429bcb353fef615dfe4413393e99f199a4924601693577bdcf11c35",
+  "image_linux_amd64_manifest": "sha256:92ad4cf36ca22dae4852dae8fdc3c997e82144b0f41a36e741da14c688defd24",
+  "umoci_version": "0.6.0",
+  "umoci_amd64_sha256": "b51c267ec394499e42c6fde47f240b7b7dba57ea49df0b5acd304378b82a3b71",
+  "runtime_source_matches_submodule": false,
+  "runtime_binary_hashes": {
+    "workspace/PyTorchSim/TOGSim/build/bin/Simulator": "633ea49487ae72170b8cbdd1f2ab754401d8d7ff4db44aa6a3ac04436a974a6a",
+    "workspace/PyTorchSim/TOGSim/build/lib/libramulator.so": "7710ed0e4e977bd2e43ddafa0925f8dcf0969de28d1d70189b164eca031aca03",
+    "riscv-llvm/bin/mlir-opt": "a0dd82e851fce71a2266cbf9759b061d748d431c5016b7558b5c70289c9c2009",
+    "riscv-llvm/bin/llc": "3b78d4864ece612c09cb46162a9f5bf672906de1980065c69b7149f97cc18276",
+    "gem5/release/gem5.opt": "f641193c9c3255d0cb7c7df092ba43bdef700816ff61854a25332f39a847eca9",
+    "release/bin/spike": "b294dc3c984cb5d34fff86bb2465dd1e5e2d4aa4d5635234097b2651e4711101"
+  },
+  "hardware_config": "tutorial/session1/togsim_configs/togsim_config.yml (overrides recorded per run)",
+  "status": "repaired overlay built; validation pending",
+  "runtime_git_commit": "f595cef7a367c57f4da9f1ba36d994c1f42242bf",
+  "runtime_code_matches_submodule_except": [
+    "README.md",
+    "tracked patch series"
+  ],
+  "runtime_source_audit": "results/pytorchsim/runtime_audit.json",
+  "runtime_torch_version": "2.8.0+cu126",
+  "audited_source_sha256": {
+    "PyTorchSimFrontend/mlir/mlir_gemm_template.py": "603baf354fdf7578f6ed6eaf1d99bc4d52c2e77b889ff89ff854fbe9cb059887",
+    "PyTorchSimFrontend/extension_config.py": "f7ff9ae2e3a2af5273122448b497296ea9104f76c7011d2efd6a493f830e9252",
+    "PyTorchSimFrontend/mlir/mlir_template.py": "d7437eb388cb24a645c14658eeea7569f1eed9a6aaefdf8744789b9fcfbbb08d",
+    "PyTorchSimFrontend/mlir/mlir_codegen_backend.py": "d73e030ac3415b4cf3fbfc36d625bdb4b931956569469a165d9fd7ae4f433485",
+    "PyTorchSimFrontend/mlir/mlir_common.py": "c4d3397b2ad05ebc1b24d53ea448d8a0400b37a18cb68db71c355424f8b6ffa4",
+    "AsmParser/tog_generator.py": "88e18ebe8a9346d804160c3400c1ddf98481ea7549efe9d7f1d30d793997ea07",
+    "TOGSim/src/TileGraphParser.cc": "8dd2d5df3a3c118a638ba94b0876d58c7662cdcdd9f2571f5dbb396941f2b9eb",
+    "TOGSim/src/Instruction.cc": "7269e15e86da16821b99a09e1133818f48ab066b62c43d1777521f32f40307eb",
+    "TOGSim/include/Instruction.h": "70bed7922deddbcb106226fba75c90c71cf8f9274b625c62411623b74fca71f0"
+  },
+  "timing_accepted": false,
+  "patches": {
+    "patches/0001-togsim-byte-addresses.patch": "3175309fdc23c99e82857ddf7a30b541cc46e490cc9772c85d5fc1e9ec380bcc",
+    "patches/0002-external-gemm-contract.patch": "0e693a9f598d3135920b1bbf46dec99059eb78087750408403feb00e591a7f4b"
+  }
+}

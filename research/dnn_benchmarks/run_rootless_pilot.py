@@ -12,6 +12,9 @@ def main():
     p.add_argument('--bundle',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--mode',choices=('heuristic','autotune','external'),required=True)
+    p.add_argument('--source-overlay',type=Path)
+    p.add_argument('--backend-lock',default='backend_lock.json')
+    p.add_argument('--fixed-timing-addresses',action='store_true')
     p.add_argument('--seconds',type=int,default=600)
     p.add_argument('--shape',type=int,nargs=3,default=(64,128,32))
     p.add_argument('--tile',type=int,nargs=6,default=(16,32,8,8,32,8))
@@ -26,7 +29,11 @@ def main():
     cfg['process'].update(terminal=False,cwd='/study',args=[
         '/opt/conda/bin/python','-u','-m','research.dnn_benchmarks.pytorchsim_gemm_pilot',
         '--source','/workspace/PyTorchSim','--out','/experiment/result','--mode',a.mode,
+        '--backend-lock','/study/research/dnn_benchmarks/'+a.backend_lock,
         '--shape',*map(str,a.shape),'--tile',*map(str,a.tile)])
+    if a.fixed_timing_addresses:cfg['process']['args'].append('--fixed-timing-addresses')
+    if a.source_overlay:
+        cfg['mounts'].append(dict(destination='/workspace/PyTorchSim',type='bind',source=str(a.source_overlay.resolve()),options=['rbind','rw','nosuid','nodev']))
     if a.diagnostic_allow_n_split:cfg['process']['args'].append('--diagnostic-allow-n-split')
     for name in ('OMP_NUM_THREADS','MKL_NUM_THREADS','MAX_JOBS','NUMEXPR_NUM_THREADS'):
         cfg['process']['env']=[x for x in cfg['process']['env'] if not x.startswith(name+'=')]+[name+'=1']

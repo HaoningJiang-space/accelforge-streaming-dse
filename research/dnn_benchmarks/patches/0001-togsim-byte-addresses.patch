@@ -1,0 +1,162 @@
+diff --git a/TOGSim/include/Instruction.h b/TOGSim/include/Instruction.h
+index bb62a44..0772d09 100644
+--- a/TOGSim/include/Instruction.h
++++ b/TOGSim/include/Instruction.h
+@@ -63,7 +63,8 @@ class Instruction : public std::enable_shared_from_this<Instruction> {
+   std::vector<addr_type> get_trace_address() { return _trace_address; }
+   bool load_indirect_index(const std::string& path, uint64_t*& indirect_index, const std::vector<uint64_t>& tile_size);
+   void set_trace_address(std::vector<addr_type>& trace_address) { _trace_address = trace_address; }
+-  addr_type get_base_dram_address() { return dram_addr; }
++  void set_dram_element_offset(addr_type offset) { _dram_element_offset = offset; }
++  addr_type get_base_dram_address() { return dram_addr + (_dram_element_offset * _elem_bits) / 8; }
+   void* get_owner() { return _owner; }
+   void set_owner(void *owner) { _owner = owner;}
+   void set_owner_ready_queue(std::list<std::shared_ptr<Instruction>>* q) { _owner_ready_queue_ref = q; }
+@@ -109,6 +110,7 @@ class Instruction : public std::enable_shared_from_this<Instruction> {
+   size_t _nr_waiting_request=0;
+   size_t _elem_bits = 0;
+   addr_type dram_addr;
++  addr_type _dram_element_offset = 0;
+   uint32_t _numa_id = 0; // For DMA instruction
+   int _compute_type = 0;
+   std::vector<int64_t> _tag_idx_list;
+@@ -123,4 +125,4 @@ class Instruction : public std::enable_shared_from_this<Instruction> {
+   bool _is_indirect_mode=false;
+   bool _is_sparse_inst=false;
+   std::string _indirect_index_path="";
+-};
+\ No newline at end of file
++};
+diff --git a/TOGSim/src/Instruction.cc b/TOGSim/src/Instruction.cc
+index f236d16..c720b0e 100644
+--- a/TOGSim/src/Instruction.cc
++++ b/TOGSim/src/Instruction.cc
+@@ -1,6 +1,7 @@
+ #include "Instruction.h"
+ 
+ #include <fmt/format.h>
++#include <stdexcept>
+ 
+ uint64_t Instruction::_next_global_inst_id = 0;
+ 
+@@ -85,6 +86,8 @@ void Instruction::print() {
+ }
+ 
+ std::shared_ptr<std::set<addr_type>> Instruction::get_dram_address(addr_type dram_req_size) {
++  if (dram_req_size == 0 || (dram_req_size & (dram_req_size - 1)) != 0 || _elem_bits == 0)
++    throw std::invalid_argument("DMA requires a power-of-two request size and positive element bits");
+   auto address_set = std::make_shared<std::set<addr_type>>();
+   uint64_t* indirect_index = NULL;
+   size_t index_count = 0;
+@@ -96,7 +99,8 @@ std::shared_ptr<std::set<addr_type>> Instruction::get_dram_address(addr_type dra
+     tile_stride.insert(tile_stride.begin(), 0);
+   if (_is_indirect_mode) {
+     spdlog::trace("[Indirect Access] Indirect mode, dump_path: {}", _indirect_index_path);
+-    load_indirect_index(_indirect_index_path, indirect_index, tile_size);
++    if (!load_indirect_index(_indirect_index_path, indirect_index, tile_size))
++      throw std::runtime_error("Cannot load DMA indirect indices");
+   }
+ 
+   /* Iterate tile_size */
+@@ -104,20 +108,29 @@ std::shared_ptr<std::set<addr_type>> Instruction::get_dram_address(addr_type dra
+     for (int dim1=0; dim1<tile_size.at(1); dim1++) {
+       for (int dim2=0; dim2<tile_size.at(2); dim2++) {
+         for (int dim3=0; dim3<tile_size.at(3); dim3++) {
+-          addr_type address = dim0*tile_stride.at(tile_stride.size() - 4) + \
+-                              dim1*tile_stride.at(tile_stride.size() - 3) + \
+-                              dim2*tile_stride.at(tile_stride.size() - 2) + \
+-                              dim3*tile_stride.at(tile_stride.size() - 1);
+-          address = dram_addr + (address * _elem_bits + 7) >> 3;
++          addr_type element = _dram_element_offset + addr_type(dim0)*tile_stride.at(tile_stride.size() - 4) + \
++                              addr_type(dim1)*tile_stride.at(tile_stride.size() - 3) + \
++                              addr_type(dim2)*tile_stride.at(tile_stride.size() - 2) + \
++                              addr_type(dim3)*tile_stride.at(tile_stride.size() - 1);
+           if (indirect_index != NULL) {
+-            uint64_t index_val = indirect_index[index_count++];
+-            address += (index_val * _elem_bits + 7) >> 3;
++            element += indirect_index[index_count++];
++          }
++          // Tensor bases are byte addresses. Both loop and tile offsets are
++          // element counts; convert their sum once, retaining sub-byte offsets.
++          const addr_type first_bit = element * _elem_bits;
++          const addr_type first_byte = dram_addr + first_bit / 8;
++          const addr_type last_byte = dram_addr + (first_bit + _elem_bits - 1) / 8;
++          const addr_type first_request = first_byte & ~(dram_req_size - 1);
++          const addr_type last_request = last_byte & ~(dram_req_size - 1);
++          for (addr_type request = first_request;; request += dram_req_size) {
++            address_set->insert(request);
++            if (request == last_request) break;
+           }
+-          address_set->insert(address - (address & dram_req_size-1));
+         }
+       }
+     }
+   }
++  delete[] indirect_index;
+   return address_set;
+ }
+ 
+@@ -149,4 +162,4 @@ bool Instruction::load_indirect_index(const std::string& path, uint64_t*& indire
+     return false;
+   }
+   return true;
+-}
+\ No newline at end of file
++}
+diff --git a/TOGSim/src/TileGraphParser.cc b/TOGSim/src/TileGraphParser.cc
+index 5060d33..4a7a2c5 100644
+--- a/TOGSim/src/TileGraphParser.cc
++++ b/TOGSim/src/TileGraphParser.cc
+@@ -354,7 +354,7 @@ std::vector<std::shared_ptr<Tile>> TileLoopNode::get_tiles_from_iter(TileGraphPa
+       std::string base_addr_name = mem_node->get_base_addr_name();
+       int64_t base_addr_id = tog_parser->register_addr_name(base_addr_name);
+       addr_type base_addr = tog_parser->lookup(base_addr_name);
+-      addr_type offset = std::inner_product(iter_list.begin(), iter_list.end(), mem_node->get_loop_stride_list().begin(), 0);
++      addr_type offset = std::inner_product(iter_list.begin(), iter_list.end(), mem_node->get_loop_stride_list().begin(), addr_type{0}, std::plus<addr_type>{}, std::multiplies<addr_type>{});
+ 
+       std::vector<int64_t> tag_list;
+       std::vector<int64_t> accum_tag_list;
+@@ -421,11 +421,12 @@ std::vector<std::shared_ptr<Tile>> TileLoopNode::get_tiles_from_iter(TileGraphPa
+              fmt::join(tag_stride_list, ", "));
+       std::shared_ptr<Instruction> inst = std::make_shared<Instruction>(
+         Opcode::MOVIN, 0,
+-        0, base_addr+offset,
++        0, base_addr,
+         mem_node->get_tile_size(), mem_node->get_tile_stride(), mem_node->get_elem_bits(),
+         tag_list, tag_stride_list, accum_tag_list
+       );
+       inst->set_addr_name(base_addr_name, base_addr_id);
++      inst->set_dram_element_offset(offset);
+       inst->prepare_tag_key();
+       inst->set_nr_inner_loop(nr_inner_loop);
+       inst->set_is_async(mem_node->is_async_node());
+@@ -467,7 +468,7 @@ std::vector<std::shared_ptr<Tile>> TileLoopNode::get_tiles_from_iter(TileGraphPa
+       std::string base_addr_name = mem_node->get_base_addr_name();
+       int64_t base_addr_id = tog_parser->register_addr_name(base_addr_name);
+       addr_type base_addr = tog_parser->lookup(base_addr_name);
+-      addr_type offset = std::inner_product(iter_list.begin(), iter_list.end(), mem_node->get_loop_stride_list().begin(), 0);
++      addr_type offset = std::inner_product(iter_list.begin(), iter_list.end(), mem_node->get_loop_stride_list().begin(), addr_type{0}, std::plus<addr_type>{}, std::multiplies<addr_type>{});
+ 
+       /* Calc numa id */
+       int numa_id = 0;
+@@ -481,11 +482,12 @@ std::vector<std::shared_ptr<Tile>> TileLoopNode::get_tiles_from_iter(TileGraphPa
+       printIndexMap("[TOGParser] Store Node " + mem_node->get_base_addr_name() + " Numa_id: " + std::to_string(numa_id), iter);
+       std::shared_ptr<Instruction> inst = std::make_shared<Instruction>(
+         Opcode::MOVOUT, 0,
+-        0, base_addr+offset,
++        0, base_addr,
+         mem_node->get_tile_size(), mem_node->get_tile_stride(), mem_node->get_elem_bits(),
+         std::vector<int64_t>(1, 0), mem_node->get_tag_stride_list(), std::vector<int64_t>()
+       );
+       inst->set_addr_name(base_addr_name, base_addr_id);
++      inst->set_dram_element_offset(offset);
+       inst->prepare_tag_key();
+       inst->set_nr_inner_loop(nr_inner_loop);
+       inst->set_is_async(mem_node->is_async_node());
+@@ -951,4 +953,4 @@ int TileGraphParser::getCoreIdFromConfig(const YAML::Node& attribute_config, int
+     }
+   }
+   return -1;
+-}
+\ No newline at end of file
++}

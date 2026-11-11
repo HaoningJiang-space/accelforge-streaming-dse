@@ -26,6 +26,8 @@ def main():
     p.add_argument('--shape',type=int,nargs=3,default=(64,128,32),metavar=('M','N','K'))
     p.add_argument('--tile',type=int,nargs=6,default=(16,32,8,8,32,8))
     p.add_argument('--diagnostic-allow-n-split',action='store_true')
+    p.add_argument('--backend-lock',type=Path,default=Path(__file__).with_name('backend_lock.json'))
+    p.add_argument('--fixed-timing-addresses',action='store_true')
     a=p.parse_args();src=a.source.resolve();out=a.out.resolve()
     named=dict(zip(FIELDS,a.tile));mapping=canonical_request(a.shape,named)
     if a.mode=='external':check_execution_scope(named,a.diagnostic_allow_n_split)
@@ -60,7 +62,14 @@ def main():
         scope='standalone GEMM import smoke; external tiles are manual controls, not a solver-quality result')
     write(out/'result.json',record)
     try:
-        lock=json.loads(Path(__file__).with_name('backend_lock.json').read_text())
+        lock=json.loads(a.backend_lock.read_text())
+        record['backend_lock_sha256']=hashlib.sha256(a.backend_lock.read_bytes()).hexdigest()
+        if lock.get('patches'):
+            record['timing_rejection']='Pending independent compiled-DMA ledger and functional verification'
+        for name,sha in lock.get('runtime_binary_hashes',{}).items():
+            path=Path('/')/name
+            if path.exists() and hashlib.sha256(path.read_bytes()).hexdigest()!=sha:
+                raise ValueError('runtime binary differs from lock: '+name)
         if record['source_commit']!=lock['runtime_git_commit']:
             raise ValueError('runtime commit differs from verified image')
         for name,sha in lock['audited_source_sha256'].items():
@@ -69,6 +78,22 @@ def main():
         record['audited_source_commit']=lock['source_commit']
         record['source_difference']=lock['runtime_code_matches_submodule_except']
         import torch
+        if a.fixed_timing_addresses:
+            from Simulator.simulator import TOGSimulator
+            original_attributes=TOGSimulator.write_kernel_attribute_file
+            record['timing_address_layouts']=[]
+            def fixed_attributes(attribute_dir,inputs,alloc_pool=None):
+                if any(t.numel()*t.element_size()>=0x10000000 for t in inputs):
+                    raise ValueError('pilot fixed-address slots cannot fit tensor')
+                if len({t.data_ptr() for t in inputs})!=len(inputs):
+                    raise ValueError('pilot requires nonaliasing input/output buffers')
+                path=original_attributes(attribute_dir,inputs,alloc_pool)
+                attrs=yaml.safe_load(Path(path).read_text())
+                attrs['address_info']={f'arg{i}':0x10000000*(i+1) for i in range(len(inputs))}
+                Path(path).write_text(yaml.safe_dump(attrs))
+                record['timing_address_layouts'].append(dict(addresses=attrs['address_info'],bytes=[t.numel()*t.element_size() for t in inputs]))
+                return path
+            TOGSimulator.write_kernel_attribute_file=staticmethod(fixed_attributes)
         from PyTorchSimFrontend.mlir.mlir_gemm_template import MLIRGemmTemplate
         old_select=MLIRGemmTemplate.select_tile
         old_render=MLIRGemmTemplate.render
