@@ -340,3 +340,12 @@ Before running performance comparisons, freeze these controls:
   unprojected prototype is not a win over native. Freeze implementation before
   these rounds; retain all measurements and do not start another algorithm if
   the experiment fails.
+
+Implementation note before timed rounds: both backward arms cache the cut
+transition skeleton by parent span, cut, shared-tensor residency and terminal
+bits. Tensor incidence determines that skeleton; extents, private-weight
+residency and ownership remain inputs to numeric prefix/group evaluation.
+This hoists repeated decision-dictionary construction out of numeric states.
+The projection-off control includes this same structural cache. Small oracle,
+boundary-contract and replay checks precede the frozen timing run; their work
+counters are not speedup measurements.
