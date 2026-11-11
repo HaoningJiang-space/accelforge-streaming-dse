@@ -1,6 +1,5 @@
 """Frozen small-DAG boundary diagnostic; no performance speedup claim."""
 import argparse
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -15,21 +14,14 @@ from research.index_coupling.graph.branch_symmetry import topological_orders
 from research.index_coupling.graph.curve import curve, pareto
 from research.index_coupling.simulate_nest import Specification, parse_witness, simulate
 from .boundary import RegionComposer, boundary_description, compulsory, resized, workload
+from .workloads import D1_CASES as CASES
+from .artifacts import source_set, source_hashes
 
 
-CASES = {
-    'chain_tiny': ('chain', (2, 2, 2)),
-    'residual_tiny': ('residual', (2, 2, 2)),
-    'residual_rectangle': ('residual', (3, 2, 4)),
-    'fork_join_tiny': ('fork_join', (2, 2, 2, 2)),
-    'fork_join_rectangle': ('fork_join', (2, 2, 4, 2)),
-    'gated_fork_join_tiny': ('gated_fork_join', (2, 2, 2, 2)),
-}
 ARMS = ('native_all_orders', 'closed_materialized', 'closed_retained', 'shared_row_loop')
-SOURCES = ('research/dag_mapping/boundary.py', 'research/dag_mapping/study.py',
-           'research/dag_mapping/PROTOCOL.md', 'research/index_coupling/graph/curve.py',
-           'research/index_coupling/graph/model.py', 'research/index_coupling/graph/branch_symmetry.py',
-           'research/index_coupling/simulate_nest.py')
+SOURCES = source_set(
+    'research/dag_mapping/study.py', 'research/dag_mapping/PROTOCOL.md',
+)
 
 
 def numeric(points):
@@ -140,7 +132,7 @@ def worker(args):
     started = perf_counter()
     record = dict(case=args.case, revision=args.revision, status='running',
                   python=platform.python_version(), hash_seed=os.environ.get('PYTHONHASHSEED'),
-                  source_sha256={p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in SOURCES})
+                  source_sha256=source_hashes(SOURCES))
     try:
         record.update(execute_case(args.case), status='complete')
     except Exception as exc:

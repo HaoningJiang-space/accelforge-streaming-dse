@@ -1,7 +1,6 @@
 """Frozen cross-order closed-response audit and matched-baseline experiment."""
 import argparse
 import gc
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -12,58 +11,22 @@ import subprocess
 import sys
 from time import perf_counter
 
-from research.index_coupling.graph.branch_symmetry import branch_graph, topological_orders, unequal_prefix_graph
 from research.index_coupling.graph.curve import curve, pareto
-from research.index_coupling.graph.model import Graph
 from research.index_coupling.simulate_nest import simulate
-from research.index_coupling.unified_search import certified_automorphisms, mixed_branch_graph
-from .boundary import resized, workload
+from .boundary import resized
 from .hierarchy import analyze, decode
 from .reuse import RegionSession
-from .study import CASES as D1_CASES
+from .workloads import D1_CASES, dag_graph as graph_for, select_orders
+from .artifacts import source_set, source_hashes, verify_sources
 
 
 CASES = tuple(D1_CASES) + ('two_stage_join', 'asymmetric_join', 'mixed_join')
 TIMED_CASES = ('residual_rectangle', 'fork_join_tiny', 'two_stage_join', 'asymmetric_join', 'mixed_join')
 ARMS = ('native', 'prefix_all', 'sym_prefix', 'sym_shared', 'sym_analytic', 'sym_analytic_shared')
-SOURCES = (
-    'research/dag_mapping/reuse.py', 'research/dag_mapping/test_reuse.py',
-    'research/dag_mapping/bench_reuse.py', 'research/dag_mapping/INTERFACE_PLAN.md',
-    'research/dag_mapping/boundary.py', 'research/dag_mapping/hierarchy.py',
-    'research/index_coupling/graph/curve.py', 'research/index_coupling/graph/model.py',
-    'research/index_coupling/graph/branch_symmetry.py', 'research/index_coupling/unified_search.py',
-    'research/index_coupling/response/prefix.py', 'research/index_coupling/response/substitution.py',
-    'research/index_coupling/response/chains.py', 'research/index_coupling/response/forms.py',
-    'research/index_coupling/simulate_nest.py',
+SOURCES = source_set(
+    'research/dag_mapping/bench_reuse.py', 'research/dag_mapping/test_reuse.py',
+    'research/dag_mapping/INTERFACE_PLAN.md',
 )
-
-
-def graph_for(name):
-    if name in D1_CASES:
-        return workload(*D1_CASES[name])[0]
-    if name == 'two_stage_join':
-        return branch_graph((2, 2, 2, 2, 2), branches=2, join=True)
-    if name == 'asymmetric_join':
-        graph = unequal_prefix_graph((2, 1, 2, 2, 1))
-        return Graph(dict(graph.sizes), [(o, dict(graph.access[o])) for o in graph.ops] +
-                     [('Join', {'V0': ('I','N'), 'V1': ('I','N'), 'Y': ('I','N')})])
-    if name == 'mixed_join':
-        return mixed_branch_graph((2, 2, 2, 2))
-    raise ValueError(name)
-
-
-def select_orders(graph, symmetry):
-    orders = tuple(topological_orders(graph))
-    if not symmetry:
-        return orders, len(orders), 1
-    maps, _ = certified_automorphisms(graph)
-    selected, seen = [], set()
-    for order in orders:
-        orbit = min(tuple(m.ops[o] for o in order) for m in maps)
-        if orbit not in seen:
-            seen.add(orbit)
-            selected.append(order)
-    return tuple(selected), len(orders), len(maps)
 
 
 def run_arm(name, arm, *, profile=False, audit=False):
@@ -152,7 +115,7 @@ def worker(args):
     signal.alarm(120)
     result = dict(case=args.case, arm=args.arm, mode=args.mode, revision=args.revision,
                   python=platform.python_version(), hash_seed=os.environ.get('PYTHONHASHSEED'),
-                  source_sha256={p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in SOURCES})
+                  source_sha256=source_hashes(SOURCES))
     try:
         if args.mode == 'audit':
             result.update(audit_case(args.case))
@@ -179,9 +142,7 @@ def main():
     args = parser.parse_args()
     if args.command == 'worker':
         return worker(args)
-    for source in SOURCES:
-        if subprocess.check_output(['git', 'show', f'{args.revision}:{source}']) != Path(source).read_bytes():
-            raise ValueError(f'source not frozen: {source}')
+    verify_sources(args.revision, SOURCES)
     args.out.mkdir(parents=True, exist_ok=False)
     (args.out/'manifest.json').write_text(json.dumps(dict(revision=args.revision, audit_cases=CASES,
         timed_cases=TIMED_CASES, arms=ARMS, rounds=5, worker_seconds=120, memory_gib=3,

@@ -4,7 +4,7 @@ import unittest
 from research.index_coupling.graph.branch_symmetry import topological_orders
 from research.index_coupling.graph.curve import curve, pareto
 from research.index_coupling.simulate_nest import simulate
-from .bench_reuse import graph_for
+from .workloads import dag_graph as graph_for
 from .boundary import resized
 from .downset import make_downset_kernel, normalize
 

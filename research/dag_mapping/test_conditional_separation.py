@@ -4,7 +4,7 @@ import unittest
 from research.index_coupling.graph.curve import curve
 from research.index_coupling.graph.model import Graph
 from research.index_coupling.simulate_nest import simulate
-from .bench_reuse import graph_for
+from .workloads import dag_graph as graph_for
 from .boundary import resized, compulsory
 from .conditional_separation import Recorder, Oracle, intervals, candidate, projection, audit_order
 from .hierarchy import analyze, decode

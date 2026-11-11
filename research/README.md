@@ -1,11 +1,15 @@
 # AccelForge research workspace
 
-**Start here: [whole-repository overview and consolidation](OVERVIEW.md)**
-(2026-11-10, reviewed through `2c8050c6`, with separately pinned DNN evidence).
-It is the current priority and claim ledger. The entries below preserve the
-earlier native/hardware investigations; their next-step statements are historical,
-not concurrent active projects. Current conditional-resource work lives in
-[index_coupling](index_coupling/STATUS.md).
+**Start here: [whole-repository overview and consolidation](OVERVIEW.md).**
+It is the current priority and claim ledger, including the completed DAG gates
+and the 2026-11-11 conditional separation audit. The main method entry is now
+[dag_mapping](dag_mapping/README.md), with a code map, supported interfaces,
+completed-study table and regression commands. The underlying grammar and
+conditional-resource methods remain in [index_coupling](index_coupling/STATUS.md)
+and [response](index_coupling/response/README.md).
+
+The entries below preserve earlier native/hardware investigations; their
+next-step statements are historical, not concurrent active projects.
 
 The [native motivation pilot](motivation/README.md) compares hardware selection
 under explicit per-operator DRAM materialization with graph-enabled FFM and

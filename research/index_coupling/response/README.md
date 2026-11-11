@@ -2,7 +2,9 @@
 
 This package holds the code of CONTRACTION_ORACLE.md §6-21 and
 SANDWICH_RESULTS.md. It describes a chain state's grammar response
-(capacity -> least extra traffic, grammar v2) without searching. It covers
+(capacity -> least extra traffic, grammar v2) without invoking the full recursive
+mapper. Response construction can still use a smaller boundary DP and capacity
+scan; an analytic replacement is not a zero-cost query. It covers
 FFN and attention stacks and any chain of dense contractions and elementwise
 operators.
 
@@ -46,6 +48,9 @@ python -m research.index_coupling.response.bench_prefix_numeric run NEW_DIRECTOR
 ## Where things stand
 
 Current priorities are in the [repository overview](../../OVERVIEW.md).
+The current DAG code map and composition interfaces are in
+[dag_mapping](../../dag_mapping/README.md); graph fixtures and audit tools there
+are shared modules rather than benchmark imports.
 The open questions below identify research boundaries; they are not the
 current implementation plan.
 

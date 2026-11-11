@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from statistics import median
 
-from .score import frozen_bytes
+from .artifacts import frozen_bytes
 
 
 def summarize(root):

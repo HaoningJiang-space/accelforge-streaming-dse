@@ -13,11 +13,10 @@ import sys
 from time import perf_counter
 
 from research.index_coupling.graph.curve import curve, pareto
-from research.index_coupling.graph.stacks import ffn_stack, attention_stack
 from research.index_coupling.response.prefix import make_kernel
-from research.index_coupling.run_ancestor_width import control
 from research.index_coupling.simulate_nest import simulate
-from .bench_reuse import graph_for as dag_graph, select_orders, SOURCES as REUSE_SOURCES
+from .workloads import graph_for, select_orders
+from .artifacts import source_set, source_hashes, verify_sources
 from .boundary import resized
 from .hierarchy import analyze, decode
 from .reuse import RegionSession
@@ -26,21 +25,10 @@ CASES = ('two_stage_join', 'asymmetric_join', 'mixed_join', 'ffn4', 'attention4'
 ARMS = ('native', 'native_p', 'analytic', 'prefix', 'prefix_p', 'prefix_i', 'prefix_r',
         'prefix_pi', 'prefix_pr', 'prefix_ir', 'prefix_pir')
 FLAGS = dict(p='prune_infeasible_groups', i='independent_ops', r='canonical_remainders')
-SOURCES = tuple(sorted(set(REUSE_SOURCES) | {
-    'research/dag_mapping/bench_composition.py',
+SOURCES = source_set(
+    'research/dag_mapping/bench_composition.py', 'research/dag_mapping/INTERFACE_PLAN.md',
     'research/index_coupling/test_prefix_reductions.py',
-    'research/index_coupling/graph/remainder.py', 'research/index_coupling/graph/span_names.py',
-    'research/index_coupling/graph/stacks.py', 'research/index_coupling/run_ancestor_width.py'}))
-
-
-def graph_for(name):
-    if name == 'ffn4':
-        return ffn_stack(4)
-    if name == 'attention4':
-        return attention_stack(4)
-    if name == 'ancestor8':
-        return control(8)
-    return dag_graph(name)
+)
 
 
 def run_arm(name, arm, profile=False, analytic_flags=None):
@@ -121,7 +109,7 @@ def worker(args, runner=None, sources=None):
     sources = SOURCES if sources is None else sources
     result = dict(case=args.case, arm=args.arm, mode=args.mode, revision=args.revision,
                   python=platform.python_version(), hash_seed=os.environ.get('PYTHONHASHSEED'),
-                  source_sha256={p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in sources})
+                  source_sha256=source_hashes(sources))
     try:
         result.update(runner(args.case, args.arm, profile=args.mode == 'work'))
         if args.reference:
@@ -158,9 +146,7 @@ def main():
         return worker(args)
     if platform.system() != 'Linux':
         raise ValueError('fresh Linux processes required')
-    for source in SOURCES:
-        if subprocess.check_output(['git', 'show', f'{args.revision}:{source}']) != Path(source).read_bytes():
-            raise ValueError(f'unfrozen source: {source}')
+    verify_sources(args.revision, SOURCES)
     args.out.mkdir(parents=True, exist_ok=False)
     manifest = dict(revision=args.revision, cases=CASES, arms=ARMS, rounds=3,
                     worker_seconds=180, memory_gib=4, hash_seed='0',

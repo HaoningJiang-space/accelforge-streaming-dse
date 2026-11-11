@@ -8,6 +8,7 @@ import subprocess
 import sys
 
 from . import bench_composition as base
+from .artifacts import verify_sources
 
 CASES = ('two_stage_join', 'asymmetric_join', 'mixed_join', 'ffn4', 'ancestor8')
 ARMS = ('prefix', 'prefix_p', 'prefix_i', 'prefix_r', 'analytic', 'analytic_none',
@@ -40,9 +41,7 @@ def main():
         return base.worker(args, runner=run_arm, sources=SOURCES)
     if platform.system() != 'Linux':
         raise ValueError('fresh Linux processes required')
-    for source in SOURCES:
-        if subprocess.check_output(['git', 'show', f'{args.revision}:{source}']) != Path(source).read_bytes():
-            raise ValueError(f'unfrozen source: {source}')
+    verify_sources(args.revision, SOURCES)
     args.out.mkdir(parents=True, exist_ok=False)
     manifest = dict(revision=args.revision, cases=CASES, arms=ARMS, rounds=3,
                     worker_seconds=180, memory_gib=4, hash_seed='0',

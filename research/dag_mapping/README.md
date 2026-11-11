@@ -1,130 +1,114 @@
-# DAG mapping research entry
+# DAG mapping: code and experiment guide
 
-The target is graph-structured mapping search with shared data, resource limits
-and cross-operator fusion. Existing Cut DP, symmetry and exact conditional
-responses are tools; small Chain/Fork results do not establish scalability for
-general DNN DAGs. M8 is retained as a conditional-solver microbenchmark.
+The research target is exact mapping search for DAGs with shared data, finite
+SRAM and cross-operator fusion. The current priorities and claim boundaries are
+in [research/OVERVIEW.md](../OVERVIEW.md). M8 chains are microbenchmarks; no result
+here establishes scalable exact search for arbitrary DNN DAGs.
 
-The first bounded study is [D1](PROTOCOL.md): compare closed region boundaries
-with a shared loop around producer/body/join regions, against complete native
-search on six small supported graphs. `boundary.py` implements the exact fixed
-region building block. `study.py` records its limits; it is not a new scalable
-optimizer, dynamic topological-order DP, or complete DNN frontend.
+The latest [conditional separation audit](CONDITIONAL_SEPARATION_RESULTS.md)
+proves a restricted solve decomposition and checks 10,539 conditional frontiers.
+Its optimistic work coverage is limited; it introduces no default optimization.
 
-[D1 results](RESULTS.md): six completed cases, 642 exact boundary-policy checks
-and 146 exact root replays. All three restricted arms lose complete-frontier
-points on every case. The concrete missing witness has nested I and L loops
-with different operator scopes; a single common outer loop is insufficient.
+## Code map
 
-[Conditional separator plan](INTERFACE_PLAN.md) distinguishes closed subtree
-interfaces from interleaved event protocols, gives a restricted substitution
-lemma, and specifies the representation/substitution/work gates before a new
-optimizer. [Primary-source notes](RELATED_WORK_CHECK.md) avoid treating D1 as
-a counterexample to Welder or Crane; PolyMage 2020's full recurrence remains
-unverified because publisher/repository retrieval failed.
+| Layer | Entry | Responsibility |
+| --- | --- | --- |
+| Native grammar | [graph/curve.py](../index_coupling/graph/curve.py) | Fixed-order solve/group recurrence, Cut DP, loops and retention; unchanged by this cleanup |
+| Conditional providers | [response/](../index_coupling/response/README.md) | Prefix sharing, guarded chain responses and witness recovery |
+| Region semantics | [boundary.py](boundary.py), [hierarchy.py](hierarchy.py) | Restricted region composition; typed plan decode/encode and independent resource checking |
+| Search prototypes | [reuse.py](reuse.py), [downset.py](downset.py) | Opt-in closed-response sessions and order-free recurrence; keep their experiment limits |
+| Workloads | [workloads.py](workloads.py) | Shared graph fixtures and certified representative orders; does not import benchmark drivers |
+| Audit support | [audit_support.py](audit_support.py) | Prefix-aware call recorder and native conditional response closures; no optimizer |
+| Audit rule | [conditional_separation.py](conditional_separation.py) | Resident-separated interval condition, construction, work ceiling and audit CLI |
+| Frozen artifacts | [artifacts.py](artifacts.py) | Conservative shared source manifest, freeze checks and Git-pinned source reads |
+| Experiment drivers | `study.py`, `bench_*.py` | Case/arm protocols, subprocess limits, timing and archival |
+| Read-only analysis | `score.py`, `summarize_*.py`, `work_census.py` | Validate and summarize evidence; work ceilings are not measured speedups |
 
-The plan's derivation review makes the solve/group/Hold grammar explicit,
-separates prefix-response reuse from continuation equivalence, and records a
-single-whole-region scalar corner not covered by D1's three-region protocol.
+Graph fixtures belong in `workloads.py`, not in a benchmark. General audit
+infrastructure belongs in `audit_support.py`; the candidate rule stays in its
+own study. New drivers declare their own files plus `artifacts.source_set(...)`.
+The common manifest is deliberately conservative, not a claim that every listed
+provider executes in every experiment.
 
-[Gate 1 results](RESULTS.md#后续-gate-1带类型的层次表示通过验证): the typed hierarchy
-roundtrips and independently executes 146 archived plus 60 freshly generated
-witnesses; all six complete native frontiers agree and 24 tests pass. The scalar
-whole-part corner is repaired. This is representation/certification, not a new
-search algorithm, arbitrary-yield interface, or speedup result.
+Historical imports remain available: `study.CASES`, `bench_reuse.graph_for` /
+`select_orders`, `bench_composition.graph_for`, `conditional_separation.Recorder`
+/ `Oracle`, and `score.frozen_bytes`. New code should use the shared modules above.
+Existing `python -m` command paths and archived result paths remain unchanged.
 
-[Gate 2 results](RESULTS.md#后续-gate-2跨顺序闭合响应复用正确但未通过效率门槛): identical
-closed responses can be shared across global-order parents, with 13,102 exact
-conditional checks and 1,554 root replays. The frozen efficiency criterion
-fails: only 0.44%/4.69% improvement on the two primary DAGs and a 2.30% mixed-DAG
-regression, with higher memory. This bounded cache application is stopped;
-neither order enumeration nor Residency-mask growth is removed.
+## Using existing methods
 
-[Gate 3 results](DOWNSET_RESULTS.md): downset recursion preserves all 11 tested
-full frontiers and 84 root executions, but fails its frozen efficiency criterion
-against symmetry plus prefix sharing. This separate experiment is also stopped.
-
-[Existing-optimization integration protocol](INTERFACE_PLAN.md#9-existing-optimization-compatibility-audit-and-composition-study)
-audits which old reductions were actually enabled. The opt-in prefix adapter
-now accepts exact infeasibility checks, conditional independent-op splitting
-and ordered remainder isomorphism together. It keeps native rank/tensor witness
-restoration and checks numeric child feasibility before constructing the prefix.
-This is integration of existing reductions, not a new DAG equivalence theorem.
-The specialized Fork quotient and offline C2 analysis remain separate;
-defaults stay unchanged. The first matrix did not combine analytic placeholders.
+For the tested DAGs, the strong existing configuration is Prefix + independent
+splitting. It is an observed choice on these cases, not an automatic selector:
 
 ```python
+from research.dag_mapping.workloads import graph_for
 from research.index_coupling.response.prefix import make_kernel
 
+graph = graph_for('two_stage_join')
 kernel, _ = make_kernel(frames=True, composition='numeric', reductions=True)
 points = kernel(graph, partitions='dp', scalar_leaf='v2', witness=True,
-                prune_infeasible_groups=True, independent_ops=True,
-                canonical_remainders=True)
+                independent_ops=True)
 ```
 
-This demonstrates the available combination, not a recommendation to enable
-every flag: matching and representation costs must be included in the comparison.
-
-[Composition results](RESULTS.md#已有优化组合审计可以接通但收益依赖结构): all 336 server tasks,
-1,210 per-order frontier comparisons, 2,240 root executions and 56 tests pass.
-Independent splitting adds 1.026–1.043× on the three DAGs; infeasibility adds
-about 1.39× over prefix alone on tiny stacks, while the existing analytic arm
-still has a lower median. Remainder normalization gives about 5.7× on the
-rank-symmetric single-op control but slows the tested DAGs. All-on is not best;
-the complete eleven-arm matrix and costs are retained, and defaults stay off.
-
-[Analytic follow-up protocol](INTERFACE_PLAN.md#10-analytic-responses-with-transported-witnesses)
-extends the opt-in interface: a renamed analytic placeholder retains its source
-registry key and accumulated operator/tensor/rank map. Recovery constructs the
-source witness, then maps it to the caller. It supports p/i/r together with the
-existing Unit-M and scalar-separator providers under exact unlimited v2 default
-costs. The shared-response pool remains outside this combination.
+For an experiment using guarded analytic responses and their witness recovery:
 
 ```python
 from research.dag_mapping.reuse import RegionSession
 
 session = RegionSession(graph, unit=True, certificate=True, reductions=True)
-points = [(c, q, session.recover(notes))
-          for c, q, notes in session.query(prune_infeasible_groups=True)]
+points = [(c, q, session.recover(notes)) for c, q, notes in session.query()]
 ```
 
-`recover()` produces native executable notes; its work belongs in complete
-mapping-generation time. The compiled experimental adapter handles placeholder
-transport, while production `curve.py` stays unchanged.
+Recovery belongs in complete mapping-generation time. Combining all reductions
+is supported within the documented guards but is not generally faster. The
+specialized Fork quotient and offline C2 analysis remain separate mechanisms.
 
-[Analytic composition results](RESULTS.md#解析响应组合续验见证接口接通收益没有继续叠加):
-330 server tasks, 1,365 per-order frontier comparisons, 2,310 root replays and
-63 tests pass. There are 200 transported analytic placeholders in saved root
-plans, including actual DAGs. No new combination beats the fastest declared
-old configuration on these cases. In FFN-4, analytic substitution has already
-removed every empty transition that the precheck could skip: 1,526 checks yield
-zero skips. The interface works, but the two separate gains do not multiply.
+## Completed studies
+
+The source column identifies the frozen implementation used for the referenced
+results. Reproduce historical timings from that commit, not from current main.
+
+| Study / driver | Frozen source | Result and status |
+| --- | --- | --- |
+| D1: `study.py` | `d3bd0327` | [Protocol](PROTOCOL.md), [results](RESULTS.md): fixed regions, even with a whole-graph outer loop, lose native frontier points |
+| Gate 1: `check_hierarchy.py` | `0efa03d7` | [Interface plan](INTERFACE_PLAN.md), [results](RESULTS.md): representation and witness certification; no speedup claim |
+| Gate 2: `bench_reuse.py` | `25d77176` | [Results](RESULTS.md): exact closed-response reuse, frozen efficiency gate failed; stopped |
+| Gate 3: `bench_downset.py` | `5f30c8f8` | [Results](DOWNSET_RESULTS.md): exact all-order union, efficiency gate failed; stopped |
+| Existing reductions: `bench_composition.py` | `646e8f24` | [Results](RESULTS.md): combinations are correct, best configuration depends on structure |
+| Analytic combinations: `bench_analytic_composition.py` | `ce7473b8` | [Results](RESULTS.md): transported witnesses correct; no new combination beats the declared strongest old configuration |
+| Conditional separation: `conditional_separation.py` | `2047138b` | [Proof](CONDITIONAL_SEPARATION.md), [results](CONDITIONAL_SEPARATION_RESULTS.md): sufficient local decomposition, limited remaining work coverage |
+
+[Related-work checks](RELATED_WORK_CHECK.md) distinguish primary-source evidence
+from hypotheses. A historical document's "next step" is not a new active task;
+use the overview and the completed-study status above.
+
+## Validation and reproduction
+
+Run from the repository root. The research tests use the standard library:
 
 ```sh
-python3 -m unittest research.dag_mapping.test_boundary
-python3 -m unittest research.dag_mapping.test_hierarchy
-PYTHONHASHSEED=0 python3 -m research.dag_mapping.study --out FRESH_DIRECTORY --revision SOURCE_COMMIT
-PYTHONHASHSEED=0 python3 -m research.dag_mapping.check_hierarchy --out FRESH_RESULT.json
-python3 -m unittest research.dag_mapping.test_reuse
-python3 -m research.dag_mapping.summarize_reuse research/dag_mapping/results/reuse --out FRESH_SUMMARY.json
-python3 -m unittest research.index_coupling.test_prefix_reductions
-python3 -m research.dag_mapping.bench_composition run --out FRESH_DIRECTORY --revision SOURCE_COMMIT
-python3 -m research.dag_mapping.summarize_composition research/dag_mapping/results/composition --out FRESH_SUMMARY.json
-python3 -m unittest research.index_coupling.test_analytic_composition
-python3 -m research.dag_mapping.bench_analytic_composition run --out FRESH_DIRECTORY --revision SOURCE_COMMIT
-python3 -m research.dag_mapping.summarize_composition research/dag_mapping/results/analytic_composition --out FRESH_SUMMARY.json
+PYTHONHASHSEED=0 python3 -m unittest discover -s research/dag_mapping -t .
+PYTHONHASHSEED=0 python3 -m unittest research.index_coupling.test_prefix_sharing research.index_coupling.test_prefix_reductions research.index_coupling.test_analytic_composition research.index_coupling.test_unified_search
 ```
 
-Continue method work directly on `research/main`. Hardware interface validation
-uses the existing `research/dnn-benchmarks` integration branch. Do not introduce
-a new branch for this study or edit running experiment sources.
+Summaries read the archived commit's source bytes even after main is reorganized.
+Write to a fresh output path; never overwrite frozen evidence:
 
-[Resident-separated interval audit](CONDITIONAL_SEPARATION_RESULTS.md) examines
-the remaining work under the strong Prefix+i baseline. The restricted solve
-factorization is proved in [the protocol](CONDITIONAL_SEPARATION.md); all 10,539
-eligible conditional frontiers and 157 oracle-substituted root executions agree.
-Different parent responses can reuse unaffected branch responses (5,395 paired
-examples), but optimistic DP-work ceilings are only 11.58%/13.31%/6.99% on the
-three DAGs. These are not speedups; no timed implementation or default change is
-introduced. An archived L-loop with three non-scalar obligations X/V0/V1 makes
-the remaining coupled decision and its order sensitivity concrete.
+```sh
+python3 -m research.dag_mapping.summarize_reuse research/dag_mapping/results/reuse --out /tmp/reuse-summary.json
+python3 -m research.dag_mapping.summarize_composition research/dag_mapping/results/composition --out /tmp/composition-summary.json
+python3 -m research.dag_mapping.summarize_composition research/dag_mapping/results/analytic_composition --out /tmp/analytic-summary.json
+python3 -m research.dag_mapping.summarize_separation research/dag_mapping/results/conditional_separation --out /tmp/separation-summary.json
+```
+
+A new run must use committed declared sources. For example, after freezing the
+intended implementation, `bench_composition run --out FRESH_DIRECTORY --revision
+SOURCE_COMMIT` runs that protocol; `conditional_separation --case two_stage_join
+--out FRESH_DIRECTORY` verifies its source against HEAD. Use the existing module
+names with `python3 -m research.dag_mapping.<driver>` and inspect `--help` where
+provided. Large timing matrices are not part of routine cleanup verification.
+
+Method work continues on `research/main`; no new branch is needed. The existing
+hardware integration branch is `research/dnn-benchmarks`. Preserve result files,
+Git-pinned manifests and running experiment sources. Changes to module layout
+must update declared source dependencies without rewriting old hashes or verdicts.

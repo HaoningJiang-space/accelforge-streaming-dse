@@ -13,7 +13,7 @@ from .test_prefix_reductions import CONFIGS, OPTIONS
 from research.dag_mapping.boundary import resized
 from research.dag_mapping.hierarchy import analyze, decode
 from research.dag_mapping.reuse import RegionSession
-from research.dag_mapping.bench_reuse import graph_for, select_orders
+from research.dag_mapping.workloads import dag_graph as graph_for, select_orders
 
 
 def twins(count=2):

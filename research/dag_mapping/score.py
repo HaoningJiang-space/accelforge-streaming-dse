@@ -3,22 +3,10 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
-import re
-import subprocess
-from functools import lru_cache
 
-from .study import ARMS, CASES, compare, value
-
-
-@lru_cache(maxsize=None)
-def frozen_bytes(revision, source):
-    """Read the recorded source version, not a later working-tree revision."""
-    path = Path(source)
-    if (not re.fullmatch(r'[0-9a-f]{40}', revision) or path.is_absolute()
-            or '..' in path.parts):
-        raise ValueError('invalid frozen source reference')
-    repo = Path(__file__).resolve().parents[2]
-    return subprocess.check_output(['git', 'show', f'{revision}:{source}'], cwd=repo)
+from .study import ARMS, compare, value
+from .workloads import D1_CASES as CASES
+from .artifacts import frozen_bytes
 
 
 def score(root):

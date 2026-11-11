@@ -8,8 +8,8 @@ from math import prod
 from pathlib import Path
 import subprocess
 
-from .bench_reuse import graph_for
-from .conditional_separation import CASES, COUNTERS
+from .workloads import JOIN_CASES as CASES, dag_graph as graph_for
+from .audit_support import COUNTERS
 
 
 def summarize(root):

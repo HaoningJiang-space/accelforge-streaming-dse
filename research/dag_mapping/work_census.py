@@ -29,7 +29,7 @@ import sys
 from research.index_coupling.c2_bound_audit import BaselineRecorder, COUNTERS
 from research.index_coupling.census_tools import graph_of
 from research.index_coupling.graph.span_names import SpanNames
-from .bench_reuse import graph_for, select_orders
+from .workloads import dag_graph as graph_for, select_orders
 from .boundary import resized
 
 DAG_CASES = ('fork_join_tiny', 'two_stage_join', 'asymmetric_join', 'mixed_join')

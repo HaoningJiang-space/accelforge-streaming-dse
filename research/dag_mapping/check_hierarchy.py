@@ -20,10 +20,12 @@ from research.index_coupling.simulate_nest import simulate
 from .boundary import resized, workload
 from .hierarchy import analyze, decode, encode, tuples
 from .score import score
-from .study import ARMS, CASES
+from .study import ARMS
+from .workloads import D1_CASES as CASES
+from .artifacts import source_set, source_hashes, verify_sources
 
 
-SOURCES = (
+SOURCES = source_set(
     'research/dag_mapping/hierarchy.py', 'research/dag_mapping/check_hierarchy.py',
     'research/dag_mapping/boundary.py', 'research/dag_mapping/score.py',
     'research/dag_mapping/test_hierarchy.py', 'research/dag_mapping/test_boundary.py',
@@ -104,13 +106,10 @@ def main():
     if args.out.exists():
         raise ValueError('preserve prior result')
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
-    for source in SOURCES:
-        frozen = subprocess.check_output(['git', 'show', f'{revision}:{source}'])
-        if frozen != Path(source).read_bytes():
-            raise ValueError(f'freeze changed source before validation: {source}')
+    verify_sources(revision, SOURCES)
     result = dict(revision=revision, python=platform.python_version(),
                   hash_seed=os.environ.get('PYTHONHASHSEED'),
-                  source_sha256={p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in SOURCES},
+                  source_sha256=source_hashes(SOURCES),
                   status='running')
     resource.setrlimit(resource.RLIMIT_AS, (2 * 2**30, 2 * 2**30))
     def timeout(*_):
