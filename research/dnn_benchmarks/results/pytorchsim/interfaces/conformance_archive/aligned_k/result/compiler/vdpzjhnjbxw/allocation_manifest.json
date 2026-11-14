@@ -1,0 +1,44 @@
+{
+  "schema": "pytorchsim-allocation.v1",
+  "basis": "ELF static extent plus pinned compiler kernel stack",
+  "region": "lane_scratchpad",
+  "lanes": 128,
+  "capacity_bytes_per_lane": 8192,
+  "static_extent_bytes_per_lane": 1216,
+  "static_object_bytes_per_lane": 1216,
+  "alignment_padding_bytes_per_lane": 0,
+  "kernel_stack_bytes_per_lane": 176,
+  "required_bytes_per_lane": 1392,
+  "buffers": [
+    {
+      "name": "X_spad",
+      "offset_bytes": 0,
+      "bytes_per_lane": 128,
+      "region": "lane_scratchpad",
+      "lifetime": "entire_kernel",
+      "copies": 1
+    },
+    {
+      "name": "W_spad",
+      "offset_bytes": 128,
+      "bytes_per_lane": 1024,
+      "region": "lane_scratchpad",
+      "lifetime": "entire_kernel",
+      "copies": 1
+    },
+    {
+      "name": "Y_spad",
+      "offset_bytes": 1152,
+      "bytes_per_lane": 64,
+      "region": "lane_scratchpad",
+      "lifetime": "entire_kernel",
+      "copies": 1
+    }
+  ],
+  "compiler_capacity_pass": true,
+  "plain_gemm_scope": true,
+  "kernel_has_calls": false,
+  "binary_sha256": "90e07ddbd64043b367ba240a4a46c1bec29cef1cf83ba710b46846b0d741d73b",
+  "assembly_sha256": "5b63aefc205ae40d8df9d7954e7ca426cd2cce25c8ed80e11642d754a363d149",
+  "scope_note": "Capacity certificate requires serialized timing tiles. Wrapper host stack, DMA tags and queues belong to separate backend resources; no full-chip area or energy claim."
+}

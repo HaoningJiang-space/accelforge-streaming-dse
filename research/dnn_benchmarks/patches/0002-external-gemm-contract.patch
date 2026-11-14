@@ -1,0 +1,35 @@
+diff --git a/PyTorchSimFrontend/mlir/mlir_gemm_template.py b/PyTorchSimFrontend/mlir/mlir_gemm_template.py
+index 8a8cd58..4fc808c 100644
+--- a/PyTorchSimFrontend/mlir/mlir_gemm_template.py
++++ b/PyTorchSimFrontend/mlir/mlir_gemm_template.py
+@@ -319,11 +319,28 @@ class MLIRGemmTemplate(MLIRTemplate):
+                 data = json.load(f)
+         if gemm_shape in data:
+             tile_info = data[gemm_shape]
++            names = ("TILE_M", "TILE_N", "TILE_K", "SUB_TILE_M", "SUB_TILE_N", "SUB_TILE_K")
++            if not isinstance(tile_info, dict) or set(tile_info) not in (set(names[:3]), set(names)):
++                raise ValueError("External GEMM mapping requires three or six named tile fields")
++            if any(type(tile_info[key]) is not int or tile_info[key] <= 0 for key in tile_info):
++                raise ValueError("External GEMM tile fields must be positive integers")
++            TILE_M, TILE_N, TILE_K = (tile_info[key] for key in names[:3])
++            if any(tile > dim or dim % tile for dim, tile in zip((M,N,K), (TILE_M,TILE_N,TILE_K))):
++                raise ValueError("External GEMM mapping currently requires tiles dividing the shape")
+             if len(tile_info) == 3:
+-                TILE_M, TILE_N, TILE_K = tile_info.values()
+                 tile_candidates = [[TILE_M, TILE_N, TILE_K]]
+             elif len(tile_info) == 6:
+-                TILE_M, TILE_N, TILE_K, SUB_TILE_M, SUB_TILE_N, SUB_TILE_K = tile_info.values()
++                SUB_TILE_M, SUB_TILE_N, SUB_TILE_K = (tile_info[key] for key in names[3:])
++                if any(sub > tile or tile % sub for tile, sub in zip(
++                        (TILE_M,TILE_N,TILE_K), (SUB_TILE_M,SUB_TILE_N,SUB_TILE_K))):
++                    raise ValueError("External GEMM subtiles must divide their tiles")
++                # W's N axis and X's K axis are distributed across lanes. The
++                # current DMA ISA starts at lane zero; only full lane groups
++                # can be offset through the per-lane SRAM address. Partial
++                # groups would overwrite the previous group's active lanes.
++                for label, tile, sub in (("N",TILE_N,SUB_TILE_N),("K",TILE_K,SUB_TILE_K)):
++                    if sub < tile and sub % kernel.vector_lane:
++                        raise ValueError(f"External GEMM {label} subtile split requires lane-group alignment ({kernel.vector_lane})")
+                 full_tile_candidates = [[TILE_M, TILE_N, TILE_K, SUB_TILE_M, SUB_TILE_N, SUB_TILE_K]]
+                 return full_tile_candidates
+         else:

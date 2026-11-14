@@ -1,0 +1,55 @@
+{
+  "schema": "gemm-candidate-batch.v1",
+  "submitted": 2,
+  "attempted": 2,
+  "not_started": 0,
+  "wall_budget_seconds": 120.0,
+  "budget_scope": "admission deadline; in-flight work charged through completion",
+  "elapsed_seconds": 9.151099024806172,
+  "best_observed": {
+    "mapping_id": "small_serial",
+    "cycles": 22394
+  },
+  "rows": [
+    {
+      "mapping_id": "full_serial_512b",
+      "request_sha256": "cdfb91d47c169cfed4b44d8a9a1056cb531b63e33eeae011497bf478d0047177",
+      "verdict": "rejected",
+      "failure_stage": "capacity",
+      "cumulative_wall_seconds": 4.5542410598136485,
+      "costs": {
+        "evaluation_wall_seconds": 4.552117951912805,
+        "audit_seconds": 2.1461863070726395e-05,
+        "phases": {
+          "mapping_selection": 0.005286655854433775
+        },
+        "compile_and_execute_seconds": null
+      },
+      "best_observed": null
+    },
+    {
+      "mapping_id": "small_serial",
+      "request_sha256": "a8aeadfe287b0705f2f5f33f62263596f572b4fdd9f4538975d71fa67faaa554",
+      "verdict": "accepted",
+      "failure_stage": null,
+      "cumulative_wall_seconds": 9.150946098845452,
+      "costs": {
+        "evaluation_wall_seconds": 4.594391994876787,
+        "audit_seconds": 0.04932197113521397,
+        "phases": {
+          "mapping_selection": 0.005378341069445014,
+          "compute_cycle_model": 0.8692637789063156,
+          "functional_simulation": 0.0925335141364485,
+          "timing_simulation": 0.09371120086871088
+        },
+        "compile_and_execute_seconds": 1.7151295668445528,
+        "other_compile_and_execution_seconds": 0.6542427318636328
+      },
+      "best_observed": {
+        "mapping_id": "small_serial",
+        "cycles": 22394
+      }
+    }
+  ],
+  "optimality": "best among accepted evaluated candidates only; no capacity/traffic-based pruning"
+}

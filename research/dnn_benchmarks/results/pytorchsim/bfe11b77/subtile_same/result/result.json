@@ -1,0 +1,91 @@
+{
+  "status": "functional_import_pass; DMA ledger still pending",
+  "mode": "external",
+  "shape": [
+    64,
+    128,
+    32
+  ],
+  "dtype": "float32",
+  "macs": 262144,
+  "source_commit": "f595cef7a367c57f4da9f1ba36d994c1f42242bf",
+  "file_sha256": {
+    "PyTorchSimFrontend/mlir/mlir_gemm_template.py": "2ce12893c5fddc8c20fce71e5dce0fba9583761b5cd9e0d585be54e42c87ad1c",
+    "PyTorchSimFrontend/extension_config.py": "f7ff9ae2e3a2af5273122448b497296ea9104f76c7011d2efd6a493f830e9252",
+    "AsmParser/tog_generator.py": "88e18ebe8a9346d804160c3400c1ddf98481ea7549efe9d7f1d30d793997ea07",
+    "TOGSim/src/TileGraphParser.cc": "c6f79ae218249aa2ec498779e3f1fba952df62fbfc0d29377e9499806aadfc32",
+    "TOGSim/build/bin/Simulator": "52e383c1e200c28b5cacb0d5bd0997ce982e1a01fa058c6a49aa40881b2b3933"
+  },
+  "requested_tile": [
+    16,
+    32,
+    8,
+    16,
+    32,
+    8
+  ],
+  "candidate_tiles_observed": [
+    [
+      [
+        16,
+        32,
+        8,
+        16,
+        32,
+        8
+      ]
+    ],
+    [
+      [
+        16,
+        32,
+        8,
+        16,
+        32,
+        8
+      ]
+    ]
+  ],
+  "rendered_tiles_observed": [
+    {
+      "TILE_M": 16,
+      "TILE_N": 32,
+      "TILE_K": 8,
+      "SUB_TILE_M": 16,
+      "SUB_TILE_N": 32
+    },
+    {
+      "TILE_M": 16,
+      "TILE_N": 32,
+      "TILE_K": 8,
+      "SUB_TILE_M": 16,
+      "SUB_TILE_N": 32
+    }
+  ],
+  "source_template_ledger": {
+    "mac_count": 262144,
+    "useful_input_elements": {
+      "X": 8192,
+      "W": 16384
+    },
+    "useful_output_elements": 8192,
+    "useful_bytes": 131072,
+    "logical_buffer_bytes": 3584,
+    "source_dma_operations": 144,
+    "partial_sum_dram_reads": 0,
+    "partial_sum_dram_writes": 0,
+    "caveat": "Pre-pass logical counts; not compiled DMA bytes, DRAM transactions or physical SRAM."
+  },
+  "independent_contract_audit": "7e03ab3b",
+  "dma_byte_audit": "pending; no traffic equality claim",
+  "scope": "standalone GEMM import smoke; external tiles are manual controls, not a solver-quality result",
+  "audited_source_commit": "509f42554202edb29cf8d31ddf619776f465e717",
+  "source_difference": [
+    "README.md"
+  ],
+  "compile_and_execute_seconds": 1.7086842630524188,
+  "torch_version": "2.8.0+cu126",
+  "max_abs_error": 7.62939453125e-06,
+  "wrong_elements": 0,
+  "numerical_equal": true
+}

@@ -1,0 +1,1022 @@
+{
+  "schema": "dnn-island-study.v1",
+  "cases": {
+    "resnet_short_reduced": {
+      "schema": "dnn-resource-island.v1",
+      "model": "resnet50",
+      "fx_nodes": [
+        "layer1_0_bn2",
+        "layer1_0_relu_1",
+        "layer1_0_conv3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2,
+        "r4": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 64,
+        "r2": 56,
+        "r3": 56,
+        "r4": 256
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "layer1_0_bn2",
+          {
+            "n_layer1_0_conv2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "p_layer1.0.bn2.running_mean": [
+              "r1"
+            ],
+            "p_layer1.0.bn2.running_var": [
+              "r1"
+            ],
+            "p_layer1.0.bn2.weight": [
+              "r1"
+            ],
+            "p_layer1.0.bn2.bias": [
+              "r1"
+            ],
+            "n_layer1_0_bn2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "layer1_0_relu_1",
+          {
+            "n_layer1_0_bn2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_layer1_0_relu_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "layer1_0_conv3_matmul",
+          {
+            "n_layer1_0_relu_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "p_layer1.0.conv3.weight": [
+              "r4",
+              "r1"
+            ],
+            "n_layer1_0_conv3": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "layer1_0_bn2": {
+          "kind": "batchnorm_eval",
+          "eps": 1e-05
+        },
+        "layer1_0_relu_1": {
+          "kind": "relu",
+          "approximate": "none"
+        },
+        "layer1_0_conv3_matmul": {
+          "kind": "product"
+        }
+      },
+      "scalar_steps": 32,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place"
+    },
+    "resnet_long_reduced": {
+      "schema": "dnn-resource-island.v1",
+      "model": "resnet50",
+      "fx_nodes": [
+        "layer1_0_bn2",
+        "layer1_0_relu_1",
+        "layer1_0_conv3",
+        "layer1_0_bn3",
+        "layer1_0_downsample_0",
+        "layer1_0_downsample_1",
+        "add",
+        "layer1_0_relu_2",
+        "layer1_1_conv1",
+        "layer1_1_bn1",
+        "layer1_1_relu"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2,
+        "r4": 2,
+        "r5": 2,
+        "r6": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 56,
+        "r3": 56,
+        "r4": 64,
+        "r5": 64,
+        "r6": 64
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "layer1_0_bn2",
+          {
+            "n_layer1_0_conv2": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ],
+            "p_layer1.0.bn2.running_mean": [
+              "r4"
+            ],
+            "p_layer1.0.bn2.running_var": [
+              "r4"
+            ],
+            "p_layer1.0.bn2.weight": [
+              "r4"
+            ],
+            "p_layer1.0.bn2.bias": [
+              "r4"
+            ],
+            "n_layer1_0_bn2": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "layer1_0_relu_1",
+          {
+            "n_layer1_0_bn2": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ],
+            "n_layer1_0_relu_1": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "layer1_0_conv3_matmul",
+          {
+            "n_layer1_0_relu_1": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ],
+            "p_layer1.0.conv3.weight": [
+              "r1",
+              "r4"
+            ],
+            "n_layer1_0_conv3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "layer1_0_bn3",
+          {
+            "n_layer1_0_conv3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "p_layer1.0.bn3.running_mean": [
+              "r1"
+            ],
+            "p_layer1.0.bn3.running_var": [
+              "r1"
+            ],
+            "p_layer1.0.bn3.weight": [
+              "r1"
+            ],
+            "p_layer1.0.bn3.bias": [
+              "r1"
+            ],
+            "n_layer1_0_bn3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "layer1_0_downsample_0_matmul",
+          {
+            "n_maxpool": [
+              "r0",
+              "r6",
+              "r2",
+              "r3"
+            ],
+            "p_layer1.0.downsample.0.weight": [
+              "r1",
+              "r6"
+            ],
+            "n_layer1_0_downsample_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "layer1_0_downsample_1",
+          {
+            "n_layer1_0_downsample_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "p_layer1.0.downsample.1.running_mean": [
+              "r1"
+            ],
+            "p_layer1.0.downsample.1.running_var": [
+              "r1"
+            ],
+            "p_layer1.0.downsample.1.weight": [
+              "r1"
+            ],
+            "p_layer1.0.downsample.1.bias": [
+              "r1"
+            ],
+            "n_layer1_0_downsample_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "add",
+          {
+            "n_layer1_0_bn3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_layer1_0_downsample_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_add": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "layer1_0_relu_2",
+          {
+            "n_add": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_layer1_0_relu_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "layer1_1_conv1_matmul",
+          {
+            "n_layer1_0_relu_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "p_layer1.1.conv1.weight": [
+              "r5",
+              "r1"
+            ],
+            "n_layer1_1_conv1": [
+              "r0",
+              "r5",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "layer1_1_bn1",
+          {
+            "n_layer1_1_conv1": [
+              "r0",
+              "r5",
+              "r2",
+              "r3"
+            ],
+            "p_layer1.1.bn1.running_mean": [
+              "r5"
+            ],
+            "p_layer1.1.bn1.running_var": [
+              "r5"
+            ],
+            "p_layer1.1.bn1.weight": [
+              "r5"
+            ],
+            "p_layer1.1.bn1.bias": [
+              "r5"
+            ],
+            "n_layer1_1_bn1": [
+              "r0",
+              "r5",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "layer1_1_relu",
+          {
+            "n_layer1_1_bn1": [
+              "r0",
+              "r5",
+              "r2",
+              "r3"
+            ],
+            "n_layer1_1_relu": [
+              "r0",
+              "r5",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "layer1_0_bn2": {
+          "kind": "batchnorm_eval",
+          "eps": 1e-05
+        },
+        "layer1_0_relu_1": {
+          "kind": "relu",
+          "approximate": "none"
+        },
+        "layer1_0_conv3_matmul": {
+          "kind": "product"
+        },
+        "layer1_0_bn3": {
+          "kind": "batchnorm_eval",
+          "eps": 1e-05
+        },
+        "layer1_0_downsample_0_matmul": {
+          "kind": "product"
+        },
+        "layer1_0_downsample_1": {
+          "kind": "batchnorm_eval",
+          "eps": 1e-05
+        },
+        "add": {
+          "kind": "add",
+          "approximate": "none"
+        },
+        "layer1_0_relu_2": {
+          "kind": "relu",
+          "approximate": "none"
+        },
+        "layer1_1_conv1_matmul": {
+          "kind": "product"
+        },
+        "layer1_1_bn1": {
+          "kind": "batchnorm_eval",
+          "eps": 1e-05
+        },
+        "layer1_1_relu": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 112,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place"
+    },
+    "vit_mlp_reduced": {
+      "schema": "dnn-resource-island.v1",
+      "model": "vit_b_16",
+      "fx_nodes": [
+        "encoder_layers_encoder_layer_0_mlp_0",
+        "encoder_layers_encoder_layer_0_mlp_1",
+        "encoder_layers_encoder_layer_0_mlp_3",
+        "add_2"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2,
+        "r4": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 197,
+        "r2": 768,
+        "r3": 768,
+        "r4": 3072
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "encoder_layers_encoder_layer_0_mlp_0_matmul",
+          {
+            "n_encoder_layers_encoder_layer_0_ln_2": [
+              "r0",
+              "r1",
+              "r3"
+            ],
+            "p_encoder.layers.encoder_layer_0.mlp.0.weight": [
+              "r4",
+              "r3"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_0_prebias": [
+              "r0",
+              "r1",
+              "r4"
+            ]
+          }
+        ],
+        [
+          "encoder_layers_encoder_layer_0_mlp_0_bias",
+          {
+            "n_encoder_layers_encoder_layer_0_mlp_0_prebias": [
+              "r0",
+              "r1",
+              "r4"
+            ],
+            "p_encoder.layers.encoder_layer_0.mlp.0.bias": [
+              "r4"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_0": [
+              "r0",
+              "r1",
+              "r4"
+            ]
+          }
+        ],
+        [
+          "encoder_layers_encoder_layer_0_mlp_1",
+          {
+            "n_encoder_layers_encoder_layer_0_mlp_0": [
+              "r0",
+              "r1",
+              "r4"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_1": [
+              "r0",
+              "r1",
+              "r4"
+            ]
+          }
+        ],
+        [
+          "encoder_layers_encoder_layer_0_mlp_3_matmul",
+          {
+            "n_encoder_layers_encoder_layer_0_mlp_1": [
+              "r0",
+              "r1",
+              "r4"
+            ],
+            "p_encoder.layers.encoder_layer_0.mlp.3.weight": [
+              "r2",
+              "r4"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_3_prebias": [
+              "r0",
+              "r1",
+              "r2"
+            ]
+          }
+        ],
+        [
+          "encoder_layers_encoder_layer_0_mlp_3_bias",
+          {
+            "n_encoder_layers_encoder_layer_0_mlp_3_prebias": [
+              "r0",
+              "r1",
+              "r2"
+            ],
+            "p_encoder.layers.encoder_layer_0.mlp.3.bias": [
+              "r2"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_3": [
+              "r0",
+              "r1",
+              "r2"
+            ]
+          }
+        ],
+        [
+          "add_2",
+          {
+            "n_add_1": [
+              "r0",
+              "r1",
+              "r2"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_3": [
+              "r0",
+              "r1",
+              "r2"
+            ],
+            "n_add_2": [
+              "r0",
+              "r1",
+              "r2"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "encoder_layers_encoder_layer_0_mlp_0_matmul": {
+          "kind": "product"
+        },
+        "encoder_layers_encoder_layer_0_mlp_0_bias": {
+          "kind": "add"
+        },
+        "encoder_layers_encoder_layer_0_mlp_1": {
+          "kind": "gelu",
+          "approximate": "none"
+        },
+        "encoder_layers_encoder_layer_0_mlp_3_matmul": {
+          "kind": "product"
+        },
+        "encoder_layers_encoder_layer_0_mlp_3_bias": {
+          "kind": "add"
+        },
+        "add_2": {
+          "kind": "add",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 32,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place"
+    },
+    "vit_mlp_original": {
+      "schema": "dnn-resource-island.v1",
+      "model": "vit_b_16",
+      "fx_nodes": [
+        "encoder_layers_encoder_layer_0_mlp_0",
+        "encoder_layers_encoder_layer_0_mlp_1",
+        "encoder_layers_encoder_layer_0_mlp_3",
+        "add_2"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 197,
+        "r2": 768,
+        "r3": 768,
+        "r4": 3072
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 197,
+        "r2": 768,
+        "r3": 768,
+        "r4": 3072
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "encoder_layers_encoder_layer_0_mlp_0_matmul",
+          {
+            "n_encoder_layers_encoder_layer_0_ln_2": [
+              "r0",
+              "r1",
+              "r3"
+            ],
+            "p_encoder.layers.encoder_layer_0.mlp.0.weight": [
+              "r4",
+              "r3"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_0_prebias": [
+              "r0",
+              "r1",
+              "r4"
+            ]
+          }
+        ],
+        [
+          "encoder_layers_encoder_layer_0_mlp_0_bias",
+          {
+            "n_encoder_layers_encoder_layer_0_mlp_0_prebias": [
+              "r0",
+              "r1",
+              "r4"
+            ],
+            "p_encoder.layers.encoder_layer_0.mlp.0.bias": [
+              "r4"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_0": [
+              "r0",
+              "r1",
+              "r4"
+            ]
+          }
+        ],
+        [
+          "encoder_layers_encoder_layer_0_mlp_1",
+          {
+            "n_encoder_layers_encoder_layer_0_mlp_0": [
+              "r0",
+              "r1",
+              "r4"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_1": [
+              "r0",
+              "r1",
+              "r4"
+            ]
+          }
+        ],
+        [
+          "encoder_layers_encoder_layer_0_mlp_3_matmul",
+          {
+            "n_encoder_layers_encoder_layer_0_mlp_1": [
+              "r0",
+              "r1",
+              "r4"
+            ],
+            "p_encoder.layers.encoder_layer_0.mlp.3.weight": [
+              "r2",
+              "r4"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_3_prebias": [
+              "r0",
+              "r1",
+              "r2"
+            ]
+          }
+        ],
+        [
+          "encoder_layers_encoder_layer_0_mlp_3_bias",
+          {
+            "n_encoder_layers_encoder_layer_0_mlp_3_prebias": [
+              "r0",
+              "r1",
+              "r2"
+            ],
+            "p_encoder.layers.encoder_layer_0.mlp.3.bias": [
+              "r2"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_3": [
+              "r0",
+              "r1",
+              "r2"
+            ]
+          }
+        ],
+        [
+          "add_2",
+          {
+            "n_add_1": [
+              "r0",
+              "r1",
+              "r2"
+            ],
+            "n_encoder_layers_encoder_layer_0_mlp_3": [
+              "r0",
+              "r1",
+              "r2"
+            ],
+            "n_add_2": [
+              "r0",
+              "r1",
+              "r2"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "encoder_layers_encoder_layer_0_mlp_0_matmul": {
+          "kind": "product"
+        },
+        "encoder_layers_encoder_layer_0_mlp_0_bias": {
+          "kind": "add"
+        },
+        "encoder_layers_encoder_layer_0_mlp_1": {
+          "kind": "gelu",
+          "approximate": "none"
+        },
+        "encoder_layers_encoder_layer_0_mlp_3_matmul": {
+          "kind": "product"
+        },
+        "encoder_layers_encoder_layer_0_mlp_3_bias": {
+          "kind": "add"
+        },
+        "add_2": {
+          "kind": "add",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 931075584,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place"
+    },
+    "unet_head_reduced": {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_3_3",
+        "head"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2,
+        "r4": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 388,
+        "r3": 388,
+        "r4": 64
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "merge_3_3",
+          {
+            "n_merge_3_2": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ],
+            "n_merge_3_3": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "head_matmul",
+          {
+            "n_merge_3_3": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ],
+            "p_head.weight": [
+              "r1",
+              "r4"
+            ],
+            "n_head_prebias": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "head_bias",
+          {
+            "n_head_prebias": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "p_head.bias": [
+              "r1"
+            ],
+            "n_head": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_3_3": {
+          "kind": "relu",
+          "approximate": "none"
+        },
+        "head_matmul": {
+          "kind": "product"
+        },
+        "head_bias": {
+          "kind": "add"
+        }
+      },
+      "scalar_steps": 32,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place"
+    },
+    "unet_head_original": {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_3_3",
+        "head"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 388,
+        "r3": 388,
+        "r4": 64
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 388,
+        "r3": 388,
+        "r4": 64
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "merge_3_3",
+          {
+            "n_merge_3_2": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ],
+            "n_merge_3_3": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "head_matmul",
+          {
+            "n_merge_3_3": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ],
+            "p_head.weight": [
+              "r1",
+              "r4"
+            ],
+            "n_head_prebias": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "head_bias",
+          {
+            "n_head_prebias": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "p_head.bias": [
+              "r1"
+            ],
+            "n_head": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_3_3": {
+          "kind": "relu",
+          "approximate": "none"
+        },
+        "head_matmul": {
+          "kind": "product"
+        },
+        "head_bias": {
+          "kind": "add"
+        }
+      },
+      "scalar_steps": 29205536,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place"
+    }
+  },
+  "inventory_sha256": {
+    "resnet50": "6867f9502d29127e72849b55894b1023050ac754fedc8e435bd2da2ec655b184",
+    "vit_b_16": "8a0512797baae6aba41274cbe6088da155a55e2d103f4053d71850771de223b8",
+    "unet2015": "4bc982e117a129b877e9748646e527e05b2cb1d4c4e22fe53ddcf2db01367805"
+  },
+  "source_sha256": {
+    "dnn_benchmarks/frontends.py": "5fa33267f29e28fd2ff525886f1947648b8fa49f876c14f531282255b03cc561",
+    "dnn_benchmarks/replay.py": "455bb80bb3495b98f626bbfd2b2107ceaf99154206b7838b1b4043ffd904d357",
+    "dnn_benchmarks/c2.py": "b5f0cb5f504cc670431948e6f2904a67b09810f6b235419664821ae14a47e7b0",
+    "dnn_benchmarks/run_islands.py": "972aa8b0f986bd84942e51e96903a09ce3bbe6f09188d8d083da63b6b6a4d4a3",
+    "index_coupling/graph/curve.py": "a0af2842f6b5fbb5028c0affce710f194ad28a8df0002702bb4939b1f9045e49",
+    "index_coupling/graph/remainder.py": "abb659434ccbf677161e556e56fc55186c69eef6638f20b8a9393d4330ffa181",
+    "index_coupling/graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "index_coupling/graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "index_coupling/simulate_nest.py": "7e9983a34b2d4caa249a1c5f435cae7271f20ed5dc599d8fe748f4b1753eeff4"
+  },
+  "selection": "first longest island; ResNet short uses its first 3 FX nodes",
+  "arms": {
+    "v1_dp": {
+      "scalar_leaf": "v1"
+    },
+    "v1_reuse": {
+      "scalar_leaf": "v1",
+      "canonical_remainders": true,
+      "prune_infeasible_groups": true
+    },
+    "v2_dp": {
+      "scalar_leaf": "v2"
+    },
+    "v2_reuse": {
+      "scalar_leaf": "v2",
+      "canonical_remainders": true,
+      "prune_infeasible_groups": true
+    },
+    "v2_c2": {
+      "scalar_leaf": "v2",
+      "c2": true
+    },
+    "v2_joint": {
+      "scalar_leaf": "v2",
+      "canonical_remainders": true,
+      "prune_infeasible_groups": true,
+      "c2": true
+    },
+    "v2_oracle": {
+      "scalar_leaf": "v2",
+      "partitions": "enumerate"
+    }
+  },
+  "seconds": 30,
+  "mem_gib": 2,
+  "replay_step_limit": 200000,
+  "contract": "fixed order; exact halving grammar; no whole-model or timing-speedup claim"
+}

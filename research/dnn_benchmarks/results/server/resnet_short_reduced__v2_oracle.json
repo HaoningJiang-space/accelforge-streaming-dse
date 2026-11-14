@@ -1,0 +1,1657 @@
+{
+  "case": "resnet_short_reduced",
+  "arm": "v2_oracle",
+  "options": {
+    "scalar_leaf": "v2",
+    "partitions": "enumerate"
+  },
+  "c2": false,
+  "stats": {
+    "pareto_calls": 9024,
+    "pareto_candidates": 17888,
+    "pareto_points": 11052,
+    "max_frontier": 9,
+    "merge_calls": 7525,
+    "merge_inputs": 16407,
+    "merge_points": 8164,
+    "partition_masks": 1876,
+    "partition_choices": 3565,
+    "loop_choices": 3936,
+    "dp_states": 0,
+    "dp_transitions": 0,
+    "max_crossing": 0,
+    "dp_multiwriter_fallbacks": 0,
+    "witness_nodes": 11229,
+    "pareto_seconds": 0.015229549026116729,
+    "merge_seconds": 0.018965482246130705,
+    "cache_misses_by_span": {
+      "solve:layer1_0_bn2,layer1_0_relu_1,layer1_0_conv3_matmul": 291,
+      "group:layer1_0_bn2,layer1_0_relu_1,layer1_0_conv3_matmul": 275,
+      "group:layer1_0_bn2": 196,
+      "group:layer1_0_relu_1,layer1_0_conv3_matmul": 42,
+      "solve:layer1_0_relu_1,layer1_0_conv3_matmul": 40,
+      "group:layer1_0_relu_1": 32,
+      "group:layer1_0_conv3_matmul": 70,
+      "group:layer1_0_bn2,layer1_0_relu_1": 196,
+      "solve:layer1_0_bn2,layer1_0_relu_1": 194,
+      "solve:layer1_0_bn2": 194,
+      "solve:layer1_0_conv3_matmul": 81,
+      "solve:layer1_0_relu_1": 21
+    },
+    "cache_misses_by_extents": {
+      "solve:(1, 2, 2, 2, 2)": 1,
+      "group:(1, 2, 2, 2, 2)": 5,
+      "solve:(1, 1, 2, 2, 2)": 10,
+      "group:(1, 1, 2, 2, 2)": 10,
+      "solve:(1, 1, 2, 1, 2)": 80,
+      "group:(1, 1, 2, 1, 2)": 80,
+      "solve:(1, 1, 1, 1, 2)": 80,
+      "group:(1, 1, 1, 1, 1)": 68,
+      "group:(1, 1, 1, 1, 2)": 64,
+      "solve:(1, 1, 1, 1, 1)": 74,
+      "group:(1, 1, 2, 1, 1)": 74,
+      "solve:(1, 1, 2, 1, 1)": 75,
+      "solve:(1, 1, 1, 2, 2)": 80,
+      "group:(1, 1, 1, 2, 2)": 80,
+      "group:(1, 1, 1, 2, 1)": 74,
+      "solve:(1, 1, 1, 2, 1)": 75,
+      "group:(1, 1, 2, 2, 1)": 11,
+      "solve:(1, 1, 2, 2, 1)": 11,
+      "solve:(1, 2, 2, 1, 2)": 40,
+      "group:(1, 2, 2, 1, 2)": 40,
+      "solve:(1, 2, 1, 1, 2)": 40,
+      "group:(1, 2, 1, 1, 2)": 40,
+      "group:(1, 2, 1, 1, 1)": 71,
+      "solve:(1, 2, 1, 1, 1)": 71,
+      "group:(1, 2, 2, 1, 1)": 72,
+      "solve:(1, 2, 2, 1, 1)": 71,
+      "solve:(1, 2, 1, 2, 2)": 40,
+      "group:(1, 2, 1, 2, 2)": 40,
+      "group:(1, 2, 1, 2, 1)": 72,
+      "solve:(1, 2, 1, 2, 1)": 71,
+      "group:(1, 2, 2, 2, 1)": 10,
+      "solve:(1, 2, 2, 2, 1)": 2
+    },
+    "cache_misses_by_residency": {
+      "solve:n=3,external=0,local_outputs=0,owned=0": 8,
+      "group:n=3,external=0,local_outputs=0,owned=0": 8,
+      "solve:n=3,external=1,local_outputs=1,owned=0": 4,
+      "group:n=3,external=1,local_outputs=1,owned=0": 4,
+      "solve:n=3,external=6,local_outputs=1,owned=0": 3,
+      "group:n=3,external=6,local_outputs=1,owned=0": 2,
+      "group:n=1,external=5,local_outputs=1,owned=0": 6,
+      "group:n=2,external=3,local_outputs=1,owned=0": 39,
+      "solve:n=2,external=3,local_outputs=1,owned=0": 39,
+      "group:n=1,external=2,local_outputs=1,owned=0": 41,
+      "group:n=1,external=3,local_outputs=1,owned=0": 39,
+      "group:n=1,external=1,local_outputs=0,owned=1": 32,
+      "group:n=1,external=4,local_outputs=0,owned=1": 6,
+      "group:n=2,external=2,local_outputs=1,owned=0": 31,
+      "solve:n=2,external=2,local_outputs=1,owned=0": 31,
+      "group:n=1,external=1,local_outputs=1,owned=0": 23,
+      "group:n=1,external=0,local_outputs=0,owned=1": 16,
+      "group:n=2,external=5,local_outputs=1,owned=0": 6,
+      "solve:n=2,external=5,local_outputs=1,owned=0": 6,
+      "group:n=2,external=4,local_outputs=0,owned=1": 6,
+      "solve:n=2,external=4,local_outputs=0,owned=1": 6,
+      "solve:n=1,external=5,local_outputs=1,owned=0": 6,
+      "solve:n=1,external=4,local_outputs=0,owned=1": 6,
+      "solve:n=1,external=3,local_outputs=1,owned=0": 41,
+      "solve:n=1,external=2,local_outputs=1,owned=0": 38,
+      "solve:n=1,external=1,local_outputs=0,owned=1": 31,
+      "solve:n=1,external=1,local_outputs=1,owned=0": 22,
+      "solve:n=1,external=0,local_outputs=0,owned=1": 14,
+      "solve:n=3,external=5,local_outputs=1,owned=0": 15,
+      "group:n=3,external=5,local_outputs=1,owned=0": 11,
+      "group:n=2,external=1,local_outputs=1,owned=0": 12,
+      "solve:n=2,external=1,local_outputs=1,owned=0": 11,
+      "group:n=1,external=4,local_outputs=1,owned=0": 24,
+      "group:n=1,external=3,local_outputs=0,owned=1": 24,
+      "group:n=2,external=4,local_outputs=1,owned=0": 24,
+      "solve:n=2,external=4,local_outputs=1,owned=0": 24,
+      "group:n=2,external=3,local_outputs=0,owned=1": 24,
+      "solve:n=2,external=3,local_outputs=0,owned=1": 24,
+      "solve:n=1,external=4,local_outputs=1,owned=0": 24,
+      "solve:n=1,external=3,local_outputs=0,owned=1": 24,
+      "solve:n=3,external=4,local_outputs=1,owned=0": 30,
+      "group:n=3,external=4,local_outputs=1,owned=0": 24,
+      "group:n=1,external=2,local_outputs=0,owned=1": 36,
+      "group:n=2,external=2,local_outputs=0,owned=1": 36,
+      "solve:n=2,external=2,local_outputs=0,owned=1": 36,
+      "solve:n=1,external=2,local_outputs=0,owned=1": 36,
+      "solve:n=3,external=3,local_outputs=1,owned=0": 30,
+      "group:n=3,external=3,local_outputs=1,owned=0": 26,
+      "group:n=2,external=1,local_outputs=0,owned=1": 24,
+      "solve:n=2,external=1,local_outputs=0,owned=1": 24,
+      "solve:n=3,external=2,local_outputs=1,owned=0": 15,
+      "group:n=3,external=2,local_outputs=1,owned=0": 14,
+      "group:n=2,external=0,local_outputs=0,owned=1": 8,
+      "solve:n=2,external=0,local_outputs=0,owned=1": 7,
+      "solve:n=3,external=5,local_outputs=0,owned=0": 6,
+      "group:n=3,external=5,local_outputs=0,owned=0": 6,
+      "group:n=2,external=2,local_outputs=0,owned=0": 6,
+      "group:n=2,external=1,local_outputs=0,owned=0": 14,
+      "group:n=1,external=2,local_outputs=0,owned=0": 10,
+      "solve:n=1,external=2,local_outputs=0,owned=0": 12,
+      "group:n=1,external=1,local_outputs=0,owned=0": 26,
+      "solve:n=1,external=1,local_outputs=0,owned=0": 27,
+      "solve:n=2,external=2,local_outputs=0,owned=0": 6,
+      "solve:n=2,external=1,local_outputs=0,owned=0": 13,
+      "solve:n=3,external=4,local_outputs=0,owned=0": 30,
+      "group:n=3,external=4,local_outputs=0,owned=0": 30,
+      "group:n=2,external=0,local_outputs=0,owned=0": 8,
+      "group:n=1,external=0,local_outputs=0,owned=0": 15,
+      "solve:n=1,external=0,local_outputs=0,owned=0": 15,
+      "solve:n=2,external=0,local_outputs=0,owned=0": 7,
+      "solve:n=3,external=3,local_outputs=0,owned=0": 60,
+      "group:n=3,external=3,local_outputs=0,owned=0": 60,
+      "solve:n=3,external=2,local_outputs=0,owned=0": 60,
+      "group:n=3,external=2,local_outputs=0,owned=0": 60,
+      "solve:n=3,external=1,local_outputs=0,owned=0": 30,
+      "group:n=3,external=1,local_outputs=0,owned=0": 30
+    },
+    "renamed_calls": 0,
+    "rename_nodes": 0,
+    "independent_splits": 0,
+    "solve_cache": {
+      "hits": 3150,
+      "misses": 821,
+      "maxsize": null,
+      "currsize": 821
+    },
+    "group_cache": {
+      "hits": 6664,
+      "misses": 811,
+      "maxsize": null,
+      "currsize": 811
+    },
+    "cut_metadata_cache": {
+      "hits": 0,
+      "misses": 0,
+      "maxsize": null,
+      "currsize": 0
+    },
+    "span_classes": null,
+    "seconds": 0.18627887405455112
+  },
+  "c2_stats": {},
+  "status": "complete",
+  "phase": "finished",
+  "n_ops": 3,
+  "scalar_steps": 32,
+  "extent_cap": 2,
+  "source_sha256": {
+    "dnn_benchmarks/frontends.py": "5fa33267f29e28fd2ff525886f1947648b8fa49f876c14f531282255b03cc561",
+    "dnn_benchmarks/replay.py": "455bb80bb3495b98f626bbfd2b2107ceaf99154206b7838b1b4043ffd904d357",
+    "dnn_benchmarks/c2.py": "b5f0cb5f504cc670431948e6f2904a67b09810f6b235419664821ae14a47e7b0",
+    "dnn_benchmarks/run_islands.py": "972aa8b0f986bd84942e51e96903a09ce3bbe6f09188d8d083da63b6b6a4d4a3",
+    "index_coupling/graph/curve.py": "a0af2842f6b5fbb5028c0affce710f194ad28a8df0002702bb4939b1f9045e49",
+    "index_coupling/graph/remainder.py": "abb659434ccbf677161e556e56fc55186c69eef6638f20b8a9393d4330ffa181",
+    "index_coupling/graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "index_coupling/graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "index_coupling/simulate_nest.py": "7e9983a34b2d4caa249a1c5f435cae7271f20ed5dc599d8fe748f4b1753eeff4"
+  },
+  "python": "3.10.12",
+  "kernel_setup_seconds": 3.5599805414676666e-07,
+  "search_seconds": 0.1862844831775874,
+  "points": [
+    [
+      6,
+      52
+    ],
+    [
+      7,
+      44
+    ],
+    [
+      9,
+      40
+    ],
+    [
+      10,
+      38
+    ],
+    [
+      12,
+      36
+    ],
+    [
+      13,
+      34
+    ],
+    [
+      14,
+      28
+    ]
+  ],
+  "byte_points": [
+    [
+      24,
+      208
+    ],
+    [
+      28,
+      176
+    ],
+    [
+      36,
+      160
+    ],
+    [
+      40,
+      152
+    ],
+    [
+      48,
+      144
+    ],
+    [
+      52,
+      136
+    ],
+    [
+      56,
+      112
+    ]
+  ],
+  "witnesses": [
+    [
+      6,
+      52,
+      [
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ],
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "n_layer1_0_relu_1"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.bn2.bias",
+            "p_layer1.0.bn2.running_mean",
+            "p_layer1.0.bn2.running_var",
+            "p_layer1.0.bn2.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2"
+            ],
+            [
+              "layer1_0_relu_1"
+            ]
+          ],
+          "kept",
+          [
+            "n_layer1_0_bn2"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_layer1_0_relu_1"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.conv3.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "n_layer1_0_conv3"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      7,
+      44,
+      [
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2"
+            ],
+            [
+              "layer1_0_relu_1",
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "n_layer1_0_bn2"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.bn2.bias",
+            "p_layer1.0.bn2.running_mean",
+            "p_layer1.0.bn2.running_var",
+            "p_layer1.0.bn2.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_relu_1",
+            "layer1_0_conv3_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.conv3.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_relu_1",
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_relu_1",
+            "layer1_0_conv3_matmul"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_relu_1"
+            ],
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [
+            "n_layer1_0_relu_1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_relu_1"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      9,
+      40,
+      [
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1",
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1",
+            "layer1_0_conv3_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_layer1.0.bn2.bias",
+            "p_layer1.0.bn2.running_mean",
+            "p_layer1.0.bn2.running_var",
+            "p_layer1.0.bn2.weight",
+            "p_layer1.0.conv3.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2"
+            ],
+            [
+              "layer1_0_relu_1"
+            ],
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [
+            "n_layer1_0_bn2",
+            "n_layer1_0_relu_1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.bn2.bias",
+            "p_layer1.0.bn2.running_mean",
+            "p_layer1.0.bn2.running_var",
+            "p_layer1.0.bn2.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "n_layer1_0_conv3"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      10,
+      38,
+      [
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1",
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1",
+            "layer1_0_conv3_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.bn2.bias"
+          ],
+          "refetched",
+          [
+            "p_layer1.0.bn2.running_mean",
+            "p_layer1.0.bn2.running_var",
+            "p_layer1.0.bn2.weight",
+            "p_layer1.0.conv3.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2"
+            ],
+            [
+              "layer1_0_relu_1"
+            ],
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [
+            "n_layer1_0_bn2",
+            "n_layer1_0_relu_1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.bn2.running_mean",
+            "p_layer1.0.bn2.running_var",
+            "p_layer1.0.bn2.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "n_layer1_0_conv3"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      12,
+      36,
+      [
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1",
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1",
+            "layer1_0_conv3_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.bn2.bias",
+            "p_layer1.0.bn2.running_mean"
+          ],
+          "refetched",
+          [
+            "p_layer1.0.bn2.running_var",
+            "p_layer1.0.bn2.weight",
+            "p_layer1.0.conv3.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ],
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [
+            "n_layer1_0_relu_1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.bn2.running_var",
+            "p_layer1.0.bn2.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "hold",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "n_layer1_0_conv3"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      13,
+      34,
+      [
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1",
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1",
+            "layer1_0_conv3_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.bn2.bias",
+            "p_layer1.0.bn2.running_mean",
+            "p_layer1.0.bn2.running_var"
+          ],
+          "refetched",
+          [
+            "p_layer1.0.bn2.weight",
+            "p_layer1.0.conv3.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ],
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [
+            "n_layer1_0_relu_1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.bn2.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "hold",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [
+            "n_layer1_0_conv3"
+          ],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      14,
+      28,
+      [
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ],
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [
+            "n_layer1_0_relu_1"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.bn2.bias",
+            "p_layer1.0.bn2.running_mean",
+            "p_layer1.0.bn2.running_var",
+            "p_layer1.0.bn2.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_bn2",
+              "layer1_0_relu_1"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "hold",
+          [
+            "layer1_0_bn2",
+            "layer1_0_relu_1"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r3",
+          "tile 1 x2",
+          "kept",
+          [
+            "p_layer1.0.conv3.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "layer1_0_conv3_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "layer1_0_conv3_matmul"
+          ],
+          "r2",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ]
+  ],
+  "replays": [
+    {
+      "expected": [
+        6,
+        52
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 6,
+        "traffic": 52,
+        "reads": {
+          "n_layer1_0_conv2": 8,
+          "p_layer1.0.bn2.running_mean": 2,
+          "p_layer1.0.bn2.running_var": 2,
+          "p_layer1.0.bn2.weight": 2,
+          "p_layer1.0.bn2.bias": 2,
+          "n_layer1_0_relu_1": 16,
+          "p_layer1.0.conv3.weight": 4
+        },
+        "writes": {
+          "n_layer1_0_relu_1": 8,
+          "n_layer1_0_conv3": 8
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 8,
+        "peak_by_tensor": {
+          "n_layer1_0_bn2": 1,
+          "n_layer1_0_conv2": 1,
+          "p_layer1.0.bn2.bias": 1,
+          "p_layer1.0.bn2.running_mean": 1,
+          "p_layer1.0.bn2.running_var": 1,
+          "p_layer1.0.bn2.weight": 1
+        }
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        7,
+        44
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 7,
+        "traffic": 44,
+        "reads": {
+          "n_layer1_0_conv2": 8,
+          "p_layer1.0.bn2.running_mean": 2,
+          "p_layer1.0.bn2.running_var": 2,
+          "p_layer1.0.bn2.weight": 2,
+          "p_layer1.0.bn2.bias": 2,
+          "n_layer1_0_bn2": 8,
+          "p_layer1.0.conv3.weight": 4
+        },
+        "writes": {
+          "n_layer1_0_bn2": 8,
+          "n_layer1_0_conv3": 8
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 8,
+        "peak_by_tensor": {
+          "n_layer1_0_bn2": 1,
+          "n_layer1_0_relu_1": 2,
+          "p_layer1.0.conv3.weight": 4
+        }
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        9,
+        40
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 9,
+        "traffic": 40,
+        "reads": {
+          "n_layer1_0_conv2": 8,
+          "p_layer1.0.bn2.running_mean": 4,
+          "p_layer1.0.bn2.running_var": 4,
+          "p_layer1.0.bn2.weight": 4,
+          "p_layer1.0.bn2.bias": 4,
+          "p_layer1.0.conv3.weight": 8
+        },
+        "writes": {
+          "n_layer1_0_conv3": 8
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 8,
+        "peak_by_tensor": {
+          "n_layer1_0_bn2": 4,
+          "n_layer1_0_conv2": 1,
+          "p_layer1.0.bn2.bias": 1,
+          "p_layer1.0.bn2.running_mean": 1,
+          "p_layer1.0.bn2.running_var": 1,
+          "p_layer1.0.bn2.weight": 1
+        }
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        10,
+        38
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 10,
+        "traffic": 38,
+        "reads": {
+          "n_layer1_0_conv2": 8,
+          "p_layer1.0.bn2.running_mean": 4,
+          "p_layer1.0.bn2.running_var": 4,
+          "p_layer1.0.bn2.weight": 4,
+          "p_layer1.0.bn2.bias": 2,
+          "p_layer1.0.conv3.weight": 8
+        },
+        "writes": {
+          "n_layer1_0_conv3": 8
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 8,
+        "peak_by_tensor": {
+          "n_layer1_0_bn2": 4,
+          "n_layer1_0_conv2": 1,
+          "p_layer1.0.bn2.bias": 2,
+          "p_layer1.0.bn2.running_mean": 1,
+          "p_layer1.0.bn2.running_var": 1,
+          "p_layer1.0.bn2.weight": 1
+        }
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        12,
+        36
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 12,
+        "traffic": 36,
+        "reads": {
+          "n_layer1_0_conv2": 8,
+          "p_layer1.0.bn2.running_mean": 2,
+          "p_layer1.0.bn2.running_var": 4,
+          "p_layer1.0.bn2.weight": 4,
+          "p_layer1.0.bn2.bias": 2,
+          "p_layer1.0.conv3.weight": 8
+        },
+        "writes": {
+          "n_layer1_0_conv3": 8
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 8,
+        "peak_by_tensor": {
+          "n_layer1_0_bn2": 1,
+          "n_layer1_0_conv2": 1,
+          "n_layer1_0_relu_1": 4,
+          "p_layer1.0.bn2.bias": 2,
+          "p_layer1.0.bn2.running_mean": 2,
+          "p_layer1.0.bn2.running_var": 1,
+          "p_layer1.0.bn2.weight": 1
+        }
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        13,
+        34
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 13,
+        "traffic": 34,
+        "reads": {
+          "n_layer1_0_conv2": 8,
+          "p_layer1.0.bn2.running_mean": 2,
+          "p_layer1.0.bn2.running_var": 2,
+          "p_layer1.0.bn2.weight": 4,
+          "p_layer1.0.bn2.bias": 2,
+          "p_layer1.0.conv3.weight": 8
+        },
+        "writes": {
+          "n_layer1_0_conv3": 8
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 8,
+        "peak_by_tensor": {
+          "n_layer1_0_bn2": 1,
+          "n_layer1_0_conv2": 1,
+          "n_layer1_0_relu_1": 4,
+          "p_layer1.0.bn2.bias": 2,
+          "p_layer1.0.bn2.running_mean": 2,
+          "p_layer1.0.bn2.running_var": 2,
+          "p_layer1.0.bn2.weight": 1
+        }
+      },
+      "exact": true
+    },
+    {
+      "expected": [
+        14,
+        28
+      ],
+      "actual": {
+        "valid": true,
+        "peak": 14,
+        "traffic": 28,
+        "reads": {
+          "n_layer1_0_conv2": 8,
+          "p_layer1.0.bn2.running_mean": 2,
+          "p_layer1.0.bn2.running_var": 2,
+          "p_layer1.0.bn2.weight": 2,
+          "p_layer1.0.bn2.bias": 2,
+          "p_layer1.0.conv3.weight": 4
+        },
+        "writes": {
+          "n_layer1_0_conv3": 8
+        },
+        "partial_reads": {},
+        "partial_writes": {},
+        "steps": 32,
+        "outputs_checked": 8,
+        "peak_by_tensor": {
+          "n_layer1_0_bn2": 1,
+          "n_layer1_0_conv2": 1,
+          "n_layer1_0_relu_1": 8,
+          "p_layer1.0.bn2.bias": 1,
+          "p_layer1.0.bn2.running_mean": 1,
+          "p_layer1.0.bn2.running_var": 1,
+          "p_layer1.0.bn2.weight": 1
+        }
+      },
+      "exact": true
+    }
+  ],
+  "seconds": 0.19911473500542343,
+  "peak_rss_bytes": 20447232
+}

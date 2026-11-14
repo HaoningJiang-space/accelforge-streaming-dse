@@ -1,0 +1,44 @@
+{
+  "schema": "gemm-evaluation-request.v1",
+  "operator_id": "test.aligned_n",
+  "mapping_id": "aligned_n",
+  "workload": {
+    "kind": "plain_gemm",
+    "shape": [
+      16,
+      256,
+      16
+    ],
+    "dtype": "float32",
+    "layout": "row_major_contiguous"
+  },
+  "mapping": {
+    "mode": "external",
+    "loop_order": [
+      "M",
+      "N",
+      "K"
+    ],
+    "strict": true,
+    "tile": [
+      16,
+      256,
+      16
+    ],
+    "subtile": [
+      16,
+      128,
+      16
+    ]
+  },
+  "hardware": {
+    "lanes": 128,
+    "cores": 1,
+    "systolic_arrays_per_core": 2,
+    "sram_bytes_per_lane": 2048,
+    "core_freq_mhz": 940,
+    "dram_profile": "HBM2_TPUv3",
+    "dram_channels": 16,
+    "serial_tiles": true
+  }
+}

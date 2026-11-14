@@ -1,0 +1,78 @@
+{
+  "scope": "one direct float32 GEMM; fixed nonaliasing addresses; no cache; lane-aligned split geometry",
+  "runtime_attribute_count": 1,
+  "selected_runtime_attribute": "result/compiler/344z7nmva3k/runtime_0000/attribute/0",
+  "shape": [
+    128,
+    768,
+    3072
+  ],
+  "mode": "external",
+  "requested_tile": [
+    16,
+    128,
+    16,
+    16,
+    128,
+    16
+  ],
+  "numerical_equal": true,
+  "max_abs_error": 0.0001678466796875,
+  "request_bytes": 32,
+  "emitted_dma": {
+    "read": 18432,
+    "write": 48
+  },
+  "observed_dma": {
+    "read": 18432,
+    "write": 48
+  },
+  "tag_reused_loads": 0,
+  "useful_cells": {
+    "arg0": 2359296,
+    "arg1": 18874368,
+    "arg2": 98304
+  },
+  "useful_bytes": 85327872,
+  "expected_transactions": {
+    "read": 2654208,
+    "write": 12288
+  },
+  "observed_transactions": {
+    "read": 2654208,
+    "write": 12288
+  },
+  "transaction_bytes": {
+    "read": 84934656,
+    "write": 393216
+  },
+  "output_written_once": true,
+  "transactions_match": true,
+  "instruction_counts_match": true,
+  "expected_address_stream_sha256": "a6f97bbaf2f8f35c4bbde5ab6263b7199999eba2dc419c5168a3959278083c7c",
+  "total_cycles": 1248930,
+  "statistics": {
+    "observed_transactions": {
+      "read": 2654208,
+      "write": 12288
+    },
+    "observed_dma": {
+      "read": 18432,
+      "write": 48
+    },
+    "total_cycles": 1248930,
+    "statistics_scope": "final cumulative DRAM counters",
+    "ignored_interval_records": 124,
+    "final_statistics_line": 1900,
+    "completion_line": 1913
+  },
+  "float_array_cells_per_lane": {
+    "X_spad": 16,
+    "W_spad": 16,
+    "Y_spad": 16
+  },
+  "float_array_reserved_bytes": 24576,
+  "reservation_caveat": "Static three-buffer reservation, not full peak including tags and overlap buffers",
+  "timing_accepted": true,
+  "timing_acceptance_scope": "Internal repaired-backend pilot consistency only; no hardware calibration or whole-DNN claim"
+}

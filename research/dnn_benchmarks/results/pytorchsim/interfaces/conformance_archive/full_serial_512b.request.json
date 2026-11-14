@@ -1,0 +1,38 @@
+{
+  "schema": "gemm-evaluation-request.v1",
+  "operator_id": "test.full_serial_512b",
+  "mapping_id": "full_serial_512b",
+  "workload": {
+    "kind": "plain_gemm",
+    "shape": [
+      64,
+      128,
+      32
+    ],
+    "dtype": "float32",
+    "layout": "row_major_contiguous"
+  },
+  "mapping": {
+    "mode": "external",
+    "loop_order": [
+      "M",
+      "N",
+      "K"
+    ],
+    "strict": true,
+    "tile": [
+      64,
+      128,
+      32
+    ],
+    "subtile": [
+      64,
+      128,
+      32
+    ]
+  },
+  "hardware": {
+    "sram_bytes_per_lane": 512,
+    "serial_tiles": true
+  }
+}

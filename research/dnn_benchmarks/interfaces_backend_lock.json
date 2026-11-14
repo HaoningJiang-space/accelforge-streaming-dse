@@ -1,0 +1,56 @@
+{
+  "schema": "pytorchsim-pilot-lock.v1",
+  "source_url": "https://github.com/PSAL-POSTECH/PyTorchSim.git",
+  "source_commit": "509f42554202edb29cf8d31ddf619776f465e717",
+  "submodule_path": "research/dnn_benchmarks/vendor/PyTorchSim",
+  "image_tag": "ghcr.io/psal-postech/torchsim-ci:v1.1.0",
+  "image_index_digest": "sha256:81c7c0bc4429bcb353fef615dfe4413393e99f199a4924601693577bdcf11c35",
+  "image_linux_amd64_manifest": "sha256:92ad4cf36ca22dae4852dae8fdc3c997e82144b0f41a36e741da14c688defd24",
+  "umoci_version": "0.6.0",
+  "umoci_amd64_sha256": "b51c267ec394499e42c6fde47f240b7b7dba57ea49df0b5acd304378b82a3b71",
+  "runtime_source_matches_submodule": false,
+  "runtime_binary_hashes": {
+    "workspace/PyTorchSim/TOGSim/build/bin/Simulator": "5a1db32be6b3f444f5415ab591f0089286b1b8f5912100c30758eac171e33a0b",
+    "workspace/PyTorchSim/TOGSim/build/lib/libramulator.so": "7710ed0e4e977bd2e43ddafa0925f8dcf0969de28d1d70189b164eca031aca03",
+    "riscv-llvm/bin/mlir-opt": "a0dd82e851fce71a2266cbf9759b061d748d431c5016b7558b5c70289c9c2009",
+    "riscv-llvm/bin/llc": "3b78d4864ece612c09cb46162a9f5bf672906de1980065c69b7149f97cc18276",
+    "gem5/release/gem5.opt": "f641193c9c3255d0cb7c7df092ba43bdef700816ff61854a25332f39a847eca9",
+    "release/bin/spike": "b294dc3c984cb5d34fff86bb2465dd1e5e2d4aa4d5635234097b2651e4711101"
+  },
+  "hardware_config": "tutorial/session1/togsim_configs/togsim_config.yml (overrides recorded per run)",
+  "status": "interface backend build contract; validation recorded separately",
+  "runtime_git_commit": "f595cef7a367c57f4da9f1ba36d994c1f42242bf",
+  "runtime_code_matches_submodule_except": [
+    "README.md",
+    "tracked patch series"
+  ],
+  "runtime_source_audit": "results/pytorchsim/runtime_audit.json",
+  "runtime_torch_version": "2.8.0+cu126",
+  "audited_source_sha256": {
+    "AsmParser/tog_generator.py": "88e18ebe8a9346d804160c3400c1ddf98481ea7549efe9d7f1d30d793997ea07",
+    "PyTorchSimFrontend/extension_codecache.py": "9fd50c5cebbc0503a0ae9b8a40b3b0e5c397462dba61e165a7bd30c463335816",
+    "PyTorchSimFrontend/extension_config.py": "09966a1108428208515f9cdef09e379479a8b2ea9a595e86ddac245030ee5168",
+    "PyTorchSimFrontend/interface_manifest.py": "6b3cc3a905bc33d47fdbebadef8c0d126ae1e89639d95ae83e36d4203212b4d3",
+    "PyTorchSimFrontend/mlir/mlir_codegen_backend.py": "d73e030ac3415b4cf3fbfc36d625bdb4b931956569469a165d9fd7ae4f433485",
+    "PyTorchSimFrontend/mlir/mlir_common.py": "c4d3397b2ad05ebc1b24d53ea448d8a0400b37a18cb68db71c355424f8b6ffa4",
+    "PyTorchSimFrontend/mlir/mlir_gemm_template.py": "8e738d318269a38d28587014153928a7ec03ea751fecc93604041e334d9dde1f",
+    "PyTorchSimFrontend/mlir/mlir_template.py": "d7437eb388cb24a645c14658eeea7569f1eed9a6aaefdf8744789b9fcfbbb08d",
+    "Simulator/simulator.py": "583251ac442cef70480a420eb574868663c0cba2b7369d185e913291cd0776a2",
+    "TOGSim/include/Core.h": "30eec32730d62c5f2ddf2af3b1d882df2ad68be32f0dd887c538d751d8af4199",
+    "TOGSim/include/Dram.h": "4baa3e96d70063b2262e11781e3d5bb69f2f8da3cd2dae23e5e226bd7242a5c3",
+    "TOGSim/include/Instruction.h": "70bed7922deddbcb106226fba75c90c71cf8f9274b625c62411623b74fca71f0",
+    "TOGSim/include/Simulator.h": "d2c3fc16f11656a2498f005546b4852d7e0b96b2cbdd8aa345672f9c6c5fdaae",
+    "TOGSim/src/Core.cc": "f77983208463ae609be4f7c2aa1d2456c16541c2ec86088b99b9674ce68a8a34",
+    "TOGSim/src/Dram.cc": "71c840a36574eee20c4c81f1fe547160a06c1a66071c939a7ada6f25d95087c8",
+    "TOGSim/src/Instruction.cc": "7269e15e86da16821b99a09e1133818f48ab066b62c43d1777521f32f40307eb",
+    "TOGSim/src/Simulator.cc": "5d4af1a493567e77f5da57f65e00db2fc4039b608ffe7e49b77c9aaace68403a",
+    "TOGSim/src/TileGraphParser.cc": "8dd2d5df3a3c118a638ba94b0876d58c7662cdcdd9f2571f5dbb396941f2b9eb",
+    "TOGSim/src/main.cc": "46066a3bf5b9f0026bf69c4ccb06d47e01aff7df89a5bd6486fd458b35c57e84"
+  },
+  "timing_accepted": false,
+  "patches": {
+    "patches/0001-togsim-byte-addresses.patch": "3175309fdc23c99e82857ddf7a30b541cc46e490cc9772c85d5fc1e9ec380bcc",
+    "patches/0002-external-gemm-contract.patch": "0e693a9f598d3135920b1bbf46dec99059eb78087750408403feb00e591a7f4b",
+    "patches/0003-evaluation-interfaces.patch": "55a2ff40f7af28addc28c02d81b9ba04ce53eca5c2ba911dfd7226b7e70dae89"
+  }
+}

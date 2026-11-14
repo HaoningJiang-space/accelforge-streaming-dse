@@ -1,0 +1,68 @@
+{
+  "scope": "unit-trip inner loops; one plain float32 GEMM invocation",
+  "shape": [
+    64,
+    128,
+    32
+  ],
+  "numerical_equal": true,
+  "request_bytes": 32,
+  "dma_visits": {
+    "read": 128,
+    "write": 16
+  },
+  "useful_cells": {
+    "arg0": 8192,
+    "arg1": 16384,
+    "arg2": 8192
+  },
+  "useful_bytes": 131072,
+  "output_elements_written_once": true,
+  "correct_byte_address_transactions": {
+    "read": 3072,
+    "write": 1024
+  },
+  "ported_backend_transactions": {
+    "read": 3456,
+    "write": 1216
+  },
+  "observed_dram_transactions": {
+    "read": 3456,
+    "write": 1216
+  },
+  "ported_expression_matches_logged_counts": true,
+  "addressed_cells_differing_from_byte_contract": 32768,
+  "examples": [
+    {
+      "tensor": "arg0",
+      "element": 0,
+      "expected": 131004689981440,
+      "backend_expression": 16375586247680
+    },
+    {
+      "tensor": "arg0",
+      "element": 1,
+      "expected": 131004689981444,
+      "backend_expression": 16375586247684
+    },
+    {
+      "tensor": "arg0",
+      "element": 2,
+      "expected": 131004689981448,
+      "backend_expression": 16375586247688
+    }
+  ],
+  "generated_float_array_cells_per_lane": {
+    "X_spad": 16,
+    "W_spad": 8,
+    "Y_spad": 16
+  },
+  "lanes": 128,
+  "three_float_arrays_reserved_bytes": 20480,
+  "allocation_caveat": "These static arrays are not a complete measurement of peak SRAM, tags or overlap buffers.",
+  "source_sha256": {
+    "TOGSim/src/Instruction.cc": "4174fc12e7d36aad7033959a322abbe1e7f7faaf23299f5b5b8c5b9945d9dab1",
+    "TOGSim/src/TileGraphParser.cc": "c6f79ae218249aa2ec498779e3f1fba952df62fbfc0d29377e9499806aadfc32"
+  },
+  "timing_accepted": false
+}

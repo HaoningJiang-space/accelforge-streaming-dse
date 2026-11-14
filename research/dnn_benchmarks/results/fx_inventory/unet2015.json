@@ -1,0 +1,5307 @@
+{
+  "schema": "dnn-fx-inventory.v1",
+  "model": "unet2015",
+  "input_shape": [
+    1,
+    1,
+    572,
+    572
+  ],
+  "output": {
+    "shape": [
+      1,
+      2,
+      388,
+      388
+    ],
+    "dtype": "torch.float32",
+    "stride": [
+      301088,
+      150544,
+      388,
+      1
+    ]
+  },
+  "parameters": 31030658,
+  "torch": "2.10.0",
+  "torchvision": "0.25.0",
+  "weights": "none",
+  "mode": "eval",
+  "source_file": "frontends.py",
+  "source_sha256": "5fa33267f29e28fd2ff525886f1947648b8fa49f876c14f531282255b03cc561",
+  "fx_nodes": 127,
+  "compute_nodes": 53,
+  "kinds": {
+    "boundary": 34,
+    "relu": 18,
+    "conv1x1": 1
+  },
+  "nodes": [
+    {
+      "name": "x",
+      "fx_op": "placeholder",
+      "target": "x",
+      "inputs": [],
+      "output": {
+        "shape": [
+          1,
+          1,
+          572,
+          572
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          327184,
+          327184,
+          572,
+          1
+        ]
+      },
+      "kind": "interface",
+      "reason": "FX interface or parameter",
+      "tensor_inputs": []
+    },
+    {
+      "name": "down_0_0",
+      "fx_op": "call_module",
+      "target": "down.0.0",
+      "inputs": [
+        "x"
+      ],
+      "output": {
+        "shape": [
+          1,
+          64,
+          570,
+          570
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          20793600,
+          324900,
+          570,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          64,
+          1,
+          3,
+          3
+        ],
+        "bias": [
+          64
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "x"
+      ]
+    },
+    {
+      "name": "down_0_1",
+      "fx_op": "call_module",
+      "target": "down.0.1",
+      "inputs": [
+        "down_0_0"
+      ],
+      "output": {
+        "shape": [
+          1,
+          64,
+          570,
+          570
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          20793600,
+          324900,
+          570,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "down_0_0"
+      ]
+    },
+    {
+      "name": "down_0_2",
+      "fx_op": "call_module",
+      "target": "down.0.2",
+      "inputs": [
+        "down_0_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          64,
+          568,
+          568
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          20647936,
+          322624,
+          568,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          64,
+          64,
+          3,
+          3
+        ],
+        "bias": [
+          64
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "down_0_1"
+      ]
+    },
+    {
+      "name": "down_0_3",
+      "fx_op": "call_module",
+      "target": "down.0.3",
+      "inputs": [
+        "down_0_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          64,
+          568,
+          568
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          20647936,
+          322624,
+          568,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "down_0_2"
+      ]
+    },
+    {
+      "name": "pool",
+      "fx_op": "call_module",
+      "target": "pool",
+      "inputs": [
+        "down_0_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          64,
+          284,
+          284
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          5161984,
+          80656,
+          284,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "module_type": "MaxPool2d",
+      "parameters": {},
+      "tensor_inputs": [
+        "down_0_3"
+      ]
+    },
+    {
+      "name": "down_1_0",
+      "fx_op": "call_module",
+      "target": "down.1.0",
+      "inputs": [
+        "pool"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          282,
+          282
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          10179072,
+          79524,
+          282,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          128,
+          64,
+          3,
+          3
+        ],
+        "bias": [
+          128
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "pool"
+      ]
+    },
+    {
+      "name": "down_1_1",
+      "fx_op": "call_module",
+      "target": "down.1.1",
+      "inputs": [
+        "down_1_0"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          282,
+          282
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          10179072,
+          79524,
+          282,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "down_1_0"
+      ]
+    },
+    {
+      "name": "down_1_2",
+      "fx_op": "call_module",
+      "target": "down.1.2",
+      "inputs": [
+        "down_1_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          280,
+          280
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          10035200,
+          78400,
+          280,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          128,
+          128,
+          3,
+          3
+        ],
+        "bias": [
+          128
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "down_1_1"
+      ]
+    },
+    {
+      "name": "down_1_3",
+      "fx_op": "call_module",
+      "target": "down.1.3",
+      "inputs": [
+        "down_1_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          280,
+          280
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          10035200,
+          78400,
+          280,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "down_1_2"
+      ]
+    },
+    {
+      "name": "pool_1",
+      "fx_op": "call_module",
+      "target": "pool",
+      "inputs": [
+        "down_1_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          140,
+          140
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          2508800,
+          19600,
+          140,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "module_type": "MaxPool2d",
+      "parameters": {},
+      "tensor_inputs": [
+        "down_1_3"
+      ]
+    },
+    {
+      "name": "down_2_0",
+      "fx_op": "call_module",
+      "target": "down.2.0",
+      "inputs": [
+        "pool_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          138,
+          138
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          4875264,
+          19044,
+          138,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          256,
+          128,
+          3,
+          3
+        ],
+        "bias": [
+          256
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "pool_1"
+      ]
+    },
+    {
+      "name": "down_2_1",
+      "fx_op": "call_module",
+      "target": "down.2.1",
+      "inputs": [
+        "down_2_0"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          138,
+          138
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          4875264,
+          19044,
+          138,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "down_2_0"
+      ]
+    },
+    {
+      "name": "down_2_2",
+      "fx_op": "call_module",
+      "target": "down.2.2",
+      "inputs": [
+        "down_2_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          136,
+          136
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          4734976,
+          18496,
+          136,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          256,
+          256,
+          3,
+          3
+        ],
+        "bias": [
+          256
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "down_2_1"
+      ]
+    },
+    {
+      "name": "down_2_3",
+      "fx_op": "call_module",
+      "target": "down.2.3",
+      "inputs": [
+        "down_2_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          136,
+          136
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          4734976,
+          18496,
+          136,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "down_2_2"
+      ]
+    },
+    {
+      "name": "pool_2",
+      "fx_op": "call_module",
+      "target": "pool",
+      "inputs": [
+        "down_2_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          68,
+          68
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          1183744,
+          4624,
+          68,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "module_type": "MaxPool2d",
+      "parameters": {},
+      "tensor_inputs": [
+        "down_2_3"
+      ]
+    },
+    {
+      "name": "down_3_0",
+      "fx_op": "call_module",
+      "target": "down.3.0",
+      "inputs": [
+        "pool_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          66,
+          66
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          2230272,
+          4356,
+          66,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          512,
+          256,
+          3,
+          3
+        ],
+        "bias": [
+          512
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "pool_2"
+      ]
+    },
+    {
+      "name": "down_3_1",
+      "fx_op": "call_module",
+      "target": "down.3.1",
+      "inputs": [
+        "down_3_0"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          66,
+          66
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          2230272,
+          4356,
+          66,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "down_3_0"
+      ]
+    },
+    {
+      "name": "down_3_2",
+      "fx_op": "call_module",
+      "target": "down.3.2",
+      "inputs": [
+        "down_3_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          64,
+          64
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          2097152,
+          4096,
+          64,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          512,
+          512,
+          3,
+          3
+        ],
+        "bias": [
+          512
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "down_3_1"
+      ]
+    },
+    {
+      "name": "down_3_3",
+      "fx_op": "call_module",
+      "target": "down.3.3",
+      "inputs": [
+        "down_3_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          64,
+          64
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          2097152,
+          4096,
+          64,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "down_3_2"
+      ]
+    },
+    {
+      "name": "pool_3",
+      "fx_op": "call_module",
+      "target": "pool",
+      "inputs": [
+        "down_3_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          32,
+          32
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          524288,
+          1024,
+          32,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "module_type": "MaxPool2d",
+      "parameters": {},
+      "tensor_inputs": [
+        "down_3_3"
+      ]
+    },
+    {
+      "name": "down_4_0",
+      "fx_op": "call_module",
+      "target": "down.4.0",
+      "inputs": [
+        "pool_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          1024,
+          30,
+          30
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          921600,
+          900,
+          30,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          1024,
+          512,
+          3,
+          3
+        ],
+        "bias": [
+          1024
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "pool_3"
+      ]
+    },
+    {
+      "name": "down_4_1",
+      "fx_op": "call_module",
+      "target": "down.4.1",
+      "inputs": [
+        "down_4_0"
+      ],
+      "output": {
+        "shape": [
+          1,
+          1024,
+          30,
+          30
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          921600,
+          900,
+          30,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "down_4_0"
+      ]
+    },
+    {
+      "name": "down_4_2",
+      "fx_op": "call_module",
+      "target": "down.4.2",
+      "inputs": [
+        "down_4_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          1024,
+          28,
+          28
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          802816,
+          784,
+          28,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          1024,
+          1024,
+          3,
+          3
+        ],
+        "bias": [
+          1024
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "down_4_1"
+      ]
+    },
+    {
+      "name": "down_4_3",
+      "fx_op": "call_module",
+      "target": "down.4.3",
+      "inputs": [
+        "down_4_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          1024,
+          28,
+          28
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          802816,
+          784,
+          28,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "down_4_2"
+      ]
+    },
+    {
+      "name": "up_0",
+      "fx_op": "call_module",
+      "target": "up.0",
+      "inputs": [
+        "down_4_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          56,
+          56
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          1605632,
+          3136,
+          56,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "module_type": "ConvTranspose2d",
+      "parameters": {
+        "weight": [
+          1024,
+          512,
+          2,
+          2
+        ],
+        "bias": [
+          512
+        ]
+      },
+      "tensor_inputs": [
+        "down_4_3"
+      ]
+    },
+    {
+      "name": "getattr_1",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "down_3_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "down_3_3"
+      ]
+    },
+    {
+      "name": "getitem",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_1"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_2",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_0"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_0"
+      ]
+    },
+    {
+      "name": "getitem_1",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_2"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "sub",
+      "fx_op": "call_function",
+      "target": "<built-in function sub>",
+      "inputs": [
+        "getitem",
+        "getitem_1"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "floordiv",
+      "fx_op": "call_function",
+      "target": "<built-in function floordiv>",
+      "inputs": [
+        "sub"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_3",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "down_3_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "down_3_3"
+      ]
+    },
+    {
+      "name": "getitem_2",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_4",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_0"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_0"
+      ]
+    },
+    {
+      "name": "getitem_3",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_4"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "sub_1",
+      "fx_op": "call_function",
+      "target": "<built-in function sub>",
+      "inputs": [
+        "getitem_2",
+        "getitem_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "floordiv_1",
+      "fx_op": "call_function",
+      "target": "<built-in function floordiv>",
+      "inputs": [
+        "sub_1"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_5",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_0"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_0"
+      ]
+    },
+    {
+      "name": "getitem_4",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_5"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "add",
+      "fx_op": "call_function",
+      "target": "<built-in function add>",
+      "inputs": [
+        "floordiv",
+        "getitem_4"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_6",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_0"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_0"
+      ]
+    },
+    {
+      "name": "getitem_5",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_6"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "add_1",
+      "fx_op": "call_function",
+      "target": "<built-in function add>",
+      "inputs": [
+        "floordiv_1",
+        "getitem_5"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getitem_6",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "down_3_3",
+        "floordiv",
+        "add",
+        "floordiv_1",
+        "add_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          56,
+          56
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          2097152,
+          4096,
+          64,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "tensor_inputs": [
+        "down_3_3"
+      ]
+    },
+    {
+      "name": "cat",
+      "fx_op": "call_function",
+      "target": "<built-in method cat of type object at 0x11ad7f6d0>",
+      "inputs": [
+        "getitem_6",
+        "up_0"
+      ],
+      "output": {
+        "shape": [
+          1,
+          1024,
+          56,
+          56
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          3211264,
+          3136,
+          56,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "tensor_inputs": [
+        "getitem_6",
+        "up_0"
+      ]
+    },
+    {
+      "name": "merge_0_0",
+      "fx_op": "call_module",
+      "target": "merge.0.0",
+      "inputs": [
+        "cat"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          54,
+          54
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          1492992,
+          2916,
+          54,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          512,
+          1024,
+          3,
+          3
+        ],
+        "bias": [
+          512
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "cat"
+      ]
+    },
+    {
+      "name": "merge_0_1",
+      "fx_op": "call_module",
+      "target": "merge.0.1",
+      "inputs": [
+        "merge_0_0"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          54,
+          54
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          1492992,
+          2916,
+          54,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "merge_0_0"
+      ]
+    },
+    {
+      "name": "merge_0_2",
+      "fx_op": "call_module",
+      "target": "merge.0.2",
+      "inputs": [
+        "merge_0_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          52,
+          52
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          1384448,
+          2704,
+          52,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          512,
+          512,
+          3,
+          3
+        ],
+        "bias": [
+          512
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "merge_0_1"
+      ]
+    },
+    {
+      "name": "merge_0_3",
+      "fx_op": "call_module",
+      "target": "merge.0.3",
+      "inputs": [
+        "merge_0_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          52,
+          52
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          1384448,
+          2704,
+          52,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "merge_0_2"
+      ]
+    },
+    {
+      "name": "up_1",
+      "fx_op": "call_module",
+      "target": "up.1",
+      "inputs": [
+        "merge_0_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          104,
+          104
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          2768896,
+          10816,
+          104,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "module_type": "ConvTranspose2d",
+      "parameters": {
+        "weight": [
+          512,
+          256,
+          2,
+          2
+        ],
+        "bias": [
+          256
+        ]
+      },
+      "tensor_inputs": [
+        "merge_0_3"
+      ]
+    },
+    {
+      "name": "getattr_7",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "down_2_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "down_2_3"
+      ]
+    },
+    {
+      "name": "getitem_7",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_7"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_8",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_1"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_1"
+      ]
+    },
+    {
+      "name": "getitem_8",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_8"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "sub_2",
+      "fx_op": "call_function",
+      "target": "<built-in function sub>",
+      "inputs": [
+        "getitem_7",
+        "getitem_8"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "floordiv_2",
+      "fx_op": "call_function",
+      "target": "<built-in function floordiv>",
+      "inputs": [
+        "sub_2"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_9",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "down_2_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "down_2_3"
+      ]
+    },
+    {
+      "name": "getitem_9",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_9"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_10",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_1"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_1"
+      ]
+    },
+    {
+      "name": "getitem_10",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_10"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "sub_3",
+      "fx_op": "call_function",
+      "target": "<built-in function sub>",
+      "inputs": [
+        "getitem_9",
+        "getitem_10"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "floordiv_3",
+      "fx_op": "call_function",
+      "target": "<built-in function floordiv>",
+      "inputs": [
+        "sub_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_11",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_1"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_1"
+      ]
+    },
+    {
+      "name": "getitem_11",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_11"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "add_2",
+      "fx_op": "call_function",
+      "target": "<built-in function add>",
+      "inputs": [
+        "floordiv_2",
+        "getitem_11"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_12",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_1"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_1"
+      ]
+    },
+    {
+      "name": "getitem_12",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_12"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "add_3",
+      "fx_op": "call_function",
+      "target": "<built-in function add>",
+      "inputs": [
+        "floordiv_3",
+        "getitem_12"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getitem_13",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "down_2_3",
+        "floordiv_2",
+        "add_2",
+        "floordiv_3",
+        "add_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          104,
+          104
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          4734976,
+          18496,
+          136,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "tensor_inputs": [
+        "down_2_3"
+      ]
+    },
+    {
+      "name": "cat_1",
+      "fx_op": "call_function",
+      "target": "<built-in method cat of type object at 0x11ad7f6d0>",
+      "inputs": [
+        "getitem_13",
+        "up_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          512,
+          104,
+          104
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          5537792,
+          10816,
+          104,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "tensor_inputs": [
+        "getitem_13",
+        "up_1"
+      ]
+    },
+    {
+      "name": "merge_1_0",
+      "fx_op": "call_module",
+      "target": "merge.1.0",
+      "inputs": [
+        "cat_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          102,
+          102
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          2663424,
+          10404,
+          102,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          256,
+          512,
+          3,
+          3
+        ],
+        "bias": [
+          256
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "cat_1"
+      ]
+    },
+    {
+      "name": "merge_1_1",
+      "fx_op": "call_module",
+      "target": "merge.1.1",
+      "inputs": [
+        "merge_1_0"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          102,
+          102
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          2663424,
+          10404,
+          102,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "merge_1_0"
+      ]
+    },
+    {
+      "name": "merge_1_2",
+      "fx_op": "call_module",
+      "target": "merge.1.2",
+      "inputs": [
+        "merge_1_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          100,
+          100
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          2560000,
+          10000,
+          100,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          256,
+          256,
+          3,
+          3
+        ],
+        "bias": [
+          256
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "merge_1_1"
+      ]
+    },
+    {
+      "name": "merge_1_3",
+      "fx_op": "call_module",
+      "target": "merge.1.3",
+      "inputs": [
+        "merge_1_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          100,
+          100
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          2560000,
+          10000,
+          100,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "merge_1_2"
+      ]
+    },
+    {
+      "name": "up_2",
+      "fx_op": "call_module",
+      "target": "up.2",
+      "inputs": [
+        "merge_1_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          200,
+          200
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          5120000,
+          40000,
+          200,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "module_type": "ConvTranspose2d",
+      "parameters": {
+        "weight": [
+          256,
+          128,
+          2,
+          2
+        ],
+        "bias": [
+          128
+        ]
+      },
+      "tensor_inputs": [
+        "merge_1_3"
+      ]
+    },
+    {
+      "name": "getattr_13",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "down_1_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "down_1_3"
+      ]
+    },
+    {
+      "name": "getitem_14",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_13"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_14",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_2"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_2"
+      ]
+    },
+    {
+      "name": "getitem_15",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_14"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "sub_4",
+      "fx_op": "call_function",
+      "target": "<built-in function sub>",
+      "inputs": [
+        "getitem_14",
+        "getitem_15"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "floordiv_4",
+      "fx_op": "call_function",
+      "target": "<built-in function floordiv>",
+      "inputs": [
+        "sub_4"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_15",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "down_1_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "down_1_3"
+      ]
+    },
+    {
+      "name": "getitem_16",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_15"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_16",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_2"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_2"
+      ]
+    },
+    {
+      "name": "getitem_17",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_16"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "sub_5",
+      "fx_op": "call_function",
+      "target": "<built-in function sub>",
+      "inputs": [
+        "getitem_16",
+        "getitem_17"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "floordiv_5",
+      "fx_op": "call_function",
+      "target": "<built-in function floordiv>",
+      "inputs": [
+        "sub_5"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_17",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_2"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_2"
+      ]
+    },
+    {
+      "name": "getitem_18",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_17"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "add_4",
+      "fx_op": "call_function",
+      "target": "<built-in function add>",
+      "inputs": [
+        "floordiv_4",
+        "getitem_18"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_18",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_2"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_2"
+      ]
+    },
+    {
+      "name": "getitem_19",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_18"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "add_5",
+      "fx_op": "call_function",
+      "target": "<built-in function add>",
+      "inputs": [
+        "floordiv_5",
+        "getitem_19"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getitem_20",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "down_1_3",
+        "floordiv_4",
+        "add_4",
+        "floordiv_5",
+        "add_5"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          200,
+          200
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          10035200,
+          78400,
+          280,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "tensor_inputs": [
+        "down_1_3"
+      ]
+    },
+    {
+      "name": "cat_2",
+      "fx_op": "call_function",
+      "target": "<built-in method cat of type object at 0x11ad7f6d0>",
+      "inputs": [
+        "getitem_20",
+        "up_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          256,
+          200,
+          200
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          10240000,
+          40000,
+          200,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "tensor_inputs": [
+        "getitem_20",
+        "up_2"
+      ]
+    },
+    {
+      "name": "merge_2_0",
+      "fx_op": "call_module",
+      "target": "merge.2.0",
+      "inputs": [
+        "cat_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          198,
+          198
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          5018112,
+          39204,
+          198,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          128,
+          256,
+          3,
+          3
+        ],
+        "bias": [
+          128
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "cat_2"
+      ]
+    },
+    {
+      "name": "merge_2_1",
+      "fx_op": "call_module",
+      "target": "merge.2.1",
+      "inputs": [
+        "merge_2_0"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          198,
+          198
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          5018112,
+          39204,
+          198,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "merge_2_0"
+      ]
+    },
+    {
+      "name": "merge_2_2",
+      "fx_op": "call_module",
+      "target": "merge.2.2",
+      "inputs": [
+        "merge_2_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          196,
+          196
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          4917248,
+          38416,
+          196,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          128,
+          128,
+          3,
+          3
+        ],
+        "bias": [
+          128
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "merge_2_1"
+      ]
+    },
+    {
+      "name": "merge_2_3",
+      "fx_op": "call_module",
+      "target": "merge.2.3",
+      "inputs": [
+        "merge_2_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          196,
+          196
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          4917248,
+          38416,
+          196,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "merge_2_2"
+      ]
+    },
+    {
+      "name": "up_3",
+      "fx_op": "call_module",
+      "target": "up.3",
+      "inputs": [
+        "merge_2_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          64,
+          392,
+          392
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          9834496,
+          153664,
+          392,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "module_type": "ConvTranspose2d",
+      "parameters": {
+        "weight": [
+          128,
+          64,
+          2,
+          2
+        ],
+        "bias": [
+          64
+        ]
+      },
+      "tensor_inputs": [
+        "merge_2_3"
+      ]
+    },
+    {
+      "name": "getattr_19",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "down_0_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "down_0_3"
+      ]
+    },
+    {
+      "name": "getitem_21",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_19"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_20",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_3"
+      ]
+    },
+    {
+      "name": "getitem_22",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_20"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "sub_6",
+      "fx_op": "call_function",
+      "target": "<built-in function sub>",
+      "inputs": [
+        "getitem_21",
+        "getitem_22"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "floordiv_6",
+      "fx_op": "call_function",
+      "target": "<built-in function floordiv>",
+      "inputs": [
+        "sub_6"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_21",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "down_0_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "down_0_3"
+      ]
+    },
+    {
+      "name": "getitem_23",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_21"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_22",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_3"
+      ]
+    },
+    {
+      "name": "getitem_24",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_22"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "sub_7",
+      "fx_op": "call_function",
+      "target": "<built-in function sub>",
+      "inputs": [
+        "getitem_23",
+        "getitem_24"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "floordiv_7",
+      "fx_op": "call_function",
+      "target": "<built-in function floordiv>",
+      "inputs": [
+        "sub_7"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_23",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_3"
+      ]
+    },
+    {
+      "name": "getitem_25",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_23"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "add_6",
+      "fx_op": "call_function",
+      "target": "<built-in function add>",
+      "inputs": [
+        "floordiv_6",
+        "getitem_25"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getattr_24",
+      "fx_op": "call_function",
+      "target": "<built-in function getattr>",
+      "inputs": [
+        "up_3"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": [
+        "up_3"
+      ]
+    },
+    {
+      "name": "getitem_26",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "getattr_24"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "add_7",
+      "fx_op": "call_function",
+      "target": "<built-in function add>",
+      "inputs": [
+        "floordiv_7",
+        "getitem_26"
+      ],
+      "output": null,
+      "kind": "shape_only",
+      "reason": "no tensor result",
+      "tensor_inputs": []
+    },
+    {
+      "name": "getitem_27",
+      "fx_op": "call_function",
+      "target": "<built-in function getitem>",
+      "inputs": [
+        "down_0_3",
+        "floordiv_6",
+        "add_6",
+        "floordiv_7",
+        "add_7"
+      ],
+      "output": {
+        "shape": [
+          1,
+          64,
+          392,
+          392
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          20647936,
+          322624,
+          568,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "tensor_inputs": [
+        "down_0_3"
+      ]
+    },
+    {
+      "name": "cat_3",
+      "fx_op": "call_function",
+      "target": "<built-in method cat of type object at 0x11ad7f6d0>",
+      "inputs": [
+        "getitem_27",
+        "up_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          128,
+          392,
+          392
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          19668992,
+          153664,
+          392,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "operator has no exact lowering in this resource IR",
+      "tensor_inputs": [
+        "getitem_27",
+        "up_3"
+      ]
+    },
+    {
+      "name": "merge_3_0",
+      "fx_op": "call_module",
+      "target": "merge.3.0",
+      "inputs": [
+        "cat_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          64,
+          390,
+          390
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          9734400,
+          152100,
+          390,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          64,
+          128,
+          3,
+          3
+        ],
+        "bias": [
+          64
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "cat_3"
+      ]
+    },
+    {
+      "name": "merge_3_1",
+      "fx_op": "call_module",
+      "target": "merge.3.1",
+      "inputs": [
+        "merge_3_0"
+      ],
+      "output": {
+        "shape": [
+          1,
+          64,
+          390,
+          390
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          9734400,
+          152100,
+          390,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "merge_3_0"
+      ]
+    },
+    {
+      "name": "merge_3_2",
+      "fx_op": "call_module",
+      "target": "merge.3.2",
+      "inputs": [
+        "merge_3_1"
+      ],
+      "output": {
+        "shape": [
+          1,
+          64,
+          388,
+          388
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          9634816,
+          150544,
+          388,
+          1
+        ]
+      },
+      "kind": "boundary",
+      "reason": "affine spatial indexing / padding / groups not representable by rank projections",
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          64,
+          64,
+          3,
+          3
+        ],
+        "bias": [
+          64
+        ]
+      },
+      "conv": {
+        "kernel": [
+          3,
+          3
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "tensor_inputs": [
+        "merge_3_1"
+      ]
+    },
+    {
+      "name": "merge_3_3",
+      "fx_op": "call_module",
+      "target": "merge.3.3",
+      "inputs": [
+        "merge_3_2"
+      ],
+      "output": {
+        "shape": [
+          1,
+          64,
+          388,
+          388
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          9634816,
+          150544,
+          388,
+          1
+        ]
+      },
+      "kind": "relu",
+      "reason": null,
+      "module_type": "ReLU",
+      "parameters": {},
+      "inplace": false,
+      "approximate": "none",
+      "tensor_inputs": [
+        "merge_3_2"
+      ]
+    },
+    {
+      "name": "head",
+      "fx_op": "call_module",
+      "target": "head",
+      "inputs": [
+        "merge_3_3"
+      ],
+      "output": {
+        "shape": [
+          1,
+          2,
+          388,
+          388
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          301088,
+          150544,
+          388,
+          1
+        ]
+      },
+      "kind": "conv1x1",
+      "reason": null,
+      "module_type": "Conv2d",
+      "parameters": {
+        "weight": [
+          2,
+          64,
+          1,
+          1
+        ],
+        "bias": [
+          2
+        ]
+      },
+      "conv": {
+        "kernel": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "padding": [
+          0,
+          0
+        ],
+        "groups": 1,
+        "dilation": [
+          1,
+          1
+        ]
+      },
+      "bias": true,
+      "tensor_inputs": [
+        "merge_3_3"
+      ]
+    },
+    {
+      "name": "output",
+      "fx_op": "output",
+      "target": "output",
+      "inputs": [
+        "head"
+      ],
+      "output": {
+        "shape": [
+          1,
+          2,
+          388,
+          388
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          301088,
+          150544,
+          388,
+          1
+        ]
+      },
+      "kind": "interface",
+      "reason": "FX interface or parameter",
+      "tensor_inputs": [
+        "head"
+      ]
+    }
+  ],
+  "islands": [
+    [
+      "down_0_1"
+    ],
+    [
+      "down_0_3"
+    ],
+    [
+      "down_1_1"
+    ],
+    [
+      "down_1_3"
+    ],
+    [
+      "down_2_1"
+    ],
+    [
+      "down_2_3"
+    ],
+    [
+      "down_3_1"
+    ],
+    [
+      "down_3_3"
+    ],
+    [
+      "down_4_1"
+    ],
+    [
+      "down_4_3"
+    ],
+    [
+      "merge_0_1"
+    ],
+    [
+      "merge_0_3"
+    ],
+    [
+      "merge_1_1"
+    ],
+    [
+      "merge_1_3"
+    ],
+    [
+      "merge_2_1"
+    ],
+    [
+      "merge_2_3"
+    ],
+    [
+      "merge_3_1"
+    ],
+    [
+      "merge_3_3",
+      "head"
+    ]
+  ],
+  "windows": [
+    {
+      "requested_ops": 16,
+      "available": true,
+      "actual_ops": 16,
+      "supported_ops": 6,
+      "barriers": [
+        "down_0_0",
+        "down_0_2",
+        "pool",
+        "down_1_0",
+        "down_1_2",
+        "pool_1",
+        "down_2_0",
+        "down_2_2",
+        "pool_2",
+        "down_3_0"
+      ],
+      "whole_window_search_supported": false
+    },
+    {
+      "requested_ops": 32,
+      "available": true,
+      "actual_ops": 32,
+      "supported_ops": 12,
+      "barriers": [
+        "down_0_0",
+        "down_0_2",
+        "pool",
+        "down_1_0",
+        "down_1_2",
+        "pool_1",
+        "down_2_0",
+        "down_2_2",
+        "pool_2",
+        "down_3_0",
+        "down_3_2",
+        "pool_3",
+        "down_4_0",
+        "down_4_2",
+        "up_0",
+        "getitem_6",
+        "cat",
+        "merge_0_0",
+        "merge_0_2",
+        "up_1"
+      ],
+      "whole_window_search_supported": false
+    },
+    {
+      "requested_ops": 64,
+      "available": false,
+      "actual_ops": 53,
+      "supported_ops": 19,
+      "barriers": [
+        "down_0_0",
+        "down_0_2",
+        "pool",
+        "down_1_0",
+        "down_1_2",
+        "pool_1",
+        "down_2_0",
+        "down_2_2",
+        "pool_2",
+        "down_3_0",
+        "down_3_2",
+        "pool_3",
+        "down_4_0",
+        "down_4_2",
+        "up_0",
+        "getitem_6",
+        "cat",
+        "merge_0_0",
+        "merge_0_2",
+        "up_1",
+        "getitem_13",
+        "cat_1",
+        "merge_1_0",
+        "merge_1_2",
+        "up_2",
+        "getitem_20",
+        "cat_2",
+        "merge_2_0",
+        "merge_2_2",
+        "up_3",
+        "getitem_27",
+        "cat_3",
+        "merge_3_0",
+        "merge_3_2"
+      ],
+      "whole_window_search_supported": false
+    },
+    {
+      "requested_ops": 128,
+      "available": false,
+      "actual_ops": 53,
+      "supported_ops": 19,
+      "barriers": [
+        "down_0_0",
+        "down_0_2",
+        "pool",
+        "down_1_0",
+        "down_1_2",
+        "pool_1",
+        "down_2_0",
+        "down_2_2",
+        "pool_2",
+        "down_3_0",
+        "down_3_2",
+        "pool_3",
+        "down_4_0",
+        "down_4_2",
+        "up_0",
+        "getitem_6",
+        "cat",
+        "merge_0_0",
+        "merge_0_2",
+        "up_1",
+        "getitem_13",
+        "cat_1",
+        "merge_1_0",
+        "merge_1_2",
+        "up_2",
+        "getitem_20",
+        "cat_2",
+        "merge_2_0",
+        "merge_2_2",
+        "up_3",
+        "getitem_27",
+        "cat_3",
+        "merge_3_0",
+        "merge_3_2"
+      ],
+      "whole_window_search_supported": false
+    }
+  ],
+  "contract": "float32, out-of-place functional operators; unsupported operators terminate islands",
+  "resource_islands": [
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_0_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 64,
+        "r2": 570,
+        "r3": 570
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 64,
+        "r2": 570,
+        "r3": 570
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "down_0_1",
+          {
+            "n_down_0_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_0_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_0_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 20793600,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 0
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_0_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 64,
+        "r2": 570,
+        "r3": 570
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "down_0_1",
+          {
+            "n_down_0_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_0_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_0_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 0
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_0_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 64,
+        "r2": 568,
+        "r3": 568
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 64,
+        "r2": 568,
+        "r3": 568
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "down_0_3",
+          {
+            "n_down_0_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_0_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_0_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 20647936,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 1
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_0_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 64,
+        "r2": 568,
+        "r3": 568
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "down_0_3",
+          {
+            "n_down_0_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_0_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_0_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 1
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_1_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 282,
+        "r3": 282
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 282,
+        "r3": 282
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "down_1_1",
+          {
+            "n_down_1_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_1_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_1_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 10179072,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 2
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_1_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 282,
+        "r3": 282
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "down_1_1",
+          {
+            "n_down_1_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_1_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_1_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 2
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_1_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 280,
+        "r3": 280
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 280,
+        "r3": 280
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "down_1_3",
+          {
+            "n_down_1_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_1_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_1_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 10035200,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 3
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_1_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 280,
+        "r3": 280
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "down_1_3",
+          {
+            "n_down_1_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_1_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_1_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 3
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_2_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 138,
+        "r3": 138
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 138,
+        "r3": 138
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "down_2_1",
+          {
+            "n_down_2_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_2_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_2_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 4875264,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 4
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_2_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 138,
+        "r3": 138
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "down_2_1",
+          {
+            "n_down_2_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_2_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_2_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 4
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_2_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 136,
+        "r3": 136
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 136,
+        "r3": 136
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "down_2_3",
+          {
+            "n_down_2_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_2_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_2_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 4734976,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 5
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_2_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 136,
+        "r3": 136
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "down_2_3",
+          {
+            "n_down_2_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_2_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_2_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 5
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_3_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 66,
+        "r3": 66
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 66,
+        "r3": 66
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "down_3_1",
+          {
+            "n_down_3_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_3_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_3_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 2230272,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 6
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_3_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 66,
+        "r3": 66
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "down_3_1",
+          {
+            "n_down_3_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_3_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_3_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 6
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_3_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 64,
+        "r3": 64
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 64,
+        "r3": 64
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "down_3_3",
+          {
+            "n_down_3_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_3_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_3_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 2097152,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 7
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_3_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 64,
+        "r3": 64
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "down_3_3",
+          {
+            "n_down_3_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_3_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_3_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 7
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_4_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 1024,
+        "r2": 30,
+        "r3": 30
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 1024,
+        "r2": 30,
+        "r3": 30
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "down_4_1",
+          {
+            "n_down_4_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_4_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_4_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 921600,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 8
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_4_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 1024,
+        "r2": 30,
+        "r3": 30
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "down_4_1",
+          {
+            "n_down_4_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_4_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_4_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 8
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_4_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 1024,
+        "r2": 28,
+        "r3": 28
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 1024,
+        "r2": 28,
+        "r3": 28
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "down_4_3",
+          {
+            "n_down_4_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_4_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_4_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 802816,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 9
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "down_4_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 1024,
+        "r2": 28,
+        "r3": 28
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "down_4_3",
+          {
+            "n_down_4_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_down_4_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "down_4_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 9
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_0_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 54,
+        "r3": 54
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 54,
+        "r3": 54
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "merge_0_1",
+          {
+            "n_merge_0_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_0_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_0_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 1492992,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 10
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_0_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 54,
+        "r3": 54
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "merge_0_1",
+          {
+            "n_merge_0_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_0_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_0_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 10
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_0_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 52,
+        "r3": 52
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 52,
+        "r3": 52
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "merge_0_3",
+          {
+            "n_merge_0_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_0_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_0_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 1384448,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 11
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_0_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 512,
+        "r2": 52,
+        "r3": 52
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "merge_0_3",
+          {
+            "n_merge_0_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_0_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_0_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 11
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_1_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 102,
+        "r3": 102
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 102,
+        "r3": 102
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "merge_1_1",
+          {
+            "n_merge_1_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_1_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_1_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 2663424,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 12
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_1_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 102,
+        "r3": 102
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "merge_1_1",
+          {
+            "n_merge_1_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_1_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_1_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 12
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_1_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 100,
+        "r3": 100
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 100,
+        "r3": 100
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "merge_1_3",
+          {
+            "n_merge_1_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_1_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_1_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 2560000,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 13
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_1_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 256,
+        "r2": 100,
+        "r3": 100
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "merge_1_3",
+          {
+            "n_merge_1_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_1_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_1_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 13
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_2_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 198,
+        "r3": 198
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 198,
+        "r3": 198
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "merge_2_1",
+          {
+            "n_merge_2_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_2_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_2_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 5018112,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 14
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_2_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 198,
+        "r3": 198
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "merge_2_1",
+          {
+            "n_merge_2_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_2_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_2_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 14
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_2_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 196,
+        "r3": 196
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 196,
+        "r3": 196
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "merge_2_3",
+          {
+            "n_merge_2_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_2_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_2_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 4917248,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 15
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_2_3"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 128,
+        "r2": 196,
+        "r3": 196
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "merge_2_3",
+          {
+            "n_merge_2_2": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_2_3": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_2_3": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 15
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_3_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 64,
+        "r2": 390,
+        "r3": 390
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 64,
+        "r2": 390,
+        "r3": 390
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "merge_3_1",
+          {
+            "n_merge_3_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_3_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_3_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 9734400,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 16
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_3_1"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 64,
+        "r2": 390,
+        "r3": 390
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "merge_3_1",
+          {
+            "n_merge_3_0": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "n_merge_3_1": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_3_1": {
+          "kind": "relu",
+          "approximate": "none"
+        }
+      },
+      "scalar_steps": 8,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 16
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_3_3",
+        "head"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 388,
+        "r3": 388,
+        "r4": 64
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 388,
+        "r3": 388,
+        "r4": 64
+      },
+      "extent_cap": null,
+      "ops": [
+        [
+          "merge_3_3",
+          {
+            "n_merge_3_2": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ],
+            "n_merge_3_3": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "head_matmul",
+          {
+            "n_merge_3_3": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ],
+            "p_head.weight": [
+              "r1",
+              "r4"
+            ],
+            "n_head_prebias": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "head_bias",
+          {
+            "n_head_prebias": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "p_head.bias": [
+              "r1"
+            ],
+            "n_head": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_3_3": {
+          "kind": "relu",
+          "approximate": "none"
+        },
+        "head_matmul": {
+          "kind": "product"
+        },
+        "head_bias": {
+          "kind": "add"
+        }
+      },
+      "scalar_steps": 29205536,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 17
+    },
+    {
+      "schema": "dnn-resource-island.v1",
+      "model": "unet2015",
+      "fx_nodes": [
+        "merge_3_3",
+        "head"
+      ],
+      "sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 2,
+        "r3": 2,
+        "r4": 2
+      },
+      "original_sizes": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 388,
+        "r3": 388,
+        "r4": 64
+      },
+      "extent_cap": 2,
+      "ops": [
+        [
+          "merge_3_3",
+          {
+            "n_merge_3_2": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ],
+            "n_merge_3_3": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "head_matmul",
+          {
+            "n_merge_3_3": [
+              "r0",
+              "r4",
+              "r2",
+              "r3"
+            ],
+            "p_head.weight": [
+              "r1",
+              "r4"
+            ],
+            "n_head_prebias": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ],
+        [
+          "head_bias",
+          {
+            "n_head_prebias": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ],
+            "p_head.bias": [
+              "r1"
+            ],
+            "n_head": [
+              "r0",
+              "r1",
+              "r2",
+              "r3"
+            ]
+          }
+        ]
+      ],
+      "semantics": {
+        "merge_3_3": {
+          "kind": "relu",
+          "approximate": "none"
+        },
+        "head_matmul": {
+          "kind": "product"
+        },
+        "head_bias": {
+          "kind": "add"
+        }
+      },
+      "scalar_steps": 32,
+      "element_bytes": 4,
+      "contract": "isolated island with DRAM input/output boundaries; all ops functional/out-of-place",
+      "island": 17
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "gemm-evaluation-request.v1",
+  "operator_id": "test.native_heuristic",
+  "mapping_id": "native_heuristic",
+  "workload": {
+    "kind": "plain_gemm",
+    "shape": [
+      64,
+      128,
+      32
+    ],
+    "dtype": "float32",
+    "layout": "row_major_contiguous"
+  },
+  "mapping": {
+    "mode": "heuristic",
+    "loop_order": [
+      "M",
+      "N",
+      "K"
+    ],
+    "strict": true
+  },
+  "hardware": {
+    "sram_bytes_per_lane": 131072,
+    "serial_tiles": true
+  }
+}

@@ -1,0 +1,448 @@
+{
+  "schema": "interface-validation-plan.v1",
+  "cases": [
+    {
+      "name": "full_serial_1k",
+      "request": {
+        "schema": "gemm-evaluation-request.v1",
+        "operator_id": "test.full_serial_1k",
+        "mapping_id": "full_serial_1k",
+        "workload": {
+          "kind": "plain_gemm",
+          "shape": [
+            64,
+            128,
+            32
+          ],
+          "dtype": "float32",
+          "layout": "row_major_contiguous"
+        },
+        "mapping": {
+          "mode": "external",
+          "loop_order": [
+            "M",
+            "N",
+            "K"
+          ],
+          "strict": true,
+          "tile": [
+            64,
+            128,
+            32
+          ],
+          "subtile": [
+            64,
+            128,
+            32
+          ]
+        },
+        "hardware": {
+          "sram_bytes_per_lane": 1024,
+          "serial_tiles": true
+        }
+      },
+      "expected_verdict": "accepted",
+      "expected_failure_stage": null
+    },
+    {
+      "name": "full_serial_512b",
+      "request": {
+        "schema": "gemm-evaluation-request.v1",
+        "operator_id": "test.full_serial_512b",
+        "mapping_id": "full_serial_512b",
+        "workload": {
+          "kind": "plain_gemm",
+          "shape": [
+            64,
+            128,
+            32
+          ],
+          "dtype": "float32",
+          "layout": "row_major_contiguous"
+        },
+        "mapping": {
+          "mode": "external",
+          "loop_order": [
+            "M",
+            "N",
+            "K"
+          ],
+          "strict": true,
+          "tile": [
+            64,
+            128,
+            32
+          ],
+          "subtile": [
+            64,
+            128,
+            32
+          ]
+        },
+        "hardware": {
+          "sram_bytes_per_lane": 512,
+          "serial_tiles": true
+        }
+      },
+      "expected_verdict": "rejected",
+      "expected_failure_stage": "capacity"
+    },
+    {
+      "name": "full_overlap_1k",
+      "request": {
+        "schema": "gemm-evaluation-request.v1",
+        "operator_id": "test.full_overlap_1k",
+        "mapping_id": "full_overlap_1k",
+        "workload": {
+          "kind": "plain_gemm",
+          "shape": [
+            64,
+            128,
+            32
+          ],
+          "dtype": "float32",
+          "layout": "row_major_contiguous"
+        },
+        "mapping": {
+          "mode": "external",
+          "loop_order": [
+            "M",
+            "N",
+            "K"
+          ],
+          "strict": true,
+          "tile": [
+            64,
+            128,
+            32
+          ],
+          "subtile": [
+            64,
+            128,
+            32
+          ]
+        },
+        "hardware": {
+          "sram_bytes_per_lane": 1024,
+          "serial_tiles": false
+        }
+      },
+      "expected_verdict": "rejected",
+      "expected_failure_stage": "capacity"
+    },
+    {
+      "name": "small_serial",
+      "request": {
+        "schema": "gemm-evaluation-request.v1",
+        "operator_id": "test.small_serial",
+        "mapping_id": "small_serial",
+        "workload": {
+          "kind": "plain_gemm",
+          "shape": [
+            64,
+            128,
+            32
+          ],
+          "dtype": "float32",
+          "layout": "row_major_contiguous"
+        },
+        "mapping": {
+          "mode": "external",
+          "loop_order": [
+            "M",
+            "N",
+            "K"
+          ],
+          "strict": true,
+          "tile": [
+            16,
+            32,
+            8
+          ],
+          "subtile": [
+            16,
+            32,
+            8
+          ]
+        },
+        "hardware": {
+          "sram_bytes_per_lane": 2048,
+          "serial_tiles": true
+        }
+      },
+      "expected_verdict": "accepted",
+      "expected_failure_stage": null
+    },
+    {
+      "name": "native_heuristic",
+      "request": {
+        "schema": "gemm-evaluation-request.v1",
+        "operator_id": "test.native_heuristic",
+        "mapping_id": "native_heuristic",
+        "workload": {
+          "kind": "plain_gemm",
+          "shape": [
+            64,
+            128,
+            32
+          ],
+          "dtype": "float32",
+          "layout": "row_major_contiguous"
+        },
+        "mapping": {
+          "mode": "heuristic",
+          "loop_order": [
+            "M",
+            "N",
+            "K"
+          ],
+          "strict": true
+        },
+        "hardware": {
+          "sram_bytes_per_lane": 131072,
+          "serial_tiles": true
+        }
+      },
+      "expected_verdict": "accepted",
+      "expected_failure_stage": null
+    },
+    {
+      "name": "native_autotune",
+      "request": {
+        "schema": "gemm-evaluation-request.v1",
+        "operator_id": "test.native_autotune",
+        "mapping_id": "native_autotune",
+        "workload": {
+          "kind": "plain_gemm",
+          "shape": [
+            64,
+            128,
+            32
+          ],
+          "dtype": "float32",
+          "layout": "row_major_contiguous"
+        },
+        "mapping": {
+          "mode": "autotune",
+          "loop_order": [
+            "M",
+            "N",
+            "K"
+          ],
+          "strict": true
+        },
+        "hardware": {
+          "sram_bytes_per_lane": 131072,
+          "serial_tiles": true
+        }
+      },
+      "expected_verdict": "accepted",
+      "expected_failure_stage": null
+    },
+    {
+      "name": "aligned_n",
+      "request": {
+        "schema": "gemm-evaluation-request.v1",
+        "operator_id": "test.aligned_n",
+        "mapping_id": "aligned_n",
+        "workload": {
+          "kind": "plain_gemm",
+          "shape": [
+            16,
+            256,
+            16
+          ],
+          "dtype": "float32",
+          "layout": "row_major_contiguous"
+        },
+        "mapping": {
+          "mode": "external",
+          "loop_order": [
+            "M",
+            "N",
+            "K"
+          ],
+          "strict": true,
+          "tile": [
+            16,
+            256,
+            16
+          ],
+          "subtile": [
+            16,
+            128,
+            16
+          ]
+        },
+        "hardware": {
+          "sram_bytes_per_lane": 2048,
+          "serial_tiles": true
+        }
+      },
+      "expected_verdict": "accepted",
+      "expected_failure_stage": null
+    },
+    {
+      "name": "aligned_k",
+      "request": {
+        "schema": "gemm-evaluation-request.v1",
+        "operator_id": "test.aligned_k",
+        "mapping_id": "aligned_k",
+        "workload": {
+          "kind": "plain_gemm",
+          "shape": [
+            16,
+            32,
+            256
+          ],
+          "dtype": "float32",
+          "layout": "row_major_contiguous"
+        },
+        "mapping": {
+          "mode": "external",
+          "loop_order": [
+            "M",
+            "N",
+            "K"
+          ],
+          "strict": true,
+          "tile": [
+            16,
+            32,
+            256
+          ],
+          "subtile": [
+            16,
+            32,
+            128
+          ]
+        },
+        "hardware": {
+          "sram_bytes_per_lane": 8192,
+          "serial_tiles": true
+        }
+      },
+      "expected_verdict": "accepted",
+      "expected_failure_stage": null
+    },
+    {
+      "name": "invalid_n",
+      "request": {
+        "schema": "gemm-evaluation-request.v1",
+        "operator_id": "test.invalid_n",
+        "mapping_id": "invalid_n",
+        "workload": {
+          "kind": "plain_gemm",
+          "shape": [
+            64,
+            128,
+            32
+          ],
+          "dtype": "float32",
+          "layout": "row_major_contiguous"
+        },
+        "mapping": {
+          "mode": "external",
+          "loop_order": [
+            "M",
+            "N",
+            "K"
+          ],
+          "strict": true,
+          "tile": [
+            16,
+            32,
+            8
+          ],
+          "subtile": [
+            16,
+            16,
+            8
+          ]
+        },
+        "hardware": {
+          "sram_bytes_per_lane": 1024,
+          "serial_tiles": true
+        }
+      },
+      "expected_verdict": "rejected",
+      "expected_failure_stage": "request"
+    },
+    {
+      "name": "unsupported_dtype",
+      "request": {
+        "schema": "gemm-evaluation-request.v1",
+        "operator_id": "test.unsupported_dtype",
+        "mapping_id": "unsupported_dtype",
+        "workload": {
+          "kind": "plain_gemm",
+          "shape": [
+            64,
+            128,
+            32
+          ],
+          "dtype": "float16",
+          "layout": "row_major_contiguous"
+        },
+        "mapping": {
+          "mode": "external",
+          "loop_order": [
+            "M",
+            "N",
+            "K"
+          ],
+          "strict": true,
+          "tile": [
+            64,
+            128,
+            32
+          ],
+          "subtile": [
+            64,
+            128,
+            32
+          ]
+        },
+        "hardware": {
+          "sram_bytes_per_lane": 1024,
+          "serial_tiles": true
+        }
+      },
+      "expected_verdict": "rejected",
+      "expected_failure_stage": "request"
+    },
+    {
+      "name": "long_serial",
+      "request": {
+        "schema": "gemm-evaluation-request.v1",
+        "operator_id": "test.long_serial",
+        "mapping_id": "long_serial",
+        "workload": {
+          "kind": "plain_gemm",
+          "shape": [
+            128,
+            256,
+            3072
+          ],
+          "dtype": "float32",
+          "layout": "row_major_contiguous"
+        },
+        "mapping": {
+          "mode": "heuristic",
+          "loop_order": [
+            "M",
+            "N",
+            "K"
+          ],
+          "strict": true
+        },
+        "hardware": {
+          "sram_bytes_per_lane": 131072,
+          "serial_tiles": true
+        }
+      },
+      "expected_verdict": "accepted",
+      "expected_failure_stage": null
+    }
+  ]
+}

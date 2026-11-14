@@ -1,0 +1,4478 @@
+{
+  "case": "unet_head_original",
+  "arm": "v1_reuse",
+  "options": {
+    "partitions": "dp",
+    "scalar_leaf": "v1",
+    "canonical_remainders": true,
+    "prune_infeasible_groups": true
+  },
+  "c2": false,
+  "stats": {
+    "pareto_calls": 10361,
+    "pareto_candidates": 49238,
+    "pareto_points": 24026,
+    "max_frontier": 15,
+    "merge_calls": 3620,
+    "merge_inputs": 11797,
+    "merge_points": 8133,
+    "partition_masks": 0,
+    "partition_choices": 0,
+    "loop_choices": 14307,
+    "dp_states": 2523,
+    "dp_transitions": 3620,
+    "max_crossing": 1,
+    "dp_multiwriter_fallbacks": 0,
+    "witness_nodes": 31098,
+    "pareto_seconds": 0.02671236963942647,
+    "merge_seconds": 0.012096674181520939,
+    "cache_misses_by_span": {
+      "solve:merge_3_3,head_matmul,head_bias": 37,
+      "group:merge_3_3": 140,
+      "solve:merge_3_3": 138,
+      "group:merge_3_3,head_matmul": 262,
+      "solve:merge_3_3,head_matmul": 264,
+      "group:head_matmul": 985,
+      "solve:head_matmul": 1059,
+      "group:merge_3_3,head_matmul,head_bias": 33,
+      "group:head_matmul,head_bias": 140,
+      "solve:head_matmul,head_bias": 146,
+      "group:head_bias": 76,
+      "solve:head_bias": 74
+    },
+    "cache_misses_by_extents": {
+      "solve:(1, 2, 388, 388, 64)": 1,
+      "group:(1, 1, 388, 388, 64)": 8,
+      "solve:(1, 1, 388, 194, 64)": 18,
+      "group:(1, 1, 388, 194, 64)": 18,
+      "solve:(1, 1, 388, 97, 64)": 18,
+      "group:(1, 1, 388, 97, 64)": 18,
+      "solve:(1, 1, 388, 1, 64)": 18,
+      "group:(1, 1, 388, 1, 64)": 18,
+      "solve:(1, 1, 388, 1, 32)": 10,
+      "group:(1, 1, 388, 1, 32)": 9,
+      "solve:(1, 1, 388, 1, 16)": 10,
+      "group:(1, 1, 388, 1, 16)": 9,
+      "solve:(1, 1, 388, 1, 8)": 10,
+      "group:(1, 1, 388, 1, 8)": 9,
+      "solve:(1, 1, 388, 1, 4)": 10,
+      "group:(1, 1, 388, 1, 4)": 9,
+      "solve:(1, 1, 388, 1, 2)": 10,
+      "group:(1, 1, 388, 1, 2)": 9,
+      "solve:(1, 1, 388, 1, 1)": 14,
+      "group:(1, 1, 388, 1, 1)": 12,
+      "solve:(1, 1, 194, 1, 1)": 14,
+      "group:(1, 1, 194, 1, 1)": 12,
+      "solve:(1, 1, 97, 1, 1)": 14,
+      "group:(1, 1, 97, 1, 1)": 12,
+      "solve:(1, 1, 1, 1, 1)": 13,
+      "solve:(1, 1, 194, 1, 2)": 10,
+      "group:(1, 1, 194, 1, 2)": 9,
+      "solve:(1, 1, 97, 1, 2)": 10,
+      "group:(1, 1, 97, 1, 2)": 9,
+      "solve:(1, 1, 1, 1, 2)": 10,
+      "group:(1, 1, 1, 1, 2)": 8,
+      "solve:(1, 1, 194, 1, 4)": 10,
+      "group:(1, 1, 194, 1, 4)": 9,
+      "solve:(1, 1, 97, 1, 4)": 10,
+      "group:(1, 1, 97, 1, 4)": 9,
+      "solve:(1, 1, 1, 1, 4)": 10,
+      "group:(1, 1, 1, 1, 4)": 8,
+      "solve:(1, 1, 194, 1, 8)": 10,
+      "group:(1, 1, 194, 1, 8)": 9,
+      "solve:(1, 1, 97, 1, 8)": 10,
+      "group:(1, 1, 97, 1, 8)": 9,
+      "solve:(1, 1, 1, 1, 8)": 10,
+      "group:(1, 1, 1, 1, 8)": 8,
+      "solve:(1, 1, 194, 1, 16)": 10,
+      "group:(1, 1, 194, 1, 16)": 9,
+      "solve:(1, 1, 97, 1, 16)": 10,
+      "group:(1, 1, 97, 1, 16)": 9,
+      "solve:(1, 1, 1, 1, 16)": 10,
+      "group:(1, 1, 1, 1, 16)": 8,
+      "solve:(1, 1, 194, 1, 32)": 10,
+      "group:(1, 1, 194, 1, 32)": 9,
+      "solve:(1, 1, 97, 1, 32)": 10,
+      "group:(1, 1, 97, 1, 32)": 9,
+      "solve:(1, 1, 1, 1, 32)": 10,
+      "group:(1, 1, 1, 1, 32)": 8,
+      "solve:(1, 1, 194, 1, 64)": 18,
+      "group:(1, 1, 194, 1, 64)": 18,
+      "solve:(1, 1, 97, 1, 64)": 18,
+      "group:(1, 1, 97, 1, 64)": 18,
+      "solve:(1, 1, 1, 1, 64)": 18,
+      "group:(1, 1, 1, 1, 64)": 8,
+      "solve:(1, 1, 388, 97, 32)": 10,
+      "group:(1, 1, 388, 97, 32)": 9,
+      "solve:(1, 1, 388, 97, 16)": 10,
+      "group:(1, 1, 388, 97, 16)": 9,
+      "solve:(1, 1, 388, 97, 8)": 10,
+      "group:(1, 1, 388, 97, 8)": 9,
+      "solve:(1, 1, 388, 97, 4)": 10,
+      "group:(1, 1, 388, 97, 4)": 9,
+      "solve:(1, 1, 388, 97, 2)": 10,
+      "group:(1, 1, 388, 97, 2)": 9,
+      "solve:(1, 1, 388, 97, 1)": 14,
+      "group:(1, 1, 388, 97, 1)": 12,
+      "solve:(1, 1, 194, 97, 1)": 14,
+      "group:(1, 1, 194, 97, 1)": 12,
+      "solve:(1, 1, 97, 97, 1)": 14,
+      "group:(1, 1, 97, 97, 1)": 12,
+      "solve:(1, 1, 194, 97, 2)": 10,
+      "group:(1, 1, 194, 97, 2)": 9,
+      "solve:(1, 1, 97, 97, 2)": 10,
+      "group:(1, 1, 97, 97, 2)": 9,
+      "solve:(1, 1, 194, 97, 4)": 10,
+      "group:(1, 1, 194, 97, 4)": 9,
+      "solve:(1, 1, 97, 97, 4)": 10,
+      "group:(1, 1, 97, 97, 4)": 9,
+      "solve:(1, 1, 194, 97, 8)": 10,
+      "group:(1, 1, 194, 97, 8)": 9,
+      "solve:(1, 1, 97, 97, 8)": 10,
+      "group:(1, 1, 97, 97, 8)": 9,
+      "solve:(1, 1, 194, 97, 16)": 10,
+      "group:(1, 1, 194, 97, 16)": 9,
+      "solve:(1, 1, 97, 97, 16)": 10,
+      "group:(1, 1, 97, 97, 16)": 9,
+      "solve:(1, 1, 194, 97, 32)": 10,
+      "group:(1, 1, 194, 97, 32)": 9,
+      "solve:(1, 1, 97, 97, 32)": 10,
+      "group:(1, 1, 97, 97, 32)": 9,
+      "solve:(1, 1, 194, 97, 64)": 18,
+      "group:(1, 1, 194, 97, 64)": 18,
+      "solve:(1, 1, 97, 97, 64)": 18,
+      "group:(1, 1, 97, 97, 64)": 18,
+      "solve:(1, 1, 388, 194, 32)": 10,
+      "group:(1, 1, 388, 194, 32)": 9,
+      "solve:(1, 1, 388, 194, 16)": 10,
+      "group:(1, 1, 388, 194, 16)": 9,
+      "solve:(1, 1, 388, 194, 8)": 10,
+      "group:(1, 1, 388, 194, 8)": 9,
+      "solve:(1, 1, 388, 194, 4)": 10,
+      "group:(1, 1, 388, 194, 4)": 9,
+      "solve:(1, 1, 388, 194, 2)": 10,
+      "group:(1, 1, 388, 194, 2)": 9,
+      "solve:(1, 1, 388, 194, 1)": 14,
+      "group:(1, 1, 388, 194, 1)": 12,
+      "solve:(1, 1, 194, 194, 1)": 14,
+      "group:(1, 1, 194, 194, 1)": 12,
+      "solve:(1, 1, 194, 194, 2)": 10,
+      "group:(1, 1, 194, 194, 2)": 9,
+      "solve:(1, 1, 194, 194, 4)": 10,
+      "group:(1, 1, 194, 194, 4)": 9,
+      "solve:(1, 1, 194, 194, 8)": 10,
+      "group:(1, 1, 194, 194, 8)": 9,
+      "solve:(1, 1, 194, 194, 16)": 10,
+      "group:(1, 1, 194, 194, 16)": 9,
+      "solve:(1, 1, 194, 194, 32)": 10,
+      "group:(1, 1, 194, 194, 32)": 9,
+      "solve:(1, 1, 194, 194, 64)": 18,
+      "group:(1, 1, 194, 194, 64)": 18,
+      "solve:(1, 1, 388, 388, 32)": 6,
+      "group:(1, 1, 388, 388, 32)": 6,
+      "solve:(1, 1, 388, 388, 16)": 6,
+      "group:(1, 1, 388, 388, 16)": 6,
+      "solve:(1, 1, 388, 388, 8)": 6,
+      "group:(1, 1, 388, 388, 8)": 6,
+      "solve:(1, 1, 388, 388, 4)": 6,
+      "group:(1, 1, 388, 388, 4)": 6,
+      "solve:(1, 1, 388, 388, 2)": 6,
+      "group:(1, 1, 388, 388, 2)": 6,
+      "solve:(1, 1, 388, 388, 1)": 8,
+      "group:(1, 1, 388, 388, 1)": 7,
+      "group:(1, 2, 388, 388, 64)": 9,
+      "solve:(1, 2, 388, 194, 64)": 24,
+      "group:(1, 2, 388, 194, 64)": 24,
+      "solve:(1, 2, 388, 97, 64)": 24,
+      "group:(1, 2, 388, 97, 64)": 24,
+      "solve:(1, 2, 388, 1, 64)": 24,
+      "group:(1, 2, 388, 1, 64)": 24,
+      "solve:(1, 2, 194, 1, 64)": 24,
+      "group:(1, 2, 194, 1, 64)": 24,
+      "solve:(1, 2, 97, 1, 64)": 24,
+      "group:(1, 2, 97, 1, 64)": 24,
+      "solve:(1, 2, 1, 1, 64)": 24,
+      "group:(1, 2, 1, 1, 64)": 20,
+      "solve:(1, 2, 1, 1, 32)": 12,
+      "group:(1, 2, 1, 1, 32)": 12,
+      "solve:(1, 2, 1, 1, 16)": 12,
+      "group:(1, 2, 1, 1, 16)": 12,
+      "solve:(1, 2, 1, 1, 8)": 12,
+      "group:(1, 2, 1, 1, 8)": 12,
+      "solve:(1, 2, 1, 1, 4)": 12,
+      "group:(1, 2, 1, 1, 4)": 12,
+      "solve:(1, 2, 1, 1, 2)": 12,
+      "group:(1, 2, 1, 1, 2)": 12,
+      "solve:(1, 2, 1, 1, 1)": 16,
+      "solve:(1, 2, 97, 1, 32)": 12,
+      "group:(1, 2, 97, 1, 32)": 12,
+      "solve:(1, 2, 97, 1, 16)": 12,
+      "group:(1, 2, 97, 1, 16)": 12,
+      "solve:(1, 2, 97, 1, 8)": 12,
+      "group:(1, 2, 97, 1, 8)": 12,
+      "solve:(1, 2, 97, 1, 4)": 12,
+      "group:(1, 2, 97, 1, 4)": 12,
+      "solve:(1, 2, 97, 1, 2)": 12,
+      "group:(1, 2, 97, 1, 2)": 12,
+      "solve:(1, 2, 97, 1, 1)": 16,
+      "group:(1, 2, 97, 1, 1)": 16,
+      "solve:(1, 2, 194, 1, 32)": 12,
+      "group:(1, 2, 194, 1, 32)": 12,
+      "solve:(1, 2, 194, 1, 16)": 12,
+      "group:(1, 2, 194, 1, 16)": 12,
+      "solve:(1, 2, 194, 1, 8)": 12,
+      "group:(1, 2, 194, 1, 8)": 12,
+      "solve:(1, 2, 194, 1, 4)": 12,
+      "group:(1, 2, 194, 1, 4)": 12,
+      "solve:(1, 2, 194, 1, 2)": 12,
+      "group:(1, 2, 194, 1, 2)": 12,
+      "solve:(1, 2, 194, 1, 1)": 16,
+      "group:(1, 2, 194, 1, 1)": 16,
+      "solve:(1, 2, 388, 1, 32)": 12,
+      "group:(1, 2, 388, 1, 32)": 12,
+      "solve:(1, 2, 388, 1, 16)": 12,
+      "group:(1, 2, 388, 1, 16)": 12,
+      "solve:(1, 2, 388, 1, 8)": 12,
+      "group:(1, 2, 388, 1, 8)": 12,
+      "solve:(1, 2, 388, 1, 4)": 12,
+      "group:(1, 2, 388, 1, 4)": 12,
+      "solve:(1, 2, 388, 1, 2)": 12,
+      "group:(1, 2, 388, 1, 2)": 12,
+      "solve:(1, 2, 388, 1, 1)": 16,
+      "group:(1, 2, 388, 1, 1)": 16,
+      "solve:(1, 2, 194, 97, 64)": 24,
+      "group:(1, 2, 194, 97, 64)": 24,
+      "solve:(1, 2, 97, 97, 64)": 24,
+      "group:(1, 2, 97, 97, 64)": 24,
+      "solve:(1, 2, 97, 97, 32)": 12,
+      "group:(1, 2, 97, 97, 32)": 12,
+      "solve:(1, 2, 97, 97, 16)": 12,
+      "group:(1, 2, 97, 97, 16)": 12,
+      "solve:(1, 2, 97, 97, 8)": 12,
+      "group:(1, 2, 97, 97, 8)": 12,
+      "solve:(1, 2, 97, 97, 4)": 12,
+      "group:(1, 2, 97, 97, 4)": 12,
+      "solve:(1, 2, 97, 97, 2)": 12,
+      "group:(1, 2, 97, 97, 2)": 12,
+      "solve:(1, 2, 97, 97, 1)": 16,
+      "group:(1, 2, 97, 97, 1)": 16,
+      "solve:(1, 2, 194, 97, 32)": 12,
+      "group:(1, 2, 194, 97, 32)": 12,
+      "solve:(1, 2, 194, 97, 16)": 12,
+      "group:(1, 2, 194, 97, 16)": 12,
+      "solve:(1, 2, 194, 97, 8)": 12,
+      "group:(1, 2, 194, 97, 8)": 12,
+      "solve:(1, 2, 194, 97, 4)": 12,
+      "group:(1, 2, 194, 97, 4)": 12,
+      "solve:(1, 2, 194, 97, 2)": 12,
+      "group:(1, 2, 194, 97, 2)": 12,
+      "solve:(1, 2, 194, 97, 1)": 16,
+      "group:(1, 2, 194, 97, 1)": 16,
+      "solve:(1, 2, 388, 97, 32)": 12,
+      "group:(1, 2, 388, 97, 32)": 12,
+      "solve:(1, 2, 388, 97, 16)": 12,
+      "group:(1, 2, 388, 97, 16)": 12,
+      "solve:(1, 2, 388, 97, 8)": 12,
+      "group:(1, 2, 388, 97, 8)": 12,
+      "solve:(1, 2, 388, 97, 4)": 12,
+      "group:(1, 2, 388, 97, 4)": 12,
+      "solve:(1, 2, 388, 97, 2)": 12,
+      "group:(1, 2, 388, 97, 2)": 12,
+      "solve:(1, 2, 388, 97, 1)": 16,
+      "group:(1, 2, 388, 97, 1)": 16,
+      "solve:(1, 2, 194, 194, 64)": 24,
+      "group:(1, 2, 194, 194, 64)": 24,
+      "solve:(1, 2, 194, 194, 32)": 12,
+      "group:(1, 2, 194, 194, 32)": 12,
+      "solve:(1, 2, 194, 194, 16)": 12,
+      "group:(1, 2, 194, 194, 16)": 12,
+      "solve:(1, 2, 194, 194, 8)": 12,
+      "group:(1, 2, 194, 194, 8)": 12,
+      "solve:(1, 2, 194, 194, 4)": 12,
+      "group:(1, 2, 194, 194, 4)": 12,
+      "solve:(1, 2, 194, 194, 2)": 12,
+      "group:(1, 2, 194, 194, 2)": 12,
+      "solve:(1, 2, 194, 194, 1)": 16,
+      "group:(1, 2, 194, 194, 1)": 16,
+      "solve:(1, 2, 388, 194, 32)": 12,
+      "group:(1, 2, 388, 194, 32)": 12,
+      "solve:(1, 2, 388, 194, 16)": 12,
+      "group:(1, 2, 388, 194, 16)": 12,
+      "solve:(1, 2, 388, 194, 8)": 12,
+      "group:(1, 2, 388, 194, 8)": 12,
+      "solve:(1, 2, 388, 194, 4)": 12,
+      "group:(1, 2, 388, 194, 4)": 12,
+      "solve:(1, 2, 388, 194, 2)": 12,
+      "group:(1, 2, 388, 194, 2)": 12,
+      "solve:(1, 2, 388, 194, 1)": 16,
+      "group:(1, 2, 388, 194, 1)": 16,
+      "group:(1, 1, 1, 1, 1)": 6,
+      "group:(1, 2, 1, 1, 1)": 10,
+      "solve:(1, 2, 388, 388, 32)": 6,
+      "group:(1, 2, 388, 388, 32)": 6,
+      "solve:(1, 2, 388, 388, 16)": 6,
+      "group:(1, 2, 388, 388, 16)": 6,
+      "solve:(1, 2, 388, 388, 8)": 6,
+      "group:(1, 2, 388, 388, 8)": 6,
+      "solve:(1, 2, 388, 388, 4)": 6,
+      "group:(1, 2, 388, 388, 4)": 6,
+      "solve:(1, 2, 388, 388, 2)": 6,
+      "group:(1, 2, 388, 388, 2)": 6,
+      "solve:(1, 2, 388, 388, 1)": 6,
+      "group:(1, 2, 388, 388, 1)": 8,
+      "solve:(1, 1, 388, 388, 64)": 6
+    },
+    "cache_misses_by_residency": {
+      "solve:n=3,external=0,local_outputs=0,owned=0": 10,
+      "group:n=1,external=1,local_outputs=1,owned=0": 209,
+      "solve:n=1,external=1,local_outputs=1,owned=0": 208,
+      "group:n=1,external=0,local_outputs=0,owned=1": 209,
+      "solve:n=1,external=0,local_outputs=0,owned=1": 208,
+      "group:n=2,external=1,local_outputs=1,owned=0": 69,
+      "solve:n=2,external=2,local_outputs=1,owned=0": 63,
+      "group:n=2,external=2,local_outputs=1,owned=0": 62,
+      "group:n=1,external=3,local_outputs=1,owned=0": 70,
+      "group:n=1,external=2,local_outputs=1,owned=0": 254,
+      "solve:n=1,external=3,local_outputs=1,owned=0": 125,
+      "solve:n=1,external=2,local_outputs=1,owned=0": 265,
+      "solve:n=2,external=1,local_outputs=1,owned=0": 69,
+      "group:n=2,external=0,local_outputs=0,owned=1": 69,
+      "solve:n=2,external=1,local_outputs=0,owned=1": 63,
+      "group:n=2,external=1,local_outputs=0,owned=1": 62,
+      "group:n=1,external=2,local_outputs=0,owned=1": 119,
+      "solve:n=1,external=2,local_outputs=0,owned=1": 126,
+      "group:n=1,external=1,local_outputs=0,owned=1": 264,
+      "solve:n=1,external=1,local_outputs=0,owned=1": 265,
+      "solve:n=2,external=0,local_outputs=0,owned=1": 69,
+      "group:n=3,external=0,local_outputs=0,owned=0": 9,
+      "solve:n=3,external=2,local_outputs=0,owned=0": 9,
+      "group:n=3,external=2,local_outputs=0,owned=0": 8,
+      "group:n=2,external=3,local_outputs=0,owned=0": 17,
+      "solve:n=2,external=3,local_outputs=0,owned=0": 18,
+      "group:n=2,external=2,local_outputs=0,owned=0": 51,
+      "solve:n=2,external=2,local_outputs=0,owned=0": 54,
+      "group:n=1,external=2,local_outputs=0,owned=0": 18,
+      "group:n=1,external=1,local_outputs=0,owned=0": 38,
+      "solve:n=1,external=2,local_outputs=0,owned=0": 18,
+      "solve:n=1,external=1,local_outputs=0,owned=0": 37,
+      "solve:n=3,external=1,local_outputs=0,owned=0": 18,
+      "group:n=3,external=1,local_outputs=0,owned=0": 16,
+      "group:n=2,external=1,local_outputs=0,owned=0": 53,
+      "solve:n=2,external=1,local_outputs=0,owned=0": 55,
+      "group:n=1,external=0,local_outputs=0,owned=0": 20,
+      "solve:n=1,external=0,local_outputs=0,owned=0": 19,
+      "group:n=2,external=0,local_outputs=0,owned=0": 19,
+      "solve:n=2,external=0,local_outputs=0,owned=0": 19
+    },
+    "renamed_calls": 4371,
+    "rename_nodes": 6877,
+    "independent_splits": 0,
+    "group_prechecks": 6698,
+    "empty_group_skips": 13,
+    "retention_batches_skipped": 13,
+    "solve_cache": {
+      "hits": 12590,
+      "misses": 1718,
+      "maxsize": null,
+      "currsize": 1718
+    },
+    "group_cache": {
+      "hits": 1984,
+      "misses": 1636,
+      "maxsize": null,
+      "currsize": 1636
+    },
+    "cut_metadata_cache": {
+      "hits": 1555,
+      "misses": 6,
+      "maxsize": null,
+      "currsize": 6
+    },
+    "span_classes": null,
+    "remainder": {
+      "calls": 17928,
+      "builds": 5000,
+      "classes": 3354,
+      "exact_checks": 1646,
+      "match_steps": 5268,
+      "reused": 1646,
+      "seconds": 0.5152003557886928,
+      "aliases": {
+        "hits": 12928,
+        "misses": 5000,
+        "maxsize": 4096,
+        "currsize": 4096
+      }
+    },
+    "feasibility_metadata_cache": {
+      "hits": 6648,
+      "misses": 50,
+      "maxsize": null,
+      "currsize": 50
+    },
+    "seconds": 0.8574660238809884
+  },
+  "c2_stats": {},
+  "status": "search_complete_unreplayed",
+  "phase": "finished",
+  "n_ops": 3,
+  "scalar_steps": 29205536,
+  "extent_cap": null,
+  "source_sha256": {
+    "dnn_benchmarks/frontends.py": "5fa33267f29e28fd2ff525886f1947648b8fa49f876c14f531282255b03cc561",
+    "dnn_benchmarks/replay.py": "455bb80bb3495b98f626bbfd2b2107ceaf99154206b7838b1b4043ffd904d357",
+    "dnn_benchmarks/c2.py": "b5f0cb5f504cc670431948e6f2904a67b09810f6b235419664821ae14a47e7b0",
+    "dnn_benchmarks/run_islands.py": "972aa8b0f986bd84942e51e96903a09ce3bbe6f09188d8d083da63b6b6a4d4a3",
+    "index_coupling/graph/curve.py": "a0af2842f6b5fbb5028c0affce710f194ad28a8df0002702bb4939b1f9045e49",
+    "index_coupling/graph/remainder.py": "abb659434ccbf677161e556e56fc55186c69eef6638f20b8a9393d4330ffa181",
+    "index_coupling/graph/model.py": "fc1086c5841474ba7fe2cb81993b419dc5139a72b8fc83b39d8e73b7e4ca7ea1",
+    "index_coupling/graph/span_names.py": "c6b213cde6c9367b0cb6d268d6d0bd8deeffa5d959f0b081c3ca8567db4c048c",
+    "index_coupling/simulate_nest.py": "7e9983a34b2d4caa249a1c5f435cae7271f20ed5dc599d8fe748f4b1753eeff4"
+  },
+  "python": "3.10.12",
+  "kernel_setup_seconds": 3.741588443517685e-07,
+  "search_seconds": 0.8574722651392221,
+  "points": [
+    [
+      3,
+      58411072
+    ],
+    [
+      4,
+      29506624
+    ],
+    [
+      6,
+      29205538
+    ],
+    [
+      12,
+      19570850
+    ],
+    [
+      20,
+      14753442
+    ],
+    [
+      36,
+      12344738
+    ],
+    [
+      68,
+      11140386
+    ],
+    [
+      132,
+      10237120
+    ],
+    [
+      134,
+      9936034
+    ]
+  ],
+  "byte_points": [
+    [
+      12,
+      233644288
+    ],
+    [
+      16,
+      118026496
+    ],
+    [
+      24,
+      116822152
+    ],
+    [
+      48,
+      78283400
+    ],
+    [
+      80,
+      59013768
+    ],
+    [
+      144,
+      49378952
+    ],
+    [
+      272,
+      44561544
+    ],
+    [
+      528,
+      40948480
+    ],
+    [
+      536,
+      39744136
+    ]
+  ],
+  "witnesses": [
+    [
+      3,
+      58411072,
+      [
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3"
+            ],
+            [
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "n_merge_3_3"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3"
+          ],
+          "r4",
+          "tile 32 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3"
+          ],
+          "r4",
+          "tile 16 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3"
+          ],
+          "r4",
+          "tile 8 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3"
+          ],
+          "r4",
+          "tile 4 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3"
+          ],
+          "r4",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_matmul",
+            "head_bias"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_merge_3_3"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_matmul"
+            ],
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [
+            "n_head_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_matmul"
+          ],
+          "r4",
+          "tile 32 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_matmul"
+          ],
+          "r4",
+          "tile 16 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_matmul"
+          ],
+          "r4",
+          "tile 8 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_matmul"
+          ],
+          "r4",
+          "tile 4 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_matmul"
+          ],
+          "r4",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      4,
+      29506624,
+      [
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ],
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [
+            "n_head_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 32 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 16 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 8 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 4 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3"
+            ],
+            [
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [
+            "n_merge_3_3"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_matmul"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      6,
+      29205538,
+      [
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [
+            "p_head.bias"
+          ],
+          "refetched",
+          [
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.weight"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ],
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [
+            "n_head_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 32 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 16 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 8 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 4 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3"
+            ],
+            [
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [
+            "n_merge_3_3"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_matmul"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      12,
+      19570850,
+      [
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ],
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 32 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 16 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 8 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 4 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [
+            "p_head.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 2 x2",
+          "kept",
+          [
+            "n_head_prebias"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [
+            "p_head.bias"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      20,
+      14753442,
+      [
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ],
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 32 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 16 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 8 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [
+            "p_head.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 4 x2",
+          "kept",
+          [
+            "n_head_prebias"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [
+            "p_head.bias"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      36,
+      12344738,
+      [
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ],
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 32 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 16 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [
+            "p_head.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 8 x2",
+          "kept",
+          [
+            "n_head_prebias"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 4 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [
+            "p_head.bias"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      68,
+      11140386,
+      [
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ],
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 32 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "n_head_prebias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [
+            "p_head.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 16 x2",
+          "kept",
+          [
+            "n_head_prebias"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 8 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 4 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [
+            "p_head.bias"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      132,
+      10237120,
+      [
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [
+            "p_head.weight"
+          ],
+          "refetched",
+          [
+            "p_head.bias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          [
+            "p_head.bias"
+          ]
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ],
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [
+            "n_head_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 32 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 16 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 8 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 4 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ],
+    [
+      134,
+      9936034,
+      [
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 194 x2",
+          "kept",
+          [
+            "p_head.bias",
+            "p_head.weight"
+          ],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r3",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 194 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 97 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul",
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul",
+            "head_bias"
+          ],
+          "r2",
+          "tile 1 x97",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ],
+            [
+              "head_bias"
+            ]
+          ],
+          "kept",
+          [
+            "n_head_prebias"
+          ],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 32 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 16 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 8 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 4 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 2 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "groups",
+          [
+            [
+              "merge_3_3",
+              "head_matmul"
+            ]
+          ],
+          "kept",
+          [],
+          "via DRAM",
+          []
+        ],
+        [
+          "loop",
+          [
+            "merge_3_3",
+            "head_matmul"
+          ],
+          "r4",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ],
+        [
+          "loop",
+          [
+            "head_bias"
+          ],
+          "r1",
+          "tile 1 x2",
+          "kept",
+          [],
+          "refetched",
+          []
+        ]
+      ]
+    ]
+  ],
+  "replays": [],
+  "replay_reason": "scalar execution exceeds declared step limit",
+  "seconds": 0.8600925400387496,
+  "peak_rss_bytes": 43057152
+}

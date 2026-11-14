@@ -1,0 +1,214 @@
+[
+  {
+    "case": "resnet_c2_heuristic",
+    "shape": [
+      3136,
+      256,
+      64
+    ],
+    "padded_m": 3200,
+    "numerical_equal": true,
+    "wrong_elements": 0,
+    "tensors": {
+      "arg0": {
+        "logical_bytes": 802816,
+        "dma_byte_interval": [
+          0,
+          819200
+        ],
+        "excess_bytes": 16384,
+        "validation_malloc_bytes": 1605632,
+        "inside_validation_malloc": true
+      },
+      "arg1": {
+        "logical_bytes": 65536,
+        "dma_byte_interval": [
+          0,
+          65536
+        ],
+        "excess_bytes": 0,
+        "validation_malloc_bytes": 131072,
+        "inside_validation_malloc": true
+      },
+      "arg2": {
+        "logical_bytes": 3211264,
+        "dma_byte_interval": [
+          0,
+          3276800
+        ],
+        "excess_bytes": 65536,
+        "validation_malloc_bytes": 6422528,
+        "inside_validation_malloc": true
+      }
+    },
+    "request_bytes": 32,
+    "emitted_dma": {
+      "read": 2,
+      "write": 1
+    },
+    "expected_full_tile_transactions": {
+      "read": 27648,
+      "write": 102400
+    },
+    "hypothetical_clipped_transactions": {
+      "read": 27136,
+      "write": 100352
+    },
+    "observed_transactions": {
+      "read": 27648,
+      "write": 102400
+    },
+    "transactions_match": true,
+    "instruction_counts_match": true,
+    "strict_rejection": {
+      "node_id": 8,
+      "tensor": "arg0",
+      "direction": "read",
+      "cell_interval": [
+        0,
+        204800
+      ],
+      "logical_cells": 200704,
+      "byte_interval": [
+        0,
+        819200
+      ],
+      "logical_bytes": 802816,
+      "tile_size": [
+        3200,
+        64
+      ],
+      "tile_stride": [
+        64,
+        1
+      ],
+      "loop_indices": {
+        "loop_arg000": 0,
+        "loop_arg001": 0,
+        "loop_arg002": 0,
+        "loop_arg003": 0,
+        "loop_arg004": 0,
+        "loop_arg005": 0
+      }
+    },
+    "timing_accepted": false,
+    "scope": "post-hoc diagnosis only; no new simulator run or padding acceptance",
+    "artifact_sha256": {
+      "result/compiler/dhewkcxjq5h/cdhewkcxjq5hm7xxglmulsgyj7c57y7y4okycguhovklqzpiucxn.mlir": "e4ddd2fb70cb8b65591f97a600dc3f27879f67572f1f8b1751f34d8dafec30f4",
+      "result/compiler/dhewkcxjq5h/cdhewkcxjq5hm7xxglmulsgyj7c57y7y4okycguhovklqzpiucxn_tog.py": "108cd9d219ae23b56367c7d6d0a20fff7bd47f7507e4b0d6b90acd1890ffd992",
+      "result/compiler/dhewkcxjq5h/global_var.h": "7a2625deedead623fa380727a2fd80b8a74429faa1cf5049d4cf301024c044ac",
+      "result/compiler/dhewkcxjq5h/runtime_0000/attribute/0": "fc8ab5233c4706e641f31561a7e4b3ae3f12a60f8441caab5fc0f648ca1663eb",
+      "result/compiler/dhewkcxjq5h/validation_wrapper.c": "b523c5f0bd2f0bc59394d395dbf090e0e4a09d395cc4a3587e03214366a9e312",
+      "result/hardware.yml": "cf2c57ca99bfd01d728daabe7cc7d99b13bd82a0e2f53c10dbd773e68b763cb5",
+      "result/logs/20261111_032821_7843866a.log": "0a738d134338389b977d57264dabc54ffbee2ba1af457f0ac1e3c762b68358bb",
+      "result/logs/20261111_032821_7843866a.trace": "be7d64194d7e372152440afa47754c3db841e2a033ceadc23972614f595e7c91",
+      "result/result.json": "876ec76ed90136bca912649d2ef90742c30ea515d26adf9650c8fee6d3ef448a"
+    }
+  },
+  {
+    "case": "resnet_c3_heuristic",
+    "shape": [
+      784,
+      512,
+      128
+    ],
+    "padded_m": 896,
+    "numerical_equal": true,
+    "wrong_elements": 0,
+    "tensors": {
+      "arg0": {
+        "logical_bytes": 401408,
+        "dma_byte_interval": [
+          0,
+          458752
+        ],
+        "excess_bytes": 57344,
+        "validation_malloc_bytes": 802816,
+        "inside_validation_malloc": true
+      },
+      "arg1": {
+        "logical_bytes": 262144,
+        "dma_byte_interval": [
+          0,
+          262144
+        ],
+        "excess_bytes": 0,
+        "validation_malloc_bytes": 524288,
+        "inside_validation_malloc": true
+      },
+      "arg2": {
+        "logical_bytes": 1605632,
+        "dma_byte_interval": [
+          0,
+          1835008
+        ],
+        "excess_bytes": 229376,
+        "validation_malloc_bytes": 3211264,
+        "inside_validation_malloc": true
+      }
+    },
+    "request_bytes": 32,
+    "emitted_dma": {
+      "read": 2,
+      "write": 1
+    },
+    "expected_full_tile_transactions": {
+      "read": 22528,
+      "write": 57344
+    },
+    "hypothetical_clipped_transactions": {
+      "read": 20736,
+      "write": 50176
+    },
+    "observed_transactions": {
+      "read": 22528,
+      "write": 57344
+    },
+    "transactions_match": true,
+    "instruction_counts_match": true,
+    "strict_rejection": {
+      "node_id": 8,
+      "tensor": "arg0",
+      "direction": "read",
+      "cell_interval": [
+        0,
+        114688
+      ],
+      "logical_cells": 100352,
+      "byte_interval": [
+        0,
+        458752
+      ],
+      "logical_bytes": 401408,
+      "tile_size": [
+        896,
+        128
+      ],
+      "tile_stride": [
+        128,
+        1
+      ],
+      "loop_indices": {
+        "loop_arg000": 0,
+        "loop_arg001": 0,
+        "loop_arg002": 0,
+        "loop_arg003": 0,
+        "loop_arg004": 0,
+        "loop_arg005": 0
+      }
+    },
+    "timing_accepted": false,
+    "scope": "post-hoc diagnosis only; no new simulator run or padding acceptance",
+    "artifact_sha256": {
+      "result/compiler/ehm7mjb7hmj/cehm7mjb7hmjr3kqytxecbv5iqn7xb7wkbg7wonr76wfje4ydltq.mlir": "2f33c69a9590079128906a4aaed1849d8fe588acb1e4f542c1948a212e9e31bd",
+      "result/compiler/ehm7mjb7hmj/cehm7mjb7hmjr3kqytxecbv5iqn7xb7wkbg7wonr76wfje4ydltq_tog.py": "236b62db7620383e6aae6d6a70f68f94ae857466d45192b728ccf8b3f1dc1574",
+      "result/compiler/ehm7mjb7hmj/global_var.h": "fee8236b0fb9bebc269362bcc595cc8ef788c7ac67dde60c8273e75163ba951b",
+      "result/compiler/ehm7mjb7hmj/runtime_0000/attribute/0": "04812b0f225a440554300e36d34525ab29a07a09abb89fbe7525606a3a5aa543",
+      "result/compiler/ehm7mjb7hmj/validation_wrapper.c": "febe9ddc473322e147ebe4f4b8255a87cbbb50f2933f5e08263211de8977d3a5",
+      "result/hardware.yml": "cf2c57ca99bfd01d728daabe7cc7d99b13bd82a0e2f53c10dbd773e68b763cb5",
+      "result/logs/20261111_032610_2c47d539.log": "c105e552ab64d61c16083f3a4393db54dc3218842706db236c9b0d81bbb21f2a",
+      "result/logs/20261111_032610_2c47d539.trace": "5ed14be46e520b131364f5e1381c94113a924539ae7c6b274b504ec9bb106c21",
+      "result/result.json": "5cd9e2ec13e1d3489dea802d400df24c1c62268bfee7d5590e1b3e5a69a2af38"
+    }
+  }
+]

@@ -1,0 +1,56 @@
+{
+  "scope": "one direct float32 GEMM; fixed nonaliasing addresses; no cache; lane-aligned split geometry",
+  "runtime_attribute_count": 1,
+  "selected_runtime_attribute": "result/compiler/bzybzhdwgbv/runtime_0000/attribute/0",
+  "shape": [
+    128,
+    256,
+    2048
+  ],
+  "mode": "heuristic",
+  "requested_tile": null,
+  "numerical_equal": true,
+  "max_abs_error": 7.62939453125e-05,
+  "request_bytes": 32,
+  "emitted_dma": {
+    "read": 2,
+    "write": 1
+  },
+  "observed_dma": {
+    "read": 2,
+    "write": 1
+  },
+  "tag_reused_loads": 0,
+  "useful_cells": {
+    "arg0": 262144,
+    "arg1": 524288,
+    "arg2": 32768
+  },
+  "useful_bytes": 3276800,
+  "expected_transactions": {
+    "read": 98304,
+    "write": 4096
+  },
+  "observed_transactions": {
+    "read": 98304,
+    "write": 4096
+  },
+  "transaction_bytes": {
+    "read": 3145728,
+    "write": 131072
+  },
+  "output_written_once": true,
+  "transactions_match": true,
+  "instruction_counts_match": true,
+  "expected_address_stream_sha256": "f63b69866481f4c89a86322da1fe747f01bcc2d63fb5378241db5b8c22fd4f5c",
+  "total_cycles": 9411,
+  "float_array_cells_per_lane": {
+    "X_spad": 2048,
+    "W_spad": 4096,
+    "Y_spad": 256
+  },
+  "float_array_reserved_bytes": 3276800,
+  "reservation_caveat": "Static three-buffer reservation, not full peak including tags and overlap buffers",
+  "timing_accepted": true,
+  "timing_acceptance_scope": "Internal repaired-backend pilot consistency only; no hardware calibration or whole-DNN claim"
+}
