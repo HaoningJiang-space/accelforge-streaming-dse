@@ -1,0 +1,170 @@
+{
+  "case": "attn_chain_m4",
+  "sizes": {
+    "M": 4,
+    "D": 2,
+    "A": 2,
+    "T": 2,
+    "F": 2
+  },
+  "operators": [
+    [
+      "EQ",
+      {
+        "X0": [
+          "M",
+          "D"
+        ],
+        "Wq": [
+          "D",
+          "A"
+        ],
+        "Q": [
+          "M",
+          "A"
+        ]
+      }
+    ],
+    [
+      "ES",
+      {
+        "Q": [
+          "M",
+          "A"
+        ],
+        "Kc": [
+          "T",
+          "A"
+        ],
+        "S": [
+          "M",
+          "T"
+        ]
+      }
+    ],
+    [
+      "ESoft",
+      {
+        "S": [
+          "M",
+          "T"
+        ],
+        "P": [
+          "M",
+          "T"
+        ]
+      }
+    ],
+    [
+      "EO",
+      {
+        "P": [
+          "M",
+          "T"
+        ],
+        "Vc": [
+          "T",
+          "A"
+        ],
+        "O": [
+          "M",
+          "A"
+        ]
+      }
+    ],
+    [
+      "EWo",
+      {
+        "O": [
+          "M",
+          "A"
+        ],
+        "Wo": [
+          "A",
+          "D"
+        ],
+        "Y": [
+          "M",
+          "D"
+        ]
+      }
+    ],
+    [
+      "EG",
+      {
+        "Y": [
+          "M",
+          "D"
+        ],
+        "Wg": [
+          "D",
+          "F"
+        ],
+        "G": [
+          "M",
+          "F"
+        ]
+      }
+    ],
+    [
+      "EZ",
+      {
+        "G": [
+          "M",
+          "F"
+        ],
+        "Z": [
+          "M",
+          "F"
+        ]
+      }
+    ],
+    [
+      "ED",
+      {
+        "Z": [
+          "M",
+          "F"
+        ],
+        "Wd": [
+          "F",
+          "D"
+        ],
+        "Y2": [
+          "M",
+          "D"
+        ]
+      }
+    ]
+  ],
+  "baseline_seconds": 3.747,
+  "ops": 8,
+  "states": 4990,
+  "unit_terminals": 559,
+  "total_work": {
+    "dp_transitions": 81368,
+    "loop_choices": 8266,
+    "pareto_candidates": 506882,
+    "merge_inputs": 303216
+  },
+  "removed_by_unit_closed_form": {
+    "dp_transitions": 0.0595,
+    "loop_choices": 0.0093,
+    "pareto_candidates": 0.0326,
+    "merge_inputs": 0.0384
+  },
+  "exclusive_share_chain_states": {
+    "dp_transitions": 0.1232,
+    "loop_choices": 0.0,
+    "pareto_candidates": 0.0978,
+    "merge_inputs": 0.0983
+  },
+  "exclusive_share_unit_chain_states": {
+    "dp_transitions": 0.0595,
+    "loop_choices": 0.0,
+    "pareto_candidates": 0.0324,
+    "merge_inputs": 0.0384
+  },
+  "status": "complete",
+  "peak_rss_kib": 87112
+}
